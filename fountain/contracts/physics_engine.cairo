@@ -4,16 +4,16 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import (signed_div_rem, unsigned_div_rem, sign, assert_nn, abs_value, assert_not_zero, sqrt)
 from starkware.cairo.common.math_cmp import (is_nn, is_le, is_not_zero)
 from starkware.cairo.common.alloc import alloc
-from contracts.lib.structs import (Vec2, BallState, GameState, PlayerStats)
+from contracts.lib.structs import (Vec2, ObjectState)
 from contracts.lib.constants import (FP, RANGE_CHECK_BOUND, A_FRICTION)
 
 func euler_step_single_circle_aabb_boundary {range_check_ptr} (
         dt : felt,
-        c : BallState,
+        c : ObjectState,
         params_len : felt,
         params : felt*
     ) -> (
-        c_nxt : BallState,
+        c_nxt : ObjectState,
         has_collided_with_boundary : felt
     ):
     alloc_locals
@@ -54,7 +54,7 @@ func euler_step_single_circle_aabb_boundary {range_check_ptr} (
     #
     tempvar bool_sum = b_xmax + b_xmin + b_ymin + b_ymax
     let (has_collided_with_boundary) = is_not_zero (bool_sum)
-    let c_nxt = BallState (
+    let c_nxt = ObjectState (
         pos = Vec2 (x_nxt, y_nxt),
         vel = Vec2 (vx_nxt, vy_nxt),
         acc = c.acc
@@ -66,15 +66,15 @@ end
 #################################
 
 func collision_pair_circles {range_check_ptr} (
-        c1 : BallState,
-        c2 : BallState,
-        c1_cand : BallState,
-        c2_cand : BallState,
+        c1 : ObjectState,
+        c2 : ObjectState,
+        c1_cand : ObjectState,
+        c2_cand : ObjectState,
         params_len : felt,
         params : felt*
     ) -> (
-        c1_nxt : BallState,
-        c2_nxt : BallState,
+        c1_nxt : ObjectState,
+        c2_nxt : ObjectState,
         has_collided : felt
     ):
     alloc_locals
@@ -176,13 +176,13 @@ func collision_pair_circles {range_check_ptr} (
     #
     # Pack to Vec2
     #
-    let c1_nxt = BallState (
+    let c1_nxt = ObjectState (
         pos = Vec2 (x1_nxt, y1_nxt),
         vel = Vec2 (vx1_nxt, vy1_nxt),
         acc = c1.acc
     )
 
-    let c2_nxt = BallState (
+    let c2_nxt = ObjectState (
         pos = Vec2 (x2_nxt, y2_nxt),
         vel = Vec2 (vx2_nxt, vy2_nxt),
         acc = c2.acc
@@ -197,11 +197,11 @@ end
 
 func friction_single_circle {range_check_ptr} (
         dt : felt,
-        c : BallState,
+        c : ObjectState,
         should_recalc : felt,
         a_friction : felt
     ) -> (
-        c_nxt : BallState
+        c_nxt : ObjectState
     ):
     alloc_locals
 
@@ -311,7 +311,7 @@ func friction_single_circle {range_check_ptr} (
     #
     # Pack
     #
-    let c_nxt = BallState (
+    let c_nxt = ObjectState (
         pos = c.pos,
         vel = Vec2 (vx_nxt_friction, vy_nxt_friction),
         acc = Vec2 (ax_nxt, ay_nxt)
