@@ -4,9 +4,10 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import (signed_div_rem, unsigned_div_rem, sign, assert_nn, abs_value, assert_not_zero, sqrt)
 from starkware.cairo.common.math_cmp import (is_nn, is_le, is_not_zero)
 from starkware.cairo.common.alloc import alloc
-from contracts.lib.structs import (Vec2, ObjectState)
-from contracts.lib.constants import (FP, RANGE_CHECK_BOUND, A_FRICTION)
+from contracts.structs import (Vec2, ObjectState)
+from contracts.constants import (FP, RANGE_CHECK_BOUND)
 
+@view
 func euler_step_single_circle_aabb_boundary {range_check_ptr} (
         dt : felt,
         c : ObjectState,
@@ -14,7 +15,7 @@ func euler_step_single_circle_aabb_boundary {range_check_ptr} (
         params : felt*
     ) -> (
         c_nxt : ObjectState,
-        has_collided_with_boundary : felt
+        bool_has_collided_with_boundary : felt
     ):
     alloc_locals
 
@@ -29,7 +30,7 @@ func euler_step_single_circle_aabb_boundary {range_check_ptr} (
     let y_max = [params + 4] - [params]
 
     #
-    # Calculate candidate nxt position and velocity
+    # Calculate candidate nxt position
     #
     let (x_delta)    = mul_fp (c.vel.x, dt)
     local x_nxt_cand = c.pos.x + x_delta
@@ -37,34 +38,76 @@ func euler_step_single_circle_aabb_boundary {range_check_ptr} (
     local y_nxt_cand = c.pos.y + y_delta
 
     #
-    # Check c <-> x boundary and y boundary and handle bounce
+    # Check c <-> x boundary and y boundary;
+    # handle bounce to produce next position and candidate velocities
     #
     let (local b_xmax) = is_nn (x_nxt_cand - x_max)
     let (local b_xmin) = is_nn (x_min - x_nxt_cand)
     local x_nxt  = (1-b_xmax-b_xmin) * x_nxt_cand + b_xmax * x_max + b_xmin * x_min
-    local vx_nxt = (1-b_xmax-b_xmin) * c.vel.x + b_xmax * (-c.vel.x) + b_xmin * (-c.vel.x)
+    local vx_nxt_cand = (1-b_xmax-b_xmin) * c.vel.x + b_xmax * (-c.vel.x) + b_xmin * (-c.vel.x)
 
     let (local b_ymin) = is_nn (y_min - y_nxt_cand)
     let (local b_ymax) = is_nn (y_nxt_cand - y_max)
     local y_nxt  = (1-b_ymin-b_ymax) * y_nxt_cand + b_ymin * y_min + b_ymax * y_max
-    local vy_nxt = (1-b_ymin-b_ymax) * c.vel.y + b_ymin * (-c.vel.y) + b_ymax * (-c.vel.y)
+    local vy_nxt_cand = (1-b_ymin-b_ymax) * c.vel.y + b_ymin * (-c.vel.y) + b_ymax * (-c.vel.y)
+
+    #
+    # Determine if object is stopping
+    #
+    let (ax_dt) = mul_fp (c.acc.x, dt)
+    let (ax_dt_abs) = abs_value (ax_dt)
+    let (ay_dt) = mul_fp (c.acc.y, dt)
+    let (ay_dt_abs) = abs_value (ay_dt)
+    let (local vx_nxt_cand_abs) = abs_value (vx_nxt_cand)
+    let (local vy_nxt_cand_abs) = abs_value (vy_nxt_cand)
+    let (local bool_x_stopped) = is_le (vx_nxt_cand_abs, ax_dt_abs)
+    let (local bool_y_stopped) = is_le (vy_nxt_cand_abs, ay_dt_abs)
+
+    #
+    # Apply acceleration to candidate velocities;
+    # does *not* recalculate acceleration
+    #
+    local vx_nxt
+    local vy_nxt
+    if bool_x_stopped == 1:
+        assert vx_nxt = 0
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        assert vx_nxt = vx_nxt_cand + ax_dt
+        tempvar range_check_ptr = range_check_ptr
+    end
+
+    if bool_y_stopped == 1:
+        assert vy_nxt = 0
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        assert vy_nxt = vy_nxt_cand + ay_dt
+        tempvar range_check_ptr = range_check_ptr
+    end
 
     #
     # Summarizing the bools
     #
     tempvar bool_sum = b_xmax + b_xmin + b_ymin + b_ymax
-    let (has_collided_with_boundary) = is_not_zero (bool_sum)
+    let (bool_has_collided_with_boundary) = is_not_zero (bool_sum)
     let c_nxt = ObjectState (
         pos = Vec2 (x_nxt, y_nxt),
         vel = Vec2 (vx_nxt, vy_nxt),
         acc = c.acc
     )
 
-    return (c_nxt, has_collided_with_boundary)
+    return (c_nxt, bool_has_collided_with_boundary)
 end
 
 #################################
 
+#
+# Algorithm for each of the two circles:
+#   if line-intersect with the other cirlce's line => snap to impact position and exchange vx & vy
+#   using cheap solution now: run circle test at candidate positions. Assumption: velocity*dt is small enough relative to radius
+#   TODO: check for *tunneling* i.e. handling collision that would have occurred inbetween frames
+#
+@view
 func collision_pair_circles {range_check_ptr} (
         c1 : ObjectState,
         c2 : ObjectState,
@@ -81,20 +124,15 @@ func collision_pair_circles {range_check_ptr} (
 
     #
     # Unpack parameters
-    # params: [<circle radius>, <precomputed square of circle radius>]
+    # params: [<circle radius>, <precomputed square of circle radius*2>]
     #
     assert params_len = 2
     let circle_r = [params]
     let circle_r2_sq = [params + 1]
 
-    ## Algorithm for each circle:
-    ##   if line-intersect with another cirlce's line => snap to impact position and exchange vx & vy
-    ##   using cheap solution now: run circle-test at candidate position. Assumption: dt is small enough relatively to radius such that
-    ##                             it is impossible for collision to happen without failing the circle-test at candidate positions
-    ##   bettter solution: also check for *tunneling* i.e. collision that would have occurred inbetween frames, and handle it
-    ##                     skipping this for now to focus on improving performance + vectorization
-
-    ## Check whether candidate c1 collides with candidate c2
+    #
+    # Check whether candidate c1 collides with candidate c2
+    #
     tempvar x1mx2 = c1_cand.pos.x - c2_cand.pos.x
     let (local x1mx2_sq) = mul_fp (x1mx2, x1mx2)
     tempvar y1my2 = c1_cand.pos.y - c2_cand.pos.y
@@ -195,6 +233,7 @@ end
 
 #################################
 
+@view
 func friction_single_circle {range_check_ptr} (
         dt : felt,
         c : ObjectState,
@@ -205,103 +244,69 @@ func friction_single_circle {range_check_ptr} (
     ):
     alloc_locals
 
-    local vx_nxt_friction
-    local vy_nxt_friction
     local ax_nxt
     local ay_nxt
 
     if should_recalc == 1:
         #
-        # Recalc: calculate v, then if v!=0 calculate ax and ay
+        # Check if object has stopped
         #
         tempvar v_2 = c.vel.x * c.vel.x + c.vel.y * c.vel.y
         let (local v) = sqrt (v_2)
 
-        local ax_dt
-        local ay_dt
         if v == 0:
-            assert ax_dt = 0
-            assert ay_dt = 0
+            #
+            # Stopped -> zero out acceleration
+            #
             assert ax_nxt = 0
             assert ay_nxt = 0
 
             tempvar range_check_ptr = range_check_ptr
         else:
+            #
+            # Recalculate acceleration
+            #
             let (a_mul_vx) = mul_fp (a_friction, -1*c.vel.x)
             let (ax) = div_fp (a_mul_vx, v)
-            assert ax_nxt = ax # recalc
-            let (axdt) = mul_fp (ax, dt)
-            assert ax_dt = axdt # for friction application
+            assert ax_nxt = ax
 
             let (a_mul_vy) = mul_fp (a_friction, -1*c.vel.y)
             let (ay) = div_fp (a_mul_vy, v)
-            assert ay_nxt = ay # recalc
-            let (aydt) = mul_fp (ay, dt)
-            assert ay_dt = aydt # for friction application
+            assert ay_nxt = ay
 
             tempvar range_check_ptr = range_check_ptr
         end
-
-        #
-        # Apply with clipping to 0
-        #
-        let (local vx_abs) = abs_value (c.vel.x)
-        let (ax_dt_abs) = abs_value (ax_dt)
-        let (local bool_x_stopped) = is_le (vx_abs, ax_dt_abs)
-        let (local vy_abs) = abs_value (c.vel.y)
-        let (ay_dt_abs) = abs_value (ay_dt)
-        let (local bool_y_stopped) = is_le (vy_abs, ay_dt_abs)
-
-        if bool_x_stopped == 1:
-            assert vx_nxt_friction = 0
-            # TODO: also zero out ax!
-            tempvar range_check_ptr = range_check_ptr
-        else:
-            assert vx_nxt_friction = c.vel.x + ax_dt
-            tempvar range_check_ptr = range_check_ptr
-        end
-
-        if bool_y_stopped == 1:
-            assert vy_nxt_friction = 0
-            # TODO: also zero out ay!
-            tempvar range_check_ptr = range_check_ptr
-        else:
-            assert vy_nxt_friction = c.vel.y + ay_dt
-            tempvar range_check_ptr = range_check_ptr
-        end
-
-        tempvar range_check_ptr = range_check_ptr
     else:
         #
-        # Apply with clipping to 0
+        # Check if object would have stopped along x
         #
-        let (local ax_dt) = mul_fp (c.acc.x, dt)
-        let (local vx_abs) = abs_value (c.vel.x)
+        let (ax_dt) = mul_fp (c.acc.x, dt)
         let (ax_dt_abs) = abs_value(ax_dt)
+        let (vx_abs) = abs_value (c.vel.x)
         let (bool_x_stopped) = is_le (vx_abs, ax_dt_abs)
+
         if bool_x_stopped == 1:
-            assert vx_nxt_friction = 0
             assert ax_nxt = 0
 
             tempvar range_check_ptr = range_check_ptr
         else:
-            assert vx_nxt_friction = c.vel.x + ax_dt
             assert ax_nxt = c.acc.x
 
             tempvar range_check_ptr = range_check_ptr
         end
 
-        let (local ay_dt) = mul_fp (c.acc.y, dt)
-        let (local vy_abs) = abs_value (c.vel.y)
+        #
+        # Check if object would have stopped along y
+        #
+        let (ay_dt) = mul_fp (c.acc.y, dt)
         let (ay_dt_abs) = abs_value (ay_dt)
+        let (vy_abs) = abs_value (c.vel.y)
         let (bool_y_stopped) = is_le (vy_abs, ay_dt_abs)
         if bool_y_stopped == 1:
-            assert vy_nxt_friction = 0
             assert ay_nxt = 0
 
             tempvar range_check_ptr = range_check_ptr
         else:
-            assert vy_nxt_friction = c.vel.y + ay_dt
             assert ay_nxt = c.acc.y
 
             tempvar range_check_ptr = range_check_ptr
@@ -313,11 +318,29 @@ func friction_single_circle {range_check_ptr} (
     #
     let c_nxt = ObjectState (
         pos = c.pos,
-        vel = Vec2 (vx_nxt_friction, vy_nxt_friction),
+        vel = c.vel,
         acc = Vec2 (ax_nxt, ay_nxt)
     )
 
     return (c_nxt)
+end
+
+#################################
+
+@view
+func test_circle_intersect {range_check_ptr} (
+        c1 : Vec2,
+        r1 : felt,
+        c2 : Vec2,
+        r2 : felt
+    ) -> (bool_intersect : felt):
+
+    #
+    # Check if distance between c1 and c2 <= r1+r2
+    #
+    let (distance) = distance_2pt (c1, c2)
+    let (bool_intersect) = is_le(distance, r1+r2)
+    return (bool_intersect)
 end
 
 #################################
@@ -358,20 +381,4 @@ func distance_2pt {range_check_ptr} (
     let (distance) = sqrt (distance_2)
 
     return (distance)
-end
-
-@view
-func test_circle_intersect {range_check_ptr} (
-        c1 : Vec2,
-        r1 : felt,
-        c2 : Vec2,
-        r2 : felt
-    ) -> (bool_intersect : felt):
-
-    #
-    # Check if distance between c1 and c2 <= r1+r2
-    #
-    let (distance) = distance_2pt (c1, c2)
-    let (bool_intersect) = is_le(distance, r1+r2)
-    return (bool_intersect)
 end

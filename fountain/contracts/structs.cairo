@@ -12,10 +12,10 @@ struct ObjectState:
 end
 
 struct GameState:
-    member score0_ball : BallState
-    member score1_ball : BallState
-    member forbid_ball : BallState
-    member player1_ball : BallState
-    member player2_ball : BallState
-    member player3_ball : BallState
+    member score0_ball : ObjectState
+    member score1_ball : ObjectState
+    member forbid_ball : ObjectState
+    member player1_ball : ObjectState
+    member player2_ball : ObjectState
+    member player3_ball : ObjectState
 end
