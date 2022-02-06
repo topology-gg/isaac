@@ -173,8 +173,8 @@ def forward_scene_by_cap_steps (dt, array_states_start, cap, params):
     array_states = array_states_start
     dict_collision_pairwise_count = {}
     for i in range(len(array_states)):
-        for j in range(i+1, len(array_states)):
-            dict_collision_pairwise_count[f'{i}-{j}'] = 0
+        for k in range(i+1, len(array_states)):
+            dict_collision_pairwise_count[f'{i}-{k}'] = 0
 
     #
     # Loop
@@ -185,8 +185,8 @@ def forward_scene_by_cap_steps (dt, array_states_start, cap, params):
         #
         dict_collision_pairwise_flag = {}
         for i in range(len(array_states)):
-            for j in range(i+1, len(array_states)):
-                dict_collision_pairwise_flag[f'{i}-{j}'] = 0
+            for k in range(i+1, len(array_states)):
+                dict_collision_pairwise_flag[f'{i}-{k}'] = 0
         dict_collision_count = {}
         for i in range(len(array_states)):
             dict_collision_count[i] = 0
@@ -227,8 +227,8 @@ def forward_scene_by_cap_steps (dt, array_states_start, cap, params):
         # Update dict_collision_pairwise_count
         #
         for i in range(len(array_states)):
-            for j in range(i+1, len(array_states)):
-                dict_collision_pairwise_count[f'{i}-{j}'] = dict_collision_pairwise_count[f'{i}-{j}'] + dict_collision_pairwise_flag[f'{i}-{j}']
+            for k in range(i+1, len(array_states)):
+                dict_collision_pairwise_count[f'{i}-{k}'] += dict_collision_pairwise_flag[f'{i}-{k}']
 
     return array_states, dict_collision_pairwise_count
 

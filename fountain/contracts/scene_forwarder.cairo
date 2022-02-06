@@ -14,6 +14,19 @@ from contracts.structs import (Vec2, ObjectState)
 from contracts.constants import (FP, RANGE_CHECK_BOUND)
 
 #
+# Events for debugging purposes
+#
+# @event
+# func pairwise_collision_occurred(
+#     first : felt, second : felt, index : felt):
+# end
+
+# @event
+# func reading_pairwise_collision_count(
+#     first : felt, second : felt, index : felt, count : felt):
+# end
+
+#
 # params:
 # [circle_r, circle_r2_sq, x_min, x_max, y_min, y_max, a_friction]
 #
@@ -35,8 +48,14 @@ func forward_scene_capped_counting_collision {
     ):
     alloc_locals
 
+    #
+    # Initialize a dictionary for counting pairwise collision occurrences
+    #
     let (dict_collision_pairwise_count_init : DictAccess*) = default_dict_new (default_value = 0)
 
+    #
+    # Recursively forward scene by cap iterations
+    #
     let (
         arr_obj_final_len : felt,
         arr_obj_final : ObjectState*,
@@ -58,17 +77,23 @@ func forward_scene_capped_counting_collision {
     #
     let (arr_collision_pairwise_count_len, _) = unsigned_div_rem( arr_obj_len * (arr_obj_len-1), 2 )
     let (arr_collision_pairwise_count : felt*) = alloc()
-    let (dict_) = _recurse_populate_array_from_dict (
-        arr_collision_pairwise_count_len,
-        arr_collision_pairwise_count,
-        dict_collision_pairwise_count_final,
-        0
+    let (dict_, idx_flatten_final) = _recurse_populate_array_from_pairwise_dict_outer (
+        obj_count = arr_obj_len,
+        arr_len = arr_collision_pairwise_count_len,
+        arr = arr_collision_pairwise_count,
+        dict_pairwise = dict_collision_pairwise_count_final,
+        idx_outer = 0,
+        idx_flatten = 0
     )
 
     #
     # Finalize dictionary passed by inner loop
     #
-    default_dict_finalize(dict_accesses_start = dict_, dict_accesses_end = dict_, default_value = 0)
+    default_dict_finalize(
+        dict_accesses_start = dict_,
+        dict_accesses_end = dict_,
+        default_value = 0
+    )
 
     return (
         arr_obj_final_len,
@@ -127,15 +152,14 @@ func _recurse_euler_forward_scene_capped {
     #
     # Update counter
     #
-    let (len, _) = unsigned_div_rem( arr_obj_len * (arr_obj_len-1), 2 )
     let (
         dict_collision_pairwise_count_nxt : DictAccess*,
         dict_collision_pairwise_bool_ : DictAccess*
-    ) = _recurse_add_zip_dictionaries (
-        len = len,
+    ) = _recurse_add_zip_pairwise_dictionaries_outer (
+        obj_count = arr_obj_len,
         dict_sum = dict_collision_pairwise_count,
         dict_inc = dict_collision_pairwise_bool,
-        idx = 0
+        idx_outer = 0
     )
 
     #
@@ -285,29 +309,106 @@ func _euler_forward_scene_one_step {
     return (arr_obj_nxt_len, arr_obj_nxt, dict_collision_pairwise)
 end
 
+
 ################################
 
-func _recurse_populate_array_from_dict {
+
+func _recurse_populate_array_from_pairwise_dict_outer {
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
     } (
-        len : felt,
+        obj_count : felt,
+        arr_len : felt,
         arr : felt*,
-        dict : DictAccess*,
-        idx : felt
+        dict_pairwise : DictAccess*,
+        idx_outer : felt,
+        idx_flatten : felt
     ) -> (
-        dict_ : DictAccess*
+        dict_pairwise_outer : DictAccess*,
+        idx_flatten_final : felt
     ):
 
-    if idx == len:
-        return (dict)
+    if idx_outer == obj_count-1:
+        return (dict_pairwise, idx_flatten)
     end
 
-    let (val) = dict_read {dict_ptr = dict} (key = idx)
-    assert arr[idx] = val
+    #
+    # Inner loop
+    #
+    let (
+        dict_pairwise_inner : DictAccess*,
+        idx_flatten_inner : felt
+    ) = _recurse_populate_array_from_pairwise_dict_inner (
+        obj_count = obj_count,
+        arr_len = arr_len,
+        arr = arr,
+        dict_pairwise = dict_pairwise,
+        idx_outer = idx_outer,
+        idx_inner = idx_outer + 1,
+        idx_flatten = idx_flatten
+    )
 
-    let (dict_) = _recurse_populate_array_from_dict (len, arr, dict, idx+1)
-    return (dict_)
+    #
+    # Tail recursion
+    #
+    let (
+        dict_pairwise_outer : DictAccess*,
+        idx_flatten_final : felt
+    ) = _recurse_populate_array_from_pairwise_dict_outer (
+        obj_count = obj_count,
+        arr_len = arr_len,
+        arr = arr,
+        dict_pairwise = dict_pairwise_inner,
+        idx_outer = idx_outer + 1,
+        idx_flatten = idx_flatten_inner
+    )
+    return (dict_pairwise_outer, idx_flatten_final)
 end
+
+
+func _recurse_populate_array_from_pairwise_dict_inner {
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+    } (
+        obj_count : felt,
+        arr_len : felt,
+        arr : felt*,
+        dict_pairwise : DictAccess*,
+        idx_outer : felt,
+        idx_inner : felt,
+        idx_flatten : felt
+    ) -> (
+        dict_pairwise_inner : DictAccess*,
+        idx_flatten_inner : felt
+    ):
+
+    if idx_inner == obj_count:
+        return (dict_pairwise, idx_flatten)
+    end
+
+    #
+    # Read from dictionary, write to array
+    #
+    let (count) = dict_read {dict_ptr = dict_pairwise} (key = idx_outer*obj_count + idx_inner)
+    assert arr[idx_flatten] = count
+    # reading_pairwise_collision_count.emit (first=idx_outer, second=idx_inner, index=idx_outer*obj_count + idx_inner, count=count)
+
+    #
+    # Tail recursion
+    #
+    let (
+        dict_pairwise_inner,
+        idx_flatten_inner
+    ) = _recurse_populate_array_from_pairwise_dict_inner (
+        obj_count = obj_count,
+        arr_len = arr_len,
+        arr = arr,
+        dict_pairwise = dict_pairwise,
+        idx_outer = idx_outer,
+        idx_inner = idx_inner + 1,
+        idx_flatten = idx_flatten + 1
+    )
+    return (dict_pairwise_inner, idx_flatten_inner)
+end
+
 
 func _recurse_populate_obj_array_from_dict {
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
@@ -355,42 +456,87 @@ func _recurse_populate_dict_from_obj_array {
 end
 
 
-func _recurse_add_zip_dictionaries {
+func _recurse_add_zip_pairwise_dictionaries_inner {
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
     } (
-        len : felt,
+        obj_count : felt,
         dict_sum : DictAccess*,
         dict_inc : DictAccess*,
-        idx : felt
+        idx_outer : felt,
+        idx_inner : felt
     ) -> (
-        dict_sum_ : DictAccess*,
-        dict_inc_ : DictAccess*
+        dict_sum_inner : DictAccess*,
+        dict_inc_inner : DictAccess*
     ):
 
-    if idx == len:
+    if idx_inner == obj_count:
         return (
             dict_sum,
             dict_inc
         )
     end
 
-    let (sum) = dict_read {dict_ptr = dict_sum} (key = idx)
-    let (inc) = dict_read {dict_ptr = dict_inc} (key = idx)
-    dict_write {dict_ptr = dict_sum} (key = idx, new_value = sum + inc)
+    let (sum) = dict_read {dict_ptr = dict_sum} (key = idx_outer * obj_count + idx_inner)
+    let (inc) = dict_read {dict_ptr = dict_inc} (key = idx_outer * obj_count + idx_inner)
+    dict_write {dict_ptr = dict_sum} (key = idx_outer * obj_count + idx_inner, new_value = sum + inc)
 
     let (
-        dict_sum_ : DictAccess*,
-        dict_inc_ : DictAccess*
-    ) = _recurse_add_zip_dictionaries (
-        len,
+        dict_sum_inner,
+        dict_inc_inner
+    ) = _recurse_add_zip_pairwise_dictionaries_inner (
+        obj_count,
         dict_sum,
         dict_inc,
-        idx + 1
+        idx_outer,
+        idx_inner + 1
+    )
+    return (dict_sum_inner, dict_inc_inner)
+end
+
+
+func _recurse_add_zip_pairwise_dictionaries_outer {
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+    } (
+        obj_count : felt,
+        dict_sum : DictAccess*,
+        dict_inc : DictAccess*,
+        idx_outer : felt
+    ) -> (
+        dict_sum_outer : DictAccess*,
+        dict_inc_outer : DictAccess*
+    ):
+
+    if idx_outer == obj_count-1:
+        return (
+            dict_sum,
+            dict_inc
+        )
+    end
+
+    let (
+        dict_sum_inner,
+        dict_inc_inner
+    ) = _recurse_add_zip_pairwise_dictionaries_inner (
+        obj_count,
+        dict_sum,
+        dict_inc,
+        idx_outer,
+        idx_outer + 1
+    )
+
+    let (
+        dict_sum_outer : DictAccess*,
+        dict_inc_outer : DictAccess*
+    ) = _recurse_add_zip_pairwise_dictionaries_outer (
+        obj_count,
+        dict_sum_inner,
+        dict_inc_inner,
+        idx_outer + 1
     )
 
     return (
-        dict_sum_,
-        dict_inc_
+        dict_sum_outer,
+        dict_inc_outer
     )
 end
 
@@ -464,6 +610,20 @@ func _recurse_collision_handling_inner_loop{
     # key encoding: <smaller index> * object count + <larger index>
     #
     dict_write {dict_ptr = dict_collision_pairwise_before} (key = first*last+idx, new_value = bool_has_collided)
+
+    #
+    # Emit event if pairwise collision occurred
+    #
+    # if bool_has_collided == 1:
+    #     pairwise_collision_occurred.emit(first=first, second=idx, index=first*last+idx)
+    #     tempvar syscall_ptr = syscall_ptr
+    #     tempvar pedersen_ptr = pedersen_ptr
+    #     tempvar range_check_ptr = range_check_ptr
+    # else:
+    #     tempvar syscall_ptr = syscall_ptr
+    #     tempvar pedersen_ptr = pedersen_ptr
+    #     tempvar range_check_ptr = range_check_ptr
+    # end
 
     #
     # Tail recursion
@@ -687,23 +847,6 @@ func _recurse_euler_step_single_circle_aabb_boundary{
     return (dict_obj_after)
 end
 
-# func pairwise_to_flatten_index (first : felt, second : felt) -> (flatten : felt):
-#     01 0
-#     02 1
-#     03 2
-#     04 3
-#     05 4
-#     12 5+0
-#     13 5+1
-#     14 5+2
-#     15 5+3
-#     23 5+4+0
-#     24 5+4+1
-#     25 5+4+2
-#     34 5+4+3+0
-#     35 5+4+3+1
-#     45 5+4+3+2
-# end
 
 func is_zero {range_check_ptr} (value) -> (res):
     # invert the result of is_not_zero()

@@ -68,15 +68,18 @@ async def test_game_state_forwarder ():
     #
     names = ['s0', 's1', 'fb', 'p1', 'p2', 'p3']
     pairwise_labels = []
+    pairwise_indices = []
     for i in range(6):
-        for j in range(i+1,6):
-            pairwise_labels.append(names[i] + '-' + names[j])
+        for k in range(i+1,6):
+            pairwise_labels.append(names[i] + '-' + names[k])
+            pairwise_indices.append(f'{i}-{k}')
 
     arr_obj = arr_obj_start
     array_states = array_states_start
     dt = 0.06
     while True:
         cap = random.randint(1,30)
+
         #
         # Call contract function
         #
@@ -88,14 +91,28 @@ async def test_game_state_forwarder ():
             params = params
         ).call()
 
+        events = ret.main_call_events
+        if len(events)>0:
+            for event in events:
+                print(event)
+
+
         #
         # Perform simulation
         #
+        all_collision_counts_match = True
         array_states_nxt, dict_collision_pairwise_count_nxt = forward_scene_by_cap_steps (dt, array_states, cap, params_dict)
+        for index, label, count in zip(pairwise_indices, pairwise_labels, ret.result.arr_collision_pairwise_count):
+            sim_count = dict_collision_pairwise_count_nxt[index]
+            # print(f'  {label} / contract={count} / simulation={sim_count} / matched={sim_count==count}')
+            all_collision_counts_match *= (sim_count==count)
+        # print()
+
 
         #
         # Perform checks
         #
+        assert all_collision_counts_match == True
         for obj, state in zip(ret.result.arr_obj_final, array_states_nxt):
             check_against_err_tol (adjust(obj.pos.x), state['x'], ERR_TOL)
             check_against_err_tol (adjust(obj.pos.y), state['y'], ERR_TOL)
@@ -105,6 +122,7 @@ async def test_game_state_forwarder ():
             check_against_err_tol (adjust(obj.acc.y), state['ay'], ERR_TOL)
         print('> All checks have passed.')
         print()
+
 
         #
         # Terminate if all objects have come to rest

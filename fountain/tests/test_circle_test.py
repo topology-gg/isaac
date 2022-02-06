@@ -3,13 +3,10 @@ import os
 from starkware.starknet.testing.starknet import Starknet
 import asyncio
 from random import choices
-
-FP = 1000 * 1000
-PRIME = 3618502788666131213697322783095070105623107215331596699973092056135872020481
-PRIME_HALF = PRIME//2
+from lib import *
 
 @pytest.mark.asyncio
-async def test_game_state_forwarder ():
+async def test_circle_test ():
 
     starknet = await Starknet.empty()
     contract = await starknet.deploy('contracts/physics_engine.cairo')
