@@ -390,8 +390,8 @@ func test_circle_intersect {range_check_ptr} (
     #
     # Check if distance between c1 and c2 <= r1+r2
     #
-    let (distance) = distance_2pt (c1, c2)
-    let (bool_intersect) = is_le(distance, r1+r2)
+    tempvar distance_2 = (c2.x-c1.x) * (c2.x-c1.x) + (c2.y-c1.y) * (c2.y-c1.y)
+    let (bool_intersect) = is_le(distance_2, (r1+r2)*(r1+r2))
     return (bool_intersect)
 end
 
