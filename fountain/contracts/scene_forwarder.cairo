@@ -13,23 +13,31 @@ from contracts.physics_engine import (euler_step_single_circle_aabb_boundary, co
 from contracts.structs import (Vec2, ObjectState)
 from contracts.constants import (FP, RANGE_CHECK_BOUND)
 
-#
-# Events for debugging purposes
-#
-# @event
-# func pairwise_collision_occurred(
-#     first : felt, second : felt, index : felt):
-# end
 
-# @event
-# func reading_pairwise_collision_count(
-#     first : felt, second : felt, index : felt, count : felt):
-# end
-
-#
-# params:
-# [circle_r, circle_r2_sq, x_min, x_max, y_min, y_max, a_friction]
-#
+# @notice
+# @dev The `cap` input arg should be decided considering the 250k/1M step limit for
+#      StarkNet testnet/mainnet as well as associated cost
+# @dev All numerical values are fixed-point values obtained from the original values
+#      scaled by FP and rounded to integer; FP is specified in constants.cairo
+# @dev ObjectState struct type is used, which is specified in structs.cairo
+# @param arr_obj_len Length of the object array following
+# @param arr_obj Pointer to the object array containing all objects of the scene
+#        before the forwarding; each object is an instance of ObjectState struct
+# @param cap Number of Euler steps to be forwarded by one call to this function
+# @param dt Delta time associated with one Euler step
+# @param params_len Length of the params array following
+# @param params Array containing in order: circle radius, square of 2*circle radius,
+#        minimum x value of the box space, maximum x value of the box space,
+#        minimum y value of the box space, maximum y value of the box space,
+#        Absolute magnitude of friction-based acceleration
+# @param arr_obj_final_len Length of the object array following
+# @param arr_obj_final Pointer to the object array containing all objects of the scene
+#        after the forwarding; each object is an instance of ObjectState struct
+# @param arr_collision_pairwise_count_len Length of the felt array following
+# @param arr_collision_pairwise_count Pointer to the felt array containing numbers of
+#        collision occurrences between each pair of objects, where index is flattened
+#        and contiguous e.g. for a scene of 6 objects, [0] is the count associated with
+#        object #0 and #1, and [5] with object #1 and #2
 @view
 func forward_scene_capped_counting_collision {
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
@@ -103,6 +111,24 @@ func forward_scene_capped_counting_collision {
     )
 end
 
+
+# #
+# # Events for debugging purposes
+# #
+# @event
+# func pairwise_collision_occurred(
+#     first : felt, second : felt, index : felt):
+# end
+
+# @event
+# func reading_pairwise_collision_count(
+#     first : felt, second : felt, index : felt, count : felt):
+# end
+
+
+#
+# Internal / utility functions
+#
 
 func _recurse_euler_forward_scene_capped {
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
@@ -308,9 +334,6 @@ func _euler_forward_scene_one_step {
 
     return (arr_obj_nxt_len, arr_obj_nxt, dict_collision_pairwise)
 end
-
-
-################################
 
 
 func _recurse_populate_array_from_pairwise_dict_outer {
