@@ -14,7 +14,10 @@ from contracts.structs import (Vec2, ObjectState)
 from contracts.constants import (FP, RANGE_CHECK_BOUND)
 
 
-# @notice
+# @notice Forward a scene of circle objects by cap number of steps, where each step
+#         involves forwarding each object with Euler method, handling all possible
+#         collisions, and recalculate acceleration based on friction; the function keeps
+#         count of collision occurences between all pairs of objects
 # @dev The `cap` input arg should be decided considering the 250k/1M step limit for
 #      StarkNet testnet/mainnet as well as associated cost
 # @dev All numerical values are fixed-point values obtained from the original values
