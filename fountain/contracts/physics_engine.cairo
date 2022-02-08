@@ -7,6 +7,24 @@ from starkware.cairo.common.alloc import alloc
 from contracts.structs import (Vec2, ObjectState)
 from contracts.constants import (FP, RANGE_CHECK_BOUND)
 
+# @notice Forward the position and velocity of one circle by one step with Euler method,
+#         where the circle is bounded by an axis-aligned box
+# @dev This function will be amended to handle only state forwarding with Euler method,
+#      leaving general collision handling to other functions
+# @dev All numerical values are fixed-point values obtained from the original values
+#      scaled by FP and rounded to integer; FP is specified in constants.cairo
+# @dev ObjectState struct type is used, which is specified in structs.cairo
+# @param dt Delta time associated with one Euler step
+# @param c State of the circle object before the Euler step;
+#        an instance of ObjectState struct
+# @param params_len Length of the params array following
+# @param params Array containing in order: circle radius, minimum x value of the box space,
+#        maximum x value of the box space, minimum y value of the box space,
+#        maximum y value of the box space
+# @return c_nxt State of the circle object after the Euler step;
+#         an ObjectState struct instance
+# @return bool_has_collided_with_boundary 1 if the circle object has collided with boundary;
+#         0 otherwise
 @view
 func euler_step_single_circle_aabb_boundary {range_check_ptr} (
         dt : felt,
@@ -99,14 +117,30 @@ func euler_step_single_circle_aabb_boundary {range_check_ptr} (
     return (c_nxt, bool_has_collided_with_boundary)
 end
 
-#################################
 
-#
-# Algorithm for each of the two circles:
-#   if line-intersect with the other cirlce's line => snap to impact position and exchange vx & vy
-#   using cheap solution now: run circle test at candidate positions. Assumption: velocity*dt is small enough relative to radius
-#   TODO: check for *tunneling* i.e. handling collision that would have occurred inbetween frames
-#
+# @notice For two circle objects, given their current positions and next candidate positions,
+#         which come from Euler forward function, detect if they would have collided, and
+#         handle the collision by snapping them to the point of impact, and set their velocities
+#         assuming fully elastic collision; formula provided by:
+#         https://en.wikipedia.org/wiki/Elastic_collision
+# @dev This function assumes two circle objects share the same radius value
+# @dev This function does not handle potentiall tunneling effect yet
+# @dev All numerical values are fixed-point values obtained from the original values
+#      scaled by FP and rounded to integer; FP is specified in constants.cairo
+# @dev ObjectState struct type is used, which is specified in structs.cairo
+# @param c1 Current state of the first circle object; an instance of ObjectState struct
+# @param c2 Current state of the second circle object; an instance of ObjectState struct
+# @param c1_cand Candidate state of the first circle object from Euler forward function;
+#        an instance of ObjectState struct
+# @param c2_cand Candidate state of the second circle object from Euler forward function;
+#        an instance of ObjectState struct
+# @param params_len Length of the params aray following
+# @param params Array containing in order: circle radius, square of 2*circle radius
+# @param c1_nxt State of the first circle object after collision is handled;
+#        an instance of ObjectState struct
+# @param c2_nxt State of the second circle object after collision is handled;
+#        an instance of ObjectState struct
+# @param has_collided 1 if two circle objects collided; 0 otherwise
 @view
 func collision_pair_circles {range_check_ptr} (
         c1 : ObjectState,
@@ -166,7 +200,7 @@ func collision_pair_circles {range_check_ptr} (
         tempvar range_check_ptr = range_check_ptr
     else:
         #
-        # Handle c1 <-> c2 collision: back each off to the calculated impact point
+        # Handle c1 <-> c2 collision: back each off to the point of impact
         # TODO: add note on how to calculate
         #
         let (local d_cand) = distance_2pt (c1_cand.pos, c2_cand.pos)
@@ -231,8 +265,21 @@ func collision_pair_circles {range_check_ptr} (
     return (c1_nxt, c2_nxt, has_collided)
 end
 
-#################################
 
+# @notice Handle acceleration recalculation with kinetic friction
+# @dev Take a bool as input args to determine if friction should be recalculated;
+#      only if the object has changed direction would acceleration
+#      need to be recalculated
+# @dev All numerical values are fixed-point values obtained from the original values
+#      scaled by FP and rounded to integer; FP is specified in constants.cairo
+# @dev ObjectState struct type is used, which is specified in structs.cairo
+# @param dt Delta time associated with one Euler step
+# @param c State of the circle object before acceleration recalculation;
+#        an instance of ObjectState struct
+# @param should_recalc 1 if acceleration should be recalculated; 0 otherwise
+# @param a_friction Absolute magnitude of friction-based acceleration
+# @return c_nxt State of the circle object after acceleration recalculation;
+#         an instance of ObjectState struct
 @view
 func friction_single_circle {range_check_ptr} (
         dt : felt,
@@ -325,8 +372,13 @@ func friction_single_circle {range_check_ptr} (
     return (c_nxt)
 end
 
-#################################
 
+# @notice Circle-circle intersection test
+# @param c1 Center of the first circle object; an instance of Vec2 struct
+# @param r1 Radius of the first circle object
+# @param c2 Center of the second circle object; an instance of Vec2 struct
+# @param r2 Radius of the second circle object
+# @return bool_intersect 1 if two circles are intersecting; 0 otherwise
 @view
 func test_circle_intersect {range_check_ptr} (
         c1 : Vec2,
@@ -343,9 +395,10 @@ func test_circle_intersect {range_check_ptr} (
     return (bool_intersect)
 end
 
-#################################
-
-### Utility functions for fixed-point arithmetic
+#
+# Utility functions for fixed-point arithmetic
+# TODO use an establiahsed fixed-point arithmetic library through submoduling
+#
 func mul_fp {range_check_ptr} (
         a : felt,
         b : felt
