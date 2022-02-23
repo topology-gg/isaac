@@ -3,8 +3,7 @@ A 2-dimensional physics engine written in Cairo
 
 
 ### 2-dimensional ellastic collision
-![image](https://user-images.githubusercontent.com/59590480/152895476-b6c0ec94-174d-4abe-b452-ee77640b8f33.png)
-
+<img src="https://user-images.githubusercontent.com/59590480/153044774-57f9d847-6bd2-469d-aff0-c81c76243781.png" width="400">
 source: https://en.wikipedia.org/wiki/Elastic_collision
 
 
