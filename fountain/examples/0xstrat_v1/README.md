@@ -17,8 +17,9 @@
 ### What is 0xstrat v1 precisely
 - 0xstrat v1 is a Class B solve2mint system that presents physics puzzles to NFT minters.
 - A physics puzzle is characterized by an axis-aligned 4-wall boundary confining 1 player-controlled circle and N objective circles, viewed from top-down. There is no global acceleration at work other than dynamic friction with a constant friction coefficient. All circles are perfectly elastic, so both energy and momentum conserves in collision.
-- A solution to the puzzle is defined by a 2d initial momentum vector supplied to the player-controlled circle that, after all cirlces have come to rest, has collided with at least one of N objective circles. The magnitude of the initial momentum vector is limited within a defined range.
+- A solution to the puzzle is defined by a 2d initial momentum vector supplied to the player-controlled circle that, after all cirlces have come to rest, has collided with at least one of N objective circles. The magnitude of the initial momentum vector `m` is limited within a defined range `R` such that `0 <= |m| <= R`.
 - Given the fixed point nature of the numerical system in Fountain engine, there are finite solutions to any physics puzzle.
+- To make the proof of concept minimal, `R` will be chosen such that the entire physics simulation for any legal initial momentum submitted can be completed within one transaction on StarkNet testnet, which currently imposes a 250k step limit on any single transaction.
 
 ### Will there be v2?
 - Yes - 0xstrat v2 will be a Class A solve2mint system. We encourage forking and mutation of this project to explore the potential of the solve2mint concept.
