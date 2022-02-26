@@ -15,7 +15,12 @@ struct GameState:
     member score0_ball : ObjectState
     member score1_ball : ObjectState
     member forbid_ball : ObjectState
-    member player1_ball : ObjectState
-    member player2_ball : ObjectState
-    member player3_ball : ObjectState
+    member player_ball : ObjectState
+end
+
+struct LevelState:
+    member score0_ball : Vec2
+    member score1_ball : Vec2
+    member forbid_ball : Vec2
+    member player_ball : Vec2
 end

@@ -23,7 +23,7 @@ from contracts.constants import (FP, RANGE_CHECK_BOUND)
 #        maximum y value of the box space
 # @return c_nxt State of the circle object after the Euler step;
 #         an ObjectState struct instance
-# @return bool_has_collided_with_boundary 1 if the circle object has collided with boundary;
+# @return bool_has_collided_with_boundary 1/2/3/4 if the circle object has collided with xmin/xmax/ymin/ymax boundary;
 #         0 otherwise
 @view
 func euler_step_single_circle_aabb_boundary {range_check_ptr} (
@@ -33,7 +33,7 @@ func euler_step_single_circle_aabb_boundary {range_check_ptr} (
         params : felt*
     ) -> (
         c_nxt : ObjectState,
-        bool_has_collided_with_boundary : felt
+        collided_with_boundary : felt
     ):
     alloc_locals
 
@@ -106,15 +106,16 @@ func euler_step_single_circle_aabb_boundary {range_check_ptr} (
     #
     # Summarizing the bools
     #
-    tempvar bool_sum = b_xmax + b_xmin + b_ymin + b_ymax
-    let (bool_has_collided_with_boundary) = is_not_zero (bool_sum)
+    #tempvar bool_sum = b_xmax + b_xmin + b_ymin + b_ymax
+    #let (bool_has_collided_with_boundary) = is_not_zero (bool_sum)
+    let collided_with_boundary = b_xmin + b_xmax*2 + b_ymin*3 + b_ymax*4
     let c_nxt = ObjectState (
         pos = Vec2 (x_nxt, y_nxt),
         vel = Vec2 (vx_nxt, vy_nxt),
         acc = c.acc
     )
 
-    return (c_nxt, bool_has_collided_with_boundary)
+    return (c_nxt, collided_with_boundary)
 end
 
 
@@ -325,39 +326,58 @@ func friction_single_circle {range_check_ptr} (
         end
     else:
         #
-        # Check if object would have stopped along x
+        # If object has stopped - zero out acceleration; otherwise retain value
         #
-        let (ax_dt) = mul_fp (c.acc.x, dt)
-        let (ax_dt_abs) = abs_value(ax_dt)
-        let (vx_abs) = abs_value (c.vel.x)
-        let (bool_x_stopped) = is_le (vx_abs, ax_dt_abs)
-
-        if bool_x_stopped == 1:
+        if c.vel.x == 0:
             assert ax_nxt = 0
-
             tempvar range_check_ptr = range_check_ptr
         else:
             assert ax_nxt = c.acc.x
-
             tempvar range_check_ptr = range_check_ptr
         end
 
-        #
-        # Check if object would have stopped along y
-        #
-        let (ay_dt) = mul_fp (c.acc.y, dt)
-        let (ay_dt_abs) = abs_value (ay_dt)
-        let (vy_abs) = abs_value (c.vel.y)
-        let (bool_y_stopped) = is_le (vy_abs, ay_dt_abs)
-        if bool_y_stopped == 1:
+        if c.vel.y == 0:
             assert ay_nxt = 0
-
             tempvar range_check_ptr = range_check_ptr
         else:
             assert ay_nxt = c.acc.y
-
             tempvar range_check_ptr = range_check_ptr
         end
+
+        # #
+        # # Check if object would have stopped along x
+        # #
+        # let (ax_dt) = mul_fp (c.acc.x, dt)
+        # let (ax_dt_abs) = abs_value(ax_dt)
+        # let (vx_abs) = abs_value (c.vel.x)
+        # let (bool_x_stopped) = is_le (vx_abs, ax_dt_abs)
+
+        # if bool_x_stopped == 1:
+        #     assert ax_nxt = 0
+
+        #     tempvar range_check_ptr = range_check_ptr
+        # else:
+        #     assert ax_nxt = c.acc.x
+
+        #     tempvar range_check_ptr = range_check_ptr
+        # end
+
+        # #
+        # # Check if object would have stopped along y
+        # #
+        # let (ay_dt) = mul_fp (c.acc.y, dt)
+        # let (ay_dt_abs) = abs_value (ay_dt)
+        # let (vy_abs) = abs_value (c.vel.y)
+        # let (bool_y_stopped) = is_le (vy_abs, ay_dt_abs)
+        # if bool_y_stopped == 1:
+        #     assert ay_nxt = 0
+
+        #     tempvar range_check_ptr = range_check_ptr
+        # else:
+        #     assert ay_nxt = c.acc.y
+
+        #     tempvar range_check_ptr = range_check_ptr
+        # end
     end
 
     #

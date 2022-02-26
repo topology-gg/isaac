@@ -3,6 +3,7 @@ import os
 import random
 from starkware.starknet.testing.starknet import Starknet
 from lib import *
+from visualizer import *
 import asyncio
 
 ERR_TOL = 1e-5
@@ -18,19 +19,17 @@ ERR_TOL = 1e-5
 async def test_game_state_forwarder ():
 
     starknet = await Starknet.empty()
-    contract = await starknet.deploy('contracts/scene_forwarder.cairo')
+    contract = await starknet.deploy('contracts/scene_forwarder_array.cairo')
     print()
 
     #
     # Preparing array of objects at start in the scene
     #
     array_states_start = [
-        {'x':300, 'y':250, 'vx':0, 'vy':0, 'ax':0, 'ay':0},
-        {'x':200, 'y':250, 'vx':0, 'vy':0, 'ax':0, 'ay':0},
-        {'x':200, 'y':350, 'vx':0, 'vy':0, 'ax':0, 'ay':0},
-        {'x':50, 'y':40, 'vx':150, 'vy':200, 'ax':0, 'ay':0},
-        {'x':91, 'y':40, 'vx':200, 'vy':150, 'ax':0, 'ay':0},
-        {'x':180, 'y':60, 'vx':200, 'vy':200, 'ax':0, 'ay':0},
+        {'x':75,  'y':180, 'vx':0, 'vy':0, 'ax':0, 'ay':0},
+        {'x':225, 'y':180, 'vx':0, 'vy':0, 'ax':0, 'ay':0},
+        {'x':150, 'y':180, 'vx':0, 'vy':0, 'ax':0, 'ay':0},
+        {'x':50, 'y':50, 'vx':150, 'vy':150, 'ax':0, 'ay':0}
     ]
     arr_obj_start = []
     for state in array_states_start:
@@ -48,10 +47,10 @@ async def test_game_state_forwarder ():
     params_dict = {
         'r' : 20,
         'x_min' : 0,
-        'x_max' : 400,
+        'x_max' : 300,
         'y_min' : 0,
-        'y_max' : 400,
-        'a_friction' : 30
+        'y_max' : 300,
+        'a_friction' : 40
     }
     params = [
         params_dict['r']*FP,
@@ -66,19 +65,23 @@ async def test_game_state_forwarder ():
     #
     # Prepare pairwise labels
     #
-    names = ['s0', 's1', 'fb', 'p1', 'p2', 'p3']
-    pairwise_labels = []
-    pairwise_indices = []
-    for i in range(6):
-        for k in range(i+1,6):
-            pairwise_labels.append(names[i] + '-' + names[k])
-            pairwise_indices.append(f'{i}-{k}')
+    N = 4
+    names = ['s0', 's1', 'fb', 'pl']
+    # pairwise_labels = []
+    # pairwise_indices = []
+    # for i in range(N):
+    #     for k in range(i+1,N):
+    #         pairwise_labels.append(names[i] + '-' + names[k])
+    #         pairwise_indices.append(f'{i}-{k}')
 
     arr_obj = arr_obj_start
     array_states = array_states_start
-    dt = 0.3
+    dt = 0.15
+    arr_obj_s = []
+    collision_records = []
+
     while True:
-        cap = random.randint(1,30)
+        cap = 40
 
         #
         # Call contract function
@@ -90,11 +93,19 @@ async def test_game_state_forwarder ():
             dt = int(dt * FP),
             params = params
         ).call()
+        # print(f'arr_obj_final: {ret.result.arr_obj_final}')
+        print(f'arr_collision_record: {ret.result.arr_collision_record}')
+        collision_records += ret.result.arr_collision_record
+        print(f'n_steps: {ret.call_info.cairo_usage.n_steps}')
 
         events = ret.main_call_events
         if len(events)>0:
             for event in events:
-                print(event)
+
+                for obj in event.arr_obj:
+                    print(f'{obj.vel.x}, {obj.vel.y} / ', end='')
+                print()
+                arr_obj_s.append(event.arr_obj)
 
 
         #
@@ -102,10 +113,10 @@ async def test_game_state_forwarder ():
         #
         all_collision_counts_match = True
         array_states_nxt, dict_collision_pairwise_count_nxt = forward_scene_by_cap_steps (dt, array_states, cap, params_dict)
-        for index, label, count in zip(pairwise_indices, pairwise_labels, ret.result.arr_collision_pairwise_count):
-            sim_count = dict_collision_pairwise_count_nxt[index]
+        #for index, label, count in zip(pairwise_indices, pairwise_labels, ret.result.arr_collision_pairwise_count):
+        #    sim_count = dict_collision_pairwise_count_nxt[index]
             # print(f'  {label} / contract={count} / simulation={sim_count} / matched={sim_count==count}')
-            all_collision_counts_match *= (sim_count==count)
+            #all_collision_counts_match *= (sim_count==count)
         # print()
 
 
@@ -128,8 +139,8 @@ async def test_game_state_forwarder ():
         # Terminate if all objects have come to rest
         #
         rest = True
-        for state in array_states_nxt:
-            rest *= (state['vx']==0) * (state['vy']==0)
+        for obj in ret.result.arr_obj_final:
+            rest *= (obj.vel.x==0) * (obj.vel.y==0)
 
         if rest:
             print('> All objects have come to rest')
@@ -140,6 +151,9 @@ async def test_game_state_forwarder ():
         #
         arr_obj = ret.result.arr_obj_final
         array_states = array_states_nxt
+
+    collision_records = '-'.join( [str(e) for e in collision_records] )
+    visualize_game (arr_obj_s, collision_records)
 
 
 def print_scene (scene_array, names):

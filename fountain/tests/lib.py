@@ -134,23 +134,33 @@ def collision_pair_circles (state1, state2, state1_cand, state2_cand, r1, r2):
 def friction_single_circle (dt, state, should_recalc, a_friction):
 
     if not should_recalc:
-        ax_dt = state['ax']*dt
-        ax_dt_abs = abs(ax_dt)
-        vx_abs = abs(state['vx'])
-        bool_x_stopped = vx_abs < ax_dt_abs
-        if bool_x_stopped:
+        if state['vx'] == 0:
             ax_nxt = 0
         else:
             ax_nxt = state['ax']
 
-        ay_dt = state['ay']*dt
-        ay_dt_abs = abs(ay_dt)
-        vy_abs = abs(state['vy'])
-        bool_y_stopped = vy_abs < ay_dt_abs
-        if bool_y_stopped:
+        if state['vy'] == 0:
             ay_nxt = 0
         else:
             ay_nxt = state['ay']
+
+        # ax_dt = state['ax']*dt
+        # ax_dt_abs = abs(ax_dt)
+        # vx_abs = abs(state['vx'])
+        # bool_x_stopped = vx_abs < ax_dt_abs
+        # if bool_x_stopped:
+        #     ax_nxt = 0
+        # else:
+        #     ax_nxt = state['ax']
+
+        # ay_dt = state['ay']*dt
+        # ay_dt_abs = abs(ay_dt)
+        # vy_abs = abs(state['vy'])
+        # bool_y_stopped = vy_abs < ay_dt_abs
+        # if bool_y_stopped:
+        #     ay_nxt = 0
+        # else:
+        #     ay_nxt = state['ay']
 
     else: # recalc
         v = math.sqrt( state['vx']**2 + state['vy']**2 )
