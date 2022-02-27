@@ -31,6 +31,25 @@ func solution_record_by_id (id : felt) -> (solution_record : SolutionRecord):
 end
 
 
+@view
+func view_solution_found_count {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (count : felt):
+    let (count) = solution_found_count.read ()
+    return (count)
+end
+
+
+@view
+func view_solution_record_by_id {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    id : felt) -> (solution_record : SolutionRecord):
+    let (solution_record : SolutionRecord) = solution_record_by_id.read (id)
+    return (solution_record)
+end
+
+
+#
+# Player submits move for specified level to be simulated by the Fountain engine
+#
 @external
 func submit_move_for_level {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         level : felt,

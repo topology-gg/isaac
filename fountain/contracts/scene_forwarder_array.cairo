@@ -43,7 +43,6 @@ from contracts.constants import (FP, RANGE_CHECK_BOUND)
 #          record = object index * 4 + wall index; wall index = {xmin:0, xmax:1, ymin:0, ymax:1};
 #        else => an collision occurred between two objects, where
 #          record = smaller object index * total object count + larger object index
-@view
 func forward_scene_capped_counting_collision {
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
     } (

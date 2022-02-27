@@ -25,7 +25,6 @@ from contracts.constants import (FP, RANGE_CHECK_BOUND)
 #         an ObjectState struct instance
 # @return bool_has_collided_with_boundary 1/2/3/4 if the circle object has collided with xmin/xmax/ymin/ymax boundary;
 #         0 otherwise
-@view
 func euler_step_single_circle_aabb_boundary {range_check_ptr} (
         dt : felt,
         c : ObjectState,
@@ -142,7 +141,6 @@ end
 # @param c2_nxt State of the second circle object after collision is handled;
 #        an instance of ObjectState struct
 # @param has_collided 1 if two circle objects collided; 0 otherwise
-@view
 func collision_pair_circles {range_check_ptr} (
         c1 : ObjectState,
         c2 : ObjectState,
@@ -281,7 +279,6 @@ end
 # @param a_friction Absolute magnitude of friction-based acceleration
 # @return c_nxt State of the circle object after acceleration recalculation;
 #         an instance of ObjectState struct
-@view
 func friction_single_circle {range_check_ptr} (
         dt : felt,
         c : ObjectState,
@@ -399,7 +396,6 @@ end
 # @param c2 Center of the second circle object; an instance of Vec2 struct
 # @param r2 Radius of the second circle object
 # @return bool_intersect 1 if two circles are intersecting; 0 otherwise
-@view
 func test_circle_intersect {range_check_ptr} (
         c1 : Vec2,
         r1 : felt,
@@ -429,6 +425,7 @@ func mul_fp {range_check_ptr} (
     let (c, _) = signed_div_rem(a * b, FP, RANGE_CHECK_BOUND)
     return (c)
 end
+
 
 func div_fp {range_check_ptr} (
         a : felt,

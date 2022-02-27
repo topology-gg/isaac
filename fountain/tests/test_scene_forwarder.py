@@ -18,7 +18,7 @@ ERR_TOL = 1e-5
 async def test_game_state_forwarder ():
 
     starknet = await Starknet.empty()
-    contract = await starknet.deploy('contracts/scene_forwarder.cairo')
+    contract = await starknet.deploy('contracts/mocks/mock_scene_forwarder.cairo')
     print()
 
     #
@@ -84,7 +84,7 @@ async def test_game_state_forwarder ():
         # Call contract function
         #
         print(f'> Calling forward_scene_capped_counting_collision() with cap={cap} ...')
-        ret = await contract.forward_scene_capped_counting_collision(
+        ret = await contract.mock_forward_scene_capped_counting_collision(
             arr_obj = arr_obj,
             cap = cap,
             dt = int(dt * FP),

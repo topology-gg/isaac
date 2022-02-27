@@ -60,11 +60,17 @@ async def test_game ():
         print(f'collision occurrences: {occurrences}')
         break
 
-    msg = ''
     if ret.result.is_solution and ret.result.is_solution_family_new:
-        msg = f'found_solution; id={ret.result.solution_id}, family={ret.result.solution_family}, score={ret.result.score}'
+        msg1 = f'found a *new* solution; id={ret.result.solution_id}'
+        msg2 = f'family={ret.result.solution_family}, score={ret.result.score}'
+    elif ret.result.is_solution:
+        msg1 = f'found an old solution.'
+        msg2 = ''
+    else:
+        msg1 = f'scored {ret.result.score} - not a solution.'
+        msg2 = ''
 
-    visualize_game (arr_obj_s, msg, loop=True)
+    visualize_game (arr_obj_s, msg1, msg2, loop=True)
 
 def unpack_family_to_occurrences (family):
     # unpacking means deserialization, where serialization is add & shift by 28
@@ -75,6 +81,8 @@ def unpack_family_to_occurrences (family):
         rest = rest // 28
 
     occurrences = [unpack_record_to_occurrence(record) for record in records]
+    occurrences.reverse()
+
     return occurrences
 
 def unpack_record_to_occurrence (record):

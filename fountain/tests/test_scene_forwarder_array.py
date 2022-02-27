@@ -19,7 +19,7 @@ ERR_TOL = 1e-5
 async def test_game_state_forwarder ():
 
     starknet = await Starknet.empty()
-    contract = await starknet.deploy('contracts/scene_forwarder_array.cairo')
+    contract = await starknet.deploy('contracts/mocks/mock_scene_forwarder_array.cairo')
     print()
 
     #
@@ -47,9 +47,9 @@ async def test_game_state_forwarder ():
     params_dict = {
         'r' : 20,
         'x_min' : 0,
-        'x_max' : 300,
+        'x_max' : 250,
         'y_min' : 0,
-        'y_max' : 300,
+        'y_max' : 250,
         'a_friction' : 40
     }
     params = [
@@ -87,7 +87,7 @@ async def test_game_state_forwarder ():
         # Call contract function
         #
         print(f'> Calling forward_scene_capped_counting_collision() with cap={cap} ...')
-        ret = await contract.forward_scene_capped_counting_collision(
+        ret = await contract.mock_forward_scene_capped_counting_collision(
             arr_obj = arr_obj,
             cap = cap,
             dt = int(dt * FP),
@@ -153,7 +153,7 @@ async def test_game_state_forwarder ():
         array_states = array_states_nxt
 
     collision_records = '-'.join( [str(e) for e in collision_records] )
-    visualize_game (arr_obj_s, collision_records)
+    visualize_game (arr_obj_s, collision_records, '')
 
 
 def print_scene (scene_array, names):

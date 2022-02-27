@@ -41,7 +41,6 @@ from contracts.constants import (FP, RANGE_CHECK_BOUND)
 #        collision occurrences between each pair of objects, where index is flattened
 #        and contiguous e.g. for a scene of 6 objects, [0] is the count associated with
 #        object #0 and #1, and [5] with object #1 and #2
-@view
 func forward_scene_capped_counting_collision {
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
     } (

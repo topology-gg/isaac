@@ -38,12 +38,19 @@ def gradientBG(screen):
 	screen.blit( color_rect, target_rect ) # paint
 
 # text box initialization
-def update_game_message (message, screen):
+def update_game_message (message_line1, message_line2, screen):
+
 	font = pygame.font.Font(None, 16)
-	text = font.render(message, 1, (255, 255, 255))
-	text_rect = text.get_rect(center =(SCREEN_WIDTH / 2, SCREEN_HEIGHT + GAME_TEXT_HEIGHT/2))
+
+	text1 = font.render(message_line1, 1, (255, 255, 255))
+	text1_rect = text1.get_rect(center =(SCREEN_WIDTH / 2, SCREEN_HEIGHT + GAME_TEXT_HEIGHT/4))
+
+	text2 = font.render(message_line2, 1, (255, 255, 255))
+	text2_rect = text2.get_rect(center =(SCREEN_WIDTH / 2, SCREEN_HEIGHT + GAME_TEXT_HEIGHT*3/4))
+
 	screen.fill ((30, 30, 30), (0, SCREEN_HEIGHT, SCREEN_WIDTH, GAME_TEXT_HEIGHT))
-	screen.blit(text, text_rect)
+	screen.blit(text1, text1_rect)
+	screen.blit(text2, text2_rect)
 	pygame.display.update()
 
 def update_stat_message (message, screen):
@@ -136,12 +143,12 @@ FP = 10 ** 12
 def adjust_fp (x):
 	return x/FP
 
-def visualize_game (arr_obj_s, msg, loop=False):
+def visualize_game (arr_obj_s, msg1, msg2, loop=False):
 
 	pygame.init()
 	screen = pygame.display.set_mode( (SCREEN_WIDTH, SCREEN_HEIGHT_TOTAL) )
 	gradientBG(screen)
-	update_game_message(msg, screen)
+	update_game_message(msg1, msg2, screen)
 	pygame.display.set_caption('visualization')
 
 	clock = pygame.time.Clock()
