@@ -1,7 +1,7 @@
 ## 0xstrat v1
 
 ### Contract address on alpha-goerli
-https://goerli.voyager.online/contract/0x075a448d315d7883b64becdad582d8ddd56f184a8f9634ad40cf74dc38a01c5c#writeContract
+https://goerli.voyager.online/contract/0x03e2ddca4132eb84479d4974bf0d68c22ce6a6800f9a7908151098b7fe437589#writeContract
 
 ### What is this?
 0xstrat v1 is the version 1 proof of concept for a **solve2mint** system based on the Fountain physics engine.
