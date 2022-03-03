@@ -22,14 +22,17 @@ const SNS_ADDRESS = 0x02ef8e28b8d7fc96349c76a0607def71c678975dbd60508b9c343458c4
 
 @contract_interface
 namespace IContractSNS:
-    func sns_lookup (adr : felt) -> (exist : felt, name : felt):
+    func sns_lookup_adr_to_name (adr : felt) -> (exist : felt, name : felt):
     end
 end
 
 #########################
 
+const TABLE_COL = 5
+
 struct SolutionRecord:
     member discovered_by : felt
+    member level : felt
     member solution_family : felt
     member score : felt
 end
@@ -82,10 +85,12 @@ func view_solution_records_as_html {syscall_ptr : felt*, pedersen_ptr : HashBuil
     assert arr_str[0] = str
     let (str : Str) = str_from_literal ('discovered by')
     assert arr_str[1] = str
-    let (str : Str) = str_from_literal ('solution family')
+    let (str : Str) = str_from_literal ('level')
     assert arr_str[2] = str
-    let (str : Str) = str_from_literal ('score')
+    let (str : Str) = str_from_literal ('solution family')
     assert arr_str[3] = str
+    let (str : Str) = str_from_literal ('score')
+    assert arr_str[4] = str
 
     # 2. read all solution records into a Str array
     _recurse_read_solution_records_into_str_array (
@@ -97,8 +102,8 @@ func view_solution_records_as_html {syscall_ptr : felt*, pedersen_ptr : HashBuil
     # 3. convert Str array into html string
     let (arr_len, arr) = convert_str_table_to_html_string (
         row_cnt = sol_count+1,
-        col_cnt = 4,
-        arr_str_len = 4*(sol_count+1),
+        col_cnt = TABLE_COL,
+        arr_str_len = TABLE_COL*(sol_count+1),
         arr_str = arr_str
     )
 
@@ -119,27 +124,37 @@ func _recurse_read_solution_records_into_str_array {syscall_ptr : felt*, pederse
 
     # read solution record at idx
     let (solution_record : SolutionRecord) = solution_record_by_id.read (idx)
-    # turn solution record into three Str elements; store to array; index starts at 4 because the first row is taken
+
+    # turn solution record into three Str elements; store to array; index starts at 5 because the first row is taken
+    # solution id
     let (literal) = literal_from_number(idx)
     let (str : Str) = str_from_literal(literal)
-    assert arr_str [4 + idx*4] = str
+    assert arr_str [TABLE_COL + idx*TABLE_COL] = str
 
-    let (exist, name) = IContractSNS.sns_lookup(SNS_ADDRESS, solution_record.discovered_by)
+    # discovered by
+    let (exist, name) = IContractSNS.sns_lookup_adr_to_name (SNS_ADDRESS, solution_record.discovered_by)
     if exist==1:
         let (str : Str) = str_from_literal (name)
-        assert arr_str [4 + idx*4 + 1] = str
+        assert arr_str [TABLE_COL + idx*TABLE_COL + 1] = str
     else:
         let (str : Str) = str_from_literal('<adr not registered with SNS>')
-        assert arr_str [4 + idx*4 + 1] = str
+        assert arr_str [TABLE_COL + idx*TABLE_COL + 1] = str
     end
 
+    # level
+    let (literal) = literal_from_number(solution_record.level)
+    let (str : Str) = str_from_literal(literal)
+    assert arr_str [TABLE_COL + idx*TABLE_COL + 2] = str
+
+    # solution family
     let (literal) = literal_from_number(solution_record.solution_family)
     let (str : Str) = str_from_literal(literal)
-    assert arr_str [4 + idx*4 + 2] = str
+    assert arr_str [TABLE_COL + idx*TABLE_COL + 3] = str
 
+    # score
     let (literal) = literal_from_number(solution_record.score)
     let (str : Str) = str_from_literal(literal)
-    assert arr_str [4 + idx*4 + 3] = str
+    assert arr_str [TABLE_COL + idx*TABLE_COL + 4] = str
 
     _recurse_read_solution_records_into_str_array (len, idx+1, arr_str)
     return ()
@@ -151,7 +166,8 @@ end
 @external
 func submit_move_for_level {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         level : felt,
-        move : Vec2
+        move_x : felt,
+        move_y : felt
     ) -> (
         is_solution : felt,
         is_solution_family_new : felt,
@@ -160,6 +176,8 @@ func submit_move_for_level {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
         score : felt
     ):
     alloc_locals
+
+    let move = Vec2(move_x, move_y)
 
     #
     # Check if the move is legal (within velocity constraints)
@@ -264,6 +282,7 @@ func submit_move_for_level {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
 
     let (count) = solution_found_count.read ()
     let (is_solution_family_new) = _recurse_check_for_family_collision (
+        level = level,
         target = this_family,
         len = count,
         idx = 0
@@ -279,6 +298,7 @@ func submit_move_for_level {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
             count,
             SolutionRecord(
                 discovered_by = caller_address,
+                level = level,
                 solution_family = this_family,
                 score = score
             )
@@ -304,6 +324,7 @@ end
 
 
 func _recurse_check_for_family_collision {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        level : felt,
         target : felt,
         len : felt,
         idx : felt
@@ -314,14 +335,26 @@ func _recurse_check_for_family_collision {syscall_ptr : felt*, pedersen_ptr : Ha
     end
 
     #
-    # check for family collision and return if collided
+    # check for level-family collision and return if collided
     #
     let (solution_record : SolutionRecord) = solution_record_by_id.read (idx)
-    if solution_record.solution_family == target:
-        return (0)
+
+    if solution_record.level == level:
+        if solution_record.solution_family == target:
+            return (0)
+        end
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
     end
 
+
     let (discovered) = _recurse_check_for_family_collision (
+        level,
         target,
         len,
         idx + 1

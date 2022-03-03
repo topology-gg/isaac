@@ -54,21 +54,23 @@ async def test_game_html (account_factory):
     #     move = contract.Vec2 ( int(59.186681154728 *FP), int(-196.33373824661 *FP) )
     # ).invoke()
 
+    # move_x = 59186681154728
+    # move_y = 3618502788666131213697322783095070105623107215331596699973091859802133773871
     calldata = [0, int(59.186681154728 *FP), PRIME+int(-196.33373824661 *FP)]
     user = users[0]
     print(f'calldata: {calldata}')
-    await user['signer'].send_transaction(
-        account=user['account'],
-        to=contract.contract_address,
-        selector_name='submit_move_for_level',
-        calldata=calldata
-    )
+    # await user['signer'].send_transaction(
+    #     account=user['account'],
+    #     to=contract.contract_address,
+    #     selector_name='submit_move_for_level',
+    #     calldata=calldata
+    # )
 
-    ret = await contract.view_solution_records_as_html().call()
-    felt_array = ret.result.arr
-    print(felt_array)
-    recovered_html = felt_array_to_ascii(felt_array)
-    print(recovered_html)
+    # ret = await contract.view_solution_records_as_html().call()
+    # felt_array = ret.result.arr
+    # print(felt_array)
+    # recovered_html = felt_array_to_ascii(felt_array)
+    # print(recovered_html)
 
 
 

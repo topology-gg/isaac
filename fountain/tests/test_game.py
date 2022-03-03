@@ -30,13 +30,14 @@ async def test_game ():
 
         velocity_magnitude = sqrt(2*145**2)
         theta = random.uniform(0, 1) * math.pi * 2
-        move_vx = velocity_magnitude * math.cos(theta)
-        move_vy = velocity_magnitude * math.sin(theta)
-        move = contract.Vec2 ( int(move_vx *FP), int(move_vy *FP) )
+        move_x = int(velocity_magnitude * math.cos(theta) *FP)
+        move_y = int(velocity_magnitude * math.sin(theta) *FP)
+        move = contract.Vec2 (move_x, move_y)
 
         ret = await contract.submit_move_for_level (
             level = level,
-            move = move
+            move_x = move_x,
+            move_y = move_y
         ).invoke()
 
         print(f'selected level: {level}')
