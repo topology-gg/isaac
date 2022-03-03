@@ -1,16 +1,30 @@
 %lang starknet
 
-from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import (unsigned_div_rem, assert_le, abs_value)
-from starkware.cairo.common.bitwise import (bitwise_or, bitwise_and, bitwise_xor)
+from starkware.cairo.common.math import (unsigned_div_rem, assert_le, abs_value, split_felt)
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import get_caller_address
 
 from contracts.constants import (FP)
 from contracts.structs import (Vec2, ObjectState, LevelState)
-from examples.zeroxstrat_v1.levels import (pull_level, assert_legal_velocity)
 from contracts.scene_forwarder_array import (forward_scene_capped_counting_collision)
+from examples.zeroxstrat_v1.levels import (pull_level, assert_legal_velocity)
+from examples.libs.Str import (Str, str_from_literal, literal_from_number, str_concat)
+from examples.libs.html_paragraph import (convert_str_array_to_html_string)
+from examples.libs.html_table import (convert_str_table_to_html_string)
+
+#########################
+
+#
+# SNS deployed on Starknet testnet
+#
+const SNS_ADDRESS = 0x02ef8e28b8d7fc96349c76a0607def71c678975dbd60508b9c343458c4758fac
+
+@contract_interface
+namespace IContractSNS:
+    func sns_lookup (adr : felt) -> (exist : felt, name : felt):
+    end
+end
 
 #########################
 
@@ -46,6 +60,90 @@ func view_solution_record_by_id {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
     return (solution_record)
 end
 
+
+@view
+func view_solution_records_as_html {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (arr_len : felt, arr : felt*):
+    alloc_locals
+
+    let (arr_str : Str*) = alloc()
+
+    # 0. deal with edge case first
+    let (sol_count) = solution_found_count.read ()
+    if sol_count == 0:
+        let (str : Str) = str_from_literal ('no solutions in record yet.')
+        assert arr_str[0] = str
+        let (arr_len, arr) = convert_str_array_to_html_string (1, arr_str)
+        return (arr_len, arr)
+    end
+
+    # 1. prepare table header
+    let (str : Str) = str_from_literal ('solution id')
+    assert arr_str[0] = str
+    let (str : Str) = str_from_literal ('discovered by')
+    assert arr_str[1] = str
+    let (str : Str) = str_from_literal ('solution family')
+    assert arr_str[2] = str
+    let (str : Str) = str_from_literal ('score')
+    assert arr_str[3] = str
+
+    # 2. read all solution records into a Str array
+    _recurse_read_solution_records_into_str_array (
+        len = sol_count,
+        idx = 0,
+        arr_str = arr_str
+    )
+
+    # 3. convert Str array into html string
+    let (arr_len, arr) = convert_str_table_to_html_string (
+        row_cnt = sol_count+1,
+        col_cnt = 4,
+        arr_str_len = 4*(sol_count+1),
+        arr_str = arr_str
+    )
+
+    return (arr_len, arr)
+end
+
+
+func _recurse_read_solution_records_into_str_array {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        len : felt,
+        idx : felt,
+        arr_str : Str*
+    ) -> ():
+    alloc_locals
+
+    if idx == len:
+        return ()
+    end
+
+    # read solution record at idx
+    let (solution_record : SolutionRecord) = solution_record_by_id.read (idx)
+    # turn solution record into three Str elements; store to array; index starts at 4 because the first row is taken
+    let (literal) = literal_from_number(idx)
+    let (str : Str) = str_from_literal(literal)
+    assert arr_str [4 + idx*4] = str
+
+    let (exist, name) = IContractSNS.sns_lookup(SNS_ADDRESS, solution_record.discovered_by)
+    if exist==1:
+        let (str : Str) = str_from_literal (name)
+        assert arr_str [4 + idx*4 + 1] = str
+    else:
+        let (str : Str) = str_from_literal('<adr not registered with SNS>')
+        assert arr_str [4 + idx*4 + 1] = str
+    end
+
+    let (literal) = literal_from_number(solution_record.solution_family)
+    let (str : Str) = str_from_literal(literal)
+    assert arr_str [4 + idx*4 + 2] = str
+
+    let (literal) = literal_from_number(solution_record.score)
+    let (str : Str) = str_from_literal(literal)
+    assert arr_str [4 + idx*4 + 3] = str
+
+    _recurse_read_solution_records_into_str_array (len, idx+1, arr_str)
+    return ()
+end
 
 #
 # Player submits move for specified level to be simulated by the Fountain engine
