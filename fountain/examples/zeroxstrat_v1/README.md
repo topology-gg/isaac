@@ -1,12 +1,12 @@
 ## 0xstrat v1
 
 ### Contract addresses on alpha-goerli
-- game: 0x0084c3b988a53d659ce824540c718f3dbdc195f87862bb169f53db47e254940e
+- game: 0x070d16b9cd7385155cd521f9f6b5c9056d366237012a224effbd6b2b409a5615
 - SNS: 0x02ef8e28b8d7fc96349c76a0607def71c678975dbd60508b9c343458c4758fac
 
 ### Frontend urls
-- game: https://determined-lewin-dfb66b.netlify.app/
-- SNS: https://sharp-babbage-4f6e05.netlify.app/
+- game: https://solve2mint-0xstrat-v1.netlify.app/
+- SNS: https://starknet-name-service.netlify.app/
 
 ### What is this?
 0xstrat v1 is the version 1 proof of concept for a **solve2mint** system based on the Fountain physics engine.
