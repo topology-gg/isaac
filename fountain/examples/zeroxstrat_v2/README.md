@@ -4,7 +4,7 @@
 0xstrat v2 is a proof of concept **Class A solve2mint** system based on the Fountain physics engine.
 
 ### What is solve2mint and its classification?
-See README of 0xstrat_v1.
+See [README](https://github.com/topology-gg/fountain/blob/v0.1/examples/zeroxstrat_v1/README.md#what-is-solve2mint) of 0xstrat_v1.
 
 ### What is 0xstrat v2 precisely
 - 0xstrat v2 is a Class A solve2mint system that presents random physics puzzles to puzzle-solving Cairo contracts submitted by NFT minters.
