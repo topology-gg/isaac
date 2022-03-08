@@ -20,4 +20,4 @@ See README of 0xstrat_v1.
 
 ### Issues
 1. Without a step meter, **game** can not measure the resource usage of **solver**, which is considered an important metric for evaluating **solver**'s efficiency for ranking purposes.
-2. Without access the **solver**'s contract content, **game** can not prevent "reentrancy attack" - the same **solver** contract can be resubmitted for scoring. This may be a hard problem, because merely having a hash value to **solver**'s compiled contract is not enough - malicious actor can mutate the contract trivially and qualify for an unique submission with essentially the exact same solver.
+2. Without accessing the **solver**'s contract content, **game** cannot prevent "reentrancy attack" - the same **solver** contract can be resubmitted for scoring. This may be a hard problem, because merely having a hash value to **solver**'s compiled contract is not enough - malicious actor can mutate the contract trivially and qualify for an unique submission with essentially the exact same solver.
