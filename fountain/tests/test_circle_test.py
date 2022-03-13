@@ -9,7 +9,7 @@ from lib import *
 async def test_circle_test ():
 
     starknet = await Starknet.empty()
-    contract = await starknet.deploy('contracts/physics_engine.cairo')
+    contract = await starknet.deploy('contracts/mocks/mock_physics_engine.cairo')
     print()
 
     TEST_COUNT = 500
@@ -24,7 +24,7 @@ async def test_circle_test ():
         C1 = contract.Vec2 (x1*FP, y1*FP)
         C2 = contract.Vec2 (x2*FP, y2*FP)
         R = r*FP
-        ret = await contract.test_circle_intersect(C1, R, C2, R).call()
+        ret = await contract.mock_test_circle_intersect(C1, R, C2, R).call()
         assert ret.result.bool_intersect == bool_intersect, f'Error occurred with {C1},{C2},{R}.'
         if (i+1)%50 == 0:
             print(f'  completed {i+1}/{TEST_COUNT} ...')
