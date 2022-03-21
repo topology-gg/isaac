@@ -1,5 +1,4 @@
-### Name of the game
-*Escape from Centauri*
+## Escape from Centauri
 
 ### Narrative
 A hypothetical planet called *Mercury* is trapped in a trisolar system called *Centauri* where the three suns of identical mass follow a fixed figure-8 trajectory. Every time the planet is crashed into a sun, the civilization is destroyed and reborn, and the planet is reset to full-resource initial state and randomly placed in the trisolar system for the next civilization run. The objective of the game is for players to collectively build sufficient "Nuclear Driller & Propulsion Engines", place and time their launch strategically to either change Mercury's orbit to evade a deadly crash into a sun or produce enough thrust for Mercury to escape Centauri for good.
