@@ -6,6 +6,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
 from contracts.macro import (forward_world_macro)
+from contracts.micro import (utb_deploy, view_utb_ledger)
 # from contracts.design.constants import ()
 from contracts.util.structs import (
     MacroEvent, MicroEvent,
@@ -18,14 +19,21 @@ from contracts.util.structs import (
 func last_l2_block () -> (block_num : felt):
 end
 
+@storage_var
+func micro_contract_address () -> (addr : felt):
+end
+
 @constructor
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
+func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        # micro_contract_addr : felt
+    ):
 
     # TODO: initialize macro world - trisolar system placement
     # TODO: initialize mini world - resource distribution placement
 
     let (block) = get_block_number ()
     last_l2_block.write (block)
+    # micro_contract_address.write (micro_contract_addr)
 
     return()
 end
@@ -45,7 +53,7 @@ func macro_state_curr () -> (macro_state : Dynamics):
 end
 
 @external
-func forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
 
     #
@@ -75,7 +83,7 @@ func forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     #
     # Forward micro world - all activities on the surface of the planet
     #
-    forward_world_micro ()
+    # forward_world_micro ()
 
     return ()
 end
@@ -234,13 +242,6 @@ end
 
 ##############################
 
-func forward_world_micro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    ) -> ():
-
-    #
-    return ()
-end
-
 ##############################
 
 #
@@ -279,7 +280,7 @@ end
 # Peer to peer transfer of devices for strategic purposes
 #
 @external
-func device_transfer {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func client_device_transfer {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         kind : felt,
         amount : felt,
         to : felt
@@ -334,3 +335,18 @@ end
 
 # end
 
+# @external
+# func client_device_deploy_utb {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+#     ) -> ():
+#     utb_deploy ()
+#     return ()
+# end
+
+@view
+func client_view_utb_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        index : felt) -> (grid : Vec2):
+
+    let (grid) = view_utb_ledger (index)
+
+    return (grid)
+end

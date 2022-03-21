@@ -20,8 +20,27 @@ const MASS_SUN2 = 4 * SCALE_FP
 #
 # Constants for planet configuration
 #
-const PLANET_DIMENSION = 100
+const PLANET_DIM = 100
 # TODO: params to control resource distribution via e.g. perlin noise
+
+#
+# Constants for cube coordinate system
+# note: I hope we have enums in Cairo ..
+#
+const FACE_0 = 0
+const FACE_1 = 1
+const FACE_2 = 2
+const FACE_3 = 3
+const FACE_4 = 4
+const FACE_5 = 5
+const EDGE_A = 0
+const EDGE_B = 1
+const EDGE_C = 2
+const EDGE_D = 3
+const EDGE_E = 4
+const EDGE_F = 5
+const EDGE_G = 6
+
 
 #
 # Constants for the crafting system
