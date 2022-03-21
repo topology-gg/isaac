@@ -41,6 +41,7 @@ A hypothetical planet called *Mercury* is trapped in a trisolar system called *C
 
 ### Foreseeable technical challenges / todos
 - make the integrator symplectic to avoid energy drift - crucial for immutable, unstoppable game 
+- need to implement collision test between sun-Mercury, which means game over
 - testability of the game contracts
 - the state forwarding per L2 block / evaluate the feasibility of lazy evaluation (may need to cache state to circumvent per-tx maximum step of 250k on starknet testnet); if asking the "unfortunate user" at the beginning of each block to forward both macro and micro world state (which won't make sense when fee kicks in), would tx step resource depletes? what are the alternatives: yagi; our own node calling it? not to mention if fee kicks in.
 - (when moving to starknet mainnet) fee considerations; if desirable we can ask Starkware to spin up & run a dedicated (centralized) starknet instance for this game with guaranteed proving time, API gateway uptime etc, and Topology pays for associated cost
