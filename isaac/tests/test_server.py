@@ -25,7 +25,7 @@ async def account_factory():
     for i in range(NUM_SIGNING_ACCOUNTS):
         signer = Signer(DUMMY_PRIVATE + i)
         account = await starknet.deploy(
-            "contracts/lib/Account.cairo",
+            "contracts/libs/Account.cairo",
             constructor_calldata=[signer.public_key]
         )
         await account.initialize(account.contract_address).invoke()
