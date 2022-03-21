@@ -55,7 +55,7 @@ A hypothetical planet called *Mercury* is trapped in a trisolar system called *C
 - reducing planet mass at the same time, thus changing orbital dynamics of Mercury
 - TODO: think penalty if going below minimum safe planet mass -- reduce cube dimension? end the game immediately?
 
-### Omnipotent Production and Storage Facility and Storage (OPSF)
+### Omnipotent Production and Storage Facility (OPSF)
 - can store unlimited amount of resources (coming from harvester directly / from transport belt) as well as completed devices
 - note: player (invisible on the map) can also carry arbitrary amount of devices without cost; this removes the need to design logistics for device transportation or storage, which may be desirable for added complexity and mechanics in later iterations of this game
 - may have slight variability over production rates for various devices
