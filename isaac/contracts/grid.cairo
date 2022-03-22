@@ -158,12 +158,6 @@ func locate_face_and_edge_given_valid_grid {range_check_ptr} (
     local edge
     local idx_on_edge
 
-    # Note: side ranges are directed i.e. order matters
-    # side B:  and
-
-
-
-
     if flag4*flag8 == 1:
         ## (D, 0 -> D-1)
         assert is_on_edge = 1
