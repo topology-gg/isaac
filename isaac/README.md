@@ -1,7 +1,7 @@
 ## Escape from Centauri
 
 ### Narrative
-A hypothetical planet called *Mercury* is trapped in a trisolar system called *Centauri* where the three suns of identical mass follow a fixed figure-8 trajectory (https://arxiv.org/pdf/math/0011268.pdf). Every time the planet is crashed into a sun, the civilization is destroyed and reborn, and the planet is reset to full-resource initial state and randomly placed in the trisolar system for the next civilization run. The objective of the game is for players to collectively build sufficient "Nuclear Driller & Propulsion Engines", place and time their launch strategically to either change Mercury's orbit to evade a deadly crash into a sun or produce enough thrust for Mercury to escape Centauri for good.
+A hypothetical planet called *Mercury* is trapped in a trisolar system called *Centauri* where the three suns of identical mass follow roughly a figure-8 trajectory (https://arxiv.org/pdf/math/0011268.pdf) with perturbation and drifts, making the system chaotic. Every time the planet is crashed into a sun, the civilization is destroyed and reborn, and the planet is reset to full-resource initial state and randomly placed in the trisolar system for the next civilization run. The objective of the game is for players to collectively build sufficient "Nuclear Driller & Propulsion Engines", place and time their launch strategically to either change Mercury's orbit to evade a deadly crash into a sun or produce enough thrust for Mercury to escape Centauri for good.
 
 ### Principle
 - no upgradeability - all children contract addresses are hardcoded in public server contract; to upgrade is to redploy the entire contract set at different addresses such that deployed worlds are guaranteed immutable from everyone
