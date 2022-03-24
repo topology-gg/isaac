@@ -43,8 +43,7 @@ const EDGE_G = 6
 
 
 #
-# Constants for the crafting system
-# note: I hope we have enums in Cairo ..
+# Constants for element type
 #
 const ELEMENT_FE = 0 # iron
 const ELEMENT_AL = 1 # aluminum
@@ -52,18 +51,23 @@ const ELEMENT_CU = 2 # copper
 const ELEMENT_SI = 3 # silicon
 const ELEMENT_PU = 4 # plutonium-241
 
-const DEVICE_SPG = 0 # solar power generator
-const DEVICE_NPG = 1 # nuclear power generator
-const DEVICE_FE_HARV = 2 # iron harvester
-const DEVICE_AL_HARV = 3 # aluminum harvester
-const DEVICE_CU_HARV = 4 # copper harvester
-const DEVICE_SI_HARV = 5 # silicon harvester
-const DEVICE_PU_HARV = 6 # plutoniium harvester
-const DEVICE_FE_REFN = 7 # iron refinery
-const DEVICE_AL_REFN = 8 # aluminum refinery
-const DEVICE_CU_REFN = 9 # copper refinery
-const DEVICE_SI_REFN = 10 # silicon refinery
-const DEVICE_PEF = 11 # plutoniium enrichment facility
-const DEVICE_UTB = 12 # universal transportation belt
-const DEVICE_UTL = 13 # universal transmission line
-const DEVICE_OPSF = 14 # omnipotent production and storage facility
+#
+# Constants for device type
+#
+namespace ns_device_types:
+    const DEVICE_SPG = 0 # solar power generator
+    const DEVICE_NPG = 1 # nuclear power generator
+    const DEVICE_FE_HARV = 2 # iron harvester
+    const DEVICE_AL_HARV = 3 # aluminum harvester
+    const DEVICE_CU_HARV = 4 # copper harvester
+    const DEVICE_SI_HARV = 5 # silicon harvester
+    const DEVICE_PU_HARV = 6 # plutoniium harvester
+    const DEVICE_FE_REFN = 7 # iron refinery
+    const DEVICE_AL_REFN = 8 # aluminum refinery
+    const DEVICE_CU_REFN = 9 # copper refinery
+    const DEVICE_SI_REFN = 10 # silicon refinery
+    const DEVICE_PEF = 11 # plutonium enrichment facility
+    const DEVICE_UTB = 12 # universal transportation belt
+    const DEVICE_UTL = 13 # universal transmission line
+    const DEVICE_OPSF = 14 # omnipotent production and storage facility
+end

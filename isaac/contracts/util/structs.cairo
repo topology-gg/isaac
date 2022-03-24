@@ -28,3 +28,9 @@ struct MicroEvent:
     member x : felt
     member y : felt
 end
+
+struct UtbSetInfo:
+    member owner : felt
+    member start_index : felt
+    member end_index : felt
+end

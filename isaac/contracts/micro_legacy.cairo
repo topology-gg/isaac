@@ -34,7 +34,6 @@ from contracts.grid import (
 
 ##############################
 
-## Note: for utb-set or utl-set, GridStat.deployed_device_index is the set label
 struct GridStat:
     member populated : felt
     member deployed_device_type : felt
@@ -56,36 +55,37 @@ end
 ## Devices (including opsf)
 ##############################
 
-# @storage_var
-# func device_undeployed_ledger (owner : felt, type : felt) -> (amount : felt):
-# end
+@storage_var
+func device_undeployed_ledger (owner : felt, type : felt) -> (amount : felt):
+end
 
-# struct DeviceLLNode:
-#     member info : DeviceInfo
-#     member next : felt
-# end
+struct DeviceLLNode:
+    member info : DeviceInfo
+    member next : felt
+end
 
-# struct DeviceInfo:
-#     member owner : felt
-#     member grid : Vec2
-#     member type : felt
-#     member index : felt
-# end
+## Note: for utb-set or utl-set, DeviceInfo.index is it the set label
+struct DeviceInfo:
+    member owner : felt
+    member grid : Vec2
+    member type : felt
+    member index : felt
+end
 
-# @storage_var
-# func device_deployed_linked_list (index : felt) -> (node : DeviceLLNode):
-# end
+@storage_var
+func device_deployed_linked_list (index : felt) -> (node : DeviceLLNode):
+end
 
 #
 # Append-only
-# #
-# @storage_var
-# func device_deployed_index_to_info (index : felt) -> (info : DeployedDeviceInfo):
-# end
+#
+@storage_var
+func device_deployed_index_to_info (index : felt) -> (info : DeployedDeviceInfo):
+end
 
-# @storage_var
-# func device_deployed_index_to_info_size () -> (size : felt):
-# end
+@storage_var
+func device_deployed_index_to_info_size () -> (size : felt):
+end
 
 # TODO: if one picks up a device that's tethered to UTB/UTL, the UTB/UTL get picked up automatically,
 #       which means the deployed device needs knowledge of the label of the associated UTB/UTL
@@ -127,20 +127,18 @@ end
 # Append-only
 #
 @storage_var
-func utb_deployed_index_to_grid_size () -> (size : felt):
-end
-
-@storage_var
 func utb_deployed_index_to_grid (index : felt) -> (grid : Vec2):
 end
 
-
+@storage_var
+func utb_deployed_index_to_grid_size () -> (size : felt):
+end
 
 #
 # Player deploys UTB
 # by providing a contiguous set of grids
 #
-func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, hash_ptr : HashBuiltin*, range_check_ptr} (
+func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
         locs_len : felt,
         locs : Vec2*,
@@ -187,20 +185,12 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, hash_ptr : Ha
     # Recursively check for each locs's grid: (1) grid validity (2) grid unpopulated (3) grid is contiguous to previous grid
     #
     let (utb_idx_start) = utb_deployed_index_to_grid_size.read ()
-    let utb_idx_end = utb_idx_start + locs_len
-    let (data_ptr) = alloc ()
-    assert data_ptr [0] = 3
-    assert data_ptr [1] = caller
-    assert data_ptr [2] = utb_idx_start
-    assert data_ptr [3] = utb_idx_end
-    let (new_label) = hash_chain (data_ptr)
     recurse_utb_deploy (
         caller = caller,
         len = locs_len,
         arr = locs,
         idx = 0,
-        utb_idx = utb_idx_start,
-        set_label = new_label
+        utb_idx = utb_idx_start
     )
 
     #
@@ -211,16 +201,45 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, hash_ptr : Ha
     #
     # Update `utb_deployed_index_to_grid_size`
     #
-    utb_deployed_index_to_grid_size.write (utb_idx_end)
+    utb_deployed_index_to_grid_size.write (utb_idx_start + locs_len)
 
     # Insert to utb_set_deployed_emap; increase emap size
-    let (emap_size) = utb_set_deployed_emap_size.read ()
+    let (data_ptr) = alloc ()
+    assert data_ptr [0] = 3
+    assert data_ptr [1] = caller
+    assert data_ptr [2] = utb_idx_start
+    assert data_ptr [3] = utb_idx_end
+    let (new_label) = hash_chain (data_ptr)
     utb_set_deployed_emap.write (emap_size, UtbSetDeployedEmapEntry(
         utb_set_deployed_label = new_label,
         utb_deployed_index_start = utb_idx_start,
-        utb_deployed_index_end = utb_idx_end
+        utb_deployed_index_end = utb_idx_start + locs_len
     ))
+    let (emap_size) = utb_set_deployed_emap_size.read ()
     utb_set_deployed_emap_size.write (emap_size + 1)
+
+    # #
+    # # Update `utb_set_deployed_linked_list` and its tail
+    # #
+    # let (old_tail_label) = utb_set_deployed_linked_list_tail.read ()
+    # let (new_tail_label) = old_tail_label + 1
+    # utb_set_deployed_linked_list_tail.write (new_tail_label)
+    # let (old_tail_node) = utb_set_deployed_linked_list.read (old_tail_label)
+    # let old_tail_node_ = DeployedUtbSetLLNode (
+    #     info = old_tail_node.info,
+    #     next = new_tail_label
+    # )
+    # let new_tail_node = DeployedUtbSetLLNode (
+    #     info = DeployedUtbSetInfo (start_index = utb_idx_start, end_index = utb_idx_start + locs_len),
+    #     next = 0
+    # )
+    # utb_set_deployed_linked_list.write (old_tail_label, old_tail_node_)
+    # utb_set_deployed_linked_list.write (new_tail_label, new_tail_node)
+
+    #
+    # Register caller address with `new_tail_label`
+    #
+    utb_set_label_to_owner.write (new_tail_label, caller)
 
     ## TODO: when implement device_pickup(), come back here and add registry of utb-set info with device info
     ##       so that: (1) player checks the device and knows which utb-index it is that connects to it
@@ -235,8 +254,7 @@ func recurse_utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
         len : felt,
         arr : Vec2*,
         idx : felt,
-        utb_idx : felt,
-        set_label : felt
+        utb_idx : felt
     ) -> ():
     alloc_locals
 
@@ -268,140 +286,55 @@ func recurse_utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
     #
     # Update global grid_stats ledger
     #
-    grid_stats.write (arr[idx], GridStat (
+    grid_stats.write ( GridStat (
         populated = 1,
         deployed_device_type = ns_device_types.DEVICE_UTB,
-        deployed_device_index = set_label,
+        deployed_device_index = utb_idx,
         deployed_device_owner = caller
-    ))
+    ) )
 
-    recurse_utb_deploy (caller, len, arr, idx+1, utb_idx+1, set_label)
+    recurse_utb_deploy (len, arr, idx+1, utb_idx+1)
     return ()
 end
 
 #
 # Player picks up UTB;
-# given a grid, check its contains caller's own utb, and pick up the entire utb-set
+# given the label of utb-set, pick up the entire contiguous set
 #
-func utb_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func utb_pickup {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
-        grid : Vec2
+        utb_set_label : felt
     ) -> ():
     alloc_locals
 
     #
-    # Check the grid contains an utb owned by caller
+    # Check the utb-index refers to a utb sets owned by caller
     #
-    let (grid_stat) = grid_stats.read (grid)
-    assert grid_stat.populated = 1
-    assert grid_stat.deployed_device_type = ns_device_types.DEVICE_UTB
-    assert grid_stat.deployed_device_owner = caller
-    let utb_set_deployed_label = grid_stat.deployed_device_index
-
-    #
-    # Recurse-find the emap_entry for this utb-set
-    # note: could have dedicated a storage_var for label => emap_entry, but
-    # omitted it to save storage and do more compute instead
-    #
-    let (emap_size_curr) = utb_set_deployed_emap_size.read ()
-    let (utb_start_index, utb_end_index, emap_index) = recurse_find_emap_entry_and_index_give_label (
-        label = utb_set_deployed_label,
-        size = emap_size_curr,
-        idx = 0
-    )
+    let (utb_set_owner) = utb_set_label_to_owner.read (utb_set_label)
+    assert caller = utb_set_owner
 
     #
     # Recurse from start utb-idx to end utb-idx for this set
     # and clear the associated grid
     #
-    recurse_pickup_utb_given_start_end_utb_index (
-        start_idx = utb_start_index,
-        end_idx = utb_end_index,
-        idx = 0
+    let (node : DeployedUtbSetLLNode) = utb_set_deployed_linked_list.read (utb_set_label)
+    recurse_utb_pickup (
+        # TODO
     )
 
     #
     # Return the entire set of utbs back to the caller
     #
-    let (amount_curr) = utb_undeployed_ledger.read (caller)
-    utb_undeployed_ledger.write (caller, amount_curr + utb_end_index - utb_start_index)
+
 
     #
-    # Update enumerable map of utb-sets:
-    # removal operation - put last entry to index at removed entry, clear index at last entry,
-    # and decrease emap size by one
+    # Update utb-set linked list --
+    # remove the node with this label from the linked list
     #
-    let (emap_entry_last) = utb_set_deployed_emap.read (emap_size_curr - 1)
-    utb_set_deployed_emap.write (emap_index, emap_entry_last)
-    utb_set_deployed_emap.write (emap_size_curr - 1, UtbSetDeployedEmapEntry (0,0,0))
-    utb_set_deployed_emap_size.write (emap_size_curr - 1)
 
     ## TODO: update the tethered src and dst device info as well
 
     return ()
-end
-
-# Note: this function assumes the label can be found among emap entries
-func recurse_find_emap_entry_and_index_give_label {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        label : felt,
-        size : felt,
-        idx : felt
-    ) -> (
-        utb_start_index : felt,
-        utb_end_index : felt,
-        emap_index : felt
-    ):
-    alloc_locals
-
-    if idx == size:
-        with_attr error_message ("couldn't find label among emap, something went wrong:("):
-            assert 1 = 0
-        end
-        return (0,0,0)
-    end
-
-    let (emap_entry) = utb_set_deployed_emap.read (idx)
-    if emap_entry.utb_set_deployed_label == label:
-        return (
-            emap_entry.utb_deployed_index_start,
-            emap_entry.utb_deployed_index_end,
-            idx
-        )
-    end
-
-    let (
-        ret_utb_start_index,
-        ret_utb_end_index,
-        ret_emap_index
-    ) = recurse_find_emap_entry_and_index_give_label (
-        label,
-        size,
-        idx + 1
-    )
-
-    return (
-        ret_utb_start_index,
-        ret_utb_end_index,
-        ret_emap_index
-    )
-end
-
-func recurse_pickup_utb_given_start_end_utb_index {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        start_idx,
-        end_idx,
-        idx
-    ) -> ():
-    alloc_locals
-
-    if start_idx + idx == end_idx:
-        return ()
-    end
-
-    let (grid_to_clear) = utb_deployed_index_to_grid.read (start_idx + idx)
-    grid_stats.write (grid_to_clear, GridStat(0,0,0,0))
-
-    recurse_pickup_utb_given_start_end_utb_index (start_idx, end_idx, idx + 1)
-    return()
 end
 
 # TODO
