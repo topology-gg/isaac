@@ -54,7 +54,7 @@ func is_valid_grid {range_check_ptr} (
 end
 
 #
-# Check if two grids are both valid and contiguous; revert if not
+# Check if two grids are contiguous; revert if not
 #
 func are_contiguous_grids_given_valid_grids {range_check_ptr} (
         grid0 : Vec2, grid1 : Vec2
