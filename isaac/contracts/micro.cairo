@@ -12,7 +12,7 @@ from contracts.design.constants import (ns_device_types)
 from contracts.util.structs import (
     MicroEvent, Vec2
 )
-from contracts.grid import (
+from contracts.util.grid import (
     is_valid_grid, are_contiguous_grids_given_valid_grids
 )
 
@@ -56,9 +56,9 @@ end
 ## Devices (including opsf)
 ##############################
 
-# @storage_var
-# func device_undeployed_ledger (owner : felt, type : felt) -> (amount : felt):
-# end
+@storage_var
+func device_undeployed_ledger (owner : felt, type : felt) -> (amount : felt):
+end
 
 # struct DeviceLLNode:
 #     member info : DeviceInfo
@@ -66,7 +66,6 @@ end
 # end
 
 # struct DeviceInfo:
-#     member owner : felt
 #     member grid : Vec2
 #     member type : felt
 #     member index : felt
@@ -97,10 +96,11 @@ end
 ##############################
 
 #
-# utb is fungible before deployment,
-# but non-fungible after deployment,
+# utb is fungible before deployment, but non-fungible after deployment,
 # because they are deployed as a spatially-contiguous set with the same label,
-# where contiguity here is defined by the coordinate system on the cube surface
+# where contiguity is defined by the coordinate system on the cube surface;
+# they are also deployed exclusively to connect their src & dst devices that meet
+# the resource producer-consumer relationship.
 #
 @storage_var
 func utb_undeployed_ledger (owner : felt) -> (amount : felt):
@@ -108,6 +108,7 @@ end
 
 #
 # Use enumerable map (Emap) to maintain the an array of (set label, utb index start, utb index end)
+# credit to Peteris at yagi.fi
 #
 struct UtbSetDeployedEmapEntry:
     member utb_set_deployed_label : felt
@@ -123,6 +124,10 @@ end
 func utb_set_deployed_emap (emap_index : felt) -> (emap_entry : UtbSetDeployedEmapEntry):
 end
 
+@storage_var
+func utb_set_deployed_label_to_index (label : felt) -> (emap_index : felt):
+end
+
 #
 # Append-only
 #
@@ -133,8 +138,6 @@ end
 @storage_var
 func utb_deployed_index_to_grid (index : felt) -> (grid : Vec2):
 end
-
-
 
 #
 # Player deploys UTB
@@ -213,7 +216,9 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, hash_ptr : Ha
     #
     utb_deployed_index_to_grid_size.write (utb_idx_end)
 
+    #
     # Insert to utb_set_deployed_emap; increase emap size
+    #
     let (emap_size) = utb_set_deployed_emap_size.read ()
     utb_set_deployed_emap.write (emap_size, UtbSetDeployedEmapEntry(
         utb_set_deployed_label = new_label,
@@ -221,6 +226,11 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, hash_ptr : Ha
         utb_deployed_index_end = utb_idx_end
     ))
     utb_set_deployed_emap_size.write (emap_size + 1)
+
+    #
+    # Update label-to-index for O(1) reverse lookup
+    #
+    utb_set_deployed_label_to_index.write (new_label, emap_size)
 
     ## TODO: when implement device_pickup(), come back here and add registry of utb-set info with device info
     ##       so that: (1) player checks the device and knows which utb-index it is that connects to it
@@ -299,16 +309,13 @@ func utb_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
     let utb_set_deployed_label = grid_stat.deployed_device_index
 
     #
-    # Recurse-find the emap_entry for this utb-set
-    # note: could have dedicated a storage_var for label => emap_entry, but
-    # omitted it to save storage and do more compute instead
+    # O(1) find the emap_entry for this utb-set
     #
     let (emap_size_curr) = utb_set_deployed_emap_size.read ()
-    let (utb_start_index, utb_end_index, emap_index) = recurse_find_emap_entry_and_index_give_label (
-        label = utb_set_deployed_label,
-        size = emap_size_curr,
-        idx = 0
-    )
+    let (emap_index) = utb_set_deployed_label_to_index.read (utb_set_deployed_label)
+    let (emap_entry) = utb_set_deployed_emap.read (emap_index)
+    let utb_start_index = emap_entry.utb_deployed_index_start
+    let utb_end_index = emap_entry.utb_deployed_index_end
 
     #
     # Recurse from start utb-idx to end utb-idx for this set
@@ -339,51 +346,6 @@ func utb_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
     ## TODO: update the tethered src and dst device info as well
 
     return ()
-end
-
-# Note: this function assumes the label can be found among emap entries
-func recurse_find_emap_entry_and_index_give_label {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        label : felt,
-        size : felt,
-        idx : felt
-    ) -> (
-        utb_start_index : felt,
-        utb_end_index : felt,
-        emap_index : felt
-    ):
-    alloc_locals
-
-    if idx == size:
-        with_attr error_message ("couldn't find label among emap, something went wrong:("):
-            assert 1 = 0
-        end
-        return (0,0,0)
-    end
-
-    let (emap_entry) = utb_set_deployed_emap.read (idx)
-    if emap_entry.utb_set_deployed_label == label:
-        return (
-            emap_entry.utb_deployed_index_start,
-            emap_entry.utb_deployed_index_end,
-            idx
-        )
-    end
-
-    let (
-        ret_utb_start_index,
-        ret_utb_end_index,
-        ret_emap_index
-    ) = recurse_find_emap_entry_and_index_give_label (
-        label,
-        size,
-        idx + 1
-    )
-
-    return (
-        ret_utb_start_index,
-        ret_utb_end_index,
-        ret_emap_index
-    )
 end
 
 func recurse_pickup_utb_given_start_end_utb_index {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (

@@ -52,7 +52,7 @@ async def account_factory():
     return starknet, accounts
 
 @pytest.mark.asyncio
-async def test_player_queue (account_factory):
+async def test_server (account_factory):
 
     starknet, accounts = account_factory
     contracts = {}

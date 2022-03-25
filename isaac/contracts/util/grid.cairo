@@ -2,13 +2,13 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import (assert_nn, assert_le, assert_not_zero, abs_value)
-from starkware.cairo.common.math_cmp import is_le, is_not_zero
+from starkware.cairo.common.math_cmp import is_le, is_not_zero, is_nn_le
 from starkware.cairo.common.alloc import alloc
 
 from contracts.design.constants import (
     PLANET_DIM,
     FACE_0, FACE_1, FACE_2, FACE_3, FACE_4, FACE_5,
-    EDGE_A, EDGE_B, EDGE_C, EDGE_D, EDGE_E, EDGE_F, EDGE_G)
+    EDGE_0, EDGE_1, EDGE_2, EDGE_3, EDGE_4, EDGE_5, EDGE_6, EDGE_7, EDGE_8, EDGE_9, EDGE_10)
 from contracts.util.structs import (Vec2)
 
 # The planet cube unfolds as follows:
@@ -37,18 +37,18 @@ func is_valid_grid {range_check_ptr} (
     # grid should not fall in square [0~D-1, 0~D-1]
     let (flag0) = is_le (grid.x, PLANET_DIM-1)
     let (flag1) = is_le (grid.y, PLANET_DIM-1)
-    assert_not_zero (flag0 * flag1)
+    assert flag0 * flag1 = 0
 
     # grid should not fall in rectangle [2D~, 0~D-1]
     let (flag2) = is_le (2*PLANET_DIM, grid.x)
-    assert_not_zero (flag2 * flag1)
+    assert flag2 * flag1 = 0
 
     # grid should not fall in rectangle [0~D-1, 2D~]
     let (flag3) = is_le (2*PLANET_DIM, grid.y)
-    assert_not_zero (flag0 * flag3)
+    assert flag0 * flag3 = 0
 
     # grid should not fall in rectangle [2D~, 2D~]
-    assert_not_zero (flag2 * flag3)
+    assert flag2 * flag3 = 0
 
     return ()
 end
@@ -73,11 +73,11 @@ func are_contiguous_grids_given_valid_grids {range_check_ptr} (
     end
 
     #
-    # On difference faces => both need to be on edge + on the same edge + have the same idx_on_edge
+    # On difference faces, both need to be on edge + on the same edge + have the same idx_on_edge
     #
     assert_not_zero (is_on_edge0 * is_on_edge1)
-    assert_not_zero (edge0 - edge1)
-    assert_not_zero (idx_on_edge0 - idx_on_edge1)
+    assert edge0 - edge1 = 0
+    assert idx_on_edge0 - idx_on_edge1 = 0
 
     return ()
 end
@@ -107,13 +107,13 @@ func locate_face_and_edge_given_valid_grid {range_check_ptr} (
     ):
     alloc_locals
 
-    let (flag0) = is_le (grid.x, PLANET_DIM-1)
-    let (flag1) = is_le (grid.x - (PLANET_DIM), 2*PLANET_DIM-1)
-    let (flag2) = is_le (grid.x - (2*PLANET_DIM), 3*PLANET_DIM-1)
-    let (flag3) = is_le (grid.x - (3*PLANET_DIM), 4*PLANET_DIM-1)
-    let (flag4) = is_le (grid.y, PLANET_DIM-1)
-    let (flag5) = is_le (grid.y - (PLANET_DIM), 2*PLANET_DIM-1)
-    let (flag6) = is_le (grid.y - (2*PLANET_DIM), 3*PLANET_DIM-1)
+    let (flag0) = is_nn_le (grid.x, PLANET_DIM-1)
+    let (flag1) = is_nn_le (grid.x - (PLANET_DIM), PLANET_DIM-1)
+    let (flag2) = is_nn_le (grid.x - (2*PLANET_DIM), PLANET_DIM-1)
+    let (flag3) = is_nn_le (grid.x - (3*PLANET_DIM), PLANET_DIM-1)
+    let (flag4) = is_nn_le (grid.y, PLANET_DIM-1)
+    let (flag5) = is_nn_le (grid.y - (PLANET_DIM), PLANET_DIM-1)
+    let (flag6) = is_nn_le (grid.y - (2*PLANET_DIM), PLANET_DIM-1)
 
     #
     # Locate face
@@ -139,7 +139,7 @@ func locate_face_and_edge_given_valid_grid {range_check_ptr} (
         assert face = FACE_4
         jmp face_determined
     end
-    assert face = FACE_2
+    assert face = FACE_5
 
     face_determined:
     #
@@ -158,108 +158,180 @@ func locate_face_and_edge_given_valid_grid {range_check_ptr} (
     local edge
     local idx_on_edge
 
-    if flag4*flag8 == 1:
-        ## (D, 0 -> D-1)
+
+    ## Deal with special edges first (7-10)
+    #
+    # Edge 7
+    #
+    let (flag15) = is_zero (grid.x - (3*PLANET_DIM-1))
+    let (flag16) = is_zero (grid.x - 3*PLANET_DIM)
+    if flag9 * flag14 + flag15 * flag13 + flag16 * flag13 == 1:
         assert is_on_edge = 1
-        assert edge = EDGE_A
-        assert idx_on_edge = grid.y
+        assert edge = EDGE_7
+        assert idx_on_edge = 0
+        jmp edge_determined
+    end
+
+    #
+    # Edge 8
+    #
+    if flag9 * flag11 + flag15 * flag12 + flag16 * flag12 == 1:
+        assert is_on_edge = 1
+        assert edge = EDGE_8
+        assert idx_on_edge = 0
+        jmp edge_determined
+    end
+
+    #
+    # Edge 9
+    #
+    if flag10 * flag13 + flag8 * flag14 + flag7 * flag13 == 1:
+        assert is_on_edge = 1
+        assert edge = EDGE_9
+        assert idx_on_edge = 0
+        jmp edge_determined
+    end
+
+    #
+    # Edge 10
+    #
+    if flag10 * flag12 + flag8 * flag11 + flag7 * flag12 == 1:
+        assert is_on_edge = 1
+        assert edge = EDGE_10
+        assert idx_on_edge = 0
+        jmp edge_determined
+    end
+
+    ## Deal with normal edges (0-6)
+    #
+    # Edge 0
+    #
+    if flag4*flag8 == 1:
+        ## (D, 1 -> D-1)
+        assert is_on_edge = 1
+        assert edge = EDGE_0
+        assert idx_on_edge = grid.y - 1
         jmp edge_determined
     end
     if flag0*flag12 == 1:
-        ## (0 -> D-1, D)
+        ## (1 -> D-1, D)
         assert is_on_edge = 1
-        assert edge = EDGE_A
-        assert idx_on_edge = grid.x
+        assert edge = EDGE_0
+        assert idx_on_edge = grid.x - 1
         jmp edge_determined
     end
+
+    #
+    # Edge 1
+    #
     if flag6*flag8 == 1:
-        ## (D, 3D-1 -> 2D)
+        ## (D, 3D-2 -> 2D)
         assert is_on_edge = 1
-        assert edge = EDGE_B
-        assert idx_on_edge = 3*PLANET_DIM-1 - grid.y
+        assert edge = EDGE_1
+        assert idx_on_edge = 3*PLANET_DIM-2 - grid.y
         jmp edge_determined
     end
     if flag0*flag13 == 1:
-        ## (0 -> D-1, 2D-1)
+        ## (1 -> D-1, 2D-1)
         assert is_on_edge = 1
-        assert edge = EDGE_B
-        assert idx_on_edge = grid.x
+        assert edge = EDGE_1
+        assert idx_on_edge = grid.x - 1
         jmp edge_determined
     end
+
+    #
+    # Edge 2
+    #
     if flag6*flag9 == 1:
-        ## (2D-1, 3D-1 -> 2D)
+        ## (2D-1, 3D-2 -> 2D)
         assert is_on_edge = 1
-        assert edge = EDGE_C
-        assert idx_on_edge = 3*PLANET_DIM-1 - grid.y
+        assert edge = EDGE_2
+        assert idx_on_edge = 3*PLANET_DIM-2 - grid.y
         jmp edge_determined
     end
     if flag2*flag13 == 1:
-        ## (3D-1 -> 2D, 2D-1)
+        ## (3D-2 -> 2D, 2D-1)
         assert is_on_edge = 1
-        assert edge = EDGE_C
-        assert idx_on_edge = 3*PLANET_DIM-1 - grid.x
+        assert edge = EDGE_2
+        assert idx_on_edge = 3*PLANET_DIM-2 - grid.x
         jmp edge_determined
     end
+
+    #
+    # Edge 3
+    #
     if flag4*flag9 == 1:
-        ## (2D-1, 0 -> D-1)
+        ## (2D-1, 1 -> D-1)
         assert is_on_edge = 1
-        assert edge = EDGE_D
-        assert idx_on_edge = grid.y
+        assert edge = EDGE_3
+        assert idx_on_edge = grid.y - 1
         jmp edge_determined
     end
     if flag2*flag12 == 1:
-        ## (3D-1 -> 2D, D-1)
+        ## (3D-2 -> 2D, D)
         assert is_on_edge = 1
-        assert edge = EDGE_D
-        assert idx_on_edge = 3*PLANET_DIM-1 - grid.x
+        assert edge = EDGE_3
+        assert idx_on_edge = 3*PLANET_DIM-2 - grid.x
         jmp edge_determined
     end
+
+    #
+    # Edge 4
+    #
     if flag1*flag14 == 1:
-        ## (2D-1 -> D, 3D-1)
+        ## (2D-2 -> D+1, 3D-1)
         assert is_on_edge = 1
-        assert edge = EDGE_E
-        assert idx_on_edge = 2*PLANET_DIM-1 - grid.x
+        assert edge = EDGE_4
+        assert idx_on_edge = 2*PLANET_DIM-2 - grid.x
         jmp edge_determined
     end
     if flag3*flag13 == 1:
-        ## (3D -> 4D-1, 2D-1)
+        ## (3D+1 -> 4D-2, 2D-1)
         assert is_on_edge = 1
-        assert edge = EDGE_E
-        assert idx_on_edge = grid.x - 3*PLANET_DIM
+        assert edge = EDGE_4
+        assert idx_on_edge = grid.x - (3*PLANET_DIM+1)
         jmp edge_determined
     end
+
+    #
+    # Edge 5
+    #
     if flag1*flag11 == 1:
-        ## (2D-1 -> D, 0)
+        ## (2D-2 -> D+1, 0)
         assert is_on_edge = 1
-        assert edge = EDGE_F
-        assert idx_on_edge = 2*PLANET_DIM-1 - grid.x
+        assert edge = EDGE_5
+        assert idx_on_edge = 2*PLANET_DIM-2 - grid.x
         jmp edge_determined
     end
     if flag3*flag12 == 1:
-        ## (3D -> 4D-1, D-1)
+        ## (3D+1 -> 4D-2, D)
         assert is_on_edge = 1
-        assert edge = EDGE_F
-        assert idx_on_edge = grid.x - 3*PLANET_DIM
+        assert edge = EDGE_5
+        assert idx_on_edge = grid.x - (3*PLANET_DIM+1)
         jmp edge_determined
     end
+
+    #
+    # Edge 6
+    #
     if flag5*flag7 == 1:
-        ## (0, D -> 2D-1)
+        ## (0, D+1 -> 2D-2)
         assert is_on_edge = 1
-        assert edge = EDGE_G
-        assert idx_on_edge = grid.y - PLANET_DIM
+        assert edge = EDGE_6
+        assert idx_on_edge = grid.y - (PLANET_DIM+1)
         jmp edge_determined
     end
     if flag5*flag10 == 1:
-        ## (4D-1, D -> 2D-1)
+        ## (4D-1, D+1 -> 2D-2)
         assert is_on_edge = 1
-        assert edge = EDGE_G
-        assert idx_on_edge = grid.y - PLANET_DIM
+        assert edge = EDGE_6
+        assert idx_on_edge = grid.y - (PLANET_DIM+1)
         jmp edge_determined
     end
 
     assert is_on_edge = 0
-    assert edge = 'n/a'
-    assert idx_on_edge = 'n/a'
+    assert edge = 0
+    assert idx_on_edge = 0
 
     edge_determined:
     return (face, is_on_edge, edge, idx_on_edge)
