@@ -64,36 +64,16 @@ A hypothetical planet called *Mercury* is trapped in a trisolar system called *C
 - forward world state at macro scale: trisolar system physics
 - forward world state at micro scale: production stats on the planet; iterate over harvestors, refinery, transmission/transport, PEF / OPSF
 
-#### notes - functions to be implemented
-@external
-`func device_deploy (at, type)`
+#### todos
+1. resource distribution function (determine concentration through e.g. perlin noise)
+2. resource update at device + resource transported across transportation belts
+3. energy update at device + energy transported across transmission lines
+4. OPSF "factory" function for player to construct devices
+5. game over determination - detecting collision between planet and any of the three suns
+6. visualizer of macro trisolar system
+7. visualizer of micro planet surface activities
+8. (ideal) frontend able to make transaction to e.g. place device
+9. (ideal demo ready at this step) Rudimentary write-up on game design and technical considerations for audience to read during/after demo
+10. NDPE "rocket" launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim
+11. game over determination - detecting escape velocity plus escape condition 
 
-@external
-`func device_pickup (at, type)`
-
-@external
-`func device_transfer (to, type, amount)`
-
-@external
-`func utb_deploy (locs_len, locs)`
-
-@external
-`func utb_pickup (locs_len, locs)`
-
-@external
-`func utl_deploy (locs_len, locs)`
-
-@external
-`func utl_pickup (locs_len, locs)`
-
-@external
-`func opsf_collect_device ()`
-
-@external
-`func opsf_queue_task ()`
-
-@external
-`func opsf_unqueue_task_by_id ()`
-
-@external
-`func opsf_clear_queue ()`
