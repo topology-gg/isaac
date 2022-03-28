@@ -65,6 +65,7 @@ A hypothetical planet called *Mercury* is trapped in a trisolar system called *C
 - forward world state at micro scale: production stats on the planet; iterate over harvestors, refinery, transmission/transport, PEF / OPSF
 
 #### todos
+0. deal with inner edges and corners -- face2&0, face2&1, face2&3, face2&4, and face4&5
 1. resource distribution function (determine concentration through e.g. perlin noise) + testing
 2. resource update at device + resource transported across transportation belts + testing
 3. energy update at device + energy transported across transmission lines + testing
