@@ -34,6 +34,7 @@ const FACE_2 = 2
 const FACE_3 = 3
 const FACE_4 = 4
 const FACE_5 = 5
+
 const EDGE_0 = 0
 const EDGE_1 = 1
 const EDGE_2 = 2
@@ -50,11 +51,13 @@ const EDGE_10 = 10
 #
 # Constants for element type
 #
-const ELEMENT_FE = 0 # iron
-const ELEMENT_AL = 1 # aluminum
-const ELEMENT_CU = 2 # copper
-const ELEMENT_SI = 3 # silicon
-const ELEMENT_PU = 4 # plutonium-241
+namespace ns_element_types:
+    const ELEMENT_FE = 0 # iron
+    const ELEMENT_AL = 1 # aluminum
+    const ELEMENT_CU = 2 # copper
+    const ELEMENT_SI = 3 # silicon
+    const ELEMENT_PU = 4 # plutonium-241
+end
 
 #
 # Constants for device type

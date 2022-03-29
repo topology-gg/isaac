@@ -23,123 +23,129 @@ async def test_grid ():
         constructor_calldata = []
     )
 
-    #####################################################
-    # Test `mock_locate_face_and_edge_given_valid_grid()`
-    #####################################################
-    print('> Testing mock_locate_face_and_edge_given_valid_grid()')
-    for i in range(TEST_NUM_PER_CASE):
-        i_format = '{:3}'.format(i+1)
-        is_on_edge = random.randint (0,1)
-        if is_on_edge == 1:
-            face = random.choice([0,1,3,4,5])
-            grid, edge, idx_on_edge = generate_random_grid_on_edge_given_face (face, PLANET_DIM)
-            ret = await contract.mock_locate_face_and_edge_given_valid_grid(
-                grid = contract.Vec2 (grid[0], grid[1])
-            ).call()
-            LOGGER.info (f'> {i_format}/{TEST_NUM_PER_CASE} | input: grid {grid} on face {face} and edge {edge}, output: {ret.result}')
-            assert ret.result.face == face
-            assert ret.result.is_on_edge == 1
-            assert ret.result.edge == edge
-            assert ret.result.idx_on_edge == idx_on_edge
-        else:
-            face = random.randint (0,5)
-            inner_grid = generate_random_valid_inner_grid_given_face (face, PLANET_DIM)
-            ret = await contract.mock_locate_face_and_edge_given_valid_grid(
-                grid = contract.Vec2 (inner_grid[0], inner_grid[1])
-            ).call()
-            LOGGER.info (f'> {i_format}/{TEST_NUM_PER_CASE} | input: inner grid {inner_grid} on face {face}, output: {ret.result}')
-            assert ret.result.face == face
-            assert ret.result.is_on_edge == 0
-            assert ret.result.edge == 0
-            assert ret.result.idx_on_edge == 0
-    LOGGER.info ('')
+    await contract.mock_are_contiguous_grids_given_valid_grids(
+        contract.Vec2 (100, 100),
+        contract.Vec2 (99, 100)
+    ).call()
+    print('yo')
 
-    # ###################################################################
-    # # Test `mock_are_contiguous_grids_given_valid_grids_on_same_face()`
-    # ###################################################################
-    print('> Testing mock_are_contiguous_grids_given_valid_grids_on_same_face()')
-    # 1. Test with pairs of contiguous grids on same face
-    LOGGER.info ('> Contiguous grids:')
-    for i in range(TEST_NUM_PER_CASE):
-        i_format = '{:3}'.format(i+1)
-        face = random.randint (0,5)
-        inner_grid = generate_random_valid_inner_grid_given_face (face, PLANET_DIM)
-        nudge = random.choice([ (0,1), (1,0), (0,-1), (-1,0) ])
-        contiguous_grid = (inner_grid[0] + nudge[0], inner_grid[1] + nudge[1])
-        await contract.mock_are_contiguous_grids_given_valid_grids_on_same_face(
-            contract.Vec2 (inner_grid[0], inner_grid[1]),
-            contract.Vec2 (contiguous_grid[0], contiguous_grid[1])
-        ).call()
-        LOGGER.info (f'> {i_format}/{TEST_NUM_PER_CASE} | input: {inner_grid} and {contiguous_grid} on face {face}; assertion passed as expected')
-    LOGGER.info ('')
+    # #####################################################
+    # # Test `mock_locate_face_and_edge_given_valid_grid()`
+    # #####################################################
+    # print('> Testing mock_locate_face_and_edge_given_valid_grid()')
+    # for i in range(TEST_NUM_PER_CASE):
+    #     i_format = '{:3}'.format(i+1)
+    #     is_on_edge = random.randint (0,1)
+    #     if is_on_edge == 1:
+    #         face = random.choice([0,1,3,4,5])
+    #         grid, edge, idx_on_edge = generate_random_grid_on_edge_given_face (face, PLANET_DIM)
+    #         ret = await contract.mock_locate_face_and_edge_given_valid_grid(
+    #             grid = contract.Vec2 (grid[0], grid[1])
+    #         ).call()
+    #         LOGGER.info (f'> {i_format}/{TEST_NUM_PER_CASE} | input: grid {grid} on face {face} and edge {edge}, output: {ret.result}')
+    #         assert ret.result.face == face
+    #         assert ret.result.is_on_edge == 1
+    #         assert ret.result.edge == edge
+    #         assert ret.result.idx_on_edge == idx_on_edge
+    #     else:
+    #         face = random.randint (0,5)
+    #         inner_grid = generate_random_valid_inner_grid_given_face (face, PLANET_DIM)
+    #         ret = await contract.mock_locate_face_and_edge_given_valid_grid(
+    #             grid = contract.Vec2 (inner_grid[0], inner_grid[1])
+    #         ).call()
+    #         LOGGER.info (f'> {i_format}/{TEST_NUM_PER_CASE} | input: inner grid {inner_grid} on face {face}, output: {ret.result}')
+    #         assert ret.result.face == face
+    #         assert ret.result.is_on_edge == 0
+    #         assert ret.result.edge == 0
+    #         assert ret.result.idx_on_edge == 0
+    # LOGGER.info ('')
 
-    # # 2. Test with pairs of incontiguous grids on same face
-    LOGGER.info ('> Incontiguous grids:')
-    for i in range(TEST_NUM_PER_CASE):
-        i_format = '{:3}'.format(i+1)
-        face = random.randint (0,5)
-        inner_grid = generate_random_valid_inner_grid_given_face (face, PLANET_DIM)
-        while True:
-            another_grid = generate_random_valid_inner_grid_given_face (face, PLANET_DIM)
-            if another_grid == inner_grid:
-                continue
-            distance = abs(another_grid[0] - inner_grid[0]) + abs(another_grid[1] - inner_grid[1])
-            if distance == 1:
-                continue
-            incontiguous_grid = another_grid
-            break
-        # expect exception raised
-        with pytest.raises(Exception) as e_info:
-            await contract.mock_are_contiguous_grids_given_valid_grids_on_same_face(
-                contract.Vec2 (inner_grid[0], inner_grid[1]),
-                contract.Vec2 (incontiguous_grid[0], incontiguous_grid[1])
-            ).call()
-        LOGGER.info (f'> {i_format}/{TEST_NUM_PER_CASE} | input: {inner_grid} and {incontiguous_grid} on face {face}; assertion failed as expected')
-    LOGGER.info ('')
+    # # ###################################################################
+    # # # Test `mock_are_contiguous_grids_given_valid_grids_on_same_face()`
+    # # ###################################################################
+    # print('> Testing mock_are_contiguous_grids_given_valid_grids_on_same_face()')
+    # # 1. Test with pairs of contiguous grids on same face
+    # LOGGER.info ('> Contiguous grids:')
+    # for i in range(TEST_NUM_PER_CASE):
+    #     i_format = '{:3}'.format(i+1)
+    #     face = random.randint (0,5)
+    #     inner_grid = generate_random_valid_inner_grid_given_face (face, PLANET_DIM)
+    #     nudge = random.choice([ (0,1), (1,0), (0,-1), (-1,0) ])
+    #     contiguous_grid = (inner_grid[0] + nudge[0], inner_grid[1] + nudge[1])
+    #     await contract.mock_are_contiguous_grids_given_valid_grids_on_same_face(
+    #         contract.Vec2 (inner_grid[0], inner_grid[1]),
+    #         contract.Vec2 (contiguous_grid[0], contiguous_grid[1])
+    #     ).call()
+    #     LOGGER.info (f'> {i_format}/{TEST_NUM_PER_CASE} | input: {inner_grid} and {contiguous_grid} on face {face}; assertion passed as expected')
+    # LOGGER.info ('')
 
-    ######################################################
-    # Test `mock_are_contiguous_grids_given_valid_grids()`
-    ######################################################
-    # Test with pairs of contiguous/incontiguous grids on different faces on same-labeled edge
-    print('Testing mock_are_contiguous_grids_given_valid_grids()')
-    for i in range(TEST_NUM_PER_CASE):
-        if random.randint(0,1) == 0:
-            # normal edge
-            edge = random.randint(0,6)
-            sides = [0,1]
-        else:
-            # special edge
-            edge = random.randint(7,10)
-            sides = random.sample([0,1,2], k=2)
-        grid_0, idx_on_edge_0 = generate_random_grid_on_edge_given_edge_and_side (edge=edge, side=sides[0], dim=PLANET_DIM)
-        grid_1, idx_on_edge_1 = generate_random_grid_on_edge_given_edge_and_side (edge=edge, side=sides[1], dim=PLANET_DIM)
+    # # # 2. Test with pairs of incontiguous grids on same face
+    # LOGGER.info ('> Incontiguous grids:')
+    # for i in range(TEST_NUM_PER_CASE):
+    #     i_format = '{:3}'.format(i+1)
+    #     face = random.randint (0,5)
+    #     inner_grid = generate_random_valid_inner_grid_given_face (face, PLANET_DIM)
+    #     while True:
+    #         another_grid = generate_random_valid_inner_grid_given_face (face, PLANET_DIM)
+    #         if another_grid == inner_grid:
+    #             continue
+    #         distance = abs(another_grid[0] - inner_grid[0]) + abs(another_grid[1] - inner_grid[1])
+    #         if distance == 1:
+    #             continue
+    #         incontiguous_grid = another_grid
+    #         break
+    #     # expect exception raised
+    #     with pytest.raises(Exception) as e_info:
+    #         await contract.mock_are_contiguous_grids_given_valid_grids_on_same_face(
+    #             contract.Vec2 (inner_grid[0], inner_grid[1]),
+    #             contract.Vec2 (incontiguous_grid[0], incontiguous_grid[1])
+    #         ).call()
+    #     LOGGER.info (f'> {i_format}/{TEST_NUM_PER_CASE} | input: {inner_grid} and {incontiguous_grid} on face {face}; assertion failed as expected')
+    # LOGGER.info ('')
 
-        LOGGER.info (f'> testing two grids: {grid_0} and {grid_1}')
-        if idx_on_edge_0 == idx_on_edge_1:
-            # contiguous
-            await contract.mock_are_contiguous_grids_given_valid_grids(grid_0, grid_1).call()
-        else:
-            # incontiguous, assume exception raised
-            with pytest.raises(Exception) as e_info:
-                await contract.mock_are_contiguous_grids_given_valid_grids(grid_0, grid_1).call()
+    # ######################################################
+    # # Test `mock_are_contiguous_grids_given_valid_grids()`
+    # ######################################################
+    # # Test with pairs of contiguous/incontiguous grids on different faces on same-labeled edge
+    # print('Testing mock_are_contiguous_grids_given_valid_grids()')
+    # for i in range(TEST_NUM_PER_CASE):
+    #     if random.randint(0,1) == 0:
+    #         # normal edge
+    #         edge = random.randint(0,6)
+    #         sides = [0,1]
+    #     else:
+    #         # special edge
+    #         edge = random.randint(7,10)
+    #         sides = random.sample([0,1,2], k=2)
+    #     grid_0, idx_on_edge_0 = generate_random_grid_on_edge_given_edge_and_side (edge=edge, side=sides[0], dim=PLANET_DIM)
+    #     grid_1, idx_on_edge_1 = generate_random_grid_on_edge_given_edge_and_side (edge=edge, side=sides[1], dim=PLANET_DIM)
 
-    #############################
-    # Test `mock_is_valid_grid()`
-    #############################
-    print('Testing mock_is_valid_grid()')
-    # 1. Test with valid grids
-    for i in range(TEST_NUM_PER_CASE):
-        valid_grid = generate_random_valid_grid (PLANET_DIM)
-        LOGGER.info  (f'> valid grid: {valid_grid}')
-        await contract.mock_is_valid_grid(valid_grid).call()
+    #     LOGGER.info (f'> testing two grids: {grid_0} and {grid_1}')
+    #     if idx_on_edge_0 == idx_on_edge_1:
+    #         # contiguous
+    #         await contract.mock_are_contiguous_grids_given_valid_grids(grid_0, grid_1).call()
+    #     else:
+    #         # incontiguous, assume exception raised
+    #         with pytest.raises(Exception) as e_info:
+    #             await contract.mock_are_contiguous_grids_given_valid_grids(grid_0, grid_1).call()
 
-    # 2. Test with invalid grids
-    for i in range(TEST_NUM_PER_CASE):
-        invalid_grid = generate_random_invalid_grid (PLANET_DIM)
-        LOGGER.info  (f'> invalid grid: {invalid_grid}')
-        with pytest.raises(Exception) as e_info:
-            await contract.mock_is_valid_grid(invalid_grid).call()
-    LOGGER.info ('')
+    # #############################
+    # # Test `mock_is_valid_grid()`
+    # #############################
+    # print('Testing mock_is_valid_grid()')
+    # # 1. Test with valid grids
+    # for i in range(TEST_NUM_PER_CASE):
+    #     valid_grid = generate_random_valid_grid (PLANET_DIM)
+    #     LOGGER.info  (f'> valid grid: {valid_grid}')
+    #     await contract.mock_is_valid_grid(valid_grid).call()
+
+    # # 2. Test with invalid grids
+    # for i in range(TEST_NUM_PER_CASE):
+    #     invalid_grid = generate_random_invalid_grid (PLANET_DIM)
+    #     LOGGER.info  (f'> invalid grid: {invalid_grid}')
+    #     with pytest.raises(Exception) as e_info:
+    #         await contract.mock_is_valid_grid(invalid_grid).call()
+    # LOGGER.info ('')
 
 
 def generate_random_valid_grid_given_face (face, dim):
