@@ -1,4 +1,4 @@
-## Isaac
+# Isaac
 note: changed name from Escape from Centauri (too mouthy) to Isaac, which reflects the Newtonian mechanics involved in this game, and also borrows the sense of world genesis from its connotation with the Bible figure.
 
 ### Narrative
@@ -66,7 +66,6 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - forward world state at micro scale: production stats on the planet; iterate over harvestors, refinery, transmission/transport, PEF / OPSF
 
 #### todos
-0. deal with inner edges and corners -- face2&0, face2&1, face2&3, face2&4, and face4&5
 1. resource distribution function (determine concentration through e.g. perlin noise) + testing
 2. resource update at device + resource transported across transportation belts + testing
 3. energy update at device + energy transported across transmission lines + testing
