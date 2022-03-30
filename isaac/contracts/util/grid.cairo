@@ -37,7 +37,7 @@ func is_valid_grid {range_check_ptr} (
     # grid should not fall in square [0~D-1, 0~D-1]
     let (flag0) = is_le (grid.x, PLANET_DIM-1)
     let (flag1) = is_le (grid.y, PLANET_DIM-1)
-    assert flag0 * flag1 = 0
+    assert flag0 * flag1 = 0 
 
     # grid should not fall in rectangle [2D~, 0~D-1]
     let (flag2) = is_le (2*PLANET_DIM, grid.x)
@@ -111,6 +111,7 @@ func locate_face_and_edge_given_valid_grid {range_check_ptr} (
     let (flag1) = is_nn_le (grid.x - (PLANET_DIM), PLANET_DIM-1)
     let (flag2) = is_nn_le (grid.x - (2*PLANET_DIM), PLANET_DIM-1)
     let (flag3) = is_nn_le (grid.x - (3*PLANET_DIM), PLANET_DIM-1)
+    
     let (flag4) = is_nn_le (grid.y, PLANET_DIM-1)
     let (flag5) = is_nn_le (grid.y - (PLANET_DIM), PLANET_DIM-1)
     let (flag6) = is_nn_le (grid.y - (2*PLANET_DIM), PLANET_DIM-1)

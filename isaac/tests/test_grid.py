@@ -43,7 +43,7 @@ async def test_grid ():
             assert ret.result.idx_on_edge == idx_on_edge
         else:
             face = random.randint (0,5)
-            inner_grid = generate_random_valid_inner_grid_given_face (face, PLANET_DIM)
+            inner_grid = generate_random_valid_inner_grid_given_face (face, PLANET_DIM) # inner_grid === grid that is not on edge
             ret = await contract.mock_locate_face_and_edge_given_valid_grid(
                 grid = contract.Vec2 (inner_grid[0], inner_grid[1])
             ).call()
