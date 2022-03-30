@@ -881,6 +881,10 @@ func resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_ptr : Hash
     return ()
 end
 
+func coord_transform {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        momentum_magnitude: felt, face_index: felt, phi: felt
+    ) -> (momentum_vector: felt):
+
 
 func forward_world_micro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> ():
