@@ -24,37 +24,15 @@ const PLANET_DIM = 100
 # TODO: params to control resource distribution via e.g. perlin noise
 
 #
-# Constants for cube coordinate system;
-# edge 7-10 are the corner grids connected to multiple normal edges (0-6).
-# note: I hope we have enums in Cairo ..
-#
-const FACE_0 = 0
-const FACE_1 = 1
-const FACE_2 = 2
-const FACE_3 = 3
-const FACE_4 = 4
-const FACE_5 = 5
-const EDGE_0 = 0
-const EDGE_1 = 1
-const EDGE_2 = 2
-const EDGE_3 = 3
-const EDGE_4 = 4
-const EDGE_5 = 5
-const EDGE_6 = 6
-const EDGE_7 = 7
-const EDGE_8 = 8
-const EDGE_9 = 9
-const EDGE_10 = 10
-
-
-#
 # Constants for element type
 #
-const ELEMENT_FE = 0 # iron
-const ELEMENT_AL = 1 # aluminum
-const ELEMENT_CU = 2 # copper
-const ELEMENT_SI = 3 # silicon
-const ELEMENT_PU = 4 # plutonium-241
+namespace ns_element_types:
+    const ELEMENT_FE = 0 # iron
+    const ELEMENT_AL = 1 # aluminum
+    const ELEMENT_CU = 2 # copper
+    const ELEMENT_SI = 3 # silicon
+    const ELEMENT_PU = 4 # plutonium-241
+end
 
 #
 # Constants for device type

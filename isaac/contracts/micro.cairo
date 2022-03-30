@@ -44,7 +44,7 @@ end
 # note: if desirable, this function can be replicated as-is in frontend (instead of polling contract from starknet) to compute only-once
 # the distribution of concentration value per resource type per grid
 #
-func get_resource_concentration_at_grid (grid : Vec2, resource_type : felt) -> (resource_concentration : felt):
+func get_resource_concentration_at_grid (grid : Vec2, resource_type : felt) -> (resource_concentration_fp10 : felt):
     alloc_locals
 
     # Requirement 1 / have a different distribution per resource type
@@ -58,6 +58,8 @@ func get_resource_concentration_at_grid (grid : Vec2, resource_type : felt) -> (
 
     return (1)
 end
+
+func get_resource_harvest_amount_from_concentration (resource_concentration_fp10 : felt, )
 
 ##############################
 ## Devices (including opsf)
