@@ -184,6 +184,7 @@ func forward_world_macro {pedersen_ptr : HashBuiltin*, range_check_ptr}(
 
     let (state_nxt : Dynamics) = rk4 (dt=DT, state=state)
     let (phi_nxt) = forward_planet_spin (phi)
+    ## add handling of momentum kick created by NDPE launch
 
     return (state_nxt, phi_nxt)
 end

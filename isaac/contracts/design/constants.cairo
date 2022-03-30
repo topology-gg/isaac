@@ -27,11 +27,16 @@ const PLANET_DIM = 100
 # Constants for element type
 #
 namespace ns_element_types:
-    const ELEMENT_FE = 0 # iron
-    const ELEMENT_AL = 1 # aluminum
-    const ELEMENT_CU = 2 # copper
-    const ELEMENT_SI = 3 # silicon
-    const ELEMENT_PU = 4 # plutonium-241
+    const ELEMENT_FE_RAW = 0 # iron raw
+    const ELEMENT_FE_REF = 1 # iron refined
+    const ELEMENT_AL_RAW = 2 # aluminum raw
+    const ELEMENT_AL_REF = 3 # aluminum refined
+    const ELEMENT_CU_RAW = 4 # copper raw
+    const ELEMENT_CU_REF = 5 # copper refined
+    const ELEMENT_SI_RAW = 6 # silicon raw
+    const ELEMENT_SI_REF = 7 # silicon refined
+    const ELEMENT_PU_RAW = 8 # plutonium-241 raw
+    const ELEMENT_PU_ENR = 9 # plutonium-241 enriched
 end
 
 #
@@ -58,4 +63,80 @@ namespace ns_device_types:
     const DEVICE_HARVESTER_MAX = 6
     const DEVICE_TRANSFORMER_MIN = 7
     const DEVICE_TRANSFORMER_MAX = 11
+end
+
+func transformer_device_type_to_element_types {} (device_type : felt) -> (
+        element_type_before_transform : felt,
+        element_type_after_transform : felt
+    ):
+
+    if device_type == ns_device_types.DEVICE_FE_REFN:
+        return (
+            ns_element_types.ELEMENT_FE_RAW,
+            ns_element_types.ELEMENT_FE_REF
+        )
+    end
+
+    if device_type == ns_device_types.DEVICE_AL_REFN:
+        return (
+            ns_element_types.ELEMENT_AL_RAW,
+            ns_element_types.ELEMENT_AL_REF
+        )
+    end
+
+    if device_type == ns_device_types.DEVICE_CU_REFN:
+        return (
+            ns_element_types.ELEMENT_CU_RAW,
+            ns_element_types.ELEMENT_CU_REF
+        )
+    end
+
+    if device_type == ns_device_types.DEVICE_SI_REFN:
+        return (
+            ns_element_types.ELEMENT_SI_RAW,
+            ns_element_types.ELEMENT_SI_REF
+        )
+    end
+
+    if device_type == ns_device_types.DEVICE_PEF:
+        return (
+            ns_element_types.ELEMENT_PU_RAW,
+            ns_element_types.ELEMENT_PU_ENR
+        )
+    end
+
+    with_attr error_message ("not a transformer device"):
+        assert 1 = 0
+    end
+    return (0, 0)
+
+end
+
+func harvester_device_type_to_element_type {} (device_type : felt) -> (element_type : felt):
+
+    if device_type == ns_device_types.DEVICE_FE_HARV:
+        return (ns_element_types.ELEMENT_FE_RAW)
+    end
+
+    if device_type == ns_device_types.DEVICE_AL_HARV:
+        return (ns_element_types.ELEMENT_AL_RAW)
+    end
+
+    if device_type == ns_device_types.DEVICE_CU_HARV:
+        return (ns_element_types.ELEMENT_CU_RAW)
+    end
+
+    if device_type == ns_device_types.DEVICE_SI_HARV:
+        return (ns_element_types.ELEMENT_SI_RAW)
+    end
+
+    if device_type == ns_device_types.DEVICE_PU_HARV:
+        return (ns_element_types.ELEMENT_PU_RAW)
+    end
+
+    with_attr error_message ("not a harvester device"):
+        assert 1 = 0
+    end
+    return (0)
+
 end

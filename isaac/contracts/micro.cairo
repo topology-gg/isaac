@@ -8,7 +8,11 @@ from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
 from contracts.macro import (forward_world_macro)
-from contracts.design.constants import (ns_device_types)
+from contracts.design.constants import (
+    ns_device_types,
+    harvester_device_type_to_element_type,
+    transformer_device_type_to_element_types
+)
 from contracts.util.structs import (
     MicroEvent, Vec2
 )
@@ -44,7 +48,7 @@ end
 # note: if desirable, this function can be replicated as-is in frontend (instead of polling contract from starknet) to compute only-once
 # the distribution of concentration value per resource type per grid
 #
-func get_resource_concentration_at_grid (grid : Vec2, resource_type : felt) -> (resource_concentration_fp10 : felt):
+func get_resource_concentration_at_grid {} (grid : Vec2, resource_type : felt) -> (resource_concentration : felt):
     alloc_locals
 
     # Requirement 1 / have a different distribution per resource type
@@ -52,14 +56,22 @@ func get_resource_concentration_at_grid (grid : Vec2, resource_type : felt) -> (
     # Requirement 3 / expose parameters controlling these distributions as constants in `contracts.design.constants` for easier tuning
     # Requirement 4 / deal with fixed-point representation for concentration values
 
-    with_attr error_message ("function not implemented."):
-        assert 1 = 0
-    end
+    # with_attr error_message ("function not implemented."):
+    #     assert 1 = 0
+    # end
 
-    return (1)
+    ## assuming the concentration value has a range of [0,1000)
+    return (500)
 end
 
-func get_resource_harvest_amount_from_concentration (resource_concentration_fp10 : felt, )
+# this function assumes valid grid as input
+func get_resource_harvest_amount_at_grid {} (grid : Vec2, resource_type : felt) -> (amount : felt):
+    let (resource_concentration) = get_resource_concentration_at_grid (grid, resource_type)
+
+    # reserving `multipler` for the need to adjust linearly the harvesting rate
+    let multiplier = 1
+    return (amount = resource_concentration * multiplier)
+end
 
 ##############################
 ## Devices (including opsf)
@@ -80,8 +92,8 @@ struct DeviceDeployedEmapEntry:
 end
 
 struct TransformerResourceBalances:
-    member balance_resource_raw : felt
-    member balance_resource_transformed : felt
+    member balance_resource_before_transform : felt
+    member balance_resource_after_transform : felt
 end
 
 @storage_var
@@ -203,22 +215,55 @@ func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     # use `emap_entry.utb_label/utl_label` to find emap-entry of the utb-set/utl-set,
     # and unregister src/dst device from it (set device id to 0, assuming 0 does not correspond to some meaning device id)
     #
-    if emap_entry.tethered_to_utb == 1:
-        let (utb_set_emap_index) = utb_set_deployed_label_to_emap_index.read (emap_entry.utb_label)
-        let (utb_set_emap_entry) = utb_set_deployed_emap.read (utb_set_emap_index)
-        let (is_src_device) = is_zero (utb_set_emap_entry.src_device_id - grid_stat.deployed_device_id)
-        let (is_dst_device) = is_zero (utb_set_emap_entry.dst_device_id - grid_stat.deployed_device_id)
-        let new_src_device_id = (1-is_src_device) * utb_set_emap_entry.src_device_id
-        let new_dst_device_id = (1-is_dst_device) * utb_set_emap_entry.dst_device_id
+    if emap_entry.tethered_to_utb == 0:
+        jmp update_devices
+    end
 
-        utb_set_deployed_emap.write (utb_set_emap_index, UtbSetDeployedEmapEntry(
-            utb_set_deployed_label = utb_set_emap_entry.utb_set_deployed_label,
-            utb_deployed_index_start = utb_set_emap_entry.utb_deployed_index_start,
-            utb_deployed_index_end = utb_set_emap_entry.utb_deployed_index_end,
-            src_device_id = new_src_device_id,
-            dst_device_id = new_dst_device_id
-        ))
+    let (utb_set_emap_index) = utb_set_deployed_label_to_emap_index.read (emap_entry.utb_label)
+    let (utb_set_emap_entry) = utb_set_deployed_emap.read (utb_set_emap_index)
+    let (is_src_device) = is_zero (utb_set_emap_entry.src_device_id - grid_stat.deployed_device_id)
+    let (is_dst_device) = is_zero (utb_set_emap_entry.dst_device_id - grid_stat.deployed_device_id)
+    let new_src_device_id = (1-is_src_device) * utb_set_emap_entry.src_device_id
+    let new_dst_device_id = (1-is_dst_device) * utb_set_emap_entry.dst_device_id
 
+    utb_set_deployed_emap.write (utb_set_emap_index, UtbSetDeployedEmapEntry(
+        utb_set_deployed_label = utb_set_emap_entry.utb_set_deployed_label,
+        utb_deployed_index_start = utb_set_emap_entry.utb_deployed_index_start,
+        utb_deployed_index_end = utb_set_emap_entry.utb_deployed_index_end,
+        src_device_id = new_src_device_id,
+        dst_device_id = new_dst_device_id
+    ))
+
+    # TODO: come back to implement for utl below
+    # if emap_entry.tethered_to_utl:
+    # end
+
+    update_devices:
+    local syscall_ptr : felt* = syscall_ptr
+    local pedersen_ptr : HashBuiltin* = pedersen_ptr
+    local range_check_ptr = range_check_ptr
+    #
+    # Clear entry in device-id to resource-balance lookup
+    #
+    let (bool_is_harvester) = is_device_harvester (grid_stat.deployed_device_type)
+    let (bool_is_transformer) = is_device_transformer (grid_stat.deployed_device_type)
+
+    check_harvesters:
+    tempvar bool_is_harvester_minus_one = bool_is_harvester - 1
+    jmp check_transformers if bool_is_harvester_minus_one != 0
+
+    harvesters_deployed_id_to_resource_balance.write (
+        grid_stat.deployed_device_id,
+        0
+    )
+    jmp recycle
+
+    check_transformers:
+    if bool_is_harvester == 1:
+        transformers_deployed_id_to_resource_balances.write (
+            grid_stat.deployed_device_id,
+            TransformerResourceBalances (0,0)
+        )
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
@@ -226,30 +271,6 @@ func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
-    end
-
-    # TODO: come back to implement for utl below
-    # if emap_entry.tethered_to_utl:
-    # end
-
-    #
-    # Clear entry in device-id to resource-balance lookup
-    #
-    let (bool_is_harvester) = is_device_harvester (grid_stat.type)
-    let (bool_is_transformer) = is_device_transformer (grid_stat.type)
-    if bool_is_harvester == 1:
-        harvesters_deployed_id_to_resource_balance.write (
-            grid_stat.deployed_device_id,
-            0
-        )
-        jmp recycle
-    end
-    if bool_is_harvester == 1:
-        transformers_deployed_id_to_resource_balances.write (
-            grid_stat.deployed_device_id,
-            TransformerResourceBalances (0,0)
-        )
-        jmp recycle
     end
 
     recycle:
@@ -618,7 +639,11 @@ func utb_tether_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
         src_device_grid : Vec2,
         dst_device_grid : Vec2
     ) -> ():
-    # TODO
+
+    with_attr error_message ("Not implemented."):
+        assert 1 = 0
+    end
+
     return ()
 end
 
@@ -765,29 +790,82 @@ func recurse_resource_update_at_devices {syscall_ptr : felt*, pedersen_ptr : Has
     #
     # For harvester => increase resource based on resource concentration at land # TODO: use energy to boost harvest rate
     #
+    handle_harvester:
     if bool_is_harvester == 1:
+        let (element_type) = harvester_device_type_to_element_type (emap_entry.type)
+        let (amount_harvested) = get_resource_harvest_amount_at_grid (emap_entry.grid, element_type)
+        let (amount_curr) = harvesters_deployed_id_to_resource_balance.read (emap_entry.id)
         harvesters_deployed_id_to_resource_balance.write (
             emap_entry.id,
-            ______TODO_______
+            amount_curr + amount_harvested
         )
-        jmp recurse
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
     end
 
     #
     # For transformer (refinery/PEF) => decrease raw resource and increase transformed resource
     #
+    handle_transformer:
+    local syscall_ptr : felt* = syscall_ptr
+    local pedersen_ptr : HashBuiltin* = pedersen_ptr
+    local range_check_ptr = range_check_ptr
     if bool_is_transformer == 1:
-        transformers_deployed_id_to_resource_balances.write (
-            emap_entry.id,
-            ______TODO_______ # TransformerResourceBalances (0,0)
-        )
-        jmp recurse
+        let (element_type_raw, element_type_transformed) = transformer_device_type_to_element_types (emap_entry.type)
+        ## TODO: design transform rate per element type
+        let (balances) = transformers_deployed_id_to_resource_balances.read (emap_entry.id)
+        let (bool_can_transform_resource) = transformer_has_resource_to_transform (emap_entry.type, balances)
+
+        if bool_can_transform_resource == 1:
+            transformers_deployed_id_to_resource_balances.write (
+                emap_entry.id,
+                TransformerResourceBalances (
+                    balances.balance_resource_before_transform - 1,
+                    balances.balance_resource_after_transform + 1,
+                )
+            )
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
+        else:
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
+        end
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
     end
 
     recurse:
     recurse_resource_update_at_devices (len, idx + 1)
 
     return ()
+end
+
+## TODO
+func transformer_has_resource_to_transform {range_check_ptr} (
+        device_type : felt,
+        balances : TransformerResourceBalances
+    ) -> (bool : felt):
+
+    if balances.balance_resource_before_transform != 0:
+        return (1)
+    end
+
+    return (0)
+
+    # (reference)
+    # TransformerResourceBalances:
+    #   member balance_resource_before_transform : felt
+    #   member balance_resource_after_transform : felt
+    # end
 end
 
 func resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
@@ -818,11 +896,217 @@ func forward_world_micro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     # akin to propagating values through wires
     #
     resource_transfer_across_utb_sets ()
+
+    return ()
+end
+
+######################################
+## Mock functions for testing purposes
+######################################
+
+@external
+func mock_device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        caller : felt,
+        type : felt,
+        grid_x : felt,
+        grid_y : felt
+    ) -> ():
+
+    device_deploy (
+        caller,
+        type,
+        Vec2 (grid_x, grid_y)
+    )
+
+    return ()
+end
+
+
+@external
+func mock_device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        caller : felt,
+        grid_x : felt,
+        grid_y : felt
+    ) -> ():
+    alloc_locals
+
+    device_pickup_by_grid (
+        caller,
+        Vec2 (grid_x, grid_y)
+    )
+
+    return ()
+end
+
+
+@external
+func mock_utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        caller : felt,
+        locs_len : felt,
+        locs : Vec2*,
+        src_device_grid : Vec2,
+        dst_device_grid : Vec2
+    ) -> ():
+
+    utb_deploy (
+        caller,
+        locs_len,
+        locs,
+        src_device_grid,
+        dst_device_grid
+    )
+
+    return ()
+end
+
+
+@external
+func mock_utb_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        caller : felt,
+        grid_x : felt,
+        grid_y : felt
+    ) -> ():
+
+    utb_pickup_by_grid (
+        caller,
+        Vec2 (grid_x, grid_y)
+    )
+
+    return ()
+end
+
+
+@external
+func mock_utb_tether_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        caller : felt,
+        utb_grid : Vec2,
+        src_device_grid : Vec2,
+        dst_device_grid : Vec2
+    ) -> ():
+
+    utb_tether_by_grid (
+        caller,
+        utb_grid,
+        src_device_grid,
+        dst_device_grid
+    )
+
+    return ()
+end
+
+
+@external
+func mock_are_resource_producer_consumer_relationship {range_check_ptr} (
+    device_type0, device_type1) -> ():
+
+    are_resource_producer_consumer_relationship (
+        device_type0,
+        device_type1
+    )
+
+    return ()
 end
 
 #######################################
 ## Admin functions for testing purposes
 #######################################
 
-# give device to player
+@view
+func admin_read_grid_stats {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (grid : Vec2) -> (grid_stat : GridStat):
+    let (grid_stat) = grid_stats.read (grid)
+    return (grid_stat)
+end
 
+@view
+func admin_read_device_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    owner : felt, type : felt) -> (amount : felt):
+    let (amount) = device_undeployed_ledger.read (owner, type)
+    return (amount)
+end
+
+@external
+func admin_write_device_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    owner : felt, type : felt, amount : felt):
+    device_undeployed_ledger.write (owner, type, amount)
+    return ()
+end
+
+@view
+func admin_read_device_deployed_emap_size {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> (size : felt):
+    let (size) = device_deployed_emap_size.read ()
+    return (size)
+end
+
+@view
+func admin_read_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    emap_index : felt) -> (emap_entry : DeviceDeployedEmapEntry):
+    let (emap_entry) = device_deployed_emap.read (emap_index)
+    return (emap_entry)
+end
+
+@view
+func admin_read_device_deployed_id_to_emap_index {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    id : felt) -> (emap_index : felt):
+    let (emap_index) = device_deployed_id_to_emap_index.read (id)
+    return (emap_index)
+end
+
+@view
+func admin_read_harvesters_deployed_id_to_resource_balance {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    id : felt) -> (balance : felt):
+    let (balance) = harvesters_deployed_id_to_resource_balance.read (id)
+    return (balance)
+end
+
+@view
+func admin_read_transformers_deployed_id_to_resource_balances {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    id : felt) -> (balances : TransformerResourceBalances):
+    let (balances) = transformers_deployed_id_to_resource_balances.read (id)
+    return (balances)
+end
+
+@view
+func admin_read_utb_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (owner : felt) -> (amount : felt):
+    let (amount) = utb_undeployed_ledger.read (owner)
+    return (amount)
+end
+
+@external
+func admin_write_utb_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (owner : felt, amount : felt) -> ():
+    utb_undeployed_ledger.write (owner, amount)
+    return ()
+end
+
+@view
+func admin_read_utb_set_deployed_emap_size {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> (size : felt):
+    let (size) = utb_set_deployed_emap_size.read ()
+    return (size)
+end
+
+@view
+func admin_read_utb_set_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    emap_index : felt) -> (emap_entry : UtbSetDeployedEmapEntry):
+    let (emap_entry) = utb_set_deployed_emap.read (emap_index)
+    return (emap_entry)
+end
+
+@view
+func admin_read_utb_set_deployed_label_to_emap_index {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    label : felt) -> (emap_index : felt):
+    let (emap_index) = utb_set_deployed_label_to_emap_index.read (label)
+    return (emap_index)
+end
+
+@view
+func admin_read_utb_deployed_index_to_grid_size {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (size : felt):
+    let (size) = utb_deployed_index_to_grid_size.read ()
+    return (size)
+end
+
+@view
+func admin_read_utb_deployed_index_to_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    index : felt) -> (grid : Vec2):
+    let (grid) = utb_deployed_index_to_grid.read (index)
+    return (grid)
+end
