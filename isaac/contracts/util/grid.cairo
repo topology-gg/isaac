@@ -27,7 +27,7 @@ func is_valid_grid {range_check_ptr} (
     # grid should not fall in square [0~D-1, 0~D-1]
     let (flag0) = is_le (grid.x, PLANET_DIM-1)
     let (flag1) = is_le (grid.y, PLANET_DIM-1)
-    assert flag0 * flag1 = 0
+    assert flag0 * flag1 = 0 
 
     # grid should not fall in rectangle [2D~, 0~D-1]
     let (flag2) = is_le (2*PLANET_DIM, grid.x)
