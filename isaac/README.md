@@ -1,8 +1,8 @@
-## Isaac
+# Isaac
 note: changed name from Escape from Centauri (too mouthy) to Isaac, which reflects the Newtonian mechanics involved in this game, and also borrows the sense of world genesis from its connotation with the Bible figure.
 
 ### Narrative
-A hypothetical planet called *Mercury* is trapped in a trisolar system called *Centauri* where the three suns of identical mass follow roughly a figure-8 trajectory (https://arxiv.org/pdf/math/0011268.pdf) with perturbation and drifts, making the system chaotic. All players reside on the Mercury, forming a interdependent civilization. Every time the planet is crashed into a sun, the civilization is destroyed and reborn, and the planet is reset to full-resource initial state and randomly placed in the trisolar system for the next civilization run. The objective of the game is for players to collectively build sufficient "Nuclear Driller & Propulsion Engines" from harvesting and crafting with natural resources abundant on Mercury, place and time their launch strategically to either change Mercury's orbit to evade a deadly crash into a sun or produce enough thrust for Mercury to escape Centauri for good.
+A hypothetical cuboid planet is trapped in a trisolar system where the three suns of identical mass follow roughly a figure-8 trajectory (https://arxiv.org/pdf/math/0011268.pdf) with perturbation and drifts, making the system chaotic. All players reside on the cuboid planet, forming a interdependent civilization. Every time the planet is crashed into a sun, the civilization is destroyed and reborn, and the planet is reset to full-resource initial state and randomly placed in the trisolar system for the next civilization run. The objective of the game is for players to collectively build sufficient "Nuclear Driller & Propulsion Engines" from harvesting and crafting with natural resources abundant on the planet, place and time their launch strategically to either change their planet's orbit to evade a deadly crash into a sun or produce enough thrust for their planet to escape the hostile trisolar system for good.
 
 ### Principle
 - no upgradeability - all children contract addresses are hardcoded in public server contract; to upgrade is to redploy the entire contract set at different addresses such that deployed worlds are guaranteed immutable from everyone
@@ -66,7 +66,6 @@ A hypothetical planet called *Mercury* is trapped in a trisolar system called *C
 - forward world state at micro scale: production stats on the planet; iterate over harvestors, refinery, transmission/transport, PEF / OPSF
 
 #### todos
-0. deal with inner edges and corners -- face2&0, face2&1, face2&3, face2&4, and face4&5
 1. resource distribution function (determine concentration through e.g. perlin noise) + testing
 2. resource update at device + resource transported across transportation belts + testing
 3. energy update at device + energy transported across transmission lines + testing
