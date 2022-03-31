@@ -69,7 +69,7 @@ async def test_micro (account_factory):
     #
     N_UTB = 10
     LOGGER.info (f'> ------------')
-    LOGGER.info (f'> ** TEST 1 **')
+    LOGGER.info (f'> TEST 1')
     LOGGER.info (f'> admin gives three users 1 iron harvester, 1 iron refinery, and {N_UTB} utb each; admin checks ledger.')
     LOGGER.info (f'> ------------')
     for user in users[1:]:
@@ -118,7 +118,7 @@ async def test_micro (account_factory):
     #    => admin checks GridStat and emap
     #
     LOGGER.info (f'> ------------')
-    LOGGER.info (f'> ** TEST 2 **')
+    LOGGER.info (f'> TEST 2')
     LOGGER.info (f'> user 1 & 2 each deploys their iron harvester & refinery; admin checks GridStat and the enumerable map for deployed devices.')
     LOGGER.info (f'> ------------')
     user1_harvester_grid = (150, 150)
@@ -272,45 +272,139 @@ async def test_micro (account_factory):
         assert ret.result.emap_entry.utb_label == label
         LOGGER.info (f'> deployed-device emap entry at {i}: {ret.result}')
     LOGGER.info (f'> user2 deployed his devices.')
-    LOGGER.info ('')
+    LOGGER.info ('\n')
 
-    # 4. (should raise exception) the third user picks up user1's deployed harvester and refinery
+    #
+    # 4. (should raise exception) user3 picks up deployed devices owned by others
+    #
     LOGGER.info (f'> ------------')
     LOGGER.info (f'> TEST 4')
-    LOGGER.info (f"> (should raise exception) the third user picks up user1's deployed harvester and refinery")
+    LOGGER.info (f"> (should raise exception) user3 picks up deployed devices owned by others")
     LOGGER.info (f'> ------------')
+    for (x,y) in [(150,150), (155,150), (99,100), (100,99)] + [(151,150), (152,150), (153,150), (154,150)] + [(99,101), (100,101), (101,101), (101,100), (101,99)]:
+        with pytest.raises(Exception) as e_info:
+            await users[3]['signer'].send_transaction(
+                account = users[3]['account'], to = contract.contract_address,
+                selector_name = 'mock_device_pickup_by_grid',
+                calldata=[
+                    users[3]['account'].contract_address, # caller
+                    x, y # grid
+                ])
+        LOGGER.info (f'> user3 attempted to pick up the device at grid ({x},{y}) which she does not own -> exception raised as expected.')
+    LOGGER.info ('\n')
 
-
-    # 5. (should raise exception) the third user picks up user1's deployed utb's
+    #
+    # 5. (should raise exception) user3 deploys iron harvester on the grids with deployed devices
+    #
     LOGGER.info (f'> ------------')
     LOGGER.info (f'> TEST 5')
-    LOGGER.info (f"> (should raise exception) the third user picks up user1's deployed utb's")
+    LOGGER.info (f"> (should raise exception) user3 deploys iron harvester on the grid of user1's deployed harvester")
     LOGGER.info (f'> ------------')
 
+    for (x,y) in [(150,150), (155,150), (99,100), (100,99)] + [(151,150), (152,150), (153,150), (154,150)] + [(99,101), (100,101), (101,101), (101,100), (101,99)]:
+        with pytest.raises(Exception) as e_info:
+            await users[3]['signer'].send_transaction(
+                account = users[3]['account'], to = contract.contract_address,
+                selector_name = 'mock_device_deploy',
+                calldata=[
+                    users[3]['account'].contract_address,
+                    2, # DEVICE_FE_HARV
+                    x, y # grid
+                ])
+        LOGGER.info (f'> user3 attempted to deploy device at grid ({x},{y}) which is populated already -> exception raised as expected.')
+    LOGGER.info ('\n')
 
-    # 6. (should raise exception) the third user deploys iron harvester on the grid of user1's deployed harvester
+    #
+    # 6. user3 deploys her iron harvester & refinery
+    #    => admin checks GridStat and emap
+    #
     LOGGER.info (f'> ------------')
     LOGGER.info (f'> TEST 6')
-    LOGGER.info (f"> (should raise exception) the third user deploys iron harvester on the grid of user1's deployed harvester")
+    LOGGER.info (f"> user3 deploys her iron harvester & refinery; admin checks GridStat and emap")
     LOGGER.info (f'> ------------')
+    user3_harvester_grid = (200, 100)
+    user3_refinery_grid = (199, 99)
+    await users[3]['signer'].send_transaction(
+        account = users[3]['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            users[3]['account'].contract_address,
+            2, # DEVICE_FE_HARV
+            user3_harvester_grid[0],
+            user3_harvester_grid[1]
+        ])
+    await users[3]['signer'].send_transaction(
+        account = users[3]['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            users[3]['account'].contract_address,
+            7, # DEVICE_FE_REFN
+            user3_refinery_grid[0],
+            user3_refinery_grid[1]
+        ])
 
+    ret = await contract.admin_read_grid_stats( contract.Vec2(user3_harvester_grid[0], user3_harvester_grid[1]) ).call()
+    LOGGER.info (f'> user3_harvester_grid has {ret.result}')
+    assert ret.result.grid_stat.populated == 1
+    assert ret.result.grid_stat.deployed_device_type == 2
+    assert ret.result.grid_stat.deployed_device_owner == int(users[3]['account'].contract_address)
+    user3_harvester_id = ret.result.grid_stat.deployed_device_id
 
-    # 7. (should raise exception) the third user deploys iron harvester on the grid of user1's utb
+    ret = await contract.admin_read_grid_stats( contract.Vec2(user3_refinery_grid[0], user3_refinery_grid[1]) ).call()
+    LOGGER.info (f'> user3_refinery_grid has {ret.result}')
+    assert ret.result.grid_stat.populated == 1
+    assert ret.result.grid_stat.deployed_device_type == 7
+    assert ret.result.grid_stat.deployed_device_owner == int(users[3]['account'].contract_address)
+    user3_refinery_id = ret.result.grid_stat.deployed_device_id
+
+    ret = await contract.admin_read_device_deployed_emap(4).call()
+    assert ret.result.emap_entry.grid == contract.Vec2 (user3_harvester_grid[0], user3_harvester_grid[1])
+    assert ret.result.emap_entry.type == 2
+    assert ret.result.emap_entry.id == user3_harvester_id
+    ret = await contract.admin_read_device_deployed_emap(5).call()
+    assert ret.result.emap_entry.grid == contract.Vec2 (user3_refinery_grid[0], user3_refinery_grid[1])
+    assert ret.result.emap_entry.type == 7
+    assert ret.result.emap_entry.id == user3_refinery_id
+
+    #
+    # 7. (should raise exception) user3 deploys her utb's incontiguously
+    #
     LOGGER.info (f'> ------------')
     LOGGER.info (f'> TEST 7')
-    LOGGER.info (f"> (should raise exception) the third user deploys iron harvester on the grid of user1's utb")
+    LOGGER.info (f"> (should raise exception) user3 deploys her utb's incontiguously")
     LOGGER.info (f'> ------------')
+    # user3 is supposed to connect (200,100) and (199,99)
+    with pytest.raises(Exception) as e_info:
+        await users[3]['signer'].send_transaction(
+            account = users[3]['account'], to = contract.contract_address,
+            selector_name = 'mock_utb_deploy',
+            calldata=[
+                users[3]['account'].contract_address, # caller
+                2, 200, 199, # locs_x
+                2, 101, 101, # locs_y
+                200, 100, 199, 99
+            ])
+    LOGGER.info (f'> user3 attempted to deploy incontiguous utb set -> exception raised as expected.')
 
-    # 8. the third user deploys her iron harvester & refinery
-    #    => admin checks emap
+    #
+    # 9. (should raise exception) user3 deploys her utb's contiguously to connect their harvester-refinery pair but crossing over
+    #                              user1's utb path
+    #
 
-    # 9. (should raise exception) the third user deploys her utb's contiguously to connect their harvester-refinery pair but crossing over
-    #                             user1's utb path
+    #
+    # 10. (should raise exception) user1 attempt to deploy another iron harvester (device balance already depleted)
+    #
 
-    # 10. (should raise exception) user1 attempt to deploy another iron harvester
+    #
+    # 11. Check ledger for correct amount of undeployed devices
+    #
+    # ret = await contract.admin_read_device_undeployed_ledger(
+    #     owner = user['account'].contract_address,
+    #     type = device_type
+    # ).call()
 
-    # 11. TODO: pick up devices
-    # 10. TODO: forward_world_micro ()
+    # 11. TODO: user3 picks up her devices
+    # 12. TODO: forward_world_micro ()
 
     # #############################
     # # Test `mock_device_deploy()`
