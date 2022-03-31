@@ -68,13 +68,13 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 #### todos
 1. resource distribution function (determine concentration through e.g. perlin noise) + testing
 2. resource update at device + resource transported across transportation belts + testing
-3. energy update at device + energy transported across transmission lines + testing
-4. OPSF "factory" function for player to construct devices + testing
+3. OPSF "factory" placement (populating multiple contiguous grids) function for player to construct devices + testing
+4. energy update at device + energy transported across transmission lines + testing
 5. game over determination - detecting collision between planet and any of the three suns + testing
 6. visualizer of macro trisolar system
 7. visualizer of micro planet surface activities
 8. (ideal) frontend able to make transaction to e.g. place device
 9. (ideal demo ready at this step) Rudimentary write-up on game design and technical considerations for audience to read during/after demo
 10. NDPE "rocket" launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
-11. game over determination - detecting escape velocity plus escape condition + testing
+11. game over determination - detecting escape velocity plus escape condition (require game design thinking) + testing
 
