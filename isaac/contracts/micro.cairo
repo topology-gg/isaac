@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash_chain import hash_chain
-from starkware.cairo.common.math import (assert_lt, assert_nn)
+from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn)
 from starkware.cairo.common.math_cmp import (is_le, is_nn_le)
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
@@ -305,9 +305,9 @@ end
 # they are also deployed exclusively to connect their src & dst devices that meet
 # the resource producer-consumer relationship.
 #
-@storage_var
-func utb_undeployed_ledger (owner : felt) -> (amount : felt):
-end
+# @storage_var
+# func utb_undeployed_ledger (owner : felt) -> (amount : felt):
+# end
 ## TODO: extend this to `utx_undeployed_ledger (owner, is_utb) -> (amount)` for both utb and utx
 
 #
@@ -362,8 +362,8 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     #
     # Check if caller owns at least `locs_len` amount of undeployed utb
     #
-    let (owned_utb_amount) = utb_undeployed_ledger.read (caller)
-    assert_lt (owned_utb_amount, locs_len)
+    let (local owned_utb_amount) = device_undeployed_ledger.read (caller, ns_device_types.DEVICE_UTB)
+    assert_le (locs_len, owned_utb_amount)
 
     #
     # Check if caller owns src and dst device
@@ -424,7 +424,7 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     #
     # Decrease caller's undeployed utb amount
     #
-    utb_undeployed_ledger.write (caller, owned_utb_amount - locs_len)
+    device_undeployed_ledger.write (caller, ns_device_types.DEVICE_UTB, owned_utb_amount - locs_len)
 
     #
     # Update `utb_deployed_index_to_grid_size`
@@ -569,8 +569,8 @@ func utb_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
     #
     # Return the entire set of utbs back to the caller
     #
-    let (amount_curr) = utb_undeployed_ledger.read (caller)
-    utb_undeployed_ledger.write (caller, amount_curr + utb_end_index - utb_start_index)
+    let (amount_curr) = device_undeployed_ledger.read (caller, ns_device_types.DEVICE_UTB)
+    device_undeployed_ledger.write (caller, ns_device_types.DEVICE_UTB, amount_curr + utb_end_index - utb_start_index)
 
     #
     # Update enumerable map of utb-sets:
@@ -1113,17 +1113,17 @@ func admin_read_transformers_deployed_id_to_resource_balances {syscall_ptr : fel
     return (balances)
 end
 
-@view
-func admin_read_utb_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (owner : felt) -> (amount : felt):
-    let (amount) = utb_undeployed_ledger.read (owner)
-    return (amount)
-end
+# @view
+# func admin_read_utb_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (owner : felt) -> (amount : felt):
+#     let (amount) = utb_undeployed_ledger.read (owner)
+#     return (amount)
+# end
 
-@external
-func admin_write_utb_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (owner : felt, amount : felt) -> ():
-    utb_undeployed_ledger.write (owner, amount)
-    return ()
-end
+# @external
+# func admin_write_utb_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (owner : felt, amount : felt) -> ():
+#     utb_undeployed_ledger.write (owner, amount)
+#     return ()
+# end
 
 @view
 func admin_read_utb_set_deployed_emap_size {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> (size : felt):
