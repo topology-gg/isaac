@@ -23,7 +23,7 @@ from contracts.util.grid import (
 
 ##############################
 
-## Note: for utb-set or utl-set, GridStat.deployed_device_index is the set label
+## Note: for utb-set or utl-set, GridStat.deployed_device_id is the set label
 struct GridStat:
     member populated : felt
     member deployed_device_type : felt
@@ -180,6 +180,11 @@ func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
         utl_label = 0,
         utb_label = 0
     ))
+
+    #
+    # Update `device_deployed_id_to_emap_index`
+    #
+    device_deployed_id_to_emap_index.write (new_id, emap_size_curr)
 
     return ()
 end
@@ -364,7 +369,7 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     # Check if caller owns src and dst device
     #
     let (src_grid_stat) = grid_stats.read (src_device_grid)
-    let (dst_grid_stat) = grid_stats.read (src_device_grid)
+    let (dst_grid_stat) = grid_stats.read (dst_device_grid)
     assert src_grid_stat.populated = 1
     assert dst_grid_stat.populated = 1
     assert src_grid_stat.deployed_device_owner = caller
@@ -652,33 +657,37 @@ end
 func are_resource_producer_consumer_relationship {range_check_ptr} (
     device_type0, device_type1) -> ():
 
-    # TODO: refactir this code to improve extensibility
+    # TODO: refactor this code to improve extensibility
+
+    alloc_locals
+    local x = device_type0
+    local y = device_type1
 
     #
     # From harvester to corresponding refinery / enrichment facility
     #
     # iron harvester => iron refinery
-    if (device_type0 - ns_device_types.DEVICE_FE_HARV - 1) * (device_type1 - ns_device_types.DEVICE_FE_REFN - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_FE_REFN + 1) == 1:
         return ()
     end
 
     # aluminum harvester => aluminum refinery
-    if (device_type0 - ns_device_types.DEVICE_AL_HARV - 1) * (device_type1 - ns_device_types.DEVICE_AL_REFN - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_AL_REFN + 1) == 1:
         return ()
     end
 
     # copper harvester => copper refinery
-    if (device_type0 - ns_device_types.DEVICE_CU_HARV - 1) * (device_type1 - ns_device_types.DEVICE_CU_REFN - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_CU_REFN + 1) == 1:
         return ()
     end
 
     # silicon harvester => silicon refinery
-    if (device_type0 - ns_device_types.DEVICE_SI_HARV - 1) * (device_type1 - ns_device_types.DEVICE_SI_REFN - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_SI_REFN + 1) == 1:
         return ()
     end
 
     # plutonium harvester => plutonium enrichment facility
-    if (device_type0 - ns_device_types.DEVICE_PU_HARV - 1) * (device_type1 - ns_device_types.DEVICE_PEF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_PEF + 1) == 1:
         return ()
     end
 
@@ -686,27 +695,27 @@ func are_resource_producer_consumer_relationship {range_check_ptr} (
     # From harvester straight to OPSF
     #
     # iron harvester => OPSF
-    if (device_type0 - ns_device_types.DEVICE_FE_HARV - 1) * (device_type1 - ns_device_types.DEVICE_OPSF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
         return ()
     end
 
     # aluminum harvester => OPSF
-    if (device_type0 - ns_device_types.DEVICE_AL_HARV - 1) * (device_type1 - ns_device_types.DEVICE_OPSF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
         return ()
     end
 
     # copper harvester => OPSF
-    if (device_type0 - ns_device_types.DEVICE_CU_HARV - 1) * (device_type1 - ns_device_types.DEVICE_OPSF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
         return ()
     end
 
     # silicon harvester => OPSF
-    if (device_type0 - ns_device_types.DEVICE_SI_HARV - 1) * (device_type1 - ns_device_types.DEVICE_OPSF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
         return ()
     end
 
     # plutonium harvester => OPSF
-    if (device_type0 - ns_device_types.DEVICE_PU_HARV - 1) * (device_type1 - ns_device_types.DEVICE_OPSF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
         return ()
     end
 
@@ -714,31 +723,31 @@ func are_resource_producer_consumer_relationship {range_check_ptr} (
     # From refinery/enrichment facility to OPSF
     #
     # iron refinery => OPSF
-    if (device_type0 - ns_device_types.DEVICE_FE_REFN - 1) * (device_type1 - ns_device_types.DEVICE_OPSF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_FE_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
         return ()
     end
 
     # aluminum refinery => OPSF
-    if (device_type0 - ns_device_types.DEVICE_AL_REFN - 1) * (device_type1 - ns_device_types.DEVICE_OPSF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_AL_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
         return ()
     end
 
     # copper refinery => OPSF
-    if (device_type0 - ns_device_types.DEVICE_CU_REFN - 1) * (device_type1 - ns_device_types.DEVICE_OPSF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_CU_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
         return ()
     end
 
     # silicon refinery => OPSF
-    if (device_type0 - ns_device_types.DEVICE_SI_REFN - 1) * (device_type1 - ns_device_types.DEVICE_OPSF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_SI_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
         return ()
     end
 
     # plutonium enrichment facility => OPSF
-    if (device_type0 - ns_device_types.DEVICE_PEF - 1) * (device_type1 - ns_device_types.DEVICE_OPSF - 1) == 1:
+    if (device_type0 - ns_device_types.DEVICE_PEF + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
         return ()
     end
 
-    with_attr error_message("resource producer-consumer relationship check failed."):
+    with_attr error_message("resource producer-consumer relationship check failed, with device_type0 = {x} and device_type1 = {y}"):
         assert 1 = 0
     end
     return ()
@@ -942,20 +951,59 @@ end
 @external
 func mock_utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
-        locs_len : felt,
-        locs : Vec2*,
-        src_device_grid : Vec2,
-        dst_device_grid : Vec2
+        locs_x_len : felt,
+        locs_x : felt*,
+        locs_y_len : felt,
+        locs_y : felt*,
+        src_device_grid_x : felt,
+        src_device_grid_y : felt,
+        dst_device_grid_x : felt,
+        dst_device_grid_y : felt
     ) -> ():
+    alloc_locals
+
+    # since our Account implementation can't sign arbitary struct,
+    # for testing purposes we need to break locs array into two arrays,
+    # one for x's and one for y's
+
+    assert locs_x_len = locs_y_len
+    let locs_len = locs_x_len
+    let (locs : Vec2*) = alloc ()
+    assemble_xy_arrays_into_vec2_array (
+        len = locs_x_len,
+        arr_x = locs_x,
+        arr_y = locs_y,
+        arr = locs,
+        idx = 0
+    )
 
     utb_deploy (
         caller,
         locs_len,
         locs,
-        src_device_grid,
-        dst_device_grid
+        Vec2 (src_device_grid_x, src_device_grid_y),
+        Vec2 (dst_device_grid_x, dst_device_grid_y)
     )
 
+    return ()
+end
+
+func assemble_xy_arrays_into_vec2_array {range_check_ptr} (
+        len : felt,
+        arr_x : felt*,
+        arr_y : felt*,
+        arr : Vec2*,
+        idx : felt
+    ) -> ():
+    if idx == len:
+        return ()
+    end
+
+    assert arr[idx] = Vec2 (arr_x[idx], arr_y[idx])
+
+    assemble_xy_arrays_into_vec2_array (
+        len, arr_x, arr_y, arr, idx + 1
+    )
     return ()
 end
 
