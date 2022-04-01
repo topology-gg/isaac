@@ -80,4 +80,5 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - [demo+] frontend able to make transaction to e.g. place device
 - NDPE "rocket" launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - game over determination - detecting escape velocity plus escape condition (require game design thinking) + testing
+- player transfers device between each other + testing
 
