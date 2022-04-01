@@ -84,3 +84,6 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - game over determination - detecting escape velocity plus escape condition (require game design thinking) + testing
 - player transfers device between each other + testing
 
+#### future items / directions
+- planet core convection, manifesting as dynamic resource distribution on the surface
+- maneuverable near-light-speed missile for splitting suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
