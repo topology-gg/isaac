@@ -66,9 +66,9 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - forward world state at micro scale: production stats on the planet; iterate over harvestors, refinery, transmission/transport, PEF / OPSF
 
 #### todos
-- perlin-based resource distribution function (determine concentration through e.g. perlin noise) + testing
-- resource update at device (naive) + resource transported across transportation belts (naive) + testing
+- (DONE) resource update at device (naive) + resource transported across transportation belts (naive) + testing
 - device pickup + testing
+- perlin-based resource distribution function (determine concentration through e.g. perlin noise) + testing
 - [demo] visualizer of macro trisolar system
 - [demo] visualizer of micro planet surface activities
 - parametrized resource update rate per element + testing
@@ -84,3 +84,6 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - game over determination - detecting escape velocity plus escape condition (require game design thinking) + testing
 - player transfers device between each other + testing
 
+#### future items / directions
+- planet core convection, manifesting as dynamic resource distribution on the surface
+- maneuverable near-light-speed missile for splitting suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
