@@ -67,10 +67,12 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 
 #### todos
 - perlin-based resource distribution function (determine concentration through e.g. perlin noise) + testing
-- resource update at device + resource transported across transportation belts + testing
+- resource update at device (naive) + resource transported across transportation belts (naive) + testing
 - device pickup + testing
 - [demo] visualizer of macro trisolar system
 - [demo] visualizer of micro planet surface activities
+- parametrized resource update rate per element + testing
+- parametrized resource transport rate per element & decay over distance + testing
 - multi-grid device placement e.g. OPSF + testing
 - OPFS device construction + testing
 - energy update at device + energy transported across transmission lines + testing
