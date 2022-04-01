@@ -113,6 +113,9 @@ func transformer_device_type_to_element_types {} (device_type : felt) -> (
 end
 
 func harvester_device_type_to_element_type {} (device_type : felt) -> (element_type : felt):
+    alloc_locals
+
+    local type = device_type
 
     if device_type == ns_device_types.DEVICE_FE_HARV:
         return (ns_element_types.ELEMENT_FE_RAW)
@@ -134,7 +137,7 @@ func harvester_device_type_to_element_type {} (device_type : felt) -> (element_t
         return (ns_element_types.ELEMENT_PU_RAW)
     end
 
-    with_attr error_message ("not a harvester device"):
+    with_attr error_message ("not a harvester device; device_type = {type}"):
         assert 1 = 0
     end
     return (0)

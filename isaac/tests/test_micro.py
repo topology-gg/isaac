@@ -447,7 +447,40 @@ async def test_micro (account_factory):
         assert ret.result.amount == expectation[2]
         LOGGER.info (f"> user{expectation[0]}'s undeployed amount {expectation[2]} of type {expectation[1]} matches expectation.")
 
-    # 11. TODO: forward_world_micro ()
+    #
+    # 11. forward_world_micro ()
+    #
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 11')
+    LOGGER.info (f"> Test forward_world_micro() ")
+    LOGGER.info (f'> ------------')
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance (user1_harvester_id).call()
+    LOGGER.info (f"> [before forward] user1's iron harvester has balance {ret.result.balance}")
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances (user1_refinery_id).call()
+    LOGGER.info (f"> [before forward] user1's iron refinery has balance-pair ({ret.result.balances.balance_resource_before_transform}, {ret.result.balances.balance_resource_after_transform})")
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance (user2_harvester_id).call()
+    LOGGER.info (f"> [before forward] user2's iron harvester has balance {ret.result.balance}")
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances (user2_refinery_id).call()
+    LOGGER.info (f"> [before forward] user2's iron refinery has balance-pair ({ret.result.balances.balance_resource_before_transform}, {ret.result.balances.balance_resource_after_transform})")
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance (user3_harvester_id).call()
+    LOGGER.info (f"> [before forward] user3's iron harvester has balance {ret.result.balance}")
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances (user3_refinery_id).call()
+    LOGGER.info (f"> [before forward] user3's iron refinery has balance-pair ({ret.result.balances.balance_resource_before_transform}, {ret.result.balances.balance_resource_after_transform})")
+
+    await contract.mock_forward_world_micro().invoke()
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance (user1_harvester_id).call()
+    LOGGER.info (f"> [after forward] user1's iron harvester has balance {ret.result.balance}")
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances (user1_refinery_id).call()
+    LOGGER.info (f"> [after forward] user1's iron refinery has balance-pair ({ret.result.balances.balance_resource_before_transform}, {ret.result.balances.balance_resource_after_transform})")
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance (user2_harvester_id).call()
+    LOGGER.info (f"> [after forward] user2's iron harvester has balance {ret.result.balance}")
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances (user2_refinery_id).call()
+    LOGGER.info (f"> [after forward] user2's iron refinery has balance-pair ({ret.result.balances.balance_resource_before_transform}, {ret.result.balances.balance_resource_after_transform})")
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance (user3_harvester_id).call()
+    LOGGER.info (f"> [after forward] user3's iron harvester has balance {ret.result.balance}")
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances (user3_refinery_id).call()
+    LOGGER.info (f"> [after forward] user3's iron refinery has balance-pair ({ret.result.balances.balance_resource_before_transform}, {ret.result.balances.balance_resource_after_transform})")
 
     # 12. TODO: user3 picks up her devices
 

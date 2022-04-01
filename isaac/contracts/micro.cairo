@@ -3,7 +3,7 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash_chain import hash_chain
 from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn)
-from starkware.cairo.common.math_cmp import (is_le, is_nn_le)
+from starkware.cairo.common.math_cmp import (is_le, is_nn_le, is_not_zero)
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
@@ -119,7 +119,7 @@ func transformers_deployed_id_to_resource_balances (id : felt) -> (balances : Tr
 end
 
 @storage_var
-func opsf_deployed_id_to_resource_balances (id : felt, resource_type : felt) -> (balance : felt):
+func opsf_deployed_id_to_resource_balances (id : felt, element_type : felt) -> (balance : felt):
 end
 
 @storage_var
@@ -756,7 +756,7 @@ end
 func is_device_harvester {range_check_ptr} (type : felt) -> (bool : felt):
     let (bool) = is_nn_le (
         type - ns_device_types.DEVICE_HARVESTER_MIN,
-        ns_device_types.DEVICE_HARVESTER_MAX
+        ns_device_types.DEVICE_HARVESTER_MAX - ns_device_types.DEVICE_HARVESTER_MIN
     )
     return (bool)
 end
@@ -764,9 +764,17 @@ end
 func is_device_transformer {range_check_ptr} (type : felt) -> (bool : felt):
     let (bool) = is_nn_le (
         type - ns_device_types.DEVICE_TRANSFORMER_MIN,
-        ns_device_types.DEVICE_TRANSFORMER_MAX
+        ns_device_types.DEVICE_TRANSFORMER_MAX - ns_device_types.DEVICE_TRANSFORMER_MIN
     )
     return (bool)
+end
+
+func is_device_opsf {range_check_ptr} (type : felt) -> (bool : felt):
+    if type == ns_device_types.DEVICE_OPSF:
+        return (1)
+    else:
+        return (0)
+    end
 end
 
 ##############################
@@ -880,13 +888,109 @@ end
 func resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> ():
 
-    # TODO:
-    # recursively traverse `utb_set_deployed_linked_list`
-    #   for each set, check if source device and destination device are still deployed;
-    #   if yes, transfer resource from source to destination according to transport rate
+    #
+    # recursively traverse `utb_set_deployed_emap`
+    #
+    let (emap_size) = utb_set_deployed_emap_size.read ()
+    recurse_resource_transfer_across_utb_sets (
+        len = emap_size, idx = 0
+    )
+
+    return ()
+end
+
+
+func recurse_resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        len, idx
+    ) -> ():
+    alloc_locals
+
+    #
+    # transfer resource from source to destination according to transport rate
     # NOTE: source device can be connected to multiple utb, resulting in higher transport rate
     # NOTE: opsf as destination device can be connected to multiple utb transporting same/different kinds of resources
+    #
 
+    if idx == len:
+        return ()
+    end
+
+    #
+    # check if source device and destination device are still deployed;
+    # note: haven't figured out how to do conditional jump in recursion elegantly
+    #
+    let (emap_entry) = utb_set_deployed_emap.read (idx)
+    let (is_src_tethered) = is_not_zero (emap_entry.src_device_id)
+    let (is_dst_tethered) = is_not_zero (emap_entry.dst_device_id)
+    if is_src_tethered * is_dst_tethered == 1:
+        #
+        # Transport resource src => dst
+        #
+        let (emap_index_src) = device_deployed_id_to_emap_index.read (emap_entry.src_device_id)
+        let (emap_entry_src) = device_deployed_emap.read (emap_index_src)
+        let (emap_index_dst) = device_deployed_id_to_emap_index.read (emap_entry.dst_device_id)
+        let (emap_entry_dst) = device_deployed_emap.read (emap_index_dst)
+        let src_type = emap_entry_src.type
+        let dst_type = emap_entry_dst.type
+        let (bool_src_harvester) = is_device_harvester (src_type)
+        let (bool_dst_opsf) = is_device_opsf (dst_type)
+
+        local transport_amount
+        local element_type
+        if bool_src_harvester == 1:
+            # src device is harvester
+            let (element_type_) = harvester_device_type_to_element_type (src_type)
+            assert element_type = element_type_
+            assert transport_amount = 1
+            let (src_balance) = harvesters_deployed_id_to_resource_balance.read (emap_entry.src_device_id)
+            harvesters_deployed_id_to_resource_balance.write (emap_entry.src_device_id, src_balance - transport_amount)
+
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
+        else:
+            # src device is transformer; transporting `element_type_after_transform`
+            let (_, element_type_) = transformer_device_type_to_element_types (src_type)
+            assert element_type = element_type_
+            assert transport_amount = 1
+            let (src_balances) = transformers_deployed_id_to_resource_balances.read (emap_entry.src_device_id)
+            transformers_deployed_id_to_resource_balances.write (emap_entry.src_device_id, TransformerResourceBalances(
+                balance_resource_before_transform = src_balances.balance_resource_before_transform,
+                balance_resource_after_transform = src_balances.balance_resource_after_transform - transport_amount
+            ))
+
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
+        end
+
+        if bool_dst_opsf == 1:
+            # dst device is OPSF
+            let (dst_balance) = opsf_deployed_id_to_resource_balances.read (emap_entry.dst_device_id, element_type)
+            opsf_deployed_id_to_resource_balances.write (emap_entry.dst_device_id, element_type, dst_balance + transport_amount)
+
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
+        else:
+            # dst device is transformer
+            let (dst_balances) = transformers_deployed_id_to_resource_balances.read (emap_entry.dst_device_id)
+            transformers_deployed_id_to_resource_balances.write (emap_entry.dst_device_id, TransformerResourceBalances(
+                balance_resource_before_transform = dst_balances.balance_resource_before_transform + transport_amount,
+                balance_resource_after_transform = dst_balances.balance_resource_after_transform
+            ))
+
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
+        end
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
+
+    recurse_resource_transfer_across_utb_sets (len, idx + 1)
     return ()
 end
 
@@ -1051,6 +1155,15 @@ func mock_are_resource_producer_consumer_relationship {range_check_ptr} (
         device_type0,
         device_type1
     )
+
+    return ()
+end
+
+@external
+func mock_forward_world_micro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> ():
+
+    forward_world_micro ()
 
     return ()
 end
