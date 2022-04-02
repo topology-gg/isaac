@@ -69,8 +69,8 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) resource update at device (naive) + resource transported across transportation belts (naive) + testing
 - (DONE) test macro.cairo (forwarding trisolar system and planet rotation)
 - (DONE) device pickup + testing
-- server.cairo initializes macro dynamics; contract deployed to testnet
-- [demo] visualizer of macro trisolar system
+- (DONE) server.cairo initializes macro dynamics; contract deployed to testnet
+- PRIORITY: [demo] visualizer of macro trisolar system
 - perlin-based resource distribution function (determine concentration through e.g. perlin noise) + testing
 - [demo] visualizer of micro planet surface activities
 - parametrized resource update rate per element + testing
