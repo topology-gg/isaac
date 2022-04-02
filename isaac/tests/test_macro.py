@@ -64,6 +64,7 @@ async def test_macro ():
             sun2 = contract.Dynamic (q = contract.Vec2(sf[8], sf[10]), qd = contract.Vec2(sf[9], sf[11])),
             plnt = contract.Dynamic (q = contract.Vec2(sf[12], sf[14]), qd = contract.Vec2(sf[13], sf[15])),
         )
+        LOGGER.info (f"> state to test = {state}")
         ret = await contract.mock_forward_world_macro(
             state,
             phi_fp
@@ -100,7 +101,7 @@ async def test_macro ():
         abs_err = abs(phi_contract_1dt - phi_test_1dt)
         assert abs_err <= ABS_ERR_TOL
 
-        LOGGER.info (f"> test {i}/{N_TEST} passed.")
+        LOGGER.info (f"> test {i}/{N_TEST} passed.\n")
 
 #######
 

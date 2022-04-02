@@ -6,10 +6,9 @@ from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
 from contracts.macro import (forward_world_macro)
-from contracts.micro import (utb_deploy, view_utb_ledger)
+# from contracts.micro import ()
 # from contracts.design.constants import ()
 from contracts.util.structs import (
-    MacroEvent, MicroEvent,
     Vec2, Dynamic, Dynamics
 )
 
@@ -28,12 +27,56 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
         # micro_contract_addr : felt
     ):
 
-    # TODO: initialize macro world - trisolar system placement
-    # TODO: initialize mini world - resource distribution placement
+    #
+    # Initialize macro world - trisolar system placement & planet rotation
+    #
+    macro_state_curr.write (Dynamics(
+        sun0 = Dynamic(
+            q=Vec2(
+                x=47773868232910987264,
+                y=32844341810368286720),
+            qd=Vec2(
+                x=3618502788666131213697322783095070105623107215331596699862321436184118558721,
+                y=3618502788666131213697322783095070105623107215331596699937498889642259275777)
+        ),
+        sun1 = Dynamic(
+            q=Vec2(
+                x=60201625119764856832,
+                y=3618502788666131213697322783095070105623107215331596699937586558378790285313),
+            qd=Vec2(
+                x=106710634915355459584,
+                y=3618502788666131213697322783095070105623107215331596699961957519972063008769)
+        ),
+        sun2=Dynamic(
+            q=Vec2(
+                x=3618502788666131213697322783095070105623107215331596699865116562783200034817,
+                y=2661155946711651328),
+            qd=Vec2(
+                x=4059985036398170112,
+                y=46727702657421705216)
+        ),
+        plnt=Dynamic(
+            q=Vec2(
+                x=4676853079239927267328,
+                y=3618502788666131213697322783095070105623107215331596695090310503521091321857),
+            qd=Vec2(
+                x=190912647818214178816,
+                y=3618502788666131213697322783095070105623107215331596699776260363489563443201)
+        )
+    ))
 
+    phi_curr.write (0)
+
+    #
+    # TODO: initialize mini world - resource distribution placement
+    #
+
+
+    #
+    # Record L2 block at reality genesis
+    #
     let (block) = get_block_number ()
     last_l2_block.write (block)
-    # micro_contract_address.write (micro_contract_addr)
 
     return()
 end
@@ -74,12 +117,12 @@ func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     # Make sure only one L2 block has passed
     # TODO: allow fast-foward >1 L2 blocks in case of unexpected network / yagi issues
     #
-    let (block_curr) = get_block_number ()
-    let (block_last) = last_l2_block.read ()
-    let block_diff = block_curr - block_last
-    with_attr error_message("last block must be exactly one block away from current block."):
-        assert block_diff = 1
-    end
+    # let (block_curr) = get_block_number ()
+    # let (block_last) = last_l2_block.read ()
+    # let block_diff = block_curr - block_last
+    # with_attr error_message("last block must be exactly one block away from current block."):
+    #     assert block_diff = 1
+    # end
 
     #
     # Forward macro world - orbital positions of trisolar system, and spin orientation of planet
@@ -87,10 +130,12 @@ func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     #
     let (macro_state : Dynamics) = macro_state_curr.read ()
     let (phi : felt) = phi_curr.read ()
+
     let (
         macro_state_nxt : Dynamics,
         phi_nxt : felt
     ) = forward_world_macro (macro_state, phi)
+
     macro_state_curr.write (macro_state_nxt)
     phi_curr.write (phi_nxt)
 
