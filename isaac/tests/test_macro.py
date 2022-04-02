@@ -10,12 +10,12 @@ import logging
 import math
 import numpy as np
 
-N_TEST = 20
+N_TEST = 50
 LOGGER = logging.getLogger(__name__)
 PRIME = 3618502788666131213697322783095070105623107215331596699973092056135872020481
 PRIME_HALF = PRIME//2
 SCALE_FP = 10**20
-ABS_ERR_TOL = 1e-10
+ABS_ERR_TOL = 1e-8
 
 ## Note to test logging:
 ## `--log-cli-level=INFO` to show logs
@@ -33,9 +33,11 @@ async def test_macro ():
 
     # Test strategy
     # 1. from initial dynamics, forward by a random number of steps to obtain the testing dynamics
-    # 2. feed testing dynamics to contract to obtain contract-1dt (1-step-forward) dynamics
-    # 3. forward the testing dynamics by 1dt to obtain test-1dt dynamics
-    # 4. compare contract-1dt dynamics against test-1dt dynamics
+    # 2. generate a random radian value in FP representation
+    # 3. feed testing dynamics + random radian to contract to obtain contract-1dt (1-step-forward) dynamics + radian
+    # 4. forward the testing dynamics + radian by 1dt to obtain test-1dt dynamics + radian
+    # 5. compare contract-1dt dynamics against test-1dt dynamics
+    # 6. compare contract-1dt radian against test-1dt radian
 
     for i in range(N_TEST):
         #
@@ -47,7 +49,13 @@ async def test_macro ():
         s_test = forward (state=s_init, constants=constants, N=n_rand, dt=dt)
 
         #
-        # 2. feed testing dynamics to contract to obtain contract-1dt (1-step-forward) dynamics
+        # 2. generate a random radian value in FP representation
+        #
+        phi = round(random.uniform(0,1) * math.pi * 2, 20) # 20 deciimal places allowed in contract
+        phi_fp = int(phi * SCALE_FP)
+
+        #
+        # 3. feed testing dynamics + random radian to contract to obtain contract-1dt (1-step-forward) dynamics + radian
         #
         sf = convert_array_to_fp_felt (s_test)
         state = contract.Dynamics (
@@ -56,10 +64,9 @@ async def test_macro ():
             sun2 = contract.Dynamic (q = contract.Vec2(sf[8], sf[10]), qd = contract.Vec2(sf[9], sf[11])),
             plnt = contract.Dynamic (q = contract.Vec2(sf[12], sf[14]), qd = contract.Vec2(sf[13], sf[15])),
         )
-        phi = 0 # TODO
         ret = await contract.mock_forward_world_macro(
             state,
-            phi
+            phi_fp
         ).call()
         sn = ret.result.state_nxt
         sn_list = [
@@ -69,18 +76,29 @@ async def test_macro ():
             sn.plnt.q.x, sn.plnt.qd.x, sn.plnt.q.y, sn.plnt.qd.y
         ]
         s_contract_1dt = convert_array_from_fp_felt (sn_list)
+        phi_contract_1dt = convert_from_fp_felt (ret.result.phi_nxt)
 
         #
-        # 3. forward the testing dynamics by 1dt to obtain test-1dt dynamics
+        # 4. forward the testing dynamics + radian by 1dt to obtain test-1dt dynamics + radian
         #
         s_test_1dt = forward (state=s_test, constants=constants, N=1, dt=dt)
 
+        omega_dt = 624 / 100 * 6 / 100
+        two_pi_approx = 6283185 / 1000000
+        phi_test_1dt = (phi + omega_dt) % two_pi_approx
+
         #
-        # 4. compare contract-1dt dynamics against test-1dt dynamics
+        # 5. compare contract-1dt dynamics against test-1dt dynamics
         #
         for t,c in zip(s_test_1dt, s_contract_1dt):
             abs_err = abs(t-c)
             assert abs_err <= ABS_ERR_TOL
+
+        #
+        # 6. compare contract-1dt radian against test-1dt radian
+        #
+        abs_err = abs(phi_contract_1dt - phi_test_1dt)
+        assert abs_err <= ABS_ERR_TOL
 
         LOGGER.info (f"> test {i}/{N_TEST} passed.")
 
@@ -120,7 +138,6 @@ def evaluate_3plus1body (state, constants):
     M3 = constants['M3']
     m = constants['m']
 
-    # LOGGER.info (f"evaluate_3plus1body: state = {state}")
     [x1, x1d, y1, y1d, x2, x2d, y2, y2d, x3, x3d, y3, y3d, x4, x4d, y4, y4d] = state # unpack state
 
     x1_diff = x1d
@@ -223,9 +240,7 @@ def forward (state, constants, N=105, dt=0.06):
 
     ss = [state]
     for i in range(N):
-        # LOGGER.info (f"before i={i}: s = {s}")
         s_1dt, _ = rk4 (dt, ss[-1], evaluate_3plus1body, constants)
-        # LOGGER.info (f"after i={i}: s = {s}, s_1dt = {s_1dt}")
         ss.append (s_1dt)
 
     return ss[-1]

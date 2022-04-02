@@ -53,10 +53,6 @@ func rk4 {syscall_ptr : felt*, range_check_ptr} (
     return (state_nxt)
 end
 
-@event
-func debug_emit_felt (x : felt):
-end
-
 #
 # First-order derivative of state
 #
@@ -75,28 +71,6 @@ func differentiate {syscall_ptr : felt*, range_check_ptr} (
     let (r03_cube) = distance_cube (state.sun0.q, state.plnt.q)
     let (r13_cube) = distance_cube (state.sun1.q, state.plnt.q)
     let (r23_cube) = distance_cube (state.sun2.q, state.plnt.q)
-
-
-    let x_delta = state.sun0.q.x - state.sun1.q.x
-    let (x_delta_sq) = mul_fp (x_delta, x_delta)
-    let y_delta = state.sun0.q.y - state.sun1.q.y
-    let (y_delta_sq) = mul_fp (y_delta, y_delta)
-    let diff_sq = x_delta_sq + y_delta_sq
-    let (diff) = sqrt_fp (diff_sq)
-
-    let yy = 4 * SCALE_FP
-    let (yy_sq) = sqrt_fp(yy)
-    debug_emit_felt.emit(yy)
-    debug_emit_felt.emit(yy_sq)
-    debug_emit_felt.emit(state.sun0.q.x)
-    debug_emit_felt.emit(state.sun0.q.y)
-    debug_emit_felt.emit(state.sun1.q.x)
-    debug_emit_felt.emit(state.sun1.q.y)
-    debug_emit_felt.emit(x_delta_sq)
-    debug_emit_felt.emit(y_delta_sq)
-    debug_emit_felt.emit(diff_sq)
-    debug_emit_felt.emit(diff)
-    debug_emit_felt.emit(r01_cube)
 
     let (G_r01_cube) = div_fp (G, r01_cube)
     let (G_r02_cube) = div_fp (G, r02_cube)

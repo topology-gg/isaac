@@ -25,6 +25,7 @@ func mock_forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*,
     return (state_nxt, phi_nxt)
 end
 
+
 @external
 func mock_differentiate {syscall_ptr : felt*, range_check_ptr} (
         state : Dynamics
