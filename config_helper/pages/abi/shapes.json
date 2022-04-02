@@ -1,0 +1,18 @@
+[
+    {
+        "inputs": [],
+        "name": "return_circle_svg",
+        "outputs": [
+            {
+                "name": "arr_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr",
+                "type": "felt*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
