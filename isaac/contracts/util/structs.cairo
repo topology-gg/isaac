@@ -16,7 +16,7 @@ struct Dynamics:
     member sun0 : Dynamic
     member sun1 : Dynamic
     member sun2 : Dynamic
-    member merc : Dynamic
+    member plnt : Dynamic
 end
 
 struct MacroEvent:

@@ -2,20 +2,22 @@
 #
 # Constants for numerical precision / stability
 #
-const RANGE_CHECK_BOUND = 2 ** 64
+const RANGE_CHECK_BOUND = 2 ** 120
 const SCALE_FP = 10**20
 const SCALE_FP_SQRT = 10**10
 
 #
 # Constants for macro physics simulation
 #
-const DT = 6 / 100 * SCALE_FP  # 0.06 * 10**20
+# orbital
+const DT = 6 / 100 * SCALE_FP
+const G  = 1 * SCALE_FP
+const MASS_SUN0 = 1 * SCALE_FP
+const MASS_SUN1 = 1 * SCALE_FP
+const MASS_SUN2 = 1 * SCALE_FP
+# rotation
 const OMEGA_DT_PLANET = 624 / 100 * 6 / 100 * SCALE_FP # unit: radiant; takes ~100 DT to complete 2*pi
 const TWO_PI = 6283185 / 1000000 * SCALE_FP
-const G  = 4 * SCALE_FP
-const MASS_SUN0 = 4 * SCALE_FP
-const MASS_SUN1 = 4 * SCALE_FP
-const MASS_SUN2 = 4 * SCALE_FP
 
 #
 # Constants for planet configuration

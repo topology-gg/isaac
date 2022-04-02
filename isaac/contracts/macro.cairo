@@ -12,7 +12,7 @@ from contracts.util.structs import (Vec2, Dynamic, Dynamics)
 #
 # Runge-Kutta 4th-order method
 #
-func rk4 {range_check_ptr} (
+func rk4 {syscall_ptr : felt*, range_check_ptr} (
         dt : felt,
         state : Dynamics
     ) -> (
@@ -53,10 +53,14 @@ func rk4 {range_check_ptr} (
     return (state_nxt)
 end
 
+@event
+func debug_emit_felt (x : felt):
+end
+
 #
 # First-order derivative of state
 #
-func differentiate {range_check_ptr} (
+func differentiate {syscall_ptr : felt*, range_check_ptr} (
         state : Dynamics
     ) -> (
         state_diff : Dynamics
@@ -66,11 +70,33 @@ func differentiate {range_check_ptr} (
     # TODO: refactor the following code for better readability without doing redundant computation
 
     let (r01_cube) = distance_cube (state.sun0.q, state.sun1.q)
-    let (r02_cube) = distance_cube (state.sun0.q, state.sun1.q)
-    let (r12_cube) = distance_cube (state.sun0.q, state.sun1.q)
-    let (r03_cube) = distance_cube (state.sun0.q, state.merc.q)
-    let (r13_cube) = distance_cube (state.sun1.q, state.merc.q)
-    let (r23_cube) = distance_cube (state.sun2.q, state.merc.q)
+    let (r02_cube) = distance_cube (state.sun0.q, state.sun2.q)
+    let (r12_cube) = distance_cube (state.sun1.q, state.sun2.q)
+    let (r03_cube) = distance_cube (state.sun0.q, state.plnt.q)
+    let (r13_cube) = distance_cube (state.sun1.q, state.plnt.q)
+    let (r23_cube) = distance_cube (state.sun2.q, state.plnt.q)
+
+
+    let x_delta = state.sun0.q.x - state.sun1.q.x
+    let (x_delta_sq) = mul_fp (x_delta, x_delta)
+    let y_delta = state.sun0.q.y - state.sun1.q.y
+    let (y_delta_sq) = mul_fp (y_delta, y_delta)
+    let diff_sq = x_delta_sq + y_delta_sq
+    let (diff) = sqrt_fp (diff_sq)
+
+    let yy = 4 * SCALE_FP
+    let (yy_sq) = sqrt_fp(yy)
+    debug_emit_felt.emit(yy)
+    debug_emit_felt.emit(yy_sq)
+    debug_emit_felt.emit(state.sun0.q.x)
+    debug_emit_felt.emit(state.sun0.q.y)
+    debug_emit_felt.emit(state.sun1.q.x)
+    debug_emit_felt.emit(state.sun1.q.y)
+    debug_emit_felt.emit(x_delta_sq)
+    debug_emit_felt.emit(y_delta_sq)
+    debug_emit_felt.emit(diff_sq)
+    debug_emit_felt.emit(diff)
+    debug_emit_felt.emit(r01_cube)
 
     let (G_r01_cube) = div_fp (G, r01_cube)
     let (G_r02_cube) = div_fp (G, r02_cube)
@@ -108,12 +134,12 @@ func differentiate {range_check_ptr} (
     let (acc_sun2_from_sun1_x) = mul_fp (G_r12_cube_m1, state.sun1.q.x - state.sun2.q.x)
     let (acc_sun2_from_sun1_y) = mul_fp (G_r12_cube_m1, state.sun1.q.y - state.sun2.q.y)
 
-    let (acc_merc_from_sun0_x) = mul_fp (G_r03_cube_m0, state.sun0.q.x - state.merc.q.x)
-    let (acc_merc_from_sun0_y) = mul_fp (G_r03_cube_m0, state.sun0.q.y - state.merc.q.y)
-    let (acc_merc_from_sun1_x) = mul_fp (G_r13_cube_m1, state.sun1.q.x - state.merc.q.x)
-    let (acc_merc_from_sun1_y) = mul_fp (G_r13_cube_m1, state.sun1.q.y - state.merc.q.y)
-    let (acc_merc_from_sun2_x) = mul_fp (G_r23_cube_m2, state.sun2.q.x - state.merc.q.x)
-    let (acc_merc_from_sun2_y) = mul_fp (G_r23_cube_m2, state.sun2.q.y - state.merc.q.y)
+    let (acc_plnt_from_sun0_x) = mul_fp (G_r03_cube_m0, state.sun0.q.x - state.plnt.q.x)
+    let (acc_plnt_from_sun0_y) = mul_fp (G_r03_cube_m0, state.sun0.q.y - state.plnt.q.y)
+    let (acc_plnt_from_sun1_x) = mul_fp (G_r13_cube_m1, state.sun1.q.x - state.plnt.q.x)
+    let (acc_plnt_from_sun1_y) = mul_fp (G_r13_cube_m1, state.sun1.q.y - state.plnt.q.y)
+    let (acc_plnt_from_sun2_x) = mul_fp (G_r23_cube_m2, state.sun2.q.x - state.plnt.q.x)
+    let (acc_plnt_from_sun2_y) = mul_fp (G_r23_cube_m2, state.sun2.q.y - state.plnt.q.y)
 
     let (acc_sun0 : Vec2) = vec2_add2 (
         Vec2(acc_sun0_from_sun1_x, acc_sun0_from_sun1_y),
@@ -127,17 +153,17 @@ func differentiate {range_check_ptr} (
         Vec2(acc_sun2_from_sun0_x, acc_sun2_from_sun0_y),
         Vec2(acc_sun2_from_sun1_x, acc_sun2_from_sun1_y)
     )
-    let (acc_merc : Vec2) = vec2_add3 (
-        Vec2(acc_merc_from_sun0_x, acc_merc_from_sun0_y),
-        Vec2(acc_merc_from_sun1_x, acc_merc_from_sun1_y),
-        Vec2(acc_merc_from_sun2_x, acc_merc_from_sun2_y)
+    let (acc_plnt : Vec2) = vec2_add3 (
+        Vec2(acc_plnt_from_sun0_x, acc_plnt_from_sun0_y),
+        Vec2(acc_plnt_from_sun1_x, acc_plnt_from_sun1_y),
+        Vec2(acc_plnt_from_sun2_x, acc_plnt_from_sun2_y)
     )
 
     let state_diff = Dynamics (
         sun0 = Dynamic(state.sun0.qd, acc_sun0),
         sun1 = Dynamic(state.sun1.qd, acc_sun1),
         sun2 = Dynamic(state.sun2.qd, acc_sun2),
-        merc = Dynamic(state.merc.qd, acc_merc),
+        plnt = Dynamic(state.plnt.qd, acc_plnt),
     )
 
     return (state_diff)
@@ -173,7 +199,7 @@ func forward_planet_spin {range_check_ptr} (phi) -> (phi_nxt):
     end
 end
 
-func forward_world_macro {pedersen_ptr : HashBuiltin*, range_check_ptr}(
+func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         state : Dynamics,
         phi : felt
     ) -> (
@@ -194,7 +220,7 @@ end
 #
 func sqrt_fp {range_check_ptr}(x : felt) -> (y : felt):
     let (x_) = sqrt(x)
-    let y = x * SCALE_FP_SQRT # compensate for the square root
+    let y = x_ * SCALE_FP_SQRT # compensate for the square root
     return (y)
 end
 
@@ -275,9 +301,9 @@ func dynamics_add {} (dynamics0 : Dynamics, dynamics1 : Dynamics) -> (res : Dyna
     let (sun0 : Dynamic) = dynamic_add (dynamics0.sun0, dynamics1.sun0)
     let (sun1 : Dynamic) = dynamic_add (dynamics0.sun1, dynamics1.sun1)
     let (sun2 : Dynamic) = dynamic_add (dynamics0.sun2, dynamics1.sun2)
-    let (merc : Dynamic) = dynamic_add (dynamics0.merc, dynamics1.merc)
+    let (plnt : Dynamic) = dynamic_add (dynamics0.plnt, dynamics1.plnt)
 
-    return ( Dynamics (sun0, sun1, sun2, merc) )
+    return ( Dynamics (sun0, sun1, sun2, plnt) )
 end
 
 func dynamic_add {} (dynamic0 : Dynamic, dynamic1 : Dynamic) -> (res : Dynamic):
@@ -295,9 +321,9 @@ func dynamics_mul_scalar_fp {range_check_ptr} (dynamics : Dynamics, scalar_fp : 
     let (sun0 : Dynamic) = dynamic_mul_scalar_fp (dynamics.sun0, scalar_fp)
     let (sun1 : Dynamic) = dynamic_mul_scalar_fp (dynamics.sun1, scalar_fp)
     let (sun2 : Dynamic) = dynamic_mul_scalar_fp (dynamics.sun2, scalar_fp)
-    let (merc : Dynamic) = dynamic_mul_scalar_fp (dynamics.merc, scalar_fp)
+    let (plnt : Dynamic) = dynamic_mul_scalar_fp (dynamics.plnt, scalar_fp)
 
-    return ( Dynamics (sun0, sun1, sun2, merc) )
+    return ( Dynamics (sun0, sun1, sun2, plnt) )
 end
 
 func dynamic_mul_scalar_fp {range_check_ptr} (dynamic : Dynamic, scalar_fp : felt) -> (res : Dynamic):
@@ -320,9 +346,9 @@ func dynamics_mul_scalar {range_check_ptr} (dynamics : Dynamics, scalar : felt) 
     let (sun0 : Dynamic) = dynamic_mul_scalar (dynamics.sun0, scalar)
     let (sun1 : Dynamic) = dynamic_mul_scalar (dynamics.sun1, scalar)
     let (sun2 : Dynamic) = dynamic_mul_scalar (dynamics.sun2, scalar)
-    let (merc : Dynamic) = dynamic_mul_scalar (dynamics.merc, scalar)
+    let (plnt : Dynamic) = dynamic_mul_scalar (dynamics.plnt, scalar)
 
-    return ( Dynamics (sun0, sun1, sun2, merc) )
+    return ( Dynamics (sun0, sun1, sun2, plnt) )
 end
 
 func dynamic_mul_scalar {range_check_ptr} (dynamic : Dynamic, scalar : felt) -> (res : Dynamic):
@@ -345,9 +371,9 @@ func dynamics_div_scalar {range_check_ptr} (dynamics : Dynamics, scalar : felt) 
     let (sun0 : Dynamic) = dynamic_div_scalar (dynamics.sun0, scalar)
     let (sun1 : Dynamic) = dynamic_div_scalar (dynamics.sun1, scalar)
     let (sun2 : Dynamic) = dynamic_div_scalar (dynamics.sun2, scalar)
-    let (merc : Dynamic) = dynamic_div_scalar (dynamics.merc, scalar)
+    let (plnt : Dynamic) = dynamic_div_scalar (dynamics.plnt, scalar)
 
-    return ( Dynamics (sun0, sun1, sun2, merc) )
+    return ( Dynamics (sun0, sun1, sun2, plnt) )
 end
 
 func dynamic_div_scalar {range_check_ptr} (dynamic : Dynamic, scalar : felt) -> (res : Dynamic):
