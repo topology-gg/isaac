@@ -124,7 +124,7 @@ async def test_micro (account_factory):
     user1_harvester_grid = (150, 150)
     user1_refinery_grid  = (155, 150)
     user2_harvester_grid = (99, 100)
-    user2_refinery_grid  = (100, 99)
+    user2_refinery_grid  = (101, 97)
     await users[1]['signer'].send_transaction(
         account = users[1]['account'], to = contract.contract_address,
         selector_name = 'mock_device_deploy',
@@ -208,7 +208,7 @@ async def test_micro (account_factory):
     LOGGER.info (f'> user1 and user2 deploy their utb contiguously to connect their harvester-refinery pair; admin checks GridStat and emap.')
     LOGGER.info (f'> ------------')
 
-    # user1 needs to connect (150, 150) and (155, 150)
+    ### user1 needs to connect harvester (150, 150) and refinery (155~156, 150~151)
     await users[1]['signer'].send_transaction(
         account = users[1]['account'], to = contract.contract_address,
         selector_name = 'mock_utb_deploy',
@@ -216,7 +216,7 @@ async def test_micro (account_factory):
             users[1]['account'].contract_address, # caller
             4, 151, 152, 153, 154, # locs_x
             4, 150, 150, 150, 150, # locs_y
-            150, 150, 155, 150
+            user1_harvester_grid[0], user1_harvester_grid[1], user1_refinery_grid[0], user1_refinery_grid[1]
         ])
 
     # get utb-set label
@@ -241,7 +241,7 @@ async def test_micro (account_factory):
     LOGGER.info (f'> user1 deployed his devices.')
     LOGGER.info ('')
 
-    # user2 needs to connect (99, 100) and (100, 99)
+    ### user2 needs to connect harvester (99, 100) and refinery (101~102, 97~98)
     await users[2]['signer'].send_transaction(
         account = users[2]['account'], to = contract.contract_address,
         selector_name = 'mock_utb_deploy',
@@ -249,7 +249,7 @@ async def test_micro (account_factory):
             users[2]['account'].contract_address, # caller
             5, 99, 100, 101, 101, 101, # locs_x
             5, 101, 101, 101, 100, 99, # locs_y
-            99, 100, 100, 99
+            user2_harvester_grid[0], user2_harvester_grid[1], 101, 98
         ])
 
     # get utb-set label

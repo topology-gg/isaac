@@ -339,7 +339,7 @@ func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     assert_nn (amount_curr - 1)
 
     #
-    # Determine device footprint & constrain
+    # Check if this device can be deployed with the origin of its footprint at `grid`
     #
     assert_device_footprint_populable (type, grid)
 
