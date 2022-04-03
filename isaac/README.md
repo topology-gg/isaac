@@ -89,4 +89,4 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 
 #### future items / directions
 - planet core convection, manifesting as dynamic resource distribution on the surface
-- maneuverable near-light-speed missile for splitting suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
+- NLSCM: near-light-speed cruise missile for pushing suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
