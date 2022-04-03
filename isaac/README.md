@@ -71,21 +71,22 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) device pickup + testing
 - (DONE) server.cairo initializes macro dynamics; contract deployed to testnet
 - PRIORITY: [demo] visualizer of macro trisolar system
-- perlin-based resource distribution function (determine concentration through e.g. perlin noise) + testing
 - [demo] visualizer of micro planet surface activities
 - parametrized resource update rate per element + testing
 - parametrized resource transport rate per element & decay over distance + testing
 - multi-grid device placement e.g. OPSF + testing
-- OPFS device construction + testing
+- OPSF device construction + testing
+- perlin-based resource distribution function (determine concentration through e.g. perlin noise) + testing
 - energy update at device + energy transported across transmission lines + testing
 - game over determination - detecting collision between planet and any of the three suns + testing
+- [demo] conceptualize high-level signup flow, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol
 - [demo] tune artistic direction of visualizer
 - [demo] Rudimentary write-up on game design &/ technical considerations for audience to read during/after demo
 - [demo+] frontend able to make transaction to e.g. place device
-- NDPE "rocket" launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
+- NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
+- NLSCM: near-light-speed cruise missile for pushing suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
 - game over determination - detecting escape velocity plus escape condition (require game design thinking) + testing
 - player transfers device between each other + testing
 
 #### future items / directions
 - planet core convection, manifesting as dynamic resource distribution on the surface
-- maneuverable near-light-speed missile for splitting suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
