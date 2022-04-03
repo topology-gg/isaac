@@ -90,4 +90,5 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - player transfers device between each other + testing
 
 #### future items / directions
+- symplectic integration - check out https://github.com/hannorein/rebound and https://rebound.readthedocs.io/en/latest/#papers
 - planet core convection, manifesting as dynamic resource distribution on the surface
