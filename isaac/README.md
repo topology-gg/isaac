@@ -77,7 +77,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - resource distribution: consider statically generated and encoded as `dw` with felt-packing + testing
 - energy update at device + energy transported across transmission lines + testing
 - game over determination - detecting collision between planet and any of the three suns + testing
-- - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
+- NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - NLSCM: near-light-speed cruise missile for pushing suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
 - [demo] visualizer of macro trisolar system
 - [demo] visualizer of micro planet surface activities
