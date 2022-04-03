@@ -242,6 +242,7 @@ async def test_micro (account_factory):
     LOGGER.info ('')
 
     ### user2 needs to connect harvester (99, 100) and refinery (101~102, 97~98)
+    user2_refinery_tether_grid = (101, 98)
     await users[2]['signer'].send_transaction(
         account = users[2]['account'], to = contract.contract_address,
         selector_name = 'mock_utb_deploy',
@@ -249,7 +250,7 @@ async def test_micro (account_factory):
             users[2]['account'].contract_address, # caller
             5, 99, 100, 101, 101, 101, # locs_x
             5, 101, 101, 101, 100, 99, # locs_y
-            user2_harvester_grid[0], user2_harvester_grid[1], 101, 98
+            user2_harvester_grid[0], user2_harvester_grid[1], user2_refinery_tether_grid[0], user2_refinery_tether_grid[1]
         ])
 
     # get utb-set label
@@ -274,45 +275,45 @@ async def test_micro (account_factory):
     LOGGER.info (f'> user2 deployed his devices.')
     LOGGER.info ('\n')
 
-    # #
-    # # 4. (should raise exception) user3 picks up deployed devices owned by others
-    # #
-    # LOGGER.info (f'> ------------')
-    # LOGGER.info (f'> TEST 4')
-    # LOGGER.info (f"> (should raise exception) user3 picks up deployed devices owned by others")
-    # LOGGER.info (f'> ------------')
-    # for (x,y) in [(150,150), (155,150), (99,100), (100,99)] + [(151,150), (152,150), (153,150), (154,150)] + [(99,101), (100,101), (101,101), (101,100), (101,99)]:
-    #     with pytest.raises(Exception) as e_info:
-    #         await users[3]['signer'].send_transaction(
-    #             account = users[3]['account'], to = contract.contract_address,
-    #             selector_name = 'mock_device_pickup_by_grid',
-    #             calldata=[
-    #                 users[3]['account'].contract_address, # caller
-    #                 x, y # grid
-    #             ])
-    #     LOGGER.info (f'> user3 attempted to pick up the device at grid ({x},{y}) which she does not own -> exception raised as expected.')
-    # LOGGER.info ('\n')
+    #
+    # 4. (should raise exception) user3 picks up deployed devices owned by others
+    #
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 4')
+    LOGGER.info (f"> (should raise exception) user3 picks up deployed devices owned by others")
+    LOGGER.info (f'> ------------')
+    for (x,y) in [user1_harvester_grid, user1_refinery_grid, user2_harvester_grid, user2_refinery_grid,user2_refinery_tether_grid] + [(151,150), (152,150), (153,150), (154,150)] + [(99,101), (100,101), (101,101), (101,100), (101,99)]:
+        with pytest.raises(Exception) as e_info:
+            await users[3]['signer'].send_transaction(
+                account = users[3]['account'], to = contract.contract_address,
+                selector_name = 'mock_device_pickup_by_grid',
+                calldata=[
+                    users[3]['account'].contract_address, # caller
+                    x, y # grid
+                ])
+        LOGGER.info (f'> user3 attempted to pick up the device at grid ({x},{y}) which she does not own -> exception raised as expected.')
+    LOGGER.info ('\n')
 
-    # #
-    # # 5. (should raise exception) user3 deploys iron harvester on the grids with deployed devices
-    # #
-    # LOGGER.info (f'> ------------')
-    # LOGGER.info (f'> TEST 5')
-    # LOGGER.info (f"> (should raise exception) user3 deploys iron harvester on the grid of user1's deployed harvester")
-    # LOGGER.info (f'> ------------')
+    #
+    # 5. (should raise exception) user3 deploys iron harvester on the grids with deployed devices
+    #
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 5')
+    LOGGER.info (f"> (should raise exception) user3 deploys iron harvester on populated grids ")
+    LOGGER.info (f'> ------------')
 
-    # for (x,y) in [(150,150), (155,150), (99,100), (100,99)] + [(151,150), (152,150), (153,150), (154,150)] + [(99,101), (100,101), (101,101), (101,100), (101,99)]:
-    #     with pytest.raises(Exception) as e_info:
-    #         await users[3]['signer'].send_transaction(
-    #             account = users[3]['account'], to = contract.contract_address,
-    #             selector_name = 'mock_device_deploy',
-    #             calldata=[
-    #                 users[3]['account'].contract_address,
-    #                 2, # DEVICE_FE_HARV
-    #                 x, y # grid
-    #             ])
-    #     LOGGER.info (f'> user3 attempted to deploy device at grid ({x},{y}) which is populated already -> exception raised as expected.')
-    # LOGGER.info ('\n')
+    for (x,y) in [user1_harvester_grid, user1_refinery_grid, user2_harvester_grid, user2_refinery_grid, user2_refinery_tether_grid] + [(151,150), (152,150), (153,150), (154,150)] + [(99,101), (100,101), (101,101), (101,100), (101,99)]:
+        with pytest.raises(Exception) as e_info:
+            await users[3]['signer'].send_transaction(
+                account = users[3]['account'], to = contract.contract_address,
+                selector_name = 'mock_device_deploy',
+                calldata=[
+                    users[3]['account'].contract_address,
+                    2, # DEVICE_FE_HARV
+                    x, y # grid
+                ])
+        LOGGER.info (f'> user3 attempted to deploy device at grid ({x},{y}) which is populated already -> exception raised as expected.')
+    LOGGER.info ('\n')
 
     #
     # 6. user3 deploys her iron harvester & refinery
@@ -367,86 +368,86 @@ async def test_micro (account_factory):
     assert ret.result.emap_entry.id == user3_refinery_id
     LOGGER.info ('\n')
 
-    # #
-    # # 7. (should raise exception) user3 deploys her utb's incontiguously
-    # #
-    # LOGGER.info (f'> ------------')
-    # LOGGER.info (f'> TEST 7')
-    # LOGGER.info (f"> (should raise exception) user3 deploys her utb's incontiguously")
-    # LOGGER.info (f'> ------------')
-    # # user3 is supposed to connect (200,100) and (199,99)
-    # with pytest.raises(Exception) as e_info:
-    #     await users[3]['signer'].send_transaction(
-    #         account = users[3]['account'], to = contract.contract_address,
-    #         selector_name = 'mock_utb_deploy',
-    #         calldata=[
-    #             users[3]['account'].contract_address, # caller
-    #             2, 154, 155, # locs_x
-    #             2, 152, 152, # locs_y
-    #             user3_harvester_grid[0], user3_harvester_grid[1], user3_refinery_grid[0], user3_refinery_grid[1]
-    #         ])
-    # LOGGER.info (f'> user3 attempted to deploy incontiguous utb set -> exception raised as expected.')
-    # LOGGER.info ('\n')
+    #
+    # 7. (should raise exception) user3 deploys her utb's incontiguously
+    #
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 7')
+    LOGGER.info (f"> (should raise exception) user3 deploys her utb's incontiguously")
+    LOGGER.info (f'> ------------')
+    # user3 is supposed to connect (200,100) and (199,99)
+    with pytest.raises(Exception) as e_info:
+        await users[3]['signer'].send_transaction(
+            account = users[3]['account'], to = contract.contract_address,
+            selector_name = 'mock_utb_deploy',
+            calldata=[
+                users[3]['account'].contract_address, # caller
+                2, 154, 155, # locs_x
+                2, 152, 152, # locs_y
+                user3_harvester_grid[0], user3_harvester_grid[1], user3_refinery_grid[0], user3_refinery_grid[1]
+            ])
+    LOGGER.info (f'> user3 attempted to deploy incontiguous utb set -> exception raised as expected.')
+    LOGGER.info ('\n')
 
-    # #
-    # # 8. (should raise exception) user3 deploys her utb's contiguously to connect their harvester-refinery pair but crossing over
-    # #                              user1's utb path
-    # #
-    # LOGGER.info (f'> ------------')
-    # LOGGER.info (f'> TEST 8')
-    # LOGGER.info (f"> (should raise exception) user3 deploys her utb's contiguously to connect their harvester-refinery pair but crossing over user1's utb path")
-    # LOGGER.info (f'> ------------')
-    # with pytest.raises(Exception) as e_info:
-    #     await users[3]['signer'].send_transaction(
-    #         account = users[3]['account'], to = contract.contract_address,
-    #         selector_name = 'mock_utb_deploy',
-    #         calldata=[
-    #             users[3]['account'].contract_address, # caller
-    #             2, 153, 153, 153, # locs_x
-    #             2, 151, 150, 149, # locs_y
-    #             user3_harvester_grid[0], user3_harvester_grid[1], user3_refinery_grid[0], user3_refinery_grid[1]
-    #         ])
-    # LOGGER.info (f"> user3 attempted to deploy utb-set crossing over other's deployed utb-set -> exception raised as expected.")
-    # LOGGER.info ('\n')
+    #
+    # 8. (should raise exception) user3 deploys her utb's contiguously to connect their harvester-refinery pair but crossing over
+    #                              user1's utb path
+    #
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 8')
+    LOGGER.info (f"> (should raise exception) user3 deploys her utb's contiguously to connect their harvester-refinery pair but crossing over user1's utb path")
+    LOGGER.info (f'> ------------')
+    with pytest.raises(Exception) as e_info:
+        await users[3]['signer'].send_transaction(
+            account = users[3]['account'], to = contract.contract_address,
+            selector_name = 'mock_utb_deploy',
+            calldata=[
+                users[3]['account'].contract_address, # caller
+                2, 153, 153, 153, # locs_x
+                2, 151, 150, 149, # locs_y
+                user3_harvester_grid[0], user3_harvester_grid[1], user3_refinery_grid[0], user3_refinery_grid[1]
+            ])
+    LOGGER.info (f"> user3 attempted to deploy utb-set crossing over other's deployed utb-set -> exception raised as expected.")
+    LOGGER.info ('\n')
 
-    # #
-    # # 9. (should raise exception) user1 attempt to deploy another iron harvester (device balance already depleted)
-    # #
-    # LOGGER.info (f'> ------------')
-    # LOGGER.info (f'> TEST 9')
-    # LOGGER.info (f"> (should raise exception) user1 attempt to deploy another iron harvester (device balance already depleted)")
-    # LOGGER.info (f'> ------------')
-    # with pytest.raises(Exception) as e_info:
-    #     await users[1]['signer'].send_transaction(
-    #         account = users[1]['account'], to = contract.contract_address,
-    #         selector_name = 'mock_device_deploy',
-    #         calldata=[
-    #             users[1]['account'].contract_address,
-    #             2, # DEVICE_FE_HARV
-    #             250, 150
-    #         ])
-    # LOGGER.info (f'> user1 attempt to deploy another iron harvester but already deployed device balance -> exception raised as expected.')
-    # LOGGER.info ('\n')
+    #
+    # 9. (should raise exception) user1 attempt to deploy another iron harvester (device balance already depleted)
+    #
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 9')
+    LOGGER.info (f"> (should raise exception) user1 attempt to deploy another iron harvester (device balance already depleted)")
+    LOGGER.info (f'> ------------')
+    with pytest.raises(Exception) as e_info:
+        await users[1]['signer'].send_transaction(
+            account = users[1]['account'], to = contract.contract_address,
+            selector_name = 'mock_device_deploy',
+            calldata=[
+                users[1]['account'].contract_address,
+                2, # DEVICE_FE_HARV
+                250, 150
+            ])
+    LOGGER.info (f'> user1 attempt to deploy another iron harvester but already deployed device balance -> exception raised as expected.')
+    LOGGER.info ('\n')
 
-    # #
-    # # 10. Check ledger for correct amount of undeployed devices
-    # #
-    # # 10-1 user1 has 0 type2 left, 0 type7 left, and 6 type12 left
-    # # 10-2 user2 has 0 type2 left, 0 type7 left, and 5 type12 left
-    # # 10-3 user3 has 0 type2 left, 0 type7 left, and 10 type12 left
-    # #
-    # LOGGER.info (f'> ------------')
-    # LOGGER.info (f'> TEST 10')
-    # LOGGER.info (f"> Check ledger for correct amount of undeployed devices")
-    # LOGGER.info (f'> ------------')
-    # expectations = [(1,2,0), (1,7,0), (1,12,6)] + [(2,2,0), (2,7,0), (2,12,5)] + [(3,2,0), (3,7,0), (3,12,10)] # (user#, type#, amount left)
-    # for expectation in expectations:
-    #     ret = await contract.admin_read_device_undeployed_ledger(
-    #         owner = users[expectation[0]]['account'].contract_address,
-    #         type = expectation[1]
-    #     ).call()
-    #     assert ret.result.amount == expectation[2]
-    #     LOGGER.info (f"> user{expectation[0]}'s undeployed amount {expectation[2]} of type {expectation[1]} matches expectation.")
+    #
+    # 10. Check ledger for correct amount of undeployed devices
+    #
+    # 10-1 user1 has 0 type2 left, 0 type7 left, and 6 type12 left
+    # 10-2 user2 has 0 type2 left, 0 type7 left, and 5 type12 left
+    # 10-3 user3 has 0 type2 left, 0 type7 left, and 10 type12 left
+    #
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 10')
+    LOGGER.info (f"> Check ledger for correct amount of undeployed devices")
+    LOGGER.info (f'> ------------')
+    expectations = [(1,2,0), (1,7,0), (1,12,6)] + [(2,2,0), (2,7,0), (2,12,5)] + [(3,2,0), (3,7,0), (3,12,10)] # (user#, type#, amount left)
+    for expectation in expectations:
+        ret = await contract.admin_read_device_undeployed_ledger(
+            owner = users[expectation[0]]['account'].contract_address,
+            type = expectation[1]
+        ).call()
+        assert ret.result.amount == expectation[2]
+        LOGGER.info (f"> user{expectation[0]}'s undeployed amount {expectation[2]} of type {expectation[1]} matches expectation.")
 
     #
     # 11. forward_world_micro ()
