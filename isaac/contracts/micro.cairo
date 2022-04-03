@@ -7,17 +7,16 @@ from starkware.cairo.common.math_cmp import (is_le, is_nn_le, is_not_zero)
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
-from contracts.macro import (forward_world_macro)
 from contracts.design.constants import (
     ns_device_types,
     harvester_device_type_to_element_type,
-    transformer_device_type_to_element_types
+    transformer_device_type_to_element_types,
+    get_device_dimension_ptr
 )
-from contracts.util.structs import (
-    MicroEvent, Vec2
-)
+from contracts.util.structs import (Vec2)
 from contracts.util.grid import (
     is_valid_grid, are_contiguous_grids_given_valid_grids,
+    locate_face_and_edge_given_valid_grid,
     is_zero
 )
 
@@ -126,6 +125,206 @@ end
 func opsf_deployed_id_to_device_balances (id : felt, device_type : felt) -> (balance : felt):
 end
 
+
+func assert_device_footprint_populable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        type : felt, grid : Vec2
+    ):
+    alloc_locals
+
+    #
+    # for given device type, confirm the underlying grid(s) lie on the same face and are unpopulated
+    # TODO: consider refactor this into constants.cairo, but need to encapsulate information of shape
+    #       because constants.cairo does not have access to the storage_var `grid_stats` here
+    #
+
+    let (dim_ptr) = get_device_dimension_ptr ()
+    let device_dim = dim_ptr [type]
+
+    #
+    # Check 1x1
+    #
+    let (grid_stat_0_0) = grid_stats.read (grid)
+    assert grid_stat_0_0.populated = 0
+
+    if device_dim == 1:
+        return ()
+    end
+
+    let (face, _, _, _) = locate_face_and_edge_given_valid_grid (grid)
+
+    #
+    # Check 2x2
+    #
+    let grid_ = Vec2 (grid.x + 1, grid.y)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 1, grid.y + 1)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x, grid.y + 1)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    if device_dim == 2:
+        return ()
+    end
+
+    #
+    # Check 3x3
+    #
+    let grid_ = Vec2 (grid.x + 2, grid.y)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 2, grid.y + 1)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 2, grid.y + 2)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 1, grid.y + 2)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x, grid.y + 2)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    if device_dim == 3:
+        return ()
+    end
+
+    #
+    # Check 5x5
+    #
+    let grid_ = Vec2 (grid.x + 3, grid.y)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 3, grid.y + 1)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 3, grid.y + 2)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 3, grid.y + 3)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 2, grid.y + 3)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 1, grid.y + 3)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x, grid.y + 3)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 4, grid.y)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 4, grid.y + 1)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 4, grid.y + 2)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 4, grid.y + 3)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 4, grid.y + 4)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 3, grid.y + 4)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 2, grid.y + 4)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x + 1, grid.y + 4)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    let grid_ = Vec2 (grid.x, grid.y + 4)
+    assert_valid_unpopulated_and_same_face (grid_, face)
+
+    return ()
+end
+
+func assert_valid_unpopulated_and_same_face {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        grid : Vec2, face_tgt : felt
+    ) -> ():
+    alloc_locals
+
+    is_valid_grid (grid)
+
+    let (grid_stat) = grid_stats.read (grid)
+    assert grid_stat.populated = 0
+
+    let (face, _, _, _) = locate_face_and_edge_given_valid_grid (grid)
+    assert face = face_tgt
+
+    return ()
+end
+
+func update_grid_with_new_grid_stat {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        type : felt, grid : Vec2, grid_stat : GridStat
+    ) -> ():
+    alloc_locals
+
+    let (dim_ptr) = get_device_dimension_ptr ()
+    let device_dim = dim_ptr [type]
+
+    #
+    # 1x1
+    #
+    grid_stats.write (grid, grid_stat)
+
+    if device_dim == 1:
+        return ()
+    end
+
+    #
+    # 2x2
+    #
+    grid_stats.write (Vec2 (grid.x + 1, grid.y), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 1, grid.y + 1), grid_stat)
+    grid_stats.write (Vec2 (grid.x, grid.y + 1), grid_stat)
+
+    if device_dim == 2:
+        return ()
+    end
+
+    #
+    # 3x3
+    #
+    grid_stats.write (Vec2 (grid.x + 2, grid.y), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 2, grid.y + 1), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 2, grid.y + 2), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 1, grid.y + 2), grid_stat)
+    grid_stats.write (Vec2 (grid.x, grid.y + 2), grid_stat)
+
+    if device_dim == 3:
+        return ()
+    end
+
+    #
+    # 5x5
+    #
+    grid_stats.write (Vec2 (grid.x + 3, grid.y), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 3, grid.y + 1), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 3, grid.y + 2), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 3, grid.y + 3), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 2, grid.y + 3), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 1, grid.y + 3), grid_stat)
+    grid_stats.write (Vec2 (grid.x, grid.y + 3), grid_stat)
+
+    grid_stats.write (Vec2 (grid.x + 4, grid.y), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 4, grid.y + 1), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 4, grid.y + 2), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 4, grid.y + 3), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 4, grid.y + 4), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 3, grid.y + 4), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 2, grid.y + 4), grid_stat)
+    grid_stats.write (Vec2 (grid.x + 1, grid.y + 4), grid_stat)
+    grid_stats.write (Vec2 (grid.x, grid.y + 4), grid_stat)
+
+    return ()
+end
+
 func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
         type : felt,
@@ -140,15 +339,9 @@ func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     assert_nn (amount_curr - 1)
 
     #
-    # Check if `grid` is unpopulated
+    # Determine device footprint & constrain
     #
-    let (grid_stat) = grid_stats.read (grid)
-    assert grid_stat.populated = 0
-
-    #
-    # Update `device_undeployed_ledger`
-    #
-    device_undeployed_ledger.write (caller, type, amount_curr - 1)
+    assert_device_footprint_populable (type, grid)
 
     #
     # Create new device id
@@ -157,14 +350,15 @@ func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     let (new_id) = hash_chain {hash_ptr = pedersen_ptr} (data_ptr)
 
     #
-    # Update `grid_stats` at `grid`
+    # Update `grid_stats` at grid(s)
     #
-    grid_stats.write (grid, GridStat(
+    let new_grid_stat = GridStat(
         populated = 1,
         deployed_device_type = type,
         deployed_device_id =  new_id,
         deployed_device_owner = caller
-    ))
+    )
+    update_grid_with_new_grid_stat (type, grid, new_grid_stat)
 
     #
     # Update `device_deployed_emap`
@@ -185,6 +379,11 @@ func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     # Update `device_deployed_id_to_emap_index`
     #
     device_deployed_id_to_emap_index.write (new_id, emap_size_curr)
+
+    #
+    # Update `device_undeployed_ledger`: subtract by 1
+    #
+    device_undeployed_ledger.write (caller, type, amount_curr - 1)
 
     return ()
 end
@@ -214,6 +413,8 @@ func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
         Vec2(0,0), 0, 0, 0, 0, 0, 0
     ))
     device_deployed_emap.write (emap_index, emap_entry_last)
+    let grid_0_0 = emap_entry.grid
+    let type = emap_entry.type
 
     #
     # Untether utb/utl if tethered;
@@ -284,7 +485,9 @@ func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     #
     let (amount_curr) = device_undeployed_ledger.read (caller, grid_stat.deployed_device_type)
     device_undeployed_ledger.write (caller, grid_stat.deployed_device_type, amount_curr + 1)
-    grid_stats.write (grid, GridStat(
+
+    update_grid_stat:
+    update_grid_with_new_grid_stat (type, grid_0_0, GridStat(
         populated = 0,
         deployed_device_type = 0,
         deployed_device_id = 0,
@@ -305,10 +508,6 @@ end
 # they are also deployed exclusively to connect their src & dst devices that meet
 # the resource producer-consumer relationship.
 #
-# @storage_var
-# func utb_undeployed_ledger (owner : felt) -> (amount : felt):
-# end
-## TODO: extend this to `utx_undeployed_ledger (owner, is_utb) -> (amount)` for both utb and utx
 
 #
 # Use enumerable map (Emap) to maintain the an array of (set label, utb index start, utb index end)
@@ -1226,17 +1425,6 @@ func admin_read_transformers_deployed_id_to_resource_balances {syscall_ptr : fel
     return (balances)
 end
 
-# @view
-# func admin_read_utb_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (owner : felt) -> (amount : felt):
-#     let (amount) = utb_undeployed_ledger.read (owner)
-#     return (amount)
-# end
-
-# @external
-# func admin_write_utb_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (owner : felt, amount : felt) -> ():
-#     utb_undeployed_ledger.write (owner, amount)
-#     return ()
-# end
 
 @view
 func admin_read_utb_set_deployed_emap_size {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> (size : felt):

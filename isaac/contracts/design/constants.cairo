@@ -1,3 +1,5 @@
+from starkware.cairo.common.registers import get_label_location
+from contracts.util.structs import (Vec2)
 
 #
 # Constants for numerical precision / stability
@@ -66,6 +68,35 @@ namespace ns_device_types:
     const DEVICE_TRANSFORMER_MIN = 7
     const DEVICE_TRANSFORMER_MAX = 11
 end
+
+#
+# Every device is a square i.e. xdim == ydim
+# possible dimensions: 1x1, 2x2, 3x3, 5x5
+# micro.cairo's `assert_device_footprint_populable` deal with these dimensions specifically
+# i.e. if adding new dimension, `assert_device_footprint_populable` requires update
+#
+func get_device_dimension_ptr () -> (ptr : felt*):
+    let (data_array) = get_label_location (data)
+    return (ptr=cast(data_array, felt*))
+
+    data:
+    dw 1 # spg
+    dw 3 # npg
+    dw 1 # fe harv
+    dw 1 # al harv
+    dw 1 # ci harv
+    dw 1 # si harv
+    dw 1 # pu harv
+    dw 2 # fe refn
+    dw 2 # al refn
+    dw 2 # ci refn
+    dw 2 # si refn
+    dw 2 # pef
+    dw 0
+    dw 0
+    dw 5 # opsf
+end
+
 
 func transformer_device_type_to_element_types {} (device_type : felt) -> (
         element_type_before_transform : felt,

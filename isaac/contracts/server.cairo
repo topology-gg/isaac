@@ -68,7 +68,7 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     phi_curr.write (0)
 
     #
-    # TODO: initialize mini world - resource distribution placement
+    # TODO: initialize mini world - determining the seed for resource distribution function
     #
 
 
@@ -112,6 +112,12 @@ end
 @external
 func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
+
+    let GYOZA = 0x077d04506374b4920d6c35ecaded1ed7d26dd283ee64f284481e2574e77852c6
+    let (caller) = get_caller_address ()
+    with_attr error_message ("Isaac currently operates under gyoza the benevolent dictator. Only gyoza can tick Isaac forward."):
+        assert caller = GYOZA
+    end
 
     #
     # Make sure only one L2 block has passed
