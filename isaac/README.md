@@ -72,7 +72,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) server.cairo initializes macro dynamics; contract deployed to testnet
 - (DONE) multi-grid device placement testing
 - fanin and fanout testing, including OPSF
-- OPSF device construction + testing
+- OPSF device construction and withdrawal + testing
 - parametrized resource update rate per element + testing
 - parametrized resource transport rate per element & decay over distance + testing
 - resource distribution: consider statically generated and encoded as `dw` with felt-packing + testing
