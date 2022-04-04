@@ -575,7 +575,9 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     assert dst_grid_stat.deployed_device_owner = caller
 
     #
-    # Check src and dst device are untethered to utb
+    # Retrieve emap entry for src & dst devices
+    # Note: old version checked that src and dst device are untethered to utb,
+    # which implied no multi-fan-out or multi-fan-in. Those checks have been removed.
     #
     let src_device_id = src_grid_stat.deployed_device_id
     let dst_device_id = dst_grid_stat.deployed_device_id
@@ -583,8 +585,8 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     let (dst_emap_index) = device_deployed_id_to_emap_index.read (dst_device_id)
     let (src_emap_entry) = device_deployed_emap.read (src_emap_index)
     let (dst_emap_entry) = device_deployed_emap.read (dst_emap_index)
-    assert src_emap_entry.tethered_to_utb = 0
-    assert dst_emap_entry.tethered_to_utb = 0
+    # assert src_emap_entry.tethered_to_utb = 0
+    # assert dst_emap_entry.tethered_to_utb = 0
 
     #
     # Check locs[0] is contiguous to src_device_id's grid using `are_contiguous_grids_given_valid_grids()`
@@ -652,7 +654,6 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     #
     # Update device emap entries for src and dst device
     #
-    let (src_emap_index) = device_deployed_id_to_emap_index.read (src_device_id)
     device_deployed_emap.write (src_emap_index, DeviceDeployedEmapEntry(
         grid = src_emap_entry.grid,
         type = src_emap_entry.type,
@@ -663,7 +664,6 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
         utb_label = new_label
     ))
 
-    let (dst_emap_index) = device_deployed_id_to_emap_index.read (dst_device_id)
     device_deployed_emap.write (dst_emap_index, DeviceDeployedEmapEntry(
         grid = dst_emap_entry.grid,
         type = dst_emap_entry.type,
@@ -705,7 +705,9 @@ func recurse_utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
     if idx == 0:
         jmp deploy
     end
-    are_contiguous_grids_given_valid_grids (arr[idx-1], arr[idx])
+    with_attr error_message ("recurse_utb_deploy(): grids are not contiguous."):
+        are_contiguous_grids_given_valid_grids (arr[idx-1], arr[idx])
+    end
 
     deploy:
     #
