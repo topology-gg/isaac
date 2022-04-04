@@ -72,6 +72,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) server.cairo initializes macro dynamics; contract deployed to testnet
 - (DONE) multi-grid device placement testing
 - fanin and fanout testing, including OPSF
+- remove `utb/utl-tethered` and `utb/utl-label` from deployed-device emap-entry struct
 - OPSF device construction and withdrawal + testing
 - resource distribution: consider statically generated and encoded as `dw` with felt-packing + testing
 - utl logic; energy update at device + energy transported across utl-set + testing
