@@ -1,5 +1,6 @@
-import styles from '../styles/Home.module.css'
 import GameWorld from "../components/GameWorld";
+import styles from '../styles/Home.module.css'
+
 import {
   StarknetProvider,
 } from '@starknet-react/core'
@@ -7,7 +8,9 @@ import {
 function Home() {
   return (
     <StarknetProvider>
-      <GameWorld />
+      <div className={styles.gamecontainer}>
+        <GameWorld />
+      </div>
     </StarknetProvider>
   )
 }
