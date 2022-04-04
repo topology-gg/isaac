@@ -58,12 +58,11 @@ async def test_micro (account_factory):
     user_addr = user['account'].contract_address
 
     starknet, accounts = account_factory
-    LOGGER.info (f'> Deploying micro.cairo ..')
+    LOGGER.info (f'> Deploying micro.cairo ..\n')
     contract = await starknet.deploy (
         source = 'contracts/micro.cairo',
         constructor_calldata = []
     )
-    LOGGER.info ('')
 
     # Test strategy:
     # user receives 1 iron harvester, 2 aluminum harvesters, 1 iron refinery, 2 aluminum refineries, 1 OPSF, and many UTBs from admin.
@@ -269,6 +268,20 @@ async def test_micro (account_factory):
     # for i in range(7):
     #     ret = await contract.admin_read_device_deployed_emap(i).call()
     #     LOGGER.info (f'> emap entry at {i}: {ret.result}')
+    ret = await contract.admin_read_device_deployed_emap(0).call()
+    fe_harv_id = ret.result.emap_entry.id
+    ret = await contract.admin_read_device_deployed_emap(1).call()
+    fe_refn_id = ret.result.emap_entry.id
+    ret = await contract.admin_read_device_deployed_emap(2).call()
+    al_harv_1_id = ret.result.emap_entry.id
+    ret = await contract.admin_read_device_deployed_emap(3).call()
+    al_refn_1_id = ret.result.emap_entry.id
+    ret = await contract.admin_read_device_deployed_emap(4).call()
+    al_harv_2_id = ret.result.emap_entry.id
+    ret = await contract.admin_read_device_deployed_emap(5).call()
+    al_refn_2_id = ret.result.emap_entry.id
+    ret = await contract.admin_read_device_deployed_emap(6).call()
+    opsf_id = ret.result.emap_entry.id
 
 
     #
@@ -389,3 +402,123 @@ async def test_micro (account_factory):
         calldata = [user_addr] + locs_x + locs_y + [191, 180, 202, 104]
     )
     LOGGER.info (f'> connected aluminum refinery #2 with OPSF with {n_utb} UTBs.\n')
+
+    #
+    # 7. Check initial resource amount at each device
+    #
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 7')
+    LOGGER.info (f'> Check initial resource amount at each device')
+    LOGGER.info (f'> ------------')
+
+    for device_id in [fe_harv_id, al_harv_1_id, al_harv_2_id]:
+        ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_id).call()
+        assert ret.result.balance == 0
+
+    for device_id in [fe_refn_id, al_refn_1_id, al_refn_2_id]:
+        ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_id).call()
+        assert ret.result.balances.balance_resource_before_transform == 0
+        assert ret.result.balances.balance_resource_after_transform == 0
+
+    for element_type in [0,1,2,3]:
+        ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, element_type).call()
+        assert ret.result.balance == 0
+    LOGGER.info (f'> resource balances at devices match expected.\n')
+
+    #
+    # 8. run `forward_world_micro()`, and check resource balances
+    #
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 8')
+    LOGGER.info (f'> run `forward_world_micro()`, and check resource balances ')
+    LOGGER.info (f'> ------------')
+
+    await contract.mock_forward_world_micro().invoke()
+    LOGGER.info (f'> forward_world_micro() invoked.')
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(fe_harv_id).call()
+    LOGGER.info (f"> resource at fe harv: {ret.result.balance}")
+    assert ret.result.balance == +500 - 1 # fanout = 1
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(al_harv_1_id).call()
+    LOGGER.info (f"> resource at al harv #1: {ret.result.balance}")
+    assert ret.result.balance == +500 - 1 # fanout = 1
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(al_harv_2_id).call()
+    LOGGER.info (f"> resource at al harv #2: {ret.result.balance}")
+    assert ret.result.balance == +500 - 2 # fanout = 2
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(fe_refn_id).call()
+    LOGGER.info (f"> resource at fe refn: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
+    assert ret.result.balances.balance_resource_before_transform == 1 # fanin = 1
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(al_refn_1_id).call()
+    LOGGER.info (f"> resource at al refn #1: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
+    assert ret.result.balances.balance_resource_before_transform == 2 # fanin = 2
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(al_refn_2_id).call()
+    LOGGER.info (f"> resource at al refn #2: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
+    assert ret.result.balances.balance_resource_before_transform == 1 # fanin = 1
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    for element_type in [0,1,2,3]:
+        ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, element_type).call()
+        LOGGER.info (f"> resource of type {element_type} at OPSF: {ret.result.balance}")
+        assert ret.result.balance == 0
+
+    LOGGER.info (f"> all resource balances are correct.\n")
+
+    #
+    # 9. run `forward_world_micro()` again, and check resource balances
+    #
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 9')
+    LOGGER.info (f'> run `forward_world_micro()` again, and check resource balances ')
+    LOGGER.info (f'> ------------')
+
+    await contract.mock_forward_world_micro().invoke()
+    LOGGER.info (f'> forward_world_micro() invoked.')
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(fe_harv_id).call()
+    LOGGER.info (f"> resource at fe harv: {ret.result.balance}")
+    assert ret.result.balance == +500-1 +500 -1
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(al_harv_1_id).call()
+    LOGGER.info (f"> resource at al harv #1: {ret.result.balance}")
+    assert ret.result.balance == +500-1 +500 -1
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(al_harv_2_id).call()
+    LOGGER.info (f"> resource at al harv #2: {ret.result.balance}")
+    assert ret.result.balance == +500-2 +500 -2
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(fe_refn_id).call()
+    LOGGER.info (f"> resource at fe refn: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
+    assert ret.result.balances.balance_resource_before_transform == 1 -1 +1
+    assert ret.result.balances.balance_resource_after_transform == 0 +1 -1 # transported to OPSF
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(al_refn_1_id).call()
+    LOGGER.info (f"> resource at al refn #1: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
+    assert ret.result.balances.balance_resource_before_transform == 2 -1 +2
+    assert ret.result.balances.balance_resource_after_transform == 0 +1 -1 # transported to OPSF
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(al_refn_2_id).call()
+    LOGGER.info (f"> resource at al refn #2: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
+    assert ret.result.balances.balance_resource_before_transform == 1 -1 +1
+    assert ret.result.balances.balance_resource_after_transform == 0 +1 -1 # transported to OPSF
+
+    ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, 0).call()
+    LOGGER.info (f"> resource of type {element_type} at OPSF: {ret.result.balance}")
+    assert ret.result.balance == 0
+    ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, 1).call()
+    LOGGER.info (f"> resource of type {element_type} at OPSF: {ret.result.balance}")
+    assert ret.result.balance == +1
+    ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, 2).call()
+    LOGGER.info (f"> resource of type {element_type} at OPSF: {ret.result.balance}")
+    assert ret.result.balance == 0
+    ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, 3).call()
+    LOGGER.info (f"> resource of type {element_type} at OPSF: {ret.result.balance}")
+    assert ret.result.balance == +2
+
+    LOGGER.info (f"> all resource balances are correct.\n")
