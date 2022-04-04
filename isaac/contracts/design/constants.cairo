@@ -6,6 +6,7 @@ from contracts.util.structs import (Vec2)
 #
 const RANGE_CHECK_BOUND = 2 ** 120
 const SCALE_FP = 10**20
+const SCALE_FP_DIV_100 = 10**18
 const SCALE_FP_SQRT = 10**10
 
 #
