@@ -71,14 +71,16 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) device pickup + testing
 - (DONE) server.cairo initializes macro dynamics; contract deployed to testnet
 - (DONE) multi-grid device placement testing
-- fanin and fanout testing, including OPSF
+- (DONE) fanin and fanout testing, including OPSF
 - remove `utb/utl-tethered` and `utb/utl-label` from deployed-device emap-entry struct
-- OPSF device construction and withdrawal + testing
 - resource distribution: consider statically generated and encoded as `dw` with felt-packing + testing
 - utl logic; energy update at device + energy transported across utl-set + testing
+
+- OPSF device construction and withdrawal + testing
 - game over determination - detecting collision between planet and any of the three suns + testing
 - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - NLSCM: near-light-speed cruise missile for pushing suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
+
 - [demo] visualizer of macro trisolar system
 - [demo] visualizer of micro planet surface activities
 - [demo] conceptualise high-level signup flow, civilisation reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol
