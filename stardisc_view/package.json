@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@argent/get-starknet": "^3.0.1",
+    "@react-three/cannon": "^6.1.0",
     "@react-three/drei": "^9.0.1",
     "@react-three/fiber": "^8.0.7",
     "@starknet-react/core": "^0.6.3",
