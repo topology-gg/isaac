@@ -1,5 +1,8 @@
 import React from "react";
 import Box from "./Box";
+import { Sky } from '@react-three/drei'
+import { Physics } from '@react-three/cannon'
+import styles from '../styles/GameWorld.module.css'
 
 import {
     useContract,
@@ -32,8 +35,13 @@ export default function GameWorld() {
     console.log(macro_state)
 
     return (
-        <Canvas>
-            <Box />
+        <Canvas className={styles.canvas}>
+            <Sky sunPosition={[100, 20, 100]} />
+            <ambientLight intensity={0.25} />
+            <pointLight castShadow intensity={0.7} position={[100, 100, 100]} />
+            <Physics gravity={[0, -30, 0]}>
+                <Box />
+            </Physics>
         </Canvas>
     )
 }
