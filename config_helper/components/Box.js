@@ -1,5 +1,6 @@
 import ReactDOM from "react-dom";
 import React, { useEffect, useRef } from "react";
+import './ColorMaterial'
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { degToRad } from "three/src/math/MathUtils";
@@ -63,7 +64,8 @@ export default function Box(props) {
     const canvasRef6 = useRef(document.createElement("canvas"));
     const textureRef6 = useRef();
 
-    useEffect(() => {
+
+    useFrame(({ clock }) => {
         const canvas = canvasRef.current;
 
         canvas.width = canvasSize;
@@ -93,9 +95,7 @@ export default function Box(props) {
 
         canvas6.width = canvasSize;
         canvas6.height = canvasSize;
-    });
 
-    useFrame(({ clock }) => {
         const ctx = canvasRef.current.getContext("2d");
         ctx.clearRect(0, 0, canvasSize, canvasSize);
 
@@ -135,8 +135,8 @@ export default function Box(props) {
             ctx3,
             gridSize,
             canvasSize,
-            Math.floor((clock.getElapsedTime() * 16) % gridSize),
-            Math.floor(clock.getElapsedTime() % gridSize),
+            Math.floor(5),
+            Math.floor(5),
             "brown"
         );
 
@@ -153,8 +153,8 @@ export default function Box(props) {
             ctx5,
             gridSize,
             canvasSize,
-            Math.floor((clock.getElapsedTime() * 16) % gridSize),
-            Math.floor(clock.getElapsedTime() % gridSize),
+            Math.floor(0),
+            Math.floor(0),
             "black"
         );
 
