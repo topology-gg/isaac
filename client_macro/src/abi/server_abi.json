@@ -1,0 +1,99 @@
+[
+    {
+        "members": [
+            {
+                "name": "sun0",
+                "offset": 0,
+                "type": "Dynamic"
+            },
+            {
+                "name": "sun1",
+                "offset": 4,
+                "type": "Dynamic"
+            },
+            {
+                "name": "sun2",
+                "offset": 8,
+                "type": "Dynamic"
+            },
+            {
+                "name": "plnt",
+                "offset": 12,
+                "type": "Dynamic"
+            }
+        ],
+        "name": "Dynamics",
+        "size": 16,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "q",
+                "offset": 0,
+                "type": "Vec2"
+            },
+            {
+                "name": "qd",
+                "offset": 2,
+                "type": "Vec2"
+            }
+        ],
+        "name": "Dynamic",
+        "size": 4,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "x",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "y",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Vec2",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "inputs": [],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "view_phi_curr",
+        "outputs": [
+            {
+                "name": "phi",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "view_macro_state_curr",
+        "outputs": [
+            {
+                "name": "macro_state",
+                "type": "Dynamics"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "client_forward_world",
+        "outputs": [],
+        "type": "function"
+    }
+]
