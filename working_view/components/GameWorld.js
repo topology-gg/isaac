@@ -34,12 +34,12 @@ export default function GameWorld() {
         method: 'view_macro_state_curr',
         args: [],
     })
-    console.log(macro_state)
 
+    console.log("MACRO STATE", macro_state)
     return (
         <Canvas className={styles.canvas}>
             <ambientLight />
-            <Box />
+            <Box data={macro_state} />
         </Canvas>
     )
 }

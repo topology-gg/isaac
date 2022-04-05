@@ -1,13 +1,23 @@
 import ReactDOM from "react-dom";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import './ColorMaterial'
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { degToRad } from "three/src/math/MathUtils";
 import { Vector2 } from "three";
 
+import { createSurface } from './surfaceHelper'
+
 let gridSize = 16;
 const canvasSize = 512;
+const surfaceIdColorMap = {
+    0: "red",
+    1: "blue",
+    2: "green",
+    3: "orange",
+    4: "white",
+    5: "yellow"
+}
 
 function drawCell(ctx, gridSize, canvasSize, cellX, cellY, color = "yellow") {
     ctx.fillStyle = color;
@@ -43,7 +53,27 @@ function drawLine(ctx, time, canvasSize) {
     ctx.stroke();
 }
 
+function drawResources(ctx, surfaceArray, color) {
+    console.log(surfaceArray)
+    for (var i = 0; i < surfaceArray.length; i++) {
+        for (var j = 0; j < surfaceArray[i].length; j++) {
+            if (surfaceArray[i][j]) {
+                drawCell(
+                    ctx,
+                    gridSize,
+                    canvasSize,
+                    i,
+                    j,
+                    color
+                );
+            }
+        }
+    }
+}
+
 export default function Box(props) {
+    const [surface, setSurface] = useState(null);
+
     const canvasRef = useRef(document.createElement("canvas"));
     const textureRef = useRef();
     const group = useRef();
@@ -64,8 +94,15 @@ export default function Box(props) {
     const canvasRef6 = useRef(document.createElement("canvas"));
     const textureRef6 = useRef();
 
-
     useFrame(({ clock }) => {
+        if (props.data && !surface) {
+            // Replace createSurface function with real data
+            var new_surface = createSurface()
+            console.log("new surface", new_surface)
+            setSurface(new_surface)
+        }
+
+        // Can remove variables and call canvasRef instead
         const canvas = canvasRef.current;
 
         canvas.width = canvasSize;
@@ -114,58 +151,15 @@ export default function Box(props) {
         const ctx6 = canvasRef6.current.getContext("2d");
         ctx6.clearRect(0, 0, canvasSize, canvasSize);
 
-        drawCell(
-            ctx,
-            gridSize,
-            canvasSize,
-            Math.floor((clock.getElapsedTime() * 16) % gridSize),
-            Math.floor(clock.getElapsedTime() % gridSize),
-            "red"
-        );
-        drawCell(
-            ctx2,
-            gridSize,
-            canvasSize,
-            Math.floor((clock.getElapsedTime() * 16) % gridSize),
-            Math.floor(clock.getElapsedTime() % gridSize),
-            "blue"
-        );
+        if (surface) {
+            drawResources(ctx, surface[0], surfaceIdColorMap[0])
+            drawResources(ctx2, surface[1], surfaceIdColorMap[1])
+            drawResources(ctx3, surface[2], surfaceIdColorMap[2])
+            drawResources(ctx4, surface[3], surfaceIdColorMap[3])
+            drawResources(ctx5, surface[4], surfaceIdColorMap[4])
+            drawResources(ctx6, surface[5], surfaceIdColorMap[5])
+        }
 
-        drawCell(
-            ctx3,
-            gridSize,
-            canvasSize,
-            Math.floor(5),
-            Math.floor(5),
-            "brown"
-        );
-
-        drawCell(
-            ctx4,
-            gridSize,
-            canvasSize,
-            Math.floor((clock.getElapsedTime() * 16) % gridSize),
-            Math.floor(clock.getElapsedTime() % gridSize),
-            "purple"
-        );
-
-        drawCell(
-            ctx5,
-            gridSize,
-            canvasSize,
-            Math.floor(0),
-            Math.floor(0),
-            "black"
-        );
-
-        drawCell(
-            ctx6,
-            gridSize,
-            canvasSize,
-            Math.floor((clock.getElapsedTime() * 16) % gridSize),
-            Math.floor(clock.getElapsedTime() % gridSize),
-            "yellow"
-        );
 
         drawGrid(ctx, gridSize, canvasSize);
         drawGrid(ctx2, gridSize, canvasSize);
