@@ -208,42 +208,42 @@ export default function Box(props) {
                 onPointerOut={() => (document.body.style = "cursor: pointer;")}
             >
                 <boxBufferGeometry args={[3, 3, 3]} />
-                <meshBasicMaterial attachArray="material">
+                <meshBasicMaterial attach="material-0">
                     <canvasTexture
                         ref={textureRef}
                         attach="map"
                         image={canvasRef.current}
                     />
                 </meshBasicMaterial>
-                <meshBasicMaterial attachArray="material">
+                <meshBasicMaterial attach="material-1">
                     <canvasTexture
                         ref={textureRef2}
                         attach="map"
                         image={canvasRef2.current}
                     />
                 </meshBasicMaterial>
-                <meshBasicMaterial attachArray="material">
+                <meshBasicMaterial attach="material-2">
                     <canvasTexture
                         ref={textureRef3}
                         attach="map"
                         image={canvasRef3.current}
                     />
                 </meshBasicMaterial>
-                <meshBasicMaterial attachArray="material">
+                <meshBasicMaterial attach="material-3">
                     <canvasTexture
                         ref={textureRef4}
                         attach="map"
                         image={canvasRef4.current}
                     />
                 </meshBasicMaterial>
-                <meshBasicMaterial attachArray="material">
+                <meshBasicMaterial attach="material-4">
                     <canvasTexture
                         ref={textureRef5}
                         attach="map"
                         image={canvasRef5.current}
                     />
                 </meshBasicMaterial>
-                <meshBasicMaterial attachArray="material">
+                <meshBasicMaterial attach="material-5">
                     <canvasTexture
                         ref={textureRef6}
                         attach="map"
