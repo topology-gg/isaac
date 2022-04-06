@@ -54,7 +54,6 @@ function drawLine(ctx, time, canvasSize) {
 }
 
 function drawResources(ctx, surfaceArray, color) {
-    console.log(surfaceArray)
     for (var i = 0; i < surfaceArray.length; i++) {
         for (var j = 0; j < surfaceArray[i].length; j++) {
             if (surfaceArray[i][j]) {
@@ -95,10 +94,9 @@ export default function Box(props) {
     const textureRef6 = useRef();
 
     useFrame(({ clock }) => {
-        if (props.data && !surface) {
+        if (props.macro_state && props.phi && !surface) {
             // Replace createSurface function with real data
-            var new_surface = createSurface()
-            console.log("new surface", new_surface)
+            var new_surface = createSurface(props.phi)
             setSurface(new_surface)
         }
 
