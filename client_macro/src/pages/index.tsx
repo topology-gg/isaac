@@ -7,8 +7,8 @@ import { ConnectWallet } from '~/components/ConnectWallet'
 import { IncrementCounter } from '~/components/IncrementCounter'
 import { TransactionList } from '~/components/TransactionList'
 import { useCounterContract } from '~/hooks/counter'
-
 import {useServerContract} from '~/hooks/server'
+import { useRef, useState, useEffect } from 'react'
 
 const STARK_PRIME =      new BigNumber ('3618502788666131213697322783095070105623107215331596699973092056135872020481')
 const STARK_PRIME_HALF = new BigNumber ('1809251394333065606848661391547535052811553607665798349986546028067936010240')

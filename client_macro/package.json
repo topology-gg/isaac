@@ -10,7 +10,10 @@
   },
   "dependencies": {
     "@argent/get-starknet": "^3.0",
+    "@react-three/fiber": "^7.0.27",
     "@starknet-react/core": "^0.6.0",
+    "@types/three": "^0.139.0",
+    "canvas": "^2.9.1",
     "next": "12.0.10",
     "react": "17.0.2",
     "react-dom": "17.0.2",
