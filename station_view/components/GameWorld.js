@@ -35,11 +35,16 @@ export default function GameWorld() {
         args: [],
     })
 
-    console.log("MACRO STATE", macro_state)
+    const { data: phi } = useStarknetCall({
+        contract,
+        method: 'view_phi_curr',
+        args: [],
+    })
+
     return (
         <Canvas className={styles.canvas}>
             <ambientLight />
-            <Box data={macro_state} />
+            <Box macro_state={macro_state} phi={phi} />
         </Canvas>
     )
 }
