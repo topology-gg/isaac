@@ -33,15 +33,8 @@ function fp_felt_to_num(felt: BigNumber) {
   return felt_descaled
 }
 
-const Body: FC<any> = ({ x, y, colour }) => (
-  <g>
-    <circle cx={x} cy={y} r={0.1} fill={colour} />
-  </g>
-);
-const Sun: FC<any> = ({ x, y, colour, onClick }) => (
-  <g onClick={onClick}>
-    <Body x={x} y={y} colour={colour} />
-  </g>
+const Sun: FC<any> = ({ x, y, colour }) => (
+  <circle cx={x} cy={y} r={0.1} fill={colour} />
 );
 
 
