@@ -1,0 +1,18 @@
+[
+    {
+        "inputs": [],
+        "name": "get_sun_svg",
+        "outputs": [
+            {
+                "name": "number_1",
+                "type": "felt"
+            },
+            {
+                "name": "number_2",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
