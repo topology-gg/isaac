@@ -74,19 +74,18 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) server.cairo initializes macro dynamics; contract deployed to testnet
 - (DONE) multi-grid device placement testing
 - (DONE) fanin and fanout testing, including OPSF
-- test perlin noise
-- [demo] visualizer of macro trisolar system
-- [demo] visualizer of micro planet surface activities
+- (DONE) [demo] visualizer of macro trisolar system
+- [demo] isaac-client-micro-write: make transaction to e.g. place device
+- [demo] isaac-client-micro-read: visualizer of micro planet surface activities
+- test perlin noise (potentially make visualization for resource distribution)
 - utl logic; energy update at device + energy transported across utl-set + testing
 - OPSF device construction - design the parametrized recipes - and device withdrawal + testing
-- game over determination - detecting collision between planet and any of the three suns + testing
 - device-connected-to-multiple-utbs: deal with {storage N->m} or {O(M)} for updating utb emap
+- game over determination - detecting collision between planet and any of the three suns + testing
 - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - NLSCM: near-light-speed cruise missile for pushing suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
 - [demo] conceptualise high-level signup flow, civilisation reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol
-- [demo] tune artistic direction of visualizer
 - [demo] Rudimentary write-up on game design &/ technical considerations for audience to read during/after demo
-- [demo+] frontend able to make transaction to e.g. place device
 - use perlin-based resource concentration + parametrized resource update rate per element + testing
 - parametrized resource transport rate per element & decay over distance + testing
 - game over determination - detecting escape velocity plus escape condition (require game design thinking) + testing
