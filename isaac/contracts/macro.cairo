@@ -8,7 +8,6 @@ from contracts.design.constants import (
     G, MASS_SUN0, MASS_SUN1, MASS_SUN2, OMEGA_DT_PLANET, TWO_PI, RANGE_CHECK_BOUND, SCALE_FP,
     SCALE_FP_SQRT, DT)
 from contracts.util.structs import Vec2, Dynamic, Dynamics
-from starkware.cairo.common.alloc import alloc
 
 #
 # Runge-Kutta 4th-order method
