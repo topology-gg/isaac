@@ -26,7 +26,23 @@ async def test_contract(contract_factory):
 
     # Read from contract
     response = await contract.get_sun_svg(test_sun).call()
-    assert response.result.arr == [18689282203996290424440896802, 48, 37522503187746, 50, 146573245730, 3157553, 2459077999520922914, 7497060, 572534590]
+
+    hex_string = response.result.arr
+    
+    res_str = ''
+    for val in hex_string:
+        res_str = res_str + hex_to_ascii(dec_to_hex(val))
+
+    assert res_str == '<circle cx="0" cy="2" r="0.1" fill="red" />'
+   
+def dec_to_hex(num):
+
+
+    return hex(num)
+
+def hex_to_ascii(hex_str):
+    asc = bytearray.fromhex(hex_str[2:]).decode()
+    return asc
 
 def fp_to_felt (val):
     val_scaled = int (val * SCALE_FP)
