@@ -2,6 +2,141 @@
     {
         "members": [
             {
+                "name": "x",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "y",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Vec2",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "populated",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "deployed_device_type",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "deployed_device_id",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "deployed_device_owner",
+                "offset": 3,
+                "type": "felt"
+            }
+        ],
+        "name": "GridStat",
+        "size": 4,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "grid",
+                "offset": 0,
+                "type": "Vec2"
+            },
+            {
+                "name": "type",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "id",
+                "offset": 3,
+                "type": "felt"
+            },
+            {
+                "name": "tethered_to_utl",
+                "offset": 4,
+                "type": "felt"
+            },
+            {
+                "name": "tethered_to_utb",
+                "offset": 5,
+                "type": "felt"
+            },
+            {
+                "name": "utl_label",
+                "offset": 6,
+                "type": "felt"
+            },
+            {
+                "name": "utb_label",
+                "offset": 7,
+                "type": "felt"
+            }
+        ],
+        "name": "DeviceDeployedEmapEntry",
+        "size": 8,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "balance_resource_before_transform",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "balance_resource_after_transform",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "TransformerResourceBalances",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "utb_set_deployed_label",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "utb_deployed_index_start",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "utb_deployed_index_end",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "src_device_id",
+                "offset": 3,
+                "type": "felt"
+            },
+            {
+                "name": "dst_device_id",
+                "offset": 4,
+                "type": "felt"
+            }
+        ],
+        "name": "UtbSetDeployedEmapEntry",
+        "size": 5,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
                 "name": "sun0",
                 "offset": 0,
                 "type": "Dynamic"
@@ -44,21 +179,406 @@
         "type": "struct"
     },
     {
-        "members": [
+        "inputs": [
             {
-                "name": "x",
-                "offset": 0,
+                "name": "caller",
                 "type": "felt"
             },
             {
-                "name": "y",
-                "offset": 1,
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "grid_y",
                 "type": "felt"
             }
         ],
-        "name": "Vec2",
-        "size": 2,
-        "type": "struct"
+        "name": "mock_device_deploy",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "caller",
+                "type": "felt"
+            },
+            {
+                "name": "grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "grid_y",
+                "type": "felt"
+            }
+        ],
+        "name": "mock_device_pickup_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "caller",
+                "type": "felt"
+            },
+            {
+                "name": "locs_x_len",
+                "type": "felt"
+            },
+            {
+                "name": "locs_x",
+                "type": "felt*"
+            },
+            {
+                "name": "locs_y_len",
+                "type": "felt"
+            },
+            {
+                "name": "locs_y",
+                "type": "felt*"
+            },
+            {
+                "name": "src_device_grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "src_device_grid_y",
+                "type": "felt"
+            },
+            {
+                "name": "dst_device_grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "dst_device_grid_y",
+                "type": "felt"
+            }
+        ],
+        "name": "mock_utb_deploy",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "caller",
+                "type": "felt"
+            },
+            {
+                "name": "grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "grid_y",
+                "type": "felt"
+            }
+        ],
+        "name": "mock_utb_pickup_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "caller",
+                "type": "felt"
+            },
+            {
+                "name": "utb_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "src_device_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "dst_device_grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "mock_utb_tether_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "device_type0",
+                "type": "felt"
+            },
+            {
+                "name": "device_type1",
+                "type": "felt"
+            }
+        ],
+        "name": "mock_are_resource_producer_consumer_relationship",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "mock_forward_world_micro",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "admin_read_grid_stats",
+        "outputs": [
+            {
+                "name": "grid_stat",
+                "type": "GridStat"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_device_undeployed_ledger",
+        "outputs": [
+            {
+                "name": "amount",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_write_device_undeployed_ledger",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "admin_read_device_deployed_emap_size",
+        "outputs": [
+            {
+                "name": "size",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "emap_index",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_device_deployed_emap",
+        "outputs": [
+            {
+                "name": "emap_entry",
+                "type": "DeviceDeployedEmapEntry"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_device_deployed_id_to_emap_index",
+        "outputs": [
+            {
+                "name": "emap_index",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_harvesters_deployed_id_to_resource_balance",
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_transformers_deployed_id_to_resource_balances",
+        "outputs": [
+            {
+                "name": "balances",
+                "type": "TransformerResourceBalances"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            },
+            {
+                "name": "element_type",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_opsf_deployed_id_to_resource_balances",
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            },
+            {
+                "name": "device_type",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_opsf_deployed_id_to_device_balances",
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "admin_read_utb_set_deployed_emap_size",
+        "outputs": [
+            {
+                "name": "size",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "emap_index",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_utb_set_deployed_emap",
+        "outputs": [
+            {
+                "name": "emap_entry",
+                "type": "UtbSetDeployedEmapEntry"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "label",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_utb_set_deployed_label_to_emap_index",
+        "outputs": [
+            {
+                "name": "emap_index",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "admin_read_utb_deployed_index_to_grid_size",
+        "outputs": [
+            {
+                "name": "size",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "index",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_utb_deployed_index_to_grid",
+        "outputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
     },
     {
         "inputs": [],
@@ -94,6 +614,82 @@
         "inputs": [],
         "name": "client_forward_world",
         "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "client_deploy_device_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "client_pickup_device_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "locs_len",
+                "type": "felt"
+            },
+            {
+                "name": "locs",
+                "type": "Vec2*"
+            },
+            {
+                "name": "src_device_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "dst_device_grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "client_deploy_utb_by_grids",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "client_pickup_utb_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "client_view_device_deployed_emap",
+        "outputs": [
+            {
+                "name": "emap_len",
+                "type": "felt"
+            },
+            {
+                "name": "emap",
+                "type": "DeviceDeployedEmapEntry*"
+            }
+        ],
+        "stateMutability": "view",
         "type": "function"
     }
 ]

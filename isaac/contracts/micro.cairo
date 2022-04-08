@@ -1224,6 +1224,47 @@ func forward_world_micro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     return ()
 end
 
+#####################################
+## Iterators for client view purposes
+#####################################
+
+#
+# Iterating over device emap
+#
+func iterate_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (
+        emap_len : felt,
+        emap : DeviceDeployedEmapEntry*
+    ):
+    alloc_locals
+
+    let (emap_size) = device_deployed_emap_size.read ()
+    let (emap : DeviceDeployedEmapEntry*) = alloc ()
+
+    recurse_traverse_device_deployed_emap (emap_size, emap, 0)
+
+    return (emap_size, emap)
+end
+
+func recurse_traverse_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    len : felt,
+    arr : DeviceDeployedEmapEntry*,
+    idx : felt) -> ():
+
+    if idx == len:
+        return ()
+    end
+
+    let (emap_entry) = device_deployed_emap.read (idx)
+    assert arr[idx] = emap_entry
+
+    recurse_traverse_device_deployed_emap (len, arr, idx+1)
+
+    return ()
+end
+
+######################################
+
 ######################################
 ## Mock functions for testing purposes
 ######################################

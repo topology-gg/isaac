@@ -6,8 +6,11 @@ from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
 from contracts.macro import (forward_world_macro)
-# from contracts.micro import ()
-# from contracts.design.constants import ()
+from contracts.micro import (
+    device_deploy, device_pickup_by_grid,
+    utb_deploy, utb_pickup_by_grid, forward_world_micro,
+    iterate_device_deployed_emap, DeviceDeployedEmapEntry
+)
 from contracts.util.structs import (
     Vec2, Dynamic, Dynamics
 )
@@ -32,36 +35,41 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     #
     macro_state_curr.write (Dynamics(
         sun0 = Dynamic(
-            q=Vec2(
-                x=47773868232910987264,
-                y=32844341810368286720),
-            qd=Vec2(
-                x=3618502788666131213697322783095070105623107215331596699862321436184118558721,
-                y=3618502788666131213697322783095070105623107215331596699937498889642259275777)
+            q = Vec2(
+                x = 7186568302368001097728,
+                y = 3618502788666131213697322783095070105623107215331596698172105163871871827969
+            ),
+            qd = Vec2(
+                x=95543324142078754816,
+                y=88608606963963625472
+            )
         ),
         sun1 = Dynamic(
-            q=Vec2(
-                x=60201625119764856832,
-                y=3618502788666131213697322783095070105623107215331596699937586558378790285313),
-            qd=Vec2(
-                x=106710634915355459584,
-                y=3618502788666131213697322783095070105623107215331596699961957519972063008769)
+            q = Vec2(
+                x = 3618502788666131213697322783095070105623107215331596692786523753767870922753,
+                y = 1800986892264000192512
+            ),
+            qd = Vec2(
+                x = 95543324142078754816,
+                y = 88608606963963625472
+            )
         ),
-        sun2=Dynamic(
-            q=Vec2(
-                x=3618502788666131213697322783095070105623107215331596699865116562783200034817,
-                y=2661155946711651328),
-            qd=Vec2(
-                x=4059985036398170112,
-                y=46727702657421705216)
+        sun2 = Dynamic(
+            q = Vec2(x = 0, y = 0),
+            qd = Vec2(
+                x = 3618502788666131213697322783095070105623107215331596699782005407851714510849,
+                y = 3618502788666131213697322783095070105623107215331596699795874842207944769537
+            )
         ),
-        plnt=Dynamic(
-            q=Vec2(
-                x=4676853079239927267328,
-                y=3618502788666131213697322783095070105623107215331596695090310503521091321857),
-            qd=Vec2(
-                x=190912647818214178816,
-                y=3618502788666131213697322783095070105623107215331596699776260363489563443201)
+        plnt = Dynamic(
+            q = Vec2(
+                x = 3593284151184000548864,
+                y = 3618502788666131213697322783095070105623107215331596699072598610003871924225
+            ),
+            qd = Vec2(
+                x = 3618502788666131213697322783095070105623107215331596699899597191411196059649,
+                y = 3618502788666131213697322783095070105623107215331596699904931589240515387393
+            )
         )
     ))
 
@@ -148,9 +156,83 @@ func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     #
     # Forward micro world - all activities on the surface of the planet
     #
-    # forward_world_micro ()
+    forward_world_micro ()
 
     return ()
 end
 
 ##############################
+
+#
+# Exposing functions for state-changing operations in micro world
+#
+
+@external
+func client_deploy_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    type : felt, grid : Vec2) -> ():
+
+    let (caller) = get_caller_address ()
+
+    device_deploy (caller, type, grid)
+
+    return ()
+end
+
+@external
+func client_pickup_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    grid : Vec2) -> ():
+
+    let (caller) = get_caller_address ()
+
+    device_pickup_by_grid (caller, grid)
+
+    return ()
+end
+
+@external
+func client_deploy_utb_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        locs_len : felt,
+        locs : Vec2*,
+        src_device_grid : Vec2,
+        dst_device_grid : Vec2
+    ) -> ():
+
+    let (caller) = get_caller_address ()
+
+    utb_deploy (
+        caller,
+        locs_len,
+        locs,
+        src_device_grid,
+        dst_device_grid
+    )
+
+    return ()
+end
+
+@external
+func client_pickup_utb_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    grid : Vec2) -> ():
+
+    let (caller) = get_caller_address ()
+
+    utb_pickup_by_grid (caller, grid)
+
+    return ()
+end
+
+#
+# Exposing functions for observing the micro world
+#
+
+@view
+func client_view_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (
+        emap_len : felt,
+        emap : DeviceDeployedEmapEntry*
+    ):
+
+    let (emap_len, emap) = iterate_device_deployed_emap ()
+
+    return (emap_len, emap)
+end

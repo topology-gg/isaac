@@ -10,12 +10,12 @@ import logging
 import math
 import numpy as np
 
-N_TEST = 50
+N_TEST = 1
 LOGGER = logging.getLogger(__name__)
 PRIME = 3618502788666131213697322783095070105623107215331596699973092056135872020481
 PRIME_HALF = PRIME//2
 SCALE_FP = 10**20
-ABS_ERR_TOL = 1e-8
+ABS_ERR_TOL = 1e-0
 
 ## Note to test logging:
 ## `--log-cli-level=INFO` to show logs
@@ -44,6 +44,17 @@ async def test_macro ():
         # 1. from initial dynamics, forward by a random number of steps to obtain the testing dynamics
         #
         s_init, constants = prepare ()
+
+        sf_init = convert_array_to_fp_felt (s_init)
+        state_init = contract.Dynamics (
+            sun0 = contract.Dynamic (q = contract.Vec2(sf_init[0], sf_init[2]), qd = contract.Vec2(sf_init[1], sf_init[3])),
+            sun1 = contract.Dynamic (q = contract.Vec2(sf_init[4], sf_init[6]), qd = contract.Vec2(sf_init[5], sf_init[7])),
+            sun2 = contract.Dynamic (q = contract.Vec2(sf_init[8], sf_init[10]), qd = contract.Vec2(sf_init[9], sf_init[11])),
+            plnt = contract.Dynamic (q = contract.Vec2(sf_init[12], sf_init[14]), qd = contract.Vec2(sf_init[13], sf_init[15])),
+        )
+        LOGGER.info (f"> initial macro state: {s_init}")
+        LOGGER.info (f"> initial macro state in felts: {state_init}")
+
         n_rand = random.randint (0, 500)
         dt = 0.06
         s_test = forward (state=s_init, constants=constants, N=n_rand, dt=dt)
@@ -64,7 +75,7 @@ async def test_macro ():
             sun2 = contract.Dynamic (q = contract.Vec2(sf[8], sf[10]), qd = contract.Vec2(sf[9], sf[11])),
             plnt = contract.Dynamic (q = contract.Vec2(sf[12], sf[14]), qd = contract.Vec2(sf[13], sf[15])),
         )
-        LOGGER.info (f"> state to test = {state}")
+        # LOGGER.info (f"> state to test = {state}")
         ret = await contract.mock_forward_world_macro(
             state,
             phi_fp
@@ -137,7 +148,6 @@ def evaluate_3plus1body (state, constants):
     M1 = constants['M1']
     M2 = constants['M2']
     M3 = constants['M3']
-    m = constants['m']
 
     [x1, x1d, y1, y1d, x2, x2d, y2, y2d, x3, x3d, y3, y3d, x4, x4d, y4, y4d] = state # unpack state
 
@@ -211,9 +221,10 @@ def prepare ():
 
     # Note: when SCALE_CONST is C^2, SCALE_Q must be C^3, and SCALE_V must be sqrt(C),
     #       to scale quantities correctly
-    SCALE_V = 1 # sqrt(4) = 2
-    SCALE_Q = 1 # 4^3 = 64
-    SCALE_CONST = 1 # 4^2 = 16
+    C = 4.2
+    SCALE_V = math.sqrt (C) # sqrt(4) = 2
+    SCALE_Q = C**3 # 4^3 = 64
+    SCALE_CONST = C**2 # 4^2 = 16
 
     Q1 = (Q1_unit[0]*SCALE_Q, Q1_unit[1]*SCALE_Q)
     Q4 = (Q4_unit[0]*SCALE_Q, Q4_unit[1]*SCALE_Q)
@@ -224,8 +235,7 @@ def prepare ():
         'G'  : 1. * SCALE_CONST,
         'M1' : 1. * SCALE_CONST,
         'M2' : 1. * SCALE_CONST,
-        'M3' : 1. * SCALE_CONST,
-        'm' : 0.00001 * SCALE_CONST
+        'M3' : 1. * SCALE_CONST
     }
 
     state = np.array( [Q1[0], -V3[0]/2, Q1[1], -V3[1]/2,

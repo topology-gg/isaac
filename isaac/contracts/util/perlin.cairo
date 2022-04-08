@@ -158,7 +158,16 @@ func adjust {range_check_ptr} (
     end
 end
 
-func get_perlin_value {range_check_ptr} (
+@event
+func debug_emit_vec2 (x : Vec2):
+end
+
+@event
+func debug_emit_felt (x : felt):
+end
+
+
+func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
         face : felt, grid : Vec2
     ) -> (res : felt):
     alloc_locals
@@ -176,6 +185,11 @@ func get_perlin_value {range_check_ptr} (
     let pv_bottom_right = Vec2 (pos.x * SCALE_FP - 99 * SCALE_FP, pos.y)
     let pv_top_right = Vec2 (pos.x * SCALE_FP - 99 * SCALE_FP, pos.y * SCALE_FP - 99 * SCALE_FP)
 
+    debug_emit_vec2.emit (pv_bottom_left)
+    debug_emit_vec2.emit (pv_top_left)
+    debug_emit_vec2.emit (pv_bottom_right)
+    debug_emit_vec2.emit (pv_top_right)
+
     #
     # Retrieve four random vectors given face
     #
@@ -186,6 +200,11 @@ func get_perlin_value {range_check_ptr} (
         rv_top_right : Vec2
     ) = get_random_vecs (face)
 
+    debug_emit_vec2.emit (rv_bottom_left)
+    debug_emit_vec2.emit (rv_top_left)
+    debug_emit_vec2.emit (rv_bottom_right)
+    debug_emit_vec2.emit (rv_top_right)
+
     #
     # Compute dot products
     #
@@ -194,11 +213,19 @@ func get_perlin_value {range_check_ptr} (
     let (prod_bottom_right) = dot (pv_bottom_right, rv_bottom_right)
     let (prod_top_right)    = dot (pv_top_right, rv_top_right)
 
+    debug_emit_felt.emit (prod_bottom_left)
+    debug_emit_felt.emit (prod_top_left)
+    debug_emit_felt.emit (prod_bottom_right)
+    debug_emit_felt.emit (prod_top_right)
+
     #
     # Compute u,v from fade()
     #
     let (u) = fade (pos.x * SCALE_FP_DIV_100)
     let (v) = fade (pos.y * SCALE_FP_DIV_100)
+
+    debug_emit_felt.emit (u)
+    debug_emit_felt.emit (v)
 
     #
     # Perform lerp
@@ -206,6 +233,10 @@ func get_perlin_value {range_check_ptr} (
     let (lerp_left)  = lerp (v, prod_bottom_left, prod_top_left)
     let (lerp_right) = lerp (v, prod_bottom_right, prod_top_right)
     let (lerp_final) = lerp (u, lerp_left, lerp_right)
+
+    debug_emit_felt.emit (lerp_left)
+    debug_emit_felt.emit (lerp_right)
+    debug_emit_felt.emit (lerp_final)
 
     #
     # value adjustment
