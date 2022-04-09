@@ -1,6 +1,8 @@
 from starkware.cairo.common.registers import get_label_location
 from contracts.util.structs import (Vec2)
 
+const GYOZA = 0x077d04506374b4920d6c35ecaded1ed7d26dd283ee64f284481e2574e77852c6
+
 #
 # Constants for numerical precision / stability
 #

@@ -140,18 +140,16 @@ func assert_device_footprint_populable {syscall_ptr : felt*, pedersen_ptr : Hash
 
     let (dim_ptr) = get_device_dimension_ptr ()
     let device_dim = dim_ptr [type]
+    let (face, _, _, _) = locate_face_and_edge_given_valid_grid (grid)
 
     #
     # Check 1x1
     #
-    let (grid_stat_0_0) = grid_stats.read (grid)
-    assert grid_stat_0_0.populated = 0
+    assert_valid_unpopulated_and_same_face (grid, face)
 
     if device_dim == 1:
         return ()
     end
-
-    let (face, _, _, _) = locate_face_and_edge_given_valid_grid (grid)
 
     #
     # Check 2x2
