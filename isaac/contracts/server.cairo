@@ -5,7 +5,7 @@ from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
-from design.constants import (GYOZA)
+from contracts.design.constants import (GYOZA)
 from contracts.macro import (forward_world_macro)
 from contracts.micro import (
     device_deploy, device_pickup_by_grid,
