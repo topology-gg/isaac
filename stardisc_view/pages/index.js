@@ -1,5 +1,6 @@
 import GameWorld from "../components/GameWorld";
 import styles from '../styles/Home.module.css'
+import { ConnectWallet } from "../components/ConnectWallet.js"
 
 import {
   StarknetProvider,

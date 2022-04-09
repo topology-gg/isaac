@@ -5,8 +5,10 @@ import { Physics } from '@react-three/cannon'
 import styles from '../styles/GameWorld.module.css'
 
 import {
+    useStarknet,
     useContract,
     useStarknetCall,
+    useStarknetInvoke
 } from '@starknet-react/core'
 import { Canvas } from '@react-three/fiber'
 
@@ -29,6 +31,12 @@ function useShapesContract() {
 export default function GameWorld() {
 
     const { contract } = useServerContract()
+    const { account } = useStarknet()
+    const { invoke } = useStarknetInvoke({
+        contract,
+        method: 'client_deploy_device_by_grid'
+    })
+
     const { data: macro_state, error } = useStarknetCall({
         contract,
         method: 'view_macro_state_curr',
@@ -41,10 +49,18 @@ export default function GameWorld() {
         args: [],
     })
 
-    return (
+    const { data: device_emap } = useStarknetCall({
+        contract,
+        method: 'client_view_device_deployed_emap',
+        args: []
+    })
+
+    console.log ("device_emap:", device_emap)
+
+return (
         <Canvas className={styles.canvas}>
-            <ambientLight />
-            <Box macro_state={macro_state} phi={phi} />
+        <ambientLight />
+        <Box macro_state={macro_state} phi={phi} device_emap={device_emap}/>
         </Canvas>
     )
 }
