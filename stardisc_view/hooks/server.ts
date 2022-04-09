@@ -6,6 +6,6 @@ import CounterAbi from '../abi/server_abi.json'
 export function useServerContract() {
   return useContract({
     abi: CounterAbi as Abi,
-    address: '0x0717a903232a851dec3158e723750fc8a50a03afbdf7ad92f89558602c163a27',
+    address: '0x07f06feaa05a72ea4b5dcac5f6e959660400bc04c35ac1a6279a5d8e321b6c7c',
   })
 }
