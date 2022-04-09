@@ -8,8 +8,8 @@ import { Vector2 } from "three";
 
 import { createSurface } from './surfaceHelper'
 
-let gridSize = 16;
-const canvasSize = 512;
+let gridSize = 100;
+const canvasSize = 1024;
 const surfaceIdColorMap = {
     0: "red",
     1: "blue",
@@ -34,7 +34,7 @@ function drawGrid(ctx, gridSize, canvasSize) {
         const x = i * (canvasSize / gridSize);
         ctx.beginPath();
         ctx.lineWidth = 1;
-        ctx.strokeStyle = "green";
+        ctx.strokeStyle = "white";
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvasSize);
         ctx.moveTo(0, x);
@@ -94,9 +94,10 @@ export default function Box(props) {
     const textureRef6 = useRef();
 
     useFrame(({ clock }) => {
-        if (props.macro_state && props.phi && !surface) {
+        if (props.macro_state && props.phi && props.device_emap && !surface) {
             // Replace createSurface function with real data
             var new_surface = createSurface(props.phi)
+            console.log("new_surface:", new_surface)
             setSurface(new_surface)
         }
 
@@ -187,14 +188,15 @@ export default function Box(props) {
             textureRef6.current.needsUpdate = true;
         }
 
-        group.current.rotateX(0.007);
-        group.current.rotateZ(-0.007);
+        group.current.rotateX(0);
+        group.current.rotateY(0.003);
+        group.current.rotateZ(0);
     });
 
     return (
         <group ref={group} {...props}>
             <mesh
-                rotation={[0, degToRad(45), degToRad(45)]}
+                rotation={[0, degToRad(0), degToRad(0)]}
                 onPointerMove={(e) => (mouseUV.current = e.uv)}
                 onPointerOver={() => (document.body.style = "cursor: none;")}
                 onPointerOut={() => (document.body.style = "cursor: pointer;")}
