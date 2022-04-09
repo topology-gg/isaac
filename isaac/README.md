@@ -75,8 +75,9 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) multi-grid device placement testing
 - (DONE) fanin and fanout testing, including OPSF
 - (DONE) [demo] visualizer of macro trisolar system
-- [demo] isaac-client-micro-write: make transaction to e.g. place device
+- (DONE) [demo] isaac-client-micro-write: make transaction to e.g. place device
 - [demo] isaac-client-micro-read: visualizer of micro planet surface activities
+- [demo] art tuning: macro sun glowing (color animation), hover show coordinates in text etc
 - test perlin noise (potentially make visualization for resource distribution)
 - utl logic; energy update at device + energy transported across utl-set + testing
 - OPSF device construction - design the parametrized recipes - and device withdrawal + testing
