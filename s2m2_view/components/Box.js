@@ -8,7 +8,7 @@ import { Vector2 } from "three";
 
 import { createSurface } from './surfaceHelper'
 
-let gridSize = 100;
+let gridSize = 50;
 const canvasSize = 1024;
 const surfaceIdColorMap = {
     0: "red",
@@ -18,6 +18,9 @@ const surfaceIdColorMap = {
     4: "white",
     5: "yellow"
 }
+const xRotationSpeed = 0.0
+const yRotationSpeed = 0.0
+const zRotationSpeed = 0.0
 
 function drawCell(ctx, gridSize, canvasSize, cellX, cellY, color = "yellow") {
     ctx.fillStyle = color;
@@ -33,8 +36,8 @@ function drawGrid(ctx, gridSize, canvasSize) {
     for (let i = 0; i < gridSize + 1; i++) {
         const x = i * (canvasSize / gridSize);
         ctx.beginPath();
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = "white";
+        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';;
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvasSize);
         ctx.moveTo(0, x);
@@ -43,15 +46,15 @@ function drawGrid(ctx, gridSize, canvasSize) {
     }
 }
 
-function drawLine(ctx, time, canvasSize) {
-    const x = ((time * canvasSize) / gridSize) % canvasSize;
-    ctx.beginPath();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "white";
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, canvasSize);
-    ctx.stroke();
-}
+// function drawLine(ctx, time, canvasSize) {
+//     const x = ((time * canvasSize) / gridSize) % canvasSize;
+//     ctx.beginPath();
+//     ctx.lineWidth = 3;
+//     ctx.strokeStyle = "white";
+//     ctx.moveTo(x, 0);
+//     ctx.lineTo(x, canvasSize);
+//     ctx.stroke();
+// }
 
 function drawResources(ctx, surfaceArray, color) {
     for (var i = 0; i < surfaceArray.length; i++) {
@@ -94,12 +97,13 @@ export default function Box(props) {
     const textureRef6 = useRef();
 
     useFrame(({ clock }) => {
-        if (props.macro_state && props.phi && props.device_emap && !surface) {
-            // Replace createSurface function with real data
-            var new_surface = createSurface(props.phi)
-            console.log("new_surface:", new_surface)
-            setSurface(new_surface)
-        }
+            if (props.device_emap && !surface) {
+
+                var new_surface = createSurface(props.device_emap, gridSize)
+
+                console.log("new_surface:", new_surface)
+                setSurface(new_surface)
+            }
 
         // Can remove variables and call canvasRef instead
         const canvas = canvasRef.current;
@@ -188,9 +192,9 @@ export default function Box(props) {
             textureRef6.current.needsUpdate = true;
         }
 
-        group.current.rotateX(0);
-        group.current.rotateY(0.003);
-        group.current.rotateZ(0);
+        group.current.rotateX(xRotationSpeed);
+        group.current.rotateY(yRotationSpeed);
+        group.current.rotateZ(zRotationSpeed);
     });
 
     return (
