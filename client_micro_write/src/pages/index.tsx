@@ -11,18 +11,11 @@ import { useForm } from "react-hook-form";
 import { toBN } from 'starknet/dist/utils/number'
 import { ConnectWallet } from '~/components/ConnectWallet'
 import {
-  InvokeDeployDevice,
   AdminGiveUndeployedDevice
 } from '~/components/ServerInteraction'
 import { TransactionList } from '~/components/TransactionList'
+import { useServerContract } from '~/hooks/server'
 
-import ServerAbi from '~/abi/server_abi.json'
-function useServerContract() {
-  return useContract({
-    abi: ServerAbi as Abi,
-    address: '0x0717a903232a851dec3158e723750fc8a50a03afbdf7ad92f89558602c163a27',
-  })
-}
 
 const Home: NextPage = () => {
   const { account } = useStarknet()
@@ -35,11 +28,12 @@ const Home: NextPage = () => {
   })
   const deviceDeployedEmapValue = useMemo(() => {
     if (deviceDeployedEmapResult && deviceDeployedEmapResult.length > 0) {
-      const value = toBN(deviceDeployedEmapResult[0])
-      return value.toString(10)
+      console.log("> Receiving valid deviceDeployedEmapResult[0]:", deviceDeployedEmapResult[0])
+
+      const json = JSON.stringify(deviceDeployedEmapResult[0]);
+      return json
     }
   }, [deviceDeployedEmapResult])
-  console.log ("deviceDeployedEmapValue", deviceDeployedEmapValue)
 
   const { data: deviceType2UndeployedAmountResult } = useStarknetCall({
     contract: serverContract,
@@ -74,6 +68,23 @@ const Home: NextPage = () => {
     }
   }
 
+  const { invoke:invokeClientForwardWorld } = useStarknetInvoke({
+    contract: serverContract,
+    method: 'client_forward_world',
+  })
+  const onSubmitForwardWorld = (data: any) => {
+    if (!account) {
+      console.log('user wallet not connected yet.')
+    }
+    else if (!serverContract) {
+      console.log('frontend not connected to server contract')
+    }
+    else {
+      invokeClientForwardWorld ({ args: [] })
+      console.log('submit client-forward-world tx')
+    }
+  }
+
   return (
     <div>
       <h2>Wallet</h2>
@@ -84,7 +95,9 @@ const Home: NextPage = () => {
       <p>Device-type-2 undeployed ammount: {deviceType2UndeployedAmountValue}</p>
 
       <AdminGiveUndeployedDevice />
-      <InvokeDeployDevice />
+      <form onSubmit={handleSubmit(onSubmitForwardWorld)}>
+        <input type="submit" value="Forward world"/>
+      </form>
 
       <form onSubmit={handleSubmit(onSubmitDeviceDeploy)}>
         <input defaultValue="device type" {...register("deviceTypeRequired", { required: true })} />
