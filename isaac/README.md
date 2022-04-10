@@ -76,12 +76,14 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) fanin and fanout testing, including OPSF
 - (DONE) [demo] visualizer of macro trisolar system
 - (DONE) [demo] isaac-client-micro-write: make transaction to e.g. place device
-- [demo] isaac-client-micro-read: visualizer of micro planet surface activities
+- (DONE) [demo] isaac-client-micro-read: visualizer of micro planet surface activities
+- device-connected-to-multiple-utbs: deal with {storage N->m} or {O(M)} for updating utb emap
+- [demo] isaac-client-micro-read: visualize utb-set connecting harvester and refinery
+
 - [demo] art tuning: macro sun glowing (color animation), hover show coordinates in text etc
 - test perlin noise (potentially make visualization for resource distribution)
 - utl logic; energy update at device + energy transported across utl-set + testing
 - OPSF device construction - design the parametrized recipes - and device withdrawal + testing
-- device-connected-to-multiple-utbs: deal with {storage N->m} or {O(M)} for updating utb emap
 - game over determination - detecting collision between planet and any of the three suns + testing
 - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - NLSCM: near-light-speed cruise missile for pushing suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
