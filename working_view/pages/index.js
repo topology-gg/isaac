@@ -3,10 +3,15 @@ import styles from '../styles/Home.module.css'
 import { ConnectWallet } from "../components/ConnectWallet.js"
 
 import {
+  useStarknet,
+  useContract,
+  useStarknetCall,
+  useStarknetInvoke,
   StarknetProvider,
 } from '@starknet-react/core'
 
 function Home() {
+
   return (
     <StarknetProvider>
       <div className={styles.gamecontainer}>
