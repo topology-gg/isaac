@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Box from "./Box";
 import { Sky } from '@react-three/drei'
 import { Physics } from '@react-three/cannon'
 import styles from '../styles/GameWorld.module.css'
+import { useMemo } from 'react'
 
 import {
     useStarknet,
@@ -10,23 +11,32 @@ import {
     useStarknetCall,
     useStarknetInvoke
 } from '@starknet-react/core'
-import { Canvas } from '@react-three/fiber'
 
-import ServerAbi from '../pages/abi/server.json'
-import ShapesAbi from '../pages/abi/shapes.json'
+import { Canvas, useThree } from '@react-three/fiber'
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-import FX from '../pages/FX'
-
-export const SERVER_ADDRESS = '0x04d36339f154419982289e28c8653f4a6c3f6009df387e3baa298b84b2de016b'
-export const SHAPES_ADDRESS = '0x06760cd9097b4968d3dc6f1c81fda2b2bbe701f771f9cb657f064bf3ae90f0aa'
-
+import ServerAbi from '../abi/server_abi.json'
+export const SERVER_ADDRESS = '0x00009d9fb113a6f2398eb417825b803354ced11067ff277df5077b1ab7b047b7'
 function useServerContract() {
     return useContract({ abi: ServerAbi, address: SERVER_ADDRESS })
 }
 
-function useShapesContract() {
-    return useContract({ abi: ShapesAbi, address: SHAPES_ADDRESS })
-}
+const CameraController = () => {
+    const { camera, gl } = useThree();
+    useEffect(
+      () => {
+        const controls = new OrbitControls(camera, gl.domElement);
+
+        controls.minDistance = 3;
+        controls.maxDistance = 20;
+        return () => {
+          controls.dispose();
+        };
+      },
+      [camera, gl]
+    );
+    return null;
+  };
 
 export default function GameWorld() {
 
@@ -55,12 +65,12 @@ export default function GameWorld() {
         args: []
     })
 
-    console.log ("device_emap:", device_emap)
 
 return (
         <Canvas className={styles.canvas}>
-        <ambientLight />
-        <Box macro_state={macro_state} phi={phi} device_emap={device_emap}/>
+            <CameraController />
+            <ambientLight />
+            <Box macro_state={macro_state} phi={phi} device_emap={device_emap}/>
         </Canvas>
     )
 }
