@@ -27,7 +27,7 @@ const TWO_PI = 6283185 / 1000000 * SCALE_FP
 #
 # Constants for planet configuration
 #
-const PLANET_DIM = 100
+const PLANET_DIM = 50
 # TODO: params to control resource distribution via e.g. perlin noise
 
 #
