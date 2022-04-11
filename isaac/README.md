@@ -78,11 +78,13 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) [demo] isaac-client-micro-write: make transaction to e.g. place device
 - (DONE) [demo] isaac-client-micro-read: visualizer of micro planet surface activities
 - device-connected-to-multiple-utbs: deal with {storage N->m} or {O(M)} for updating utb emap
-- [demo] isaac-client-micro-read: visualize utb-set connecting harvester and refinery
+- isaac-client-micro-read: visualize utb-set connecting harvester and refinery; let utb-set slowly blink (color fading)
+- utl logic; energy update at device + energy transported across utl-set + testing
+- [demo] deploy devices, utl-sets and utb-sets, making the planet ready for demo day
+- hook up isaac with yagi (4/15 latest)
 
 - [demo] art tuning: macro sun glowing (color animation), hover show coordinates in text etc
 - test perlin noise (potentially make visualization for resource distribution)
-- utl logic; energy update at device + energy transported across utl-set + testing
 - OPSF device construction - design the parametrized recipes - and device withdrawal + testing
 - game over determination - detecting collision between planet and any of the three suns + testing
 - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
