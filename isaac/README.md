@@ -82,7 +82,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - utl logic; energy update at device + energy transported across utl-set + testing
 - [demo] deploy devices, utl-sets and utb-sets, making the planet ready for demo day
 - hook up isaac with yagi (4/15 latest)
-
+==============================
 - [demo] art tuning: macro sun glowing (color animation), hover show coordinates in text etc
 - test perlin noise (potentially make visualization for resource distribution)
 - OPSF device construction - design the parametrized recipes - and device withdrawal + testing
