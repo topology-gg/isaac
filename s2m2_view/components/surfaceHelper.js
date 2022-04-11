@@ -26,7 +26,7 @@ export const createSurface = (device_emap, surface_dim) => {
 
         const x_norm = x - ret.offset.x
         const y_norm = y - ret.offset.y
-        surface[ret.face][x_norm][y_norm] = 1
+        surface[ret.face][x_norm][y_norm] = typ
     }
 
     return surface
