@@ -10,13 +10,22 @@ import { createSurface } from './surfaceHelper'
 
 let gridSize = 50;
 const canvasSize = 1024;
-const surfaceIdColorMap = {
-    0: "red",
-    1: "blue",
-    2: "green",
-    3: "orange",
-    4: "white",
-    5: "yellow"
+const deviceTypeToColorMap = {
+    0: "blue", // SPG
+    1: "purple", // NPG
+    2: "red", // FE harvester
+    3: "green",
+    4: "yellow",
+    5: "yellow",
+    6: "yellow",
+    7: "orange", // FE refinery
+    8: "yellow",
+    9: "yellow",
+    10: "yellow",
+    11: "yellow",
+    12: "white", // UTB
+    13: "yellow",
+    14: "yellow"
 }
 const xRotationSpeed = 0.0
 const yRotationSpeed = 0.0
@@ -56,10 +65,11 @@ function drawGrid(ctx, gridSize, canvasSize) {
 //     ctx.stroke();
 // }
 
-function drawResources(ctx, surfaceArray, color) {
+function drawResources(ctx, surfaceArray) {
     for (var i = 0; i < surfaceArray.length; i++) {
         for (var j = 0; j < surfaceArray[i].length; j++) {
-            if (surfaceArray[i][j]) {
+            if (surfaceArray[i][j] != 0) {
+                const color = deviceTypeToColorMap[ surfaceArray[i][j] ]
                 drawCell(
                     ctx,
                     gridSize,
@@ -99,7 +109,7 @@ export default function Box(props) {
     useFrame(({ clock }) => {
             if (props.device_emap && !surface) {
 
-                var new_surface = createSurface(props.device_emap, gridSize)
+                const new_surface = createSurface(props.device_emap, gridSize)
 
                 console.log("new_surface:", new_surface)
                 setSurface(new_surface)
@@ -155,12 +165,12 @@ export default function Box(props) {
         ctx6.clearRect(0, 0, canvasSize, canvasSize);
 
         if (surface) {
-            drawResources(ctx, surface[0], surfaceIdColorMap[0])
-            drawResources(ctx2, surface[1], surfaceIdColorMap[1])
-            drawResources(ctx3, surface[2], surfaceIdColorMap[2])
-            drawResources(ctx4, surface[3], surfaceIdColorMap[3])
-            drawResources(ctx5, surface[4], surfaceIdColorMap[4])
-            drawResources(ctx6, surface[5], surfaceIdColorMap[5])
+            drawResources(ctx, surface[0])
+            drawResources(ctx2, surface[1])
+            drawResources(ctx3, surface[2])
+            drawResources(ctx4, surface[3])
+            drawResources(ctx5, surface[4])
+            drawResources(ctx6, surface[5])
         }
 
 
