@@ -85,6 +85,46 @@ const Home: NextPage = () => {
     }
   }
 
+  const { invoke:invokeAdminWriteDeviceUndeployedLedger } = useStarknetInvoke({
+    contract: serverContract,
+    method: 'admin_write_device_undeployed_ledger',
+  })
+  const onSubmitGiveSelfUndeployedDevice = (data: any) => {
+    if (!account) {
+      console.log('user wallet not connected yet.')
+    }
+    else if (!serverContract) {
+      console.log('frontend not connected to server contract')
+    }
+    else {
+      invokeAdminWriteDeviceUndeployedLedger ({ args: [
+        account,
+        data['typeRequired'],
+        data['amountRequired'],
+      ] })
+      console.log('submit admin-write-device-undeployed-ledger tx')
+    }
+  }
+
+  const { invoke:invokeClientPickupDeviceByGrid } = useStarknetInvoke({
+    contract: serverContract,
+    method: 'client_pickup_device_by_grid',
+  })
+  const onSubmitDevicePickup = (data: any) => {
+    if (!account) {
+      console.log('user wallet not connected yet.')
+    }
+    else if (!serverContract) {
+      console.log('frontend not connected to server contract')
+    }
+    else {
+      invokeClientPickupDeviceByGrid ({ args: [
+        {x : data['gridXRequired'], y : data['gridYRequired']}
+      ] })
+      console.log('submit client_pickup_device_by_grid tx')
+    }
+  }
+
   return (
     <div>
       <h2>Wallet</h2>
@@ -94,22 +134,34 @@ const Home: NextPage = () => {
       <p>Device-deployed Emap: {deviceDeployedEmapValue}</p>
       <p>Device-type-2 undeployed ammount: {deviceType2UndeployedAmountValue}</p>
 
-      <AdminGiveUndeployedDevice />
-      <form onSubmit={handleSubmit(onSubmitForwardWorld)}>
-        <input type="submit" value="Forward world"/>
+      <form onSubmit={handleSubmit(onSubmitGiveSelfUndeployedDevice)}>
+        <input defaultValue="type" {...register("typeRequired", { required: true })} />
+        {errors.typeRequired && <span> (This field is required) </span>}
+        <input defaultValue="amount" {...register("amountRequired", { required: true })} />
+        {errors.amountRequired && <span> (This field is required) </span>}
+        <input type="submit" value="Give self undeployed device"/>
       </form>
 
       <form onSubmit={handleSubmit(onSubmitDeviceDeploy)}>
         <input defaultValue="device type" {...register("deviceTypeRequired", { required: true })} />
         {errors.deviceTypeRequired && <span> (This field is required) </span>}
-
         <input defaultValue="grid.x" {...register("gridXRequired", { required: true })} />
         {errors.gridXRequired && <span> (This field is required) </span>}
-
         <input defaultValue="grid.y" {...register("gridYRequired", { required: true })} />
         {errors.gridYRequired && <span> (This field is required) </span>}
-
         <input type="submit" value="Deploy device"/>
+      </form>
+
+      <form onSubmit={handleSubmit(onSubmitDevicePickup)}>
+        <input defaultValue="grid.x" {...register("gridXRequired", { required: true })} />
+        {errors.gridXRequired && <span> (This field is required) </span>}
+        <input defaultValue="grid.y" {...register("gridYRequired", { required: true })} />
+        {errors.gridYRequired && <span> (This field is required) </span>}
+        <input type="submit" value="Pickup device"/>
+      </form>
+
+      <form onSubmit={handleSubmit(onSubmitForwardWorld)}>
+        <input type="submit" value="Forward world"/>
       </form>
 
       <h2>Recent Transactions</h2>
