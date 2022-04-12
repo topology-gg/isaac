@@ -234,10 +234,18 @@ async def test_micro (account_factory):
     LOGGER.info (f'> user1 connected her devices with utb-set of label {user1_utb_label}.')
 
     for i in range(2):
+        ## check tether-count == 1
         ret = await contract.admin_read_device_deployed_emap(i).call()
-        assert ret.result.emap_entry.tethered_to_utb == 1
-        assert ret.result.emap_entry.utb_label == user1_utb_label
+        device_id = ret.result.emap_entry.id
+        ret = await contract.admin_read_utb_tether_count_of_deployed_device(device_id).call()
+        assert ret.result.count == 1
+
+        ## check the label of tethered utb meets expected
+        ret = await contract.admin_read_utb_tether_labels_of_deployed_device(device_id, 0).call()
+        assert ret.result.utb_set_label == user1_utb_label
+
         LOGGER.info (f'> deployed-device emap entry at {i}: {ret.result}')
+
     LOGGER.info (f'> user1 deployed his devices.')
     LOGGER.info ('')
 
@@ -268,10 +276,18 @@ async def test_micro (account_factory):
     LOGGER.info (f'> user2 connected her devices with utb-set of label {user2_utb_label}.')
 
     for i in range(2,4):
+        ## check tether-count == 1
         ret = await contract.admin_read_device_deployed_emap(i).call()
-        assert ret.result.emap_entry.tethered_to_utb == 1
-        assert ret.result.emap_entry.utb_label == user2_utb_label
+        device_id = ret.result.emap_entry.id
+        ret = await contract.admin_read_utb_tether_count_of_deployed_device(device_id).call()
+        assert ret.result.count == 1
+
+        ## check the label of tethered utb meets expected
+        ret = await contract.admin_read_utb_tether_labels_of_deployed_device(device_id, 0).call()
+        assert ret.result.utb_set_label == user2_utb_label
+
         LOGGER.info (f'> deployed-device emap entry at {i}: {ret.result}')
+
     LOGGER.info (f'> user2 deployed his devices.')
     LOGGER.info ('\n')
 
@@ -578,14 +594,17 @@ async def test_micro (account_factory):
         assert ret.result.grid_stat.populated == 0
     LOGGER.info (f'> grid_stats along utb-set meets expected.')
 
-    ret = await contract.admin_read_device_deployed_id_to_emap_index(user2_harvester_id).call()
-    ret = await contract.admin_read_device_deployed_emap(ret.result.emap_index).call()
-    assert ret.result.emap_entry.tethered_to_utb == 0
-    assert ret.result.emap_entry.utb_label == 0
-    ret = await contract.admin_read_device_deployed_id_to_emap_index(user2_refinery_id).call()
-    ret = await contract.admin_read_device_deployed_emap(ret.result.emap_index).call()
-    assert ret.result.emap_entry.tethered_to_utb == 0
-    assert ret.result.emap_entry.utb_label == 0
+    ## confirm tether count is 0 and tether label is set to 0
+    ret = await contract.admin_read_utb_tether_count_of_deployed_device(user2_harvester_id).call()
+    assert ret.result.count == 0
+    ret = await contract.admin_read_utb_tether_count_of_deployed_device(user2_refinery_id).call()
+    assert ret.result.count == 0
+
+    ret = await contract.admin_read_utb_tether_labels_of_deployed_device(user2_harvester_id, 0).call()
+    assert ret.result.utb_set_label == 0
+    ret = await contract.admin_read_utb_tether_labels_of_deployed_device(user2_refinery_id, 0).call()
+    assert ret.result.utb_set_label == 0
+
     LOGGER.info (f'> deployed-device emap entries of src & dst devices meet expected.')
     LOGGER.info ('\n')
 

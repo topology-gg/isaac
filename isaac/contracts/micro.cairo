@@ -84,10 +84,6 @@ struct DeviceDeployedEmapEntry:
     member grid : Vec2
     member type : felt
     member id : felt
-    member tethered_to_utl : felt
-    member tethered_to_utb : felt
-    member utl_label : felt
-    member utb_label : felt
 end
 
 struct TransformerResourceBalances:
@@ -368,10 +364,6 @@ func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
         grid = grid,
         type = type,
         id = new_id,
-        tethered_to_utl = 0,
-        tethered_to_utb = 0,
-        utl_label = 0,
-        utb_label = 0
     ))
 
     #
@@ -383,6 +375,55 @@ func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     # Update `device_undeployed_ledger`: subtract by 1
     #
     device_undeployed_ledger.write (caller, type, amount_curr - 1)
+
+    return ()
+end
+
+func recurse_untether_utb_for_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        id : felt,
+        len : felt,
+        idx : felt
+    ) -> ():
+    alloc_locals
+
+    if idx == len:
+        return ()
+    end
+
+    #
+    # Get utb-set label at current idx
+    #
+    let (utb_set_label) = utb_tether_labels_of_deployed_device.read (id, idx)
+
+    #
+    # With the utb-set label, get its emap-index, then get its emap-entry
+    #
+    let (utb_set_emap_index) = utb_set_deployed_label_to_emap_index.read (utb_set_label)
+    let (utb_set_emap_entry) = utb_set_deployed_emap.read (utb_set_emap_index)
+
+    #
+    # Construct new src & dst device id based on whether the device is this utb-set's src or dst device
+    #
+    let (is_src_device) = is_zero (utb_set_emap_entry.src_device_id - id)
+    let (is_dst_device) = is_zero (utb_set_emap_entry.dst_device_id - id)
+    let new_src_device_id = (1-is_src_device) * utb_set_emap_entry.src_device_id
+    let new_dst_device_id = (1-is_dst_device) * utb_set_emap_entry.dst_device_id
+
+    #
+    # Update utb emap
+    #
+    utb_set_deployed_emap.write (
+        utb_set_emap_index,
+        UtbSetDeployedEmapEntry(
+            utb_set_deployed_label = utb_set_emap_entry.utb_set_deployed_label,
+            utb_deployed_index_start = utb_set_emap_entry.utb_deployed_index_start,
+            utb_deployed_index_end = utb_set_emap_entry.utb_deployed_index_end,
+            src_device_id = new_src_device_id,
+            dst_device_id = new_dst_device_id
+        )
+    )
+
+    recurse_untether_utb_for_deployed_device (id, len, idx + 1)
 
     return ()
 end
@@ -409,39 +450,25 @@ func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     let (emap_entry_last) = device_deployed_emap.read (emap_size_curr - 1)
     device_deployed_emap_size.write (emap_size_curr - 1)
     device_deployed_emap.write (emap_size_curr - 1, DeviceDeployedEmapEntry(
-        Vec2(0,0), 0, 0, 0, 0, 0, 0
+        Vec2(0,0), 0, 0
     ))
     device_deployed_emap.write (emap_index, emap_entry_last)
     let grid_0_0 = emap_entry.grid
     let type = emap_entry.type
 
     #
-    # Untether utb/utl if tethered;
-    # use `emap_entry.utb_label/utl_label` to find emap-entry of the utb-set/utl-set,
-    # and unregister src/dst device from it (set device id to 0, assuming 0 does not correspond to some meaning device id)
+    # Untether all utb-sets tethered to this device
     #
-    if emap_entry.tethered_to_utb == 0:
-        jmp update_devices
-    end
+    let (tether_count) = utb_tether_count_of_deployed_device.read (grid_stat.deployed_device_id)
+    recurse_untether_utb_for_deployed_device (
+        id = grid_stat.deployed_device_id,
+        len = tether_count,
+        idx = 0
+    )
 
-    let (utb_set_emap_index) = utb_set_deployed_label_to_emap_index.read (emap_entry.utb_label)
-    let (utb_set_emap_entry) = utb_set_deployed_emap.read (utb_set_emap_index)
-    let (is_src_device) = is_zero (utb_set_emap_entry.src_device_id - grid_stat.deployed_device_id)
-    let (is_dst_device) = is_zero (utb_set_emap_entry.dst_device_id - grid_stat.deployed_device_id)
-    let new_src_device_id = (1-is_src_device) * utb_set_emap_entry.src_device_id
-    let new_dst_device_id = (1-is_dst_device) * utb_set_emap_entry.dst_device_id
-
-    utb_set_deployed_emap.write (utb_set_emap_index, UtbSetDeployedEmapEntry(
-        utb_set_deployed_label = utb_set_emap_entry.utb_set_deployed_label,
-        utb_deployed_index_start = utb_set_emap_entry.utb_deployed_index_start,
-        utb_deployed_index_end = utb_set_emap_entry.utb_deployed_index_end,
-        src_device_id = new_src_device_id,
-        dst_device_id = new_dst_device_id
-    ))
-
-    # TODO: come back to implement for utl below
-    # if emap_entry.tethered_to_utl:
-    # end
+    #
+    # TODO for UTL: come back to untether all utl-sets tethered to this device
+    #
 
     update_devices:
     local syscall_ptr : felt* = syscall_ptr
@@ -545,6 +572,17 @@ func utb_deployed_index_to_grid (index : felt) -> (grid : Vec2):
 end
 
 #
+# Recording the utb-sets tethered to a given id of deployed-device
+#
+@storage_var
+func utb_tether_count_of_deployed_device (device_id : felt) -> (count : felt):
+end
+
+@storage_var
+func utb_tether_labels_of_deployed_device (device_id : felt, idx : felt) -> (utb_set_label : felt):
+end
+
+#
 # Player deploys UTB
 # by providing a contiguous set of grids
 #
@@ -584,8 +622,6 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     let (dst_emap_index) = device_deployed_id_to_emap_index.read (dst_device_id)
     let (src_emap_entry) = device_deployed_emap.read (src_emap_index)
     let (dst_emap_entry) = device_deployed_emap.read (dst_emap_index)
-    # assert src_emap_entry.tethered_to_utb = 0
-    # assert dst_emap_entry.tethered_to_utb = 0
 
     #
     # Check locs[0] is contiguous to src_device_id's grid using `are_contiguous_grids_given_valid_grids()`
@@ -656,22 +692,31 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     device_deployed_emap.write (src_emap_index, DeviceDeployedEmapEntry(
         grid = src_emap_entry.grid,
         type = src_emap_entry.type,
-        id = src_emap_entry.id,
-        tethered_to_utl = src_emap_entry.tethered_to_utl,
-        tethered_to_utb = 1,
-        utl_label = src_emap_entry.utl_label,
-        utb_label = new_label
+        id = src_emap_entry.id
     ))
 
     device_deployed_emap.write (dst_emap_index, DeviceDeployedEmapEntry(
         grid = dst_emap_entry.grid,
         type = dst_emap_entry.type,
-        id = dst_emap_entry.id,
-        tethered_to_utl = dst_emap_entry.tethered_to_utl,
-        tethered_to_utb = 1,
-        utl_label = dst_emap_entry.utl_label,
-        utb_label = new_label
+        id = dst_emap_entry.id
     ))
+
+    #
+    # For src and dst device, update their `utb_tether_count_of_deployed_device` and `utb_tether_labels_of_deployed_device`
+    #
+    let (count) = utb_tether_count_of_deployed_device.read (src_emap_entry.id)
+    utb_tether_count_of_deployed_device.write (src_emap_entry.id, count + 1)
+    utb_tether_labels_of_deployed_device.write (
+        src_emap_entry.id, count,
+        new_label
+    )
+
+    let (count) = utb_tether_count_of_deployed_device.read (dst_emap_entry.id)
+    utb_tether_count_of_deployed_device.write (dst_emap_entry.id, count + 1)
+    utb_tether_labels_of_deployed_device.write (
+        dst_emap_entry.id, count,
+        new_label
+    )
 
     return ()
 end
@@ -783,7 +828,7 @@ func utb_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
     utb_set_deployed_emap_size.write (emap_size_curr - 1)
 
     #
-    # Update the tethered src and dst device info as well
+    # Update the tethered src and dst device info
     #
     let src_device_id = emap_entry.src_device_id
     let dst_device_id = emap_entry.dst_device_id
@@ -795,22 +840,25 @@ func utb_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
     device_deployed_emap.write (src_emap_index, DeviceDeployedEmapEntry(
         grid = src_emap_entry.grid,
         type = src_emap_entry.type,
-        id = src_emap_entry.id,
-        tethered_to_utl = src_emap_entry.tethered_to_utl,
-        tethered_to_utb = 0,
-        utl_label = src_emap_entry.utl_label,
-        utb_label = 0
+        id = src_emap_entry.id
     ))
 
     device_deployed_emap.write (dst_emap_index, DeviceDeployedEmapEntry(
         grid = dst_emap_entry.grid,
         type = dst_emap_entry.type,
-        id = dst_emap_entry.id,
-        tethered_to_utl = dst_emap_entry.tethered_to_utl,
-        tethered_to_utb = 0,
-        utl_label = dst_emap_entry.utl_label,
-        utb_label = 0
+        id = dst_emap_entry.id
     ))
+
+    #
+    # Update `utb_tether_count_of_deployed_device` and `utb_tether_labels_of_deployed_device` for both src and dst device
+    #
+    let (tether_count) = utb_tether_count_of_deployed_device.read (emap_entry.src_device_id)
+    utb_tether_count_of_deployed_device.write (emap_entry.src_device_id, tether_count - 1)
+    utb_tether_labels_of_deployed_device.write (emap_entry.src_device_id, tether_count - 1, 0)
+
+    let (tether_count) = utb_tether_count_of_deployed_device.read (emap_entry.dst_device_id)
+    utb_tether_count_of_deployed_device.write (emap_entry.dst_device_id, tether_count - 1)
+    utb_tether_labels_of_deployed_device.write (emap_entry.dst_device_id, tether_count - 1, 0)
 
     return ()
 end
@@ -1524,4 +1572,24 @@ func admin_read_utb_deployed_index_to_grid {syscall_ptr : felt*, pedersen_ptr : 
     index : felt) -> (grid : Vec2):
     let (grid) = utb_deployed_index_to_grid.read (index)
     return (grid)
+end
+
+
+@view
+func admin_read_utb_tether_count_of_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    device_id : felt) -> (count : felt):
+
+    let (count) = utb_tether_count_of_deployed_device.read (device_id)
+
+    return (count)
+end
+
+
+@view
+func admin_read_utb_tether_labels_of_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    device_id : felt, idx : felt) -> (utb_set_label : felt):
+
+    let (utb_set_label) = utb_tether_labels_of_deployed_device.read (device_id, idx)
+
+    return (utb_set_label)
 end
