@@ -457,6 +457,12 @@ func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     let type = emap_entry.type
 
     #
+    # Update `device_deployed_id_to_emap_index`
+    #
+    let id_moved = emap_entry_last.id
+    device_deployed_id_to_emap_index.write (id_moved, emap_index)
+
+    #
     # Untether all utb-sets tethered to this device
     #
     let (tether_count) = utb_tether_count_of_deployed_device.read (grid_stat.deployed_device_id)
@@ -491,7 +497,7 @@ func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     jmp recycle
 
     check_transformers:
-    if bool_is_harvester == 1:
+    if bool_is_transformer == 1:
         transformers_deployed_id_to_resource_balances.write (
             grid_stat.deployed_device_id,
             TransformerResourceBalances (0,0)

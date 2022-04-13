@@ -105,6 +105,7 @@ func transformer_device_type_to_element_types {} (device_type : felt) -> (
         element_type_before_transform : felt,
         element_type_after_transform : felt
     ):
+    alloc_locals
 
     if device_type == ns_device_types.DEVICE_FE_REFN:
         return (
@@ -141,7 +142,8 @@ func transformer_device_type_to_element_types {} (device_type : felt) -> (
         )
     end
 
-    with_attr error_message ("not a transformer device"):
+    local typ = device_type
+    with_attr error_message ("type {typ} is not a transformer device"):
         assert 1 = 0
     end
     return (0, 0)

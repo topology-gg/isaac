@@ -75,455 +75,603 @@ async def test_micro (account_factory):
     # - remove R5, forward world, check resource balance against expectation
     # - remove H5, forward world, check resource balance against expectation
 
-
-
-
-
-
-    #
-    # 1. admin gives user various devices at specific amounts; checks ledger
-    #
-    N_UTB = 300
     LOGGER.info (f'> ------------')
-    LOGGER.info (f'> TEST 1')
+    LOGGER.info (f'> TEST PREP')
+    LOGGER.info (f'> ------------')
+
     LOGGER.info (f'> admin gives user:')
-    LOGGER.info (f'  1 fe-harv, 1 fe-refn, 2 al-harv, 2 al-refn, 1 OPSF, {N_UTB} UTBs;')
-    LOGGER.info (f'> check ledger to confirm these numbers remain undeployed.')
-    LOGGER.info (f'> ------------')
-
+    LOGGER.info (f'  10 fe-harv (H), 10 fe-refn (R), 10 UTBs;')
+    #
+    # admin gives user 10 iron harvesters
+    #
     await admin['signer'].send_transaction(
         account = admin['account'], to = contract.contract_address,
         selector_name = 'admin_write_device_undeployed_ledger',
         calldata=[
             user['account'].contract_address,
             2, # DEVICE_FE_HARV
-            1
-        ]
-    )
+            10
+        ])
+
+    #
+    # admin gives user 10 iron refineries
+    #
     await admin['signer'].send_transaction(
         account = admin['account'], to = contract.contract_address,
         selector_name = 'admin_write_device_undeployed_ledger',
         calldata=[
             user['account'].contract_address,
             7, # DEVICE_FE_REFN
-            1
-        ]
-    )
-    await admin['signer'].send_transaction(
-        account = admin['account'], to = contract.contract_address,
-        selector_name = 'admin_write_device_undeployed_ledger',
-        calldata=[
-            user['account'].contract_address,
-            3, # DEVICE_AL_HARV
-            2
-        ]
-    )
-    await admin['signer'].send_transaction(
-        account = admin['account'], to = contract.contract_address,
-        selector_name = 'admin_write_device_undeployed_ledger',
-        calldata=[
-            user['account'].contract_address,
-            8, # DEVICE_AL_REFN
-            2
-        ]
-    )
-    await admin['signer'].send_transaction(
-        account = admin['account'], to = contract.contract_address,
-        selector_name = 'admin_write_device_undeployed_ledger',
-        calldata=[
-            user['account'].contract_address,
-            14, # OPSF
-            1
-        ]
-    )
+            10
+        ])
+
+    #
+    # admin gives user 10 UTBs
+    #
     await admin['signer'].send_transaction(
         account = admin['account'], to = contract.contract_address,
         selector_name = 'admin_write_device_undeployed_ledger',
         calldata=[
             user['account'].contract_address,
             12, # UTB
-            N_UTB
-        ]
-    )
-
-    ret = await contract.admin_read_device_undeployed_ledger(
-        owner = user_addr, type = 2).call()
-    assert ret.result.amount == 1
-    ret = await contract.admin_read_device_undeployed_ledger(
-        owner = user_addr, type = 7).call()
-    assert ret.result.amount == 1
-    ret = await contract.admin_read_device_undeployed_ledger(
-        owner = user_addr, type = 3).call()
-    assert ret.result.amount == 2
-    ret = await contract.admin_read_device_undeployed_ledger(
-        owner = user_addr, type = 8).call()
-    assert ret.result.amount == 2
-    ret = await contract.admin_read_device_undeployed_ledger(
-        owner = user_addr, type = 14).call()
-    assert ret.result.amount == 1
-    ret = await contract.admin_read_device_undeployed_ledger(
-        owner = user_addr, type = 12).call()
-    assert ret.result.amount == N_UTB
-    LOGGER.info (f"> user's undeployed device amounts are correct.\n")
+            10
+        ])
 
 
     #
-    # 2. user deploys all devices sparsely; check deployed-device emap
+    # user deploys R1 <= H1 => R2
     #
-    LOGGER.info (f'> ------------')
-    LOGGER.info (f'> TEST 2')
-    LOGGER.info (f'> user deploys all devices sparsely;')
-    LOGGER.info (f'> check deployed-device emap.')
-    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> user deploys: R1 <= H1 => R2')
+    R1_grid = (177, 85) # 177-178, 85-86
+    H1_grid = (180, 85)
+    R2_grid = (182, 85) # 182-183, 85-86
 
-    ## fe-harv at (180, 85)
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
         selector_name = 'mock_device_deploy',
         calldata=[
             user_addr,
             2, # DEVICE_FE_HARV
-            180, 85
-        ]
-    )
+            H1_grid[0], H1_grid[1]
+        ])
 
-    ## fe-refn at (185, 85)
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
         selector_name = 'mock_device_deploy',
         calldata=[
             user_addr,
             7, # DEVICE_FE_REFN
-            185, 85
-        ]
-    )
+            R1_grid[0], R1_grid[1]
+        ])
 
-    ## al-harv1 at (160, 130)
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
         selector_name = 'mock_device_deploy',
         calldata=[
             user_addr,
-            3, # DEVICE_AL_HARV
-            160, 130
-        ]
-    )
+            7, # DEVICE_FE_REFN
+            R2_grid[0], R2_grid[1]
+        ])
 
-    ## al-refn1 at (170, 145)
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_device_deploy',
+        selector_name = 'mock_utb_deploy',
         calldata=[
             user_addr,
-            8, # DEVICE_AL_REFN
-            170, 145
-        ]
-    )
+            1, 179, # locs_x
+            1, 85 , # locs_y
+            180, 85, 178, 85
+        ])
 
-    ## al-harv2 at (180, 180)
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_device_deploy',
+        selector_name = 'mock_utb_deploy',
         calldata=[
             user_addr,
-            3, # DEVICE_AL_HARV
-            180, 180
-        ]
-    )
-
-    ## al-refn2 at (190, 180)
-    await user['signer'].send_transaction(
-        account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_device_deploy',
-        calldata=[
-            user_addr,
-            8, # DEVICE_AL_REFN
-            190, 180
-        ]
-    )
-
-    # OPSF at (200, 100)
-    await user['signer'].send_transaction(
-        account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_device_deploy',
-        calldata=[
-            user_addr,
-            14, # OPSF
-            200, 100
-        ]
-    )
-    LOGGER.info (f'> all devices are deployed.')
-
-    ret = await contract.admin_read_device_undeployed_ledger(user_addr, 2).call()
-    assert ret.result.amount == 0
-    ret = await contract.admin_read_device_undeployed_ledger(user_addr, 7).call()
-    assert ret.result.amount == 0
-    ret = await contract.admin_read_device_undeployed_ledger(user_addr, 3).call()
-    assert ret.result.amount == 0
-    ret = await contract.admin_read_device_undeployed_ledger(user_addr, 8).call()
-    assert ret.result.amount == 0
-    ret = await contract.admin_read_device_undeployed_ledger(user_addr, 14).call()
-    assert ret.result.amount == 0
-    LOGGER.info (f'> undeployed device amounts are correct.')
-
-    ret = await contract.admin_read_device_deployed_emap_size().call()
-    assert ret.result.size == 7
-    LOGGER.info (f'> deployed-device emap size is correct.\n')
-
-    # for i in range(7):
-    #     ret = await contract.admin_read_device_deployed_emap(i).call()
-    #     LOGGER.info (f'> emap entry at {i}: {ret.result}')
-    ret = await contract.admin_read_device_deployed_emap(0).call()
-    fe_harv_id = ret.result.emap_entry.id
-    ret = await contract.admin_read_device_deployed_emap(1).call()
-    fe_refn_id = ret.result.emap_entry.id
-    ret = await contract.admin_read_device_deployed_emap(2).call()
-    al_harv_1_id = ret.result.emap_entry.id
-    ret = await contract.admin_read_device_deployed_emap(3).call()
-    al_refn_1_id = ret.result.emap_entry.id
-    ret = await contract.admin_read_device_deployed_emap(4).call()
-    al_harv_2_id = ret.result.emap_entry.id
-    ret = await contract.admin_read_device_deployed_emap(5).call()
-    al_refn_2_id = ret.result.emap_entry.id
-    ret = await contract.admin_read_device_deployed_emap(6).call()
-    opsf_id = ret.result.emap_entry.id
-
+            1, 181, # locs_x
+            1, 85 , # locs_y
+            180, 85, 182, 85
+        ])
 
     #
-    # 3. user connects iron harvester => iron refinery => OPSF using UTBs
-    #    fe-harv at (180, 85), fe-refn at (185, 85), OPSF at (200, 100)
+    # user deploys R3 <= H2 => R4
     #
+    LOGGER.info (f'> user deploys: R3 <= H2 => R4')
+    R3_grid = (177, 50)
+    H2_grid = (180, 50)
+    R4_grid = (182, 50)
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            user_addr,
+            2, # DEVICE_FE_HARV
+            H2_grid[0], H2_grid[1]
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            user_addr,
+            7, # DEVICE_FE_REFN
+            R3_grid[0], R3_grid[1]
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            user_addr,
+            7, # DEVICE_FE_REFN
+            R4_grid[0], R4_grid[1]
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_utb_deploy',
+        calldata=[
+            user_addr,
+            1, 179, # locs_x
+            1, 50 , # locs_y
+            180, 50, 178, 50
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_utb_deploy',
+        calldata=[
+            user_addr,
+            1, 181, # locs_x
+            1, 50 , # locs_y
+            180, 50, 182, 50
+        ])
+
+    #
+    # user deploys H3 => R5 <= H4
+    #
+    LOGGER.info (f'> user deploys: H3 => R5 <= H4')
+    H3_grid = (178, 30)
+    R5_grid = (180, 30) # 180-181, 30-31
+    H4_grid = (183, 30)
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            user_addr,
+            7, # DEVICE_FE_REFN
+            R5_grid[0], R5_grid[1]
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            user_addr,
+            2, # DEVICE_FE_HARV
+            H3_grid[0], H3_grid[1]
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            user_addr,
+            2, # DEVICE_FE_HARV
+            H4_grid[0], H4_grid[1]
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_utb_deploy',
+        calldata=[
+            user_addr,
+            1, 179, # locs_x
+            1, 30 , # locs_y
+            178, 30, 180, 30
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_utb_deploy',
+        calldata=[
+            user_addr,
+            1, 182, # locs_x
+            1, 30 , # locs_y
+            183, 30, 181, 30
+        ])
+
+    #
+    # user deploys H5 => R6 <= H6
+    #
+    LOGGER.info (f'> user deploys: H5 => R6 <= H6')
+    H5_grid = (178, 10)
+    R6_grid = (180, 10) # 180-181, 10-11
+    H6_grid = (183, 10)
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            user_addr,
+            7, # DEVICE_FE_REFN
+            R6_grid[0], R6_grid[1]
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            user_addr,
+            2, # DEVICE_FE_HARV
+            H5_grid[0], H5_grid[1]
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_device_deploy',
+        calldata=[
+            user_addr,
+            2, # DEVICE_FE_HARV
+            H6_grid[0], H6_grid[1]
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_utb_deploy',
+        calldata=[
+            user_addr,
+            1, 179, # locs_x
+            1, 10 , # locs_y
+            178, 10, 180, 10
+        ])
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_utb_deploy',
+        calldata=[
+            user_addr,
+            1, 182, # locs_x
+            1, 10 , # locs_y
+            183, 10, 181, 10
+        ])
+
+    # collect ids of deployed devices
+    device_ids = {}
+    names = ['H1', 'R1', 'R2', 'H2', 'R3', 'R4', 'R5', 'H3', 'H4', 'R6', 'H5', 'H6']
+    for i,name in enumerate(names):
+        ret = await contract.admin_read_device_deployed_emap(i).call()
+        device_ids[name] = ret.result.emap_entry.id
+    #     LOGGER.info (f'> {name} id: {ret.result.emap_entry.id}')
+    # LOGGER.info ('')
+
+    # ret = await contract.admin_read_utb_set_deployed_emap_size().call()
+    # for i in range(ret.result.size):
+    #     ret = await contract.admin_read_utb_set_deployed_emap(i).call()
+    #     LOGGER.info (f'> UTB: {ret.result.emap_entry}')
+    # LOGGER.info ('')
+
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 1')
+    LOGGER.info (f'> run `forward_world_micro()` and check resource balances ')
+    LOGGER.info (f'> ------------')
+
+    await contract.mock_forward_world_micro().invoke()
+    LOGGER.info (f'> forward_world_micro() invoked.')
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H1']).call()
+    assert ret.result.balance == +500-2, 'H1 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H2']).call()
+    assert ret.result.balance == +500-2, 'H2 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H3']).call()
+    assert ret.result.balance == +500-1, 'H3 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H4']).call()
+    assert ret.result.balance == +500-1, 'H4 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H5']).call()
+    assert ret.result.balance == +500-1, 'H5 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H6']).call()
+    assert ret.result.balance == +500-1, 'H6 resource balance is incorrect'
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R1']).call()
+    assert ret.result.balances.balance_resource_before_transform == 1
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R2']).call()
+    assert ret.result.balances.balance_resource_before_transform == 1
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R3']).call()
+    assert ret.result.balances.balance_resource_before_transform == 1
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R4']).call()
+    assert ret.result.balances.balance_resource_before_transform == 1
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R5']).call()
+    assert ret.result.balances.balance_resource_before_transform == 2
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R6']).call()
+    assert ret.result.balances.balance_resource_before_transform == 2
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    LOGGER.info (f'> all resource balances are correct.\n')
+
+    LOGGER.info (f'> ------------')
+    LOGGER.info (f'> TEST 2')
+    LOGGER.info (f'> remove H1, then run `forward_world_micro()` and check resource balances ')
+    LOGGER.info (f'> ------------')
+
+    await user['signer'].send_transaction(
+        account = user['account'], to = contract.contract_address,
+        selector_name = 'mock_device_pickup_by_grid',
+        calldata=[
+            user_addr,
+            H1_grid[0], H1_grid[1]
+        ])
+    LOGGER.info (f'> H1 picked up.')
+
+    # ret = await contract.admin_read_utb_set_deployed_emap_size().call()
+    # for i in range(ret.result.size):
+    #     ret = await contract.admin_read_utb_set_deployed_emap(i).call()
+    #     LOGGER.info (f'> UTB: {ret.result.emap_entry}')
+    # LOGGER.info ('')
+
+    await contract.mock_forward_world_micro().invoke()
+    LOGGER.info (f'> forward_world_micro() invoked.')
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H1']).call()
+    assert ret.result.balance == 0, 'H1 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H2']).call()
+    assert ret.result.balance == +500-2 +500-2, 'H2 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H3']).call()
+    assert ret.result.balance == +500-1 +500-1, 'H3 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H4']).call()
+    assert ret.result.balance == +500-1 +500-1, 'H4 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H5']).call()
+    assert ret.result.balance == +500-1 +500-1, 'H5 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H6']).call()
+    assert ret.result.balance == +500-1 +500-1, 'H6 resource balance is incorrect'
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R1']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R2']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R3']).call()
+    assert ret.result.balances.balance_resource_before_transform == 1 +1 -1
+    assert ret.result.balances.balance_resource_after_transform == +1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R4']).call()
+    assert ret.result.balances.balance_resource_before_transform == 1 +1 -1
+    assert ret.result.balances.balance_resource_after_transform == +1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R5']).call()
+    assert ret.result.balances.balance_resource_before_transform == 2 +2 -1
+    assert ret.result.balances.balance_resource_after_transform == +1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R6']).call()
+    assert ret.result.balances.balance_resource_before_transform == 2 +2 -1
+    assert ret.result.balances.balance_resource_after_transform == +1
+
+    LOGGER.info (f'> all resource balances are correct.\n')
+
+
     LOGGER.info (f'> ------------')
     LOGGER.info (f'> TEST 3')
-    LOGGER.info (f'> user connects iron harvester => iron refinery => OPSF using UTBs')
+    LOGGER.info (f'> remove R3, then run `forward_world_micro()` and check resource balances ')
     LOGGER.info (f'> ------------')
-    await user['signer'].send_transaction(
-        account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata=[
-            user_addr,
-            4, 181, 182, 183, 184, # locs_x
-            4, 85 , 85 , 85 , 85, # locs_y
-            180, 85, 185, 85
-        ]
-    )
-    LOGGER.info (f'> connected iron harvester with iron refinery with 4 UTBs.')
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_device_pickup_by_grid',
         calldata=[
             user_addr,
-            22, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 213, 212, 211, 210, 209, 208, 207, 206, 205, # locs_x
-            22, 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 100, 100, 100, 100, 100, 100, 100, 100, 100, # locs_y
-            186, 86, 204, 100
-        ]
-    )
-    LOGGER.info (f'> connected iron refinery with OPSF with 22 UTBs.\n')
+            R3_grid[0], R3_grid[1]
+        ])
+    LOGGER.info (f'> R3 picked up.')
 
-    #
-    # 4. user connects aluminum harvester#1 => aluminum refinery#1 => OPSF
-    #    al-harv-1 at (160, 130), al-refn-1 at (170, 145), OPSF at (200, 100)
-    #
+    # ret = await contract.admin_read_utb_set_deployed_emap_size().call()
+    # for i in range(ret.result.size):
+    #     ret = await contract.admin_read_utb_set_deployed_emap(i).call()
+    #     LOGGER.info (f'> UTB: {ret.result.emap_entry}')
+    # LOGGER.info ('')
+
+    await contract.mock_forward_world_micro().invoke()
+    LOGGER.info (f'> forward_world_micro() invoked.')
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H1']).call()
+    assert ret.result.balance == 0, 'H1 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H2']).call()
+    assert ret.result.balance == +500-2 +500-2 +500-1, 'H2 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H3']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1, 'H3 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H4']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1, 'H4 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H5']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1, 'H5 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H6']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1, 'H6 resource balance is incorrect'
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R1']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R2']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R3']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R4']).call()
+    assert ret.result.balances.balance_resource_before_transform == 1 +1 -1 +1 -1
+    assert ret.result.balances.balance_resource_after_transform == +1 +1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R5']).call()
+    assert ret.result.balances.balance_resource_before_transform == 2 +2 -1 +2 -1
+    assert ret.result.balances.balance_resource_after_transform == +1 +1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R6']).call()
+    assert ret.result.balances.balance_resource_before_transform == 2 +2 -1 +2 -1
+    assert ret.result.balances.balance_resource_after_transform == +1 +1
+
+    LOGGER.info (f'> all resource balances are correct.\n')
+
+
     LOGGER.info (f'> ------------')
     LOGGER.info (f'> TEST 4')
-    LOGGER.info (f'> user connects iron harvester => iron refinery => OPSF using UTBs')
+    LOGGER.info (f'> remove R5, then run `forward_world_micro()` and check resource balances ')
     LOGGER.info (f'> ------------')
-    locs_x = [160 for y in range(131,146)] + [x for x in range(161,170)]
-    locs_y = [y for y in range(131,146)] + [145 for x in range(161,170)]
-    n_utb = len(locs_x)
-    locs_x = [n_utb] + locs_x
-    locs_y = [n_utb] + locs_y
+
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata = [user_addr] + locs_x + locs_y + [160, 130, 170, 145]
-    )
-    LOGGER.info (f'> connected aluminum harvester #1 with aluminum refinery #1 with {n_utb} UTBs.')
+        selector_name = 'mock_device_pickup_by_grid',
+        calldata=[
+            user_addr,
+            R5_grid[0], R5_grid[1]
+        ])
+    LOGGER.info (f'> R5 picked up.')
 
-    locs_x = [x for x in range(172,201)] + [200 for y in range(105,145)]
-    locs_y = [145 for x in range(172,201)] + [y for y in range(105,145)][::-1]
-    n_utb = len(locs_x)
-    locs_x = [n_utb] + locs_x
-    locs_y = [n_utb] + locs_y
-    await user['signer'].send_transaction(
-        account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata = [user_addr] + locs_x + locs_y + [171, 145, 200, 104]
-    )
-    LOGGER.info (f'> connected aluminum refinery #1 with OPSF with {n_utb} UTBs.\n')
+    # ret = await contract.admin_read_utb_set_deployed_emap_size().call()
+    # for i in range(ret.result.size):
+    #     ret = await contract.admin_read_utb_set_deployed_emap(i).call()
+    #     LOGGER.info (f'> UTB: {ret.result.emap_entry}')
+    # LOGGER.info ('')
 
-    #
-    # 5. user connects aluminum harvester#2 => aluminum refinery#1
-    #    al-harv-2 at (180, 180), al-refn-1 at (170, 145)
-    #
+    await contract.mock_forward_world_micro().invoke()
+    LOGGER.info (f'> forward_world_micro() invoked.')
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H1']).call()
+    assert ret.result.balance == 0, 'H1 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H2']).call()
+    assert ret.result.balance == +500-2 +500-2 +500-1 +500-1, 'H2 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H3']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1 +500, 'H3 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H4']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1 +500, 'H4 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H5']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1 +500-1, 'H5 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H6']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1 +500-1, 'H6 resource balance is incorrect'
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R1']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R2']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R3']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R4']).call()
+    assert ret.result.balances.balance_resource_before_transform == 1 +1 -1 +1 -1 +1 -1
+    assert ret.result.balances.balance_resource_after_transform == +1 +1 +1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R5']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 0
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R6']).call()
+    assert ret.result.balances.balance_resource_before_transform == 2 +2 -1 +2 -1 +2 -1
+    assert ret.result.balances.balance_resource_after_transform == +1 +1 +1
+
+    LOGGER.info (f'> all resource balances are correct.\n')
+
+
     LOGGER.info (f'> ------------')
     LOGGER.info (f'> TEST 5')
-    LOGGER.info (f'> user connects aluminum harvester#2 => aluminum refinery#1')
+    LOGGER.info (f'> remove H5, then run `forward_world_micro()` and check resource balances ')
     LOGGER.info (f'> ------------')
-    ## deploy UTBs from (179, 180) => (170, 147)
-    locs_x = [x for x in range(170,180)][::-1] + [170 for y in range(147,180)]
-    locs_y = [180 for x in range(170,180)] + [y for y in range(147,180)][::-1]
-    n_utb = len(locs_x)
-    locs_x = [n_utb] + locs_x
-    locs_y = [n_utb] + locs_y
+
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata = [user_addr] + locs_x + locs_y + [180, 180, 170, 146]
-    )
-    LOGGER.info (f'> connected aluminum harvester #2 with aluminum refinery #1 with {n_utb} UTBs.\n')
+        selector_name = 'mock_device_pickup_by_grid',
+        calldata=[
+            user_addr,
+            H5_grid[0], H5_grid[1]
+        ])
+    LOGGER.info (f'> H5 picked up.')
 
-    #
-    # 6. user connects aluminum harvester#2 => aluminum refinery#2 => OPSF
-    #    al-harv-2 at (180, 180), al-refn-2 at (190, 180), OPSF at (200, 100)
-    #
-    LOGGER.info (f'> ------------')
-    LOGGER.info (f'> TEST 6')
-    LOGGER.info (f'> user connects aluminum harvester#2 => aluminum refinery#2 => OPSF')
-    LOGGER.info (f'> ------------')
-    ## deploy UTBs from (181, 180) => (189, 180)
-    locs_x = [x for x in range(181,190)]
-    locs_y = [180 for x in range(181,190)]
-    n_utb = len(locs_x)
-    locs_x = [n_utb] + locs_x
-    locs_y = [n_utb] + locs_y
-    await user['signer'].send_transaction(
-        account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata = [user_addr] + locs_x + locs_y + [180, 180, 190, 180]
-    )
-    LOGGER.info (f'> connected aluminum harvester #2 with aluminum refinery #2 with {n_utb} UTBs.')
-
-    ## deploy UTBs from (192, 180) => (202, 180), then (202, 179) => (202, 105)
-    locs_x = [x for x in range(192,203)] + [202 for y in range(105,180)]
-    locs_y = [180 for x in range(192,203)] + [y for y in range(105,180)][::-1]
-    n_utb = len(locs_x)
-    locs_x = [n_utb] + locs_x
-    locs_y = [n_utb] + locs_y
-    await user['signer'].send_transaction(
-        account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata = [user_addr] + locs_x + locs_y + [191, 180, 202, 104]
-    )
-    LOGGER.info (f'> connected aluminum refinery #2 with OPSF with {n_utb} UTBs.\n')
-
-    #
-    # 7. Check initial resource amount at each device
-    #
-    LOGGER.info (f'> ------------')
-    LOGGER.info (f'> TEST 7')
-    LOGGER.info (f'> Check initial resource amount at each device')
-    LOGGER.info (f'> ------------')
-
-    for device_id in [fe_harv_id, al_harv_1_id, al_harv_2_id]:
-        ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_id).call()
-        assert ret.result.balance == 0
-
-    for device_id in [fe_refn_id, al_refn_1_id, al_refn_2_id]:
-        ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_id).call()
-        assert ret.result.balances.balance_resource_before_transform == 0
-        assert ret.result.balances.balance_resource_after_transform == 0
-
-    for element_type in [0,1,2,3]:
-        ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, element_type).call()
-        assert ret.result.balance == 0
-    LOGGER.info (f'> resource balances at devices match expected.\n')
-
-    #
-    # 8. run `forward_world_micro()`, and check resource balances
-    #
-    LOGGER.info (f'> ------------')
-    LOGGER.info (f'> TEST 8')
-    LOGGER.info (f'> run `forward_world_micro()`, and check resource balances ')
-    LOGGER.info (f'> ------------')
+    # ret = await contract.admin_read_utb_set_deployed_emap_size().call()
+    # for i in range(ret.result.size):
+    #     ret = await contract.admin_read_utb_set_deployed_emap(i).call()
+    #     LOGGER.info (f'> UTB: {ret.result.emap_entry}')
+    # LOGGER.info ('')
 
     await contract.mock_forward_world_micro().invoke()
     LOGGER.info (f'> forward_world_micro() invoked.')
 
-    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(fe_harv_id).call()
-    LOGGER.info (f"> resource at fe harv: {ret.result.balance}")
-    assert ret.result.balance == +500 - 1 # fanout = 1
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H1']).call()
+    assert ret.result.balance == 0, 'H1 resource balance is incorrect'
 
-    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(al_harv_1_id).call()
-    LOGGER.info (f"> resource at al harv #1: {ret.result.balance}")
-    assert ret.result.balance == +500 - 1 # fanout = 1
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H2']).call()
+    assert ret.result.balance == +500-2 +500-2 +500-1 +500-1 +500-1, 'H2 resource balance is incorrect'
 
-    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(al_harv_2_id).call()
-    LOGGER.info (f"> resource at al harv #2: {ret.result.balance}")
-    assert ret.result.balance == +500 - 2 # fanout = 2
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H3']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1 +500 +500, 'H3 resource balance is incorrect'
 
-    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(fe_refn_id).call()
-    LOGGER.info (f"> resource at fe refn: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
-    assert ret.result.balances.balance_resource_before_transform == 1 # fanin = 1
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H4']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1 +500 +500, 'H4 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H5']).call()
+    assert ret.result.balance == 0, 'H5 resource balance is incorrect'
+
+    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(device_ids['H6']).call()
+    assert ret.result.balance == +500-1 +500-1 +500-1 +500-1 +500-1, 'H6 resource balance is incorrect'
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R1']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R2']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
+    assert ret.result.balances.balance_resource_after_transform == 1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R3']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
     assert ret.result.balances.balance_resource_after_transform == 0
 
-    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(al_refn_1_id).call()
-    LOGGER.info (f"> resource at al refn #1: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
-    assert ret.result.balances.balance_resource_before_transform == 2 # fanin = 2
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R4']).call()
+    assert ret.result.balances.balance_resource_before_transform == 1 +1 -1 +1 -1 +1 -1 +1 -1
+    assert ret.result.balances.balance_resource_after_transform == +1 +1 +1 +1
+
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R5']).call()
+    assert ret.result.balances.balance_resource_before_transform == 0
     assert ret.result.balances.balance_resource_after_transform == 0
 
-    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(al_refn_2_id).call()
-    LOGGER.info (f"> resource at al refn #2: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
-    assert ret.result.balances.balance_resource_before_transform == 1 # fanin = 1
-    assert ret.result.balances.balance_resource_after_transform == 0
+    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(device_ids['R6']).call()
+    assert ret.result.balances.balance_resource_before_transform == 2 +2 -1 +2 -1 +2 -1 +1 -1
+    assert ret.result.balances.balance_resource_after_transform == +1 +1 +1 +1
 
-    for element_type in [0,1,2,3]:
-        ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, element_type).call()
-        LOGGER.info (f"> resource of type {element_type} at OPSF: {ret.result.balance}")
-        assert ret.result.balance == 0
-
-    LOGGER.info (f"> all resource balances are correct.\n")
-
-    #
-    # 9. run `forward_world_micro()` again, and check resource balances
-    #
-    LOGGER.info (f'> ------------')
-    LOGGER.info (f'> TEST 9')
-    LOGGER.info (f'> run `forward_world_micro()` again, and check resource balances ')
-    LOGGER.info (f'> ------------')
-
-    await contract.mock_forward_world_micro().invoke()
-    LOGGER.info (f'> forward_world_micro() invoked.')
-
-    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(fe_harv_id).call()
-    LOGGER.info (f"> resource at fe harv: {ret.result.balance}")
-    assert ret.result.balance == +500-1 +500 -1
-
-    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(al_harv_1_id).call()
-    LOGGER.info (f"> resource at al harv #1: {ret.result.balance}")
-    assert ret.result.balance == +500-1 +500 -1
-
-    ret = await contract.admin_read_harvesters_deployed_id_to_resource_balance(al_harv_2_id).call()
-    LOGGER.info (f"> resource at al harv #2: {ret.result.balance}")
-    assert ret.result.balance == +500-2 +500 -2
-
-    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(fe_refn_id).call()
-    LOGGER.info (f"> resource at fe refn: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
-    assert ret.result.balances.balance_resource_before_transform == 1 -1 +1
-    assert ret.result.balances.balance_resource_after_transform == 0 +1 -1 # transported to OPSF
-
-    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(al_refn_1_id).call()
-    LOGGER.info (f"> resource at al refn #1: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
-    assert ret.result.balances.balance_resource_before_transform == 2 -1 +2
-    assert ret.result.balances.balance_resource_after_transform == 0 +1 -1 # transported to OPSF
-
-    ret = await contract.admin_read_transformers_deployed_id_to_resource_balances(al_refn_2_id).call()
-    LOGGER.info (f"> resource at al refn #2: {ret.result.balances.balance_resource_before_transform} / {ret.result.balances.balance_resource_after_transform}")
-    assert ret.result.balances.balance_resource_before_transform == 1 -1 +1
-    assert ret.result.balances.balance_resource_after_transform == 0 +1 -1 # transported to OPSF
-
-    ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, 0).call()
-    LOGGER.info (f"> resource of type {element_type} at OPSF: {ret.result.balance}")
-    assert ret.result.balance == 0
-    ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, 1).call()
-    LOGGER.info (f"> resource of type {element_type} at OPSF: {ret.result.balance}")
-    assert ret.result.balance == +1
-    ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, 2).call()
-    LOGGER.info (f"> resource of type {element_type} at OPSF: {ret.result.balance}")
-    assert ret.result.balance == 0
-    ret = await contract.admin_read_opsf_deployed_id_to_resource_balances(opsf_id, 3).call()
-    LOGGER.info (f"> resource of type {element_type} at OPSF: {ret.result.balance}")
-    assert ret.result.balance == +2
-
-    LOGGER.info (f"> all resource balances are correct.\n")
+    LOGGER.info (f'> all resource balances are correct.\n')
