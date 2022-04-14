@@ -87,12 +87,12 @@ func get_device_dimension_ptr () -> (ptr : felt*):
     dw 3 # npg
     dw 1 # fe harv
     dw 1 # al harv
-    dw 1 # ci harv
+    dw 1 # cu harv
     dw 1 # si harv
     dw 1 # pu harv
     dw 2 # fe refn
     dw 2 # al refn
-    dw 2 # ci refn
+    dw 2 # cu refn
     dw 2 # si refn
     dw 2 # pef
     dw 0

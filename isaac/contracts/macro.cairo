@@ -41,7 +41,11 @@ func rk4 {syscall_ptr : felt*, range_check_ptr} (
     let (state_k3_diff : Dynamics) = differentiate (state_k3)
     let (k4 : Dynamics) = dynamics_mul_scalar_fp (state_k3_diff, dt)
 
-    # state_nxt = state + (k1 + 2*k2 + 2*k3 + k4) / 6
+    # TODO: randomness derived from fiat shamir
+    let delta = 0
+
+    # state_nxt = state + (k1 + 2*k2 + 2*k3 + k4) / 6 + delta
+    # TODO: add delta
     let (k2_2 : Dynamics) = dynamics_mul_scalar (k2, 2)
     let (k3_2 : Dynamics) = dynamics_mul_scalar (k3, 2)
     let (numerator__ : Dynamics) = dynamics_add (k1, k2_2)
