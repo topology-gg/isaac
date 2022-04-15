@@ -2,9 +2,9 @@ import { EnvironmentMap } from "@react-three/drei";
 
 export const NUM_SURFACES = 6;
 
-export const createSurface = (device_emap, surface_dim) => {
+export const createSurface = (device_emap, utb_grids, surface_dim) => {
 
-    console.log("> createSurface(): device_emap", device_emap, "surface_dim", surface_dim)
+    console.log("> createSurface(): device_emap", device_emap, "utb_grids", utb_grids, "surface_dim", surface_dim)
 
     // Initialize array
     let surface = Array.from(Array(NUM_SURFACES), () => (
@@ -14,19 +14,32 @@ export const createSurface = (device_emap, surface_dim) => {
         )
     ))
 
-    // For each deployed device in emap, find the face it belongs to, find normalized coord, and update surface
-    for (const entry of device_emap[0]){
-        console.log("> entry", entry)
-        const x = entry.grid.x.toNumber()
-        const y = entry.grid.y.toNumber()
-        const typ = entry.type.toNumber()
-        console.log('entry grid',x, y, typ)
-        const ret = getFaceAndOffset (x, y, surface_dim)
-        console.log ("> getFaceAndOffset():", ret)
+    if (device_emap.emap) {
+        for (const entry of device_emap.emap){
+            // console.log("> entry", entry)
+            const x = entry.grid.x.toNumber()
+            const y = entry.grid.y.toNumber()
+            const typ = entry.type.toNumber()
+            const ret = getFaceAndOffset (x, y, surface_dim)
+            console.log('device grid', x, y, typ, 'on face', ret.face)
 
-        const x_norm = x - ret.offset.x
-        const y_norm = y - ret.offset.y
-        surface[ret.face][x_norm][y_norm] = typ
+            const x_norm = x - ret.offset.x
+            const y_norm = y - ret.offset.y
+            surface[ret.face][x_norm][y_norm] = typ
+        }
+    }
+    // For each deployed device in emap, find the face it belongs to, find normalized coord, and update surface
+    if (utb_grids.grids) {
+        for (const grid of utb_grids.grids){
+            const x = grid.x.toNumber()
+            const y = grid.y.toNumber()
+            const ret = getFaceAndOffset (x, y, surface_dim)
+            console.log('utb grid', x, y, 'on face', ret.face)
+
+            const x_norm = x - ret.offset.x
+            const y_norm = y - ret.offset.y
+            surface[ret.face][x_norm][y_norm] = 12
+        }
     }
 
     return surface
