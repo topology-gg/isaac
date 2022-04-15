@@ -8,7 +8,7 @@ import { Vector2 } from "three";
 
 import { createSurface } from './surfaceHelper'
 
-let gridSize = 50;
+let gridSize = 100;
 const canvasSize = 1024;
 const deviceTypeToColorMap = {
     0: "blue", // SPG
@@ -23,21 +23,38 @@ const deviceTypeToColorMap = {
     9: "yellow",
     10: "yellow",
     11: "yellow",
-    12: "white", // UTB
+    12: 'rgba(50, 50, 50, 0.8)', // UTB
     13: "yellow",
     14: "yellow"
+}
+const deviceTypeToGridSizeMap = {
+    0: 1, // spg
+    1: 3, // npg
+    2: 1, // fe harv
+    3: 1, // al harv
+    4: 1, // ci harv
+    5: 1, // si harv
+    6: 1, // pu harv
+    7: 2, // fe refn
+    8: 2, // al refn
+    9: 2, // ci refn
+    10: 2, // si refn
+    11: 2, // pef
+    12: 1,
+    13: 1,
+    14: 5, // opsf
 }
 const xRotationSpeed = 0.0
 const yRotationSpeed = 0.0
 const zRotationSpeed = 0.0
 
-function drawCell(ctx, gridSize, canvasSize, cellX, cellY, color = "yellow") {
+function drawCell(ctx, shapeDim, gridSize, canvasSize, cellX, cellY, color = "yellow") {
     ctx.fillStyle = color;
     ctx.fillRect(
         cellX * (canvasSize / gridSize),
         cellY * (canvasSize / gridSize),
-        canvasSize / gridSize,
-        canvasSize / gridSize
+        shapeDim * (canvasSize / gridSize),
+        shapeDim * (canvasSize / gridSize)
     );
 }
 
@@ -46,7 +63,7 @@ function drawGrid(ctx, gridSize, canvasSize) {
         const x = i * (canvasSize / gridSize);
         ctx.beginPath();
         ctx.lineWidth = 0.5;
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';;
+        ctx.strokeStyle = 'rgba(50, 50, 50, 0.2)';
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvasSize);
         ctx.moveTo(0, x);
@@ -69,9 +86,12 @@ function drawResources(ctx, surfaceArray) {
     for (var i = 0; i < surfaceArray.length; i++) {
         for (var j = 0; j < surfaceArray[i].length; j++) {
             if (surfaceArray[i][j] != 0) {
-                const color = deviceTypeToColorMap[ surfaceArray[i][j] ]
+                const color = deviceTypeToColorMap [ surfaceArray[i][j] ]
+                const deviceGridSize = deviceTypeToGridSizeMap [ surfaceArray[i][j] ]
+                // console.log ('drawing type', surfaceArray[i][j], 'as', color, 'at', i, j, 'of size', deviceGridSize)
                 drawCell(
                     ctx,
+                    deviceGridSize,
                     gridSize,
                     canvasSize,
                     i,
@@ -107,9 +127,15 @@ export default function Box(props) {
     const textureRef6 = useRef();
 
     useFrame(({ clock }) => {
-            if (props.device_emap && !surface) {
+            if ( props.device_emap && props.utb_grids && !surface) {
+                console.log("device_emap:", props.device_emap)
+                console.log("utb_grids:", props.utb_grids)
 
-                const new_surface = createSurface(props.device_emap, gridSize)
+                const new_surface = createSurface(
+                    props.device_emap,
+                    props.utb_grids,
+                    gridSize
+                )
 
                 console.log("new_surface:", new_surface)
                 setSurface(new_surface)
@@ -210,7 +236,7 @@ export default function Box(props) {
     return (
         <group ref={group} {...props}>
             <mesh
-                rotation={[0, degToRad(0), degToRad(0)]}
+                rotation={[degToRad(90), degToRad(0), degToRad(0)]}
                 onPointerMove={(e) => (mouseUV.current = e.uv)}
                 onPointerOver={() => (document.body.style = "cursor: none;")}
                 onPointerOut={() => (document.body.style = "cursor: pointer;")}
