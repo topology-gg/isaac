@@ -16,7 +16,7 @@ import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import ServerAbi from '../abi/server_abi.json'
-export const SERVER_ADDRESS = '0x00009d9fb113a6f2398eb417825b803354ced11067ff277df5077b1ab7b047b7'
+export const SERVER_ADDRESS = '0x02a3f6c3ddf2be709ac34dfe6357f7f7bd8a462ecd16e46a15b2ee766ca6198c'
 function useServerContract() {
     return useContract({ abi: ServerAbi, address: SERVER_ADDRESS })
 }
@@ -65,12 +65,18 @@ export default function GameWorld() {
         args: []
     })
 
+    const { data: utb_grids } = useStarknetCall({
+        contract,
+        method: 'client_view_all_utb_grids',
+        args: []
+    })
+
 
 return (
         <Canvas className={styles.canvas}>
             <CameraController />
             <ambientLight />
-            <Box macro_state={macro_state} phi={phi} device_emap={device_emap}/>
+            <Box macro_state={macro_state} phi={phi} device_emap={device_emap} utb_grids={utb_grids}/>
         </Canvas>
     )
 }

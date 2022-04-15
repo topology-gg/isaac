@@ -59,30 +59,10 @@
                 "name": "id",
                 "offset": 3,
                 "type": "felt"
-            },
-            {
-                "name": "tethered_to_utl",
-                "offset": 4,
-                "type": "felt"
-            },
-            {
-                "name": "tethered_to_utb",
-                "offset": 5,
-                "type": "felt"
-            },
-            {
-                "name": "utl_label",
-                "offset": 6,
-                "type": "felt"
-            },
-            {
-                "name": "utb_label",
-                "offset": 7,
-                "type": "felt"
             }
         ],
         "name": "DeviceDeployedEmapEntry",
-        "size": 8,
+        "size": 4,
         "type": "struct"
     },
     {
@@ -177,6 +157,22 @@
         "name": "Dynamic",
         "size": 4,
         "type": "struct"
+    },
+    {
+        "inputs": [],
+        "name": "iterate_utb_deployed_emap_grab_all_utbs",
+        "outputs": [
+            {
+                "name": "grids_len",
+                "type": "felt"
+            },
+            {
+                "name": "grids",
+                "type": "Vec2*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
     },
     {
         "inputs": [
@@ -581,6 +577,44 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "name": "device_id",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_utb_tether_count_of_deployed_device",
+        "outputs": [
+            {
+                "name": "count",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "idx",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_utb_tether_labels_of_deployed_device",
+        "outputs": [
+            {
+                "name": "utb_set_label",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [],
         "name": "constructor",
         "outputs": [],
@@ -645,20 +679,20 @@
     {
         "inputs": [
             {
-                "name": "locs_len",
-                "type": "felt"
-            },
-            {
-                "name": "locs",
-                "type": "Vec2*"
-            },
-            {
                 "name": "src_device_grid",
                 "type": "Vec2"
             },
             {
                 "name": "dst_device_grid",
                 "type": "Vec2"
+            },
+            {
+                "name": "locs_len",
+                "type": "felt"
+            },
+            {
+                "name": "locs",
+                "type": "Vec2*"
             }
         ],
         "name": "client_deploy_utb_by_grids",
@@ -687,6 +721,38 @@
             {
                 "name": "emap",
                 "type": "DeviceDeployedEmapEntry*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "client_view_utb_deployed_emap",
+        "outputs": [
+            {
+                "name": "emap_len",
+                "type": "felt"
+            },
+            {
+                "name": "emap",
+                "type": "UtbSetDeployedEmapEntry*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "client_view_all_utb_grids",
+        "outputs": [
+            {
+                "name": "grids_len",
+                "type": "felt"
+            },
+            {
+                "name": "grids",
+                "type": "Vec2*"
             }
         ],
         "stateMutability": "view",
