@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash_chain import hash_chain
-from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn)
+from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal)
 from starkware.cairo.common.math_cmp import (is_le, is_nn_le, is_not_zero)
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
@@ -35,8 +35,15 @@ func grid_stats (grid : Vec2) -> (grid_stat : GridStat):
 end
 
 func is_unpopulated_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (grid : Vec2) -> ():
+    alloc_locals
+
     let (grid_stat : GridStat) = grid_stats.read (grid)
-    assert grid_stat.populated = 0
+    local g : Vec2 = grid
+
+    with_attr error_message ("grid ({g.x}, {g.y}) is already populated"):
+        assert grid_stat.populated = 0
+    end
+
     return ()
 end
 
@@ -605,17 +612,28 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     # Check if caller owns at least `locs_len` amount of undeployed utb
     #
     let (local owned_utb_amount) = device_undeployed_ledger.read (caller, ns_device_types.DEVICE_UTB)
-    assert_le (locs_len, owned_utb_amount)
+    local len = locs_len
+    with_attr error_message ("attempt to deploy {len} amount of UTBs but owning only {owned_utb_amount}"):
+        assert_le (locs_len, owned_utb_amount)
+    end
 
     #
     # Check if caller owns src and dst device
     #
     let (src_grid_stat) = grid_stats.read (src_device_grid)
     let (dst_grid_stat) = grid_stats.read (dst_device_grid)
-    assert src_grid_stat.populated = 1
-    assert dst_grid_stat.populated = 1
-    assert src_grid_stat.deployed_device_owner = caller
-    assert dst_grid_stat.deployed_device_owner = caller
+    with_attr error_message ("source-device grid is not populated"):
+        assert src_grid_stat.populated = 1
+    end
+    with_attr error_message ("destination-device grid is not populated"):
+        assert dst_grid_stat.populated = 1
+    end
+    with_attr error_message ("source-device is not owned by caller"):
+        assert src_grid_stat.deployed_device_owner = caller
+    end
+    with_attr error_message ("destination-device is not owned by caller"):
+        assert dst_grid_stat.deployed_device_owner = caller
+    end
 
     #
     # Retrieve emap entry for src & dst devices
@@ -1312,6 +1330,141 @@ func recurse_traverse_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : 
 
     recurse_traverse_device_deployed_emap (len, arr, idx+1)
 
+    return ()
+end
+
+
+#
+# Iterating over utb emap
+#
+func iterate_utb_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (
+        emap_len : felt,
+        emap : UtbSetDeployedEmapEntry*
+    ):
+    alloc_locals
+
+    let (emap_size) = utb_set_deployed_emap_size.read ()
+    let (emap : UtbSetDeployedEmapEntry*) = alloc ()
+
+    recurse_traverse_utb_deployed_emap (emap_size, emap, 0)
+
+    return (emap_size, emap)
+end
+
+func recurse_traverse_utb_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    len : felt,
+    arr : UtbSetDeployedEmapEntry*,
+    idx : felt) -> ():
+
+    if idx == len:
+        return ()
+    end
+
+    let (emap_entry) = utb_set_deployed_emap.read (idx)
+    assert arr[idx] = emap_entry
+
+    recurse_traverse_utb_deployed_emap (len, arr, idx+1)
+
+    return ()
+end
+
+@view
+func iterate_utb_deployed_emap_grab_all_utbs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (
+        grids_len : felt,
+        grids : Vec2*
+    ):
+    alloc_locals
+
+    #
+    # Double recursion:
+    # recurse over utb-deployed emap,
+    # then for each entry, recurse from index start to index end to grab the grids
+    # return one big array of grids
+    #
+
+    let (grids : Vec2*) = alloc ()
+    let (outer_loop_len) = utb_set_deployed_emap_size.read ()
+    let (count_final) = recurse_outer_grab_utbs (
+        len = outer_loop_len,
+        idx = 0,
+        arr = grids,
+        count = 0
+    )
+
+    return (count_final, grids)
+end
+
+func recurse_outer_grab_utbs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        len : felt,
+        idx : felt,
+        arr : Vec2*,
+        count : felt
+    ) -> (
+        count_final : felt
+    ):
+    alloc_locals
+
+    if idx == len:
+        return (count)
+    end
+
+    #
+    # inner recursion
+    #
+    let (emap_entry) = utb_set_deployed_emap.read (idx)
+    let utb_idx_start = emap_entry.utb_deployed_index_start
+    let utb_idx_end = emap_entry.utb_deployed_index_end
+
+    with_attr error_message ("utb_idx_start should not equal to utb_idx_end for any utb emap entry."):
+        assert_not_equal (utb_idx_start, utb_idx_end)
+    end
+
+    recurse_inner_grab_utbs (
+        idx_start = utb_idx_start,
+        idx_end = utb_idx_end,
+        off = 0,
+        arr = arr
+    )
+
+    #
+    # tail recursion
+    #
+    let (count_final) = recurse_outer_grab_utbs (
+        len,
+        idx + 1,
+        &arr [utb_idx_end - utb_idx_start],
+        count + utb_idx_end - utb_idx_start
+    )
+    return (count_final)
+end
+
+func recurse_inner_grab_utbs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        idx_start : felt,
+        idx_end : felt,
+        off : felt,
+        arr : Vec2*
+    ) -> ():
+    alloc_locals
+
+    if idx_start + off == idx_end:
+        return ()
+    end
+
+    let (grid : Vec2) = utb_deployed_index_to_grid.read (idx_start + off)
+
+    local offset = off
+    with_attr error_message ("`arr` at {offset} already occupied."):
+        assert arr[off] = grid
+    end
+
+    recurse_inner_grab_utbs (
+        idx_start,
+        idx_end,
+        off + 1,
+        arr
+    )
     return ()
 end
 

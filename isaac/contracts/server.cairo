@@ -10,7 +10,9 @@ from contracts.macro import (forward_world_macro)
 from contracts.micro import (
     device_deploy, device_pickup_by_grid,
     utb_deploy, utb_pickup_by_grid, forward_world_micro,
-    iterate_device_deployed_emap, DeviceDeployedEmapEntry
+    iterate_device_deployed_emap, DeviceDeployedEmapEntry,
+    iterate_utb_deployed_emap, UtbSetDeployedEmapEntry,
+    iterate_utb_deployed_emap_grab_all_utbs
 )
 from contracts.util.structs import (
     Vec2, Dynamic, Dynamics
@@ -191,10 +193,10 @@ end
 
 @external
 func client_deploy_utb_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        locs_len : felt,
-        locs : Vec2*,
         src_device_grid : Vec2,
-        dst_device_grid : Vec2
+        dst_device_grid : Vec2,
+        locs_len : felt,
+        locs : Vec2*
     ) -> ():
 
     let (caller) = get_caller_address ()
@@ -235,4 +237,29 @@ func client_view_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashB
     let (emap_len, emap) = iterate_device_deployed_emap ()
 
     return (emap_len, emap)
+end
+
+
+@view
+func client_view_utb_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (
+        emap_len : felt,
+        emap : UtbSetDeployedEmapEntry*
+    ):
+
+    let (emap_len, emap) = iterate_utb_deployed_emap ()
+
+    return (emap_len, emap)
+end
+
+@view
+func client_view_all_utb_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (
+        grids_len : felt,
+        grids : Vec2*
+    ):
+
+    let (grids_len, grids) = iterate_utb_deployed_emap_grab_all_utbs ()
+
+    return (grids_len, grids)
 end

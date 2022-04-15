@@ -21,24 +21,34 @@ func is_valid_grid {range_check_ptr} (
     alloc_locals
 
     # grid should be in quadrant one
-    assert_nn (grid.x)
-    assert_nn (grid.y)
+    with_attr error_message ("both grid.x and grid.y should be non-negative"):
+        assert_nn (grid.x)
+        assert_nn (grid.y)
+    end
 
     # grid should not fall in square [0~D-1, 0~D-1]
     let (flag0) = is_le (grid.x, PLANET_DIM-1)
     let (flag1) = is_le (grid.y, PLANET_DIM-1)
-    assert flag0 * flag1 = 0 
+    with_attr error_message ("grid should not fall in square [0~DIM-1, 0~DIM-1]"):
+        assert flag0 * flag1 = 0
+    end
 
     # grid should not fall in rectangle [2D~, 0~D-1]
     let (flag2) = is_le (2*PLANET_DIM, grid.x)
-    assert flag2 * flag1 = 0
+    with_attr error_message ("grid should not fall in rectangle [2DIM~, 0~DIM-1]"):
+        assert flag2 * flag1 = 0
+    end
 
     # grid should not fall in rectangle [0~D-1, 2D~]
     let (flag3) = is_le (2*PLANET_DIM, grid.y)
-    assert flag0 * flag3 = 0
+    with_attr error_message ("grid should not fall in rectangle [0~DIM-1, 2DIM~]"):
+        assert flag0 * flag3 = 0
+    end
 
     # grid should not fall in rectangle [2D~, 2D~]
-    assert flag2 * flag3 = 0
+    with_attr error_message ("grid should not fall in rectangle [2DIM~, 2DIM~]"):
+        assert flag2 * flag3 = 0
+    end
 
     return ()
 end
@@ -66,8 +76,12 @@ func are_contiguous_grids_given_valid_grids {range_check_ptr} (
     # On difference faces, both need to be on edge + on the same edge + have the same idx_on_edge
     #
     assert_not_zero (is_on_edge0 * is_on_edge1)
-    assert edge0 - edge1 = 0
-    assert idx_on_edge0 - idx_on_edge1 = 0
+    with_attr error_message ("two grids on different faces need to be on same edge-number to be possibly contiguous"):
+        assert edge0 - edge1 = 0
+    end
+    with_attr error_message ("two grids on different faces need to share the same index-on-edge"):
+        assert idx_on_edge0 - idx_on_edge1 = 0
+    end
 
     return ()
 end
@@ -85,7 +99,10 @@ func are_contiguous_grids_given_valid_grids_on_same_face {range_check_ptr} (
     let (y_diff_abs) = abs_value (grid0.y - grid1.y)
     let sum_diff_abs = x_diff_abs + y_diff_abs
 
-    assert sum_diff_abs = 1
+    with_attr error_message ("L1-norm of two grids != 1"):
+        assert sum_diff_abs = 1
+    end
+
     return ()
 end
 
