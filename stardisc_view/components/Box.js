@@ -214,6 +214,32 @@ export default function Box(props) {
         const ctx6 = canvasRef6.current.getContext("2d");
         ctx6.clearRect(0, 0, canvasSize, canvasSize);
 
+        // Adjusting for surface 0 (ctx)
+        ctx.rotate ( Math.PI / 2 );
+        ctx.scale(1,-1);
+
+        // Adjust for surface 4 (ctx5)
+        ctx5.scale(-1,1)
+        ctx5.translate (-canvasSize, 0);
+
+        // Adjusting for surface 5 (ctx6)
+        ctx6.translate (0, canvasSize);
+        ctx6.scale(1,-1);
+
+        // Adjusting for surface 1 (ctx2)
+        ctx2.rotate (Math.PI / 2);
+        ctx2.translate (0, -canvasSize)
+        ctx2.scale(-1,1);
+        ctx2.translate (-canvasSize,0)
+
+        // Adjusting for surface 2 (ctx3)
+        ctx3.scale(1,-1);
+        ctx3.translate (0,-canvasSize)
+
+        // Adjusting for surface 3 (ctx4)
+        ctx4.scale(-1,1)
+        ctx4.translate (-canvasSize, 0);
+
         if (surface) {
             drawResources(ctx, surface[0], clock)
             drawResources(ctx2, surface[1], clock)
@@ -222,7 +248,6 @@ export default function Box(props) {
             drawResources(ctx5, surface[4], clock)
             drawResources(ctx6, surface[5], clock)
         }
-
 
         drawGrid(ctx, gridSize, canvasSize);
         drawGrid(ctx2, gridSize, canvasSize);
