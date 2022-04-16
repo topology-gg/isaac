@@ -21,11 +21,12 @@ export const createSurface = (device_emap, utb_grids, surface_dim) => {
             const y = entry.grid.y.toNumber()
             const typ = entry.type.toNumber()
             const ret = getFaceAndOffset (x, y, surface_dim)
+            const surf = mapFaceToSurfaceIndex (ret.face)
             console.log('device grid', x, y, typ, 'on face', ret.face)
 
             const x_norm = x - ret.offset.x
             const y_norm = y - ret.offset.y
-            surface[ret.face][x_norm][y_norm] = typ
+            surface[surf][x_norm][y_norm] = typ
         }
     }
     // For each deployed device in emap, find the face it belongs to, find normalized coord, and update surface
@@ -34,15 +35,37 @@ export const createSurface = (device_emap, utb_grids, surface_dim) => {
             const x = grid.x.toNumber()
             const y = grid.y.toNumber()
             const ret = getFaceAndOffset (x, y, surface_dim)
+            const surf = mapFaceToSurfaceIndex (ret.face)
             console.log('utb grid', x, y, 'on face', ret.face)
 
             const x_norm = x - ret.offset.x
             const y_norm = y - ret.offset.y
-            surface[ret.face][x_norm][y_norm] = 12
+            surface[surf][x_norm][y_norm] = 12
         }
     }
 
     return surface
+}
+
+function mapFaceToSurfaceIndex (face) {
+    if (face == 0) {
+        return 0
+    }
+    else if (face == 1) {
+        return 4
+    }
+    else if (face == 2) {
+        return 3
+    }
+    else if (face == 3) {
+        return 5
+    }
+    else if (face == 4) {
+        return 1
+    }
+    else if (face == 5) {
+        return 2
+    }
 }
 
 function getFaceAndOffset (x, y, dim) {
