@@ -82,7 +82,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE)[demo] make multi-grid device one contiguous square instead of being drawn as multiple cells individually
 - (DONE) use voyager to deploy on UTB-set connecting two devices
 - (DONE) isaac-client-micro-read: visualize utb-set connecting harvester and refinery
-- isaac-client-micro-read: let utb-set slowly blink (color fading)
+- (DONE) isaac-client-micro-read: let utb-set slowly blink (color fading)
 - utl logic; energy update at device + energy transported across utl-set + testing
 - [demo] deploy devices, utl-sets and utb-sets, making the planet ready for demo day
 - hook up isaac with yagi (4/17 latest)
