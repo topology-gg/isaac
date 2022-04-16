@@ -51,10 +51,10 @@ const zRotationSpeed = 0.0
 function drawCell(ctx, shapeDim, gridSize, canvasSize, cellX, cellY, color = "yellow") {
     ctx.fillStyle = color;
     ctx.fillRect(
-        cellX * (canvasSize / gridSize),
-        cellY * (canvasSize / gridSize),
-        shapeDim * (canvasSize / gridSize),
-        shapeDim * (canvasSize / gridSize)
+        cellX * (canvasSize / gridSize) + 3,
+        cellY * (canvasSize / gridSize) + 3,
+        shapeDim * (canvasSize / gridSize) - 6,
+        shapeDim * (canvasSize / gridSize) - 6
     );
 }
 
@@ -82,11 +82,35 @@ function drawGrid(ctx, gridSize, canvasSize) {
 //     ctx.stroke();
 // }
 
-function drawResources(ctx, surfaceArray) {
+function drawResources(ctx, surfaceArray, clock) {
     for (var i = 0; i < surfaceArray.length; i++) {
         for (var j = 0; j < surfaceArray[i].length; j++) {
             if (surfaceArray[i][j] != 0) {
-                const color = deviceTypeToColorMap [ surfaceArray[i][j] ]
+
+                let val
+                let color
+                if (surfaceArray[i][j] == 12) {
+                    //
+                    // deal with UTB flashing
+                    // let color oscillates between (50,50,50) and (150,150,150)
+                    //
+                    const low = 40
+                    const high = 200
+                    const range = high-low
+                    const offset = clock.getElapsedTime() * 300 % (range*2);
+                    if (offset < range){
+                        val = low + offset
+                    }
+                    else{
+                        val = high - (offset-range)
+                    }
+                    color = `rgba(${val}, ${val}, ${val}, 0.8)`;
+                    // console.log('> drawing UTB with color', color)
+                }
+                else {
+                    color = deviceTypeToColorMap [ surfaceArray[i][j] ]
+                }
+
                 const deviceGridSize = deviceTypeToGridSizeMap [ surfaceArray[i][j] ]
                 // console.log ('drawing type', surfaceArray[i][j], 'as', color, 'at', i, j, 'of size', deviceGridSize)
                 drawCell(
@@ -191,12 +215,12 @@ export default function Box(props) {
         ctx6.clearRect(0, 0, canvasSize, canvasSize);
 
         if (surface) {
-            drawResources(ctx, surface[0])
-            drawResources(ctx2, surface[1])
-            drawResources(ctx3, surface[2])
-            drawResources(ctx4, surface[3])
-            drawResources(ctx5, surface[4])
-            drawResources(ctx6, surface[5])
+            drawResources(ctx, surface[0], clock)
+            drawResources(ctx2, surface[1], clock)
+            drawResources(ctx3, surface[2], clock)
+            drawResources(ctx4, surface[3], clock)
+            drawResources(ctx5, surface[4], clock)
+            drawResources(ctx6, surface[5], clock)
         }
 
 
