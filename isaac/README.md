@@ -83,13 +83,13 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) use voyager to deploy on UTB-set connecting two devices
 - (DONE) isaac-client-micro-read: visualize utb-set connecting harvester and refinery
 - (DONE) isaac-client-micro-read: let utb-set slowly blink (color fading)
-- utl logic; energy update at device + energy transported across utl-set + testing
 - [demo] deploy devices, utl-sets and utb-sets, making the planet ready for demo day
 - hook up isaac with yagi (4/17 latest)
 - bonus: make 2 big suns with one small sun; reflect on macro-client view
 - make slide deck and prepare for demo procedure for DEFCON
 - bonus: macro sun glowing (color animation), hover show coordinates in text etc
 --------
+- utl logic -- **think modular design**, preventing copying utb code; energy update at device + energy transported across utl-set + testing
 - test perlin noise (potentially make visualization for resource distribution)
 - OPSF device construction - design the parametrized recipes - and device withdrawal + testing
 - game over determination - detecting collision between planet and any of the three suns + testing
