@@ -83,8 +83,8 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) use voyager to deploy on UTB-set connecting two devices
 - (DONE) isaac-client-micro-read: visualize utb-set connecting harvester and refinery
 - (DONE) isaac-client-micro-read: let utb-set slowly blink (color fading)
-- [demo] deploy devices, utl-sets and utb-sets, making the planet ready for demo day
 - hook up isaac with yagi (4/17 latest)
+- deploy more devices, utb-sets, getting ready for demo day
 - bonus: make 2 big suns with one small sun; reflect on macro-client view
 - make slide deck and prepare for demo procedure for DEFCON
 - bonus: macro sun glowing (color animation), hover show coordinates in text etc
