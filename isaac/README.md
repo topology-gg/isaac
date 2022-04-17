@@ -87,9 +87,9 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) use voyager to deploy on UTB-set connecting two devices
 - (DONE) isaac-client-micro-read: visualize utb-set connecting harvester and refinery
 - (DONE) isaac-client-micro-read: let utb-set slowly blink (color fading)
-- utl logic: add an extra key to all utb-related storage_var, and modify program accordingly
-- utl logic: energy update at device + energy transported across utl-set + testing
-- hook up isaac with yagi (4/17 latest)
+- (DONE) utl logic: add an extra key to all utb-related storage_var, and modify program accordingly
+- (DONE) utl logic: energy update at device + energy transported across utl-set + testing
+- **hook up isaac with yagi (4/17 latest)**
 - getting ready for demo day: deploy more devices, utb-sets
 - make slide deck and prepare for demo procedure for DEFCON
 - bonus: macro sun glowing (color animation), hover show coordinates in text etc
