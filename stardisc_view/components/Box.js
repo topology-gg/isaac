@@ -23,8 +23,8 @@ const deviceTypeToColorMap = {
     9: "yellow",
     10: "yellow",
     11: "yellow",
-    12: 'rgba(50, 50, 50, 0.8)', // UTB
-    13: "yellow",
+    12: "rgba(50, 50, 50, 0.8)", // UTB; just reference (color determined by lerping per frame for blinking effect)
+    13: "rgba(115, 215, 255, 0.8)", // UTL; just reference (color determined by lerping per frame for blinking effect)
     14: "yellow"
 }
 const deviceTypeToGridSizeMap = {
@@ -40,8 +40,8 @@ const deviceTypeToGridSizeMap = {
     9: 2, // ci refn
     10: 2, // si refn
     11: 2, // pef
-    12: 1,
-    13: 1,
+    12: 1, // utb
+    13: 1, // utl
     14: 5, // opsf
 }
 const xRotationSpeed = 0.0
@@ -85,19 +85,49 @@ function drawGrid(ctx, gridSize, canvasSize) {
 function drawResources(ctx, surfaceArray, clock) {
     for (var i = 0; i < surfaceArray.length; i++) {
         for (var j = 0; j < surfaceArray[i].length; j++) {
-            if (surfaceArray[i][j] != 0) {
+            if (surfaceArray[i][j] != -1) {
 
-                let val
                 let color
-                if (surfaceArray[i][j] == 12) {
+                if (surfaceArray[i][j] == 13) {
+                    //
+                    // deal with UTL flashing
+                    // let color oscillates between two colors
+                    //
+                    const lows = [0, 143, 200]
+                    const highs = [85, 205, 255]
+                    const ranges = [highs[0]-lows[0], highs[1]-lows[1], highs[2]-lows[2]] // refactor this line
+                    const offsets = [ // refactor this line
+                        clock.getElapsedTime() * 800 % (ranges[0]*2),
+                        clock.getElapsedTime() * 800 % (ranges[1]*2),
+                        clock.getElapsedTime() * 800 % (ranges[2]*2)
+                    ]
+
+                    // TODO:
+                    // 1. use good color-lerp algorithm
+                    // 2. refactor with js array-creation practices
+                    let val_r, val_g, val_b
+                    if (offsets[0] < ranges[0]) {val_r = lows[0] + offsets[0]}
+                    else {val_r = highs[0] - (offsets[0]-ranges[0])}
+
+                    if (offsets[1] < ranges[1]) {val_g = lows[1] + offsets[1]}
+                    else {val_g = highs[1] - (offsets[1]-ranges[1])}
+
+                    if (offsets[2] < ranges[2]) {val_b = lows[2] + offsets[2]}
+                    else {val_b = highs[2] - (offsets[2]-ranges[2])}
+
+                    color = `rgba(${val_r}, ${val_g}, ${val_b}, 0.8)`;
+                    // console.log('> drawing UTL with color', color)
+                }
+                else if (surfaceArray[i][j] == 12) {
                     //
                     // deal with UTB flashing
-                    // let color oscillates between (50,50,50) and (150,150,150)
+                    // let color oscillates between two colors
                     //
                     const low = 40
-                    const high = 200
+                    const high = 120
                     const range = high-low
-                    const offset = clock.getElapsedTime() * 300 % (range*2);
+                    const offset = clock.getElapsedTime() * 200 % (range*2);
+                    let val
                     if (offset < range){
                         val = low + offset
                     }
@@ -151,13 +181,15 @@ export default function Box(props) {
     const textureRef6 = useRef();
 
     useFrame(({ clock }) => {
-            if ( props.device_emap && props.utb_grids && !surface) {
+            if ( props.device_emap && props.utb_grids && props.utl_grids && !surface) {
                 console.log("device_emap:", props.device_emap)
                 console.log("utb_grids:", props.utb_grids)
+                console.log("utl_grids:", props.utl_grids)
 
                 const new_surface = createSurface(
                     props.device_emap,
                     props.utb_grids,
+                    props.utl_grids,
                     gridSize
                 )
 
