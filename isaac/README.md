@@ -1,6 +1,10 @@
 # Isaac
 note: changed name from Escape from Centauri (too mouthy) to Isaac, which reflects the Newtonian mechanics involved in this game, and also borrows the sense of world genesis from its connotation with the Bible figure.
 
+### Web client urls (view only)
+- Macro view (trisolar system): https://isaac-macro-view.netlify.app/
+- Micro view (planet surface): https://isaac-micro-view.netlify.app/
+
 ### Narrative
 A hypothetical cuboid planet is trapped in a trisolar system where the three suns of identical mass follow roughly a figure-8 trajectory (https://arxiv.org/pdf/math/0011268.pdf)* with perturbation and drifts, making the system chaotic. All players reside on the cuboid planet, forming a interdependent civilization. Every time the planet is crashed into a sun, the civilization is destroyed and reborn, and the planet is reset to full-resource initial state and randomly placed in the trisolar system for the next civilization run. The objective of the game is for players to collectively build sufficient "Nuclear Driller & Propulsion Engines" from harvesting and crafting with natural resources abundant on the planet, place and time their launch strategically to either change their planet's orbit to evade a deadly crash into a sun or produce enough thrust for their planet to escape the hostile trisolar system for good.
 
