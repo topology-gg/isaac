@@ -2,15 +2,15 @@ import { EnvironmentMap } from "@react-three/drei";
 
 export const NUM_SURFACES = 6;
 
-export const createSurface = (device_emap, utb_grids, surface_dim) => {
+export const createSurface = (device_emap, utb_grids, utl_grids, surface_dim) => {
 
-    console.log("> createSurface(): device_emap", device_emap, "utb_grids", utb_grids, "surface_dim", surface_dim)
+    console.log("> createSurface(): device_emap", device_emap, "utb_grids", utb_grids, "utl_grids", utl_grids, "surface_dim", surface_dim)
 
     // Initialize array
     let surface = Array.from(Array(NUM_SURFACES), () => (
         Array.from(Array(surface_dim), () =>
             // new Array(SURFACE_WIDTH).fill(null).map((val, idx) => getRandomInt(2))
-            new Array(surface_dim).fill(0)
+            new Array(surface_dim).fill(-1)
         )
     ))
 
@@ -41,6 +41,20 @@ export const createSurface = (device_emap, utb_grids, surface_dim) => {
             const x_norm = x - ret.offset.x
             const y_norm = y - ret.offset.y
             surface[surf][x_norm][y_norm] = 12
+        }
+    }
+
+    if (utl_grids.grids) {
+        for (const grid of utl_grids.grids){
+            const x = grid.x.toNumber()
+            const y = grid.y.toNumber()
+            const ret = getFaceAndOffset (x, y, surface_dim)
+            const surf = mapFaceToSurfaceIndex (ret.face)
+            console.log('utl grid', x, y, 'on face', ret.face)
+
+            const x_norm = x - ret.offset.x
+            const y_norm = y - ret.offset.y
+            surface[surf][x_norm][y_norm] = 13
         }
     }
 
@@ -88,7 +102,7 @@ function getFaceAndOffset (x, y, dim) {
         return {face: 5, offset: {x : 3*dim, y : dim}}
     }
     else {
-        console.log ("> uhhh!")
+        console.log ("> uhhh! problem with x", x, "y", y, "dim", dim)
         return {face: 5, offset: {x : 3*dim, y : dim}}
     }
 }
