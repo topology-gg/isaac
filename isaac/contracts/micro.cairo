@@ -8,7 +8,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
 from contracts.design.constants import (
-    ns_device_types,
+    ns_device_types, assert_device_type_is_utx,
     harvester_device_type_to_element_type,
     transformer_device_type_to_element_types,
     get_device_dimension_ptr
@@ -386,7 +386,8 @@ func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     return ()
 end
 
-func recurse_untether_utb_for_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func recurse_untether_utx_for_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        utx_device_type : felt,
         id : felt,
         len : felt,
         idx : felt
@@ -398,39 +399,39 @@ func recurse_untether_utb_for_deployed_device {syscall_ptr : felt*, pedersen_ptr
     end
 
     #
-    # Get utb-set label at current idx
+    # Get utx-set label at current idx
     #
-    let (utb_set_label) = utb_tether_labels_of_deployed_device.read (id, idx)
+    let (utx_set_label) = utx_tether_labels_of_deployed_device.read (utx_device_type, id, idx)
 
     #
-    # With the utb-set label, get its emap-index, then get its emap-entry
+    # With the utx-set label, get its emap-index, then get its emap-entry
     #
-    let (utb_set_emap_index) = utb_set_deployed_label_to_emap_index.read (utb_set_label)
-    let (utb_set_emap_entry) = utb_set_deployed_emap.read (utb_set_emap_index)
+    let (utx_set_emap_index) = utx_set_deployed_label_to_emap_index.read (utx_device_type, utx_set_label)
+    let (utx_set_emap_entry) = utx_set_deployed_emap.read (utx_device_type, utx_set_emap_index)
 
     #
-    # Construct new src & dst device id based on whether the device is this utb-set's src or dst device
+    # Construct new src & dst device id based on whether the device is this utx-set's src or dst device
     #
-    let (is_src_device) = is_zero (utb_set_emap_entry.src_device_id - id)
-    let (is_dst_device) = is_zero (utb_set_emap_entry.dst_device_id - id)
-    let new_src_device_id = (1-is_src_device) * utb_set_emap_entry.src_device_id
-    let new_dst_device_id = (1-is_dst_device) * utb_set_emap_entry.dst_device_id
+    let (is_src_device) = is_zero (utx_set_emap_entry.src_device_id - id)
+    let (is_dst_device) = is_zero (utx_set_emap_entry.dst_device_id - id)
+    let new_src_device_id = (1-is_src_device) * utx_set_emap_entry.src_device_id
+    let new_dst_device_id = (1-is_dst_device) * utx_set_emap_entry.dst_device_id
 
     #
-    # Update utb emap
+    # Update utx emap
     #
-    utb_set_deployed_emap.write (
-        utb_set_emap_index,
-        UtbSetDeployedEmapEntry(
-            utb_set_deployed_label = utb_set_emap_entry.utb_set_deployed_label,
-            utb_deployed_index_start = utb_set_emap_entry.utb_deployed_index_start,
-            utb_deployed_index_end = utb_set_emap_entry.utb_deployed_index_end,
+    utx_set_deployed_emap.write (
+        utx_device_type, utx_set_emap_index,
+        UtxSetDeployedEmapEntry(
+            utx_set_deployed_label   = utx_set_emap_entry.utx_set_deployed_label,
+            utx_deployed_index_start = utx_set_emap_entry.utx_deployed_index_start,
+            utx_deployed_index_end   = utx_set_emap_entry.utx_deployed_index_end,
             src_device_id = new_src_device_id,
             dst_device_id = new_dst_device_id
         )
     )
 
-    recurse_untether_utb_for_deployed_device (id, len, idx + 1)
+    recurse_untether_utx_for_deployed_device (utx_device_type, id, len, idx + 1)
 
     return ()
 end
@@ -470,18 +471,23 @@ func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     device_deployed_id_to_emap_index.write (id_moved, emap_index)
 
     #
-    # Untether all utb-sets tethered to this device
+    # Untether all utx-sets tethered to this device
     #
-    let (tether_count) = utb_tether_count_of_deployed_device.read (grid_stat.deployed_device_id)
-    recurse_untether_utb_for_deployed_device (
+    let (utb_tether_count) = utx_tether_count_of_deployed_device.read (ns_device_types.DEVICE_UTB, grid_stat.deployed_device_id)
+    recurse_untether_utx_for_deployed_device (
+        utx_device_type = ns_device_types.DEVICE_UTB,
         id = grid_stat.deployed_device_id,
-        len = tether_count,
+        len = utb_tether_count,
         idx = 0
     )
 
-    #
-    # TODO for UTL: come back to untether all utl-sets tethered to this device
-    #
+    let (utl_tether_count) = utx_tether_count_of_deployed_device.read (ns_device_types.DEVICE_UTL, grid_stat.deployed_device_id)
+    recurse_untether_utx_for_deployed_device (
+        utx_device_type = ns_device_types.DEVICE_UTL,
+        id = grid_stat.deployed_device_id,
+        len = utl_tether_count,
+        idx = 0
+    )
 
     update_devices:
     local syscall_ptr : felt* = syscall_ptr
@@ -537,11 +543,11 @@ func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
 end
 
 ##############################
-## utb
+## utx
 ##############################
 
 #
-# utb is fungible before deployment, but non-fungible after deployment,
+# utx (utb/utl) is fungible before deployment, but non-fungible after deployment,
 # because they are deployed as a spatially-contiguous set with the same label,
 # where contiguity is defined by the coordinate system on the cube surface;
 # they are also deployed exclusively to connect their src & dst devices that meet
@@ -549,58 +555,59 @@ end
 #
 
 #
-# Use enumerable map (Emap) to maintain the an array of (set label, utb index start, utb index end)
+# Use enumerable map (Emap) to maintain the an array of (set label, utx index start, utx index end)
 # credit to Peteris at yagi.fi
 #
-struct UtbSetDeployedEmapEntry:
-    member utb_set_deployed_label : felt
-    member utb_deployed_index_start : felt
-    member utb_deployed_index_end : felt
+struct UtxSetDeployedEmapEntry:
+    member utx_set_deployed_label : felt
+    member utx_deployed_index_start : felt
+    member utx_deployed_index_end : felt
     member src_device_id : felt
     member dst_device_id : felt
 end
 
 @storage_var
-func utb_set_deployed_emap_size () -> (size : felt):
+func utx_set_deployed_emap_size (utx_device_type : felt) -> (size : felt):
 end
 
 @storage_var
-func utb_set_deployed_emap (emap_index : felt) -> (emap_entry : UtbSetDeployedEmapEntry):
+func utx_set_deployed_emap (utx_device_type : felt, emap_index : felt) -> (emap_entry : UtxSetDeployedEmapEntry):
 end
 
-# for quick reverse lookup (utb-set label to emap-index)
+# for quick reverse lookup (utx-set label to emap-index)
 @storage_var
-func utb_set_deployed_label_to_emap_index (label : felt) -> (emap_index : felt):
+func utx_set_deployed_label_to_emap_index (utx_device_type : felt, label : felt) -> (emap_index : felt):
 end
 
 #
 # Append-only
 #
 @storage_var
-func utb_deployed_index_to_grid_size () -> (size : felt):
+func utx_deployed_index_to_grid_size (utx_device_type : felt) -> (size : felt):
 end
 
 @storage_var
-func utb_deployed_index_to_grid (index : felt) -> (grid : Vec2):
+func utx_deployed_index_to_grid (utx_device_type : felt, index : felt) -> (grid : Vec2):
 end
 
 #
-# Recording the utb-sets tethered to a given id of deployed-device
+# Recording the utx-sets tethered to a given id of deployed-device
 #
 @storage_var
-func utb_tether_count_of_deployed_device (device_id : felt) -> (count : felt):
+func utx_tether_count_of_deployed_device (utx_device_type : felt, device_id : felt) -> (count : felt):
 end
 
 @storage_var
-func utb_tether_labels_of_deployed_device (device_id : felt, idx : felt) -> (utb_set_label : felt):
+func utx_tether_labels_of_deployed_device (utx_device_type : felt, device_id : felt, idx : felt) -> (utx_set_label : felt):
 end
 
 #
-# Player deploys UTB
+# Player deploys UTX
 # by providing a contiguous set of grids
 #
-func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func utx_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
+        utx_device_type : felt,
         locs_len : felt,
         locs : Vec2*,
         src_device_grid : Vec2,
@@ -608,13 +615,15 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     ) -> ():
     alloc_locals
 
+    assert_device_type_is_utx (utx_device_type)
+
     #
-    # Check if caller owns at least `locs_len` amount of undeployed utb
+    # Check if caller owns at least `locs_len` amount of undeployed utx
     #
-    let (local owned_utb_amount) = device_undeployed_ledger.read (caller, ns_device_types.DEVICE_UTB)
+    let (local owned_utx_amount) = device_undeployed_ledger.read (caller, utx_device_type)
     local len = locs_len
-    with_attr error_message ("attempt to deploy {len} amount of UTBs but owning only {owned_utb_amount}"):
-        assert_le (locs_len, owned_utb_amount)
+    with_attr error_message ("attempt to deploy {len} amount of UTXs but owning only {owned_utx_amount}"):
+        assert_le (locs_len, owned_utx_amount)
     end
 
     #
@@ -637,8 +646,6 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
 
     #
     # Retrieve emap entry for src & dst devices
-    # Note: old version checked that src and dst device are untethered to utb,
-    # which implied no multi-fan-out or multi-fan-in. Those checks have been removed.
     #
     let src_device_id = src_grid_stat.deployed_device_id
     let dst_device_id = dst_grid_stat.deployed_device_id
@@ -658,9 +665,10 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     are_contiguous_grids_given_valid_grids (locs[locs_len-1], dst_device_grid)
 
     #
-    # Check the type of (src,dst) meets (producer,consumer) relationship
+    # Check the type of (src,dst) meets (producer,consumer) relationship give utx type
     #
     are_resource_producer_consumer_relationship (
+        utx_device_type,
         src_grid_stat.deployed_device_type,
         dst_grid_stat.deployed_device_type
     )
@@ -668,77 +676,64 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     #
     # Recursively check for each locs's grid: (1) grid validity (2) grid unpopulated (3) grid is contiguous to previous grid
     #
-    let (utb_idx_start) = utb_deployed_index_to_grid_size.read ()
-    let utb_idx_end = utb_idx_start + locs_len
-    tempvar data_ptr : felt* = new (3, caller, utb_idx_start, utb_idx_end)
+    let (utx_idx_start) = utx_deployed_index_to_grid_size.read (utx_device_type)
+    let utx_idx_end = utx_idx_start + locs_len
+    tempvar data_ptr : felt* = new (3, caller, utx_idx_start, utx_idx_end)
     let (new_label) = hash_chain {hash_ptr = pedersen_ptr} (data_ptr)
-    recurse_utb_deploy (
+    recurse_utx_deploy (
         caller = caller,
+        utx_device_type = utx_device_type,
         len = locs_len,
         arr = locs,
         idx = 0,
-        utb_idx = utb_idx_start,
+        utx_idx = utx_idx_start,
         set_label = new_label
     )
 
     #
-    # Decrease caller's undeployed utb amount
+    # Decrease caller's undeployed utx amount
     #
-    device_undeployed_ledger.write (caller, ns_device_types.DEVICE_UTB, owned_utb_amount - locs_len)
+    device_undeployed_ledger.write (caller, utx_device_type, owned_utx_amount - locs_len)
 
     #
-    # Update `utb_deployed_index_to_grid_size`
+    # Update `utx_deployed_index_to_grid_size`
     #
-    utb_deployed_index_to_grid_size.write (utb_idx_end)
+    utx_deployed_index_to_grid_size.write (utx_device_type, utx_idx_end)
 
     #
-    # Insert to utb_set_deployed_emap; increase emap size
+    # Insert to utx_set_deployed_emap; increase emap size
     #
-    let (emap_size) = utb_set_deployed_emap_size.read ()
-    utb_set_deployed_emap.write (emap_size, UtbSetDeployedEmapEntry(
-        utb_set_deployed_label = new_label,
-        utb_deployed_index_start = utb_idx_start,
-        utb_deployed_index_end = utb_idx_end,
-        src_device_id = src_device_id,
-        dst_device_id = dst_device_id
+    let (emap_size) = utx_set_deployed_emap_size.read (utx_device_type)
+    utx_set_deployed_emap.write (
+        utx_device_type, emap_size,
+        UtxSetDeployedEmapEntry(
+            utx_set_deployed_label   = new_label,
+            utx_deployed_index_start = utx_idx_start,
+            utx_deployed_index_end   = utx_idx_end,
+            src_device_id = src_device_id,
+            dst_device_id = dst_device_id
     ))
-    utb_set_deployed_emap_size.write (emap_size + 1)
+    utx_set_deployed_emap_size.write (utx_device_type, emap_size + 1)
 
     #
     # Update label-to-index for O(1) reverse lookup
     #
-    utb_set_deployed_label_to_emap_index.write (new_label, emap_size)
-
-
-    #
-    # Update device emap entries for src and dst device
-    #
-    device_deployed_emap.write (src_emap_index, DeviceDeployedEmapEntry(
-        grid = src_emap_entry.grid,
-        type = src_emap_entry.type,
-        id = src_emap_entry.id
-    ))
-
-    device_deployed_emap.write (dst_emap_index, DeviceDeployedEmapEntry(
-        grid = dst_emap_entry.grid,
-        type = dst_emap_entry.type,
-        id = dst_emap_entry.id
-    ))
+    utx_set_deployed_label_to_emap_index.write (utx_device_type, new_label, emap_size)
 
     #
-    # For src and dst device, update their `utb_tether_count_of_deployed_device` and `utb_tether_labels_of_deployed_device`
+    # For src and dst device, update their `utx_tether_count_of_deployed_device` and `utx_tether_labels_of_deployed_device`
     #
-    let (count) = utb_tether_count_of_deployed_device.read (src_emap_entry.id)
-    utb_tether_count_of_deployed_device.write (src_emap_entry.id, count + 1)
-    utb_tether_labels_of_deployed_device.write (
-        src_emap_entry.id, count,
+    let (count) = utx_tether_count_of_deployed_device.read (utx_device_type, src_emap_entry.id)
+    utx_tether_count_of_deployed_device.write (utx_device_type, src_emap_entry.id, count + 1)
+    utx_tether_labels_of_deployed_device.write (
+        utx_device_type, src_emap_entry.id, count,
         new_label
     )
 
-    let (count) = utb_tether_count_of_deployed_device.read (dst_emap_entry.id)
-    utb_tether_count_of_deployed_device.write (dst_emap_entry.id, count + 1)
-    utb_tether_labels_of_deployed_device.write (
-        dst_emap_entry.id, count,
+    let (count) = utx_tether_count_of_deployed_device.read (utx_device_type, dst_emap_entry.id)
+    utx_tether_count_of_deployed_device.write (utx_device_type, dst_emap_entry.id, count + 1)
+    utx_tether_labels_of_deployed_device.write (
+        utx_device_type, dst_emap_entry.id, count,
         new_label
     )
 
@@ -746,12 +741,13 @@ func utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
 end
 
 
-func recurse_utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func recurse_utx_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
+        utx_device_type : felt,
         len : felt,
         arr : Vec2*,
         idx : felt,
-        utb_idx : felt,
+        utx_idx : felt,
         set_label : felt
     ) -> ():
     alloc_locals
@@ -773,124 +769,105 @@ func recurse_utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
     if idx == 0:
         jmp deploy
     end
-    with_attr error_message ("recurse_utb_deploy(): grids are not contiguous."):
+    with_attr error_message ("recurse_utx_deploy(): grids are not contiguous."):
         are_contiguous_grids_given_valid_grids (arr[idx-1], arr[idx])
     end
 
     deploy:
     #
-    # Update utb_deployed_index_to_grid
+    # Update `utx_deployed_index_to_grid`
     #
-    utb_deployed_index_to_grid.write (utb_idx, arr[idx])
+    utx_deployed_index_to_grid.write (utx_device_type, utx_idx, arr[idx])
 
     #
     # Update global grid_stats ledger
     #
     grid_stats.write (arr[idx], GridStat (
         populated = 1,
-        deployed_device_type = ns_device_types.DEVICE_UTB,
+        deployed_device_type = utx_device_type,
         deployed_device_id = set_label,
         deployed_device_owner = caller
     ))
 
-    recurse_utb_deploy (caller, len, arr, idx+1, utb_idx+1, set_label)
+    recurse_utx_deploy (caller, utx_device_type, len, arr, idx+1, utx_idx+1, set_label)
     return ()
 end
 
 #
-# Player picks up UTB;
-# given a grid, check its contains caller's own utb, and pick up the entire utb-set
+# Player picks up UTX;
+# given a grid, check its contains caller's own utx, and pick up the entire utx-set
 #
-func utb_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func utx_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
         grid : Vec2
     ) -> ():
     alloc_locals
 
     #
-    # Check the grid contains an utb owned by caller
+    # Check the grid contains an utx owned by caller
     #
     let (grid_stat) = grid_stats.read (grid)
     assert grid_stat.populated = 1
-    assert grid_stat.deployed_device_type = ns_device_types.DEVICE_UTB
     assert grid_stat.deployed_device_owner = caller
-    let utb_set_deployed_label = grid_stat.deployed_device_id
+    let utx_device_type = grid_stat.deployed_device_type
+    assert_device_type_is_utx (utx_device_type)
+    let utx_set_deployed_label = grid_stat.deployed_device_id
 
     #
-    # O(1) find the emap_entry for this utb-set
+    # O(1) find the emap_entry for this utx-set
     #
-    let (emap_size_curr) = utb_set_deployed_emap_size.read ()
-    let (emap_index) = utb_set_deployed_label_to_emap_index.read (utb_set_deployed_label)
-    let (emap_entry) = utb_set_deployed_emap.read (emap_index)
-    let utb_start_index = emap_entry.utb_deployed_index_start
-    let utb_end_index = emap_entry.utb_deployed_index_end
+    let (emap_size_curr) = utx_set_deployed_emap_size.read (utx_device_type)
+    let (emap_index) = utx_set_deployed_label_to_emap_index.read (utx_device_type, utx_set_deployed_label)
+    let (emap_entry) = utx_set_deployed_emap.read (utx_device_type, emap_index)
+    let utx_start_index = emap_entry.utx_deployed_index_start
+    let utx_end_index = emap_entry.utx_deployed_index_end
 
     #
-    # Recurse from start utb-idx to end utb-idx for this set
+    # Recurse from start utx-idx to end utx-idx for this set
     # and clear the associated grid
     #
-    recurse_pickup_utb_given_start_end_utb_index (
-        start_idx = utb_start_index,
-        end_idx = utb_end_index,
+    recurse_pickup_utx_given_start_end_utx_index (
+        utx_device_type = utx_device_type,
+        start_idx = utx_start_index,
+        end_idx = utx_end_index,
         idx = 0
     )
 
     #
-    # Return the entire set of utbs back to the caller
+    # Return the entire set of utxs back to the caller
     #
-    let (amount_curr) = device_undeployed_ledger.read (caller, ns_device_types.DEVICE_UTB)
-    device_undeployed_ledger.write (caller, ns_device_types.DEVICE_UTB, amount_curr + utb_end_index - utb_start_index)
+    let (amount_curr) = device_undeployed_ledger.read (caller, utx_device_type)
+    device_undeployed_ledger.write (caller, utx_device_type, amount_curr + utx_end_index - utx_start_index)
 
     #
-    # Update enumerable map of utb-sets:
+    # Update enumerable map of utx-sets:
     # removal operation - put last entry to index at removed entry, clear index at last entry,
     # and decrease emap size by one
     #
-    let (emap_entry_last) = utb_set_deployed_emap.read (emap_size_curr - 1)
-    utb_set_deployed_emap.write (emap_index, emap_entry_last)
-    utb_set_deployed_emap.write (emap_size_curr - 1, UtbSetDeployedEmapEntry (0,0,0,0,0))
-    utb_set_deployed_emap_size.write (emap_size_curr - 1)
+    let (emap_entry_last) = utx_set_deployed_emap.read (utx_device_type, emap_size_curr - 1)
+    utx_set_deployed_emap.write (utx_device_type, emap_index, emap_entry_last)
+    utx_set_deployed_emap.write (utx_device_type, emap_size_curr - 1, UtxSetDeployedEmapEntry (0,0,0,0,0))
+    utx_set_deployed_emap_size.write (utx_device_type, emap_size_curr - 1)
 
     #
-    # Update the tethered src and dst device info
+    # Update `utx_tether_count_of_deployed_device` and `utx_tether_labels_of_deployed_device` for both src and dst device
     #
-    let src_device_id = emap_entry.src_device_id
-    let dst_device_id = emap_entry.dst_device_id
-    let (src_emap_index) = device_deployed_id_to_emap_index.read (src_device_id)
-    let (dst_emap_index) = device_deployed_id_to_emap_index.read (dst_device_id)
-    let (src_emap_entry) = device_deployed_emap.read (src_emap_index)
-    let (dst_emap_entry) = device_deployed_emap.read (dst_emap_index)
+    let (tether_count) = utx_tether_count_of_deployed_device.read (utx_device_type, emap_entry.src_device_id)
+    utx_tether_count_of_deployed_device.write (utx_device_type, emap_entry.src_device_id, tether_count - 1)
+    utx_tether_labels_of_deployed_device.write (utx_device_type, emap_entry.src_device_id, tether_count - 1, 0)
 
-    device_deployed_emap.write (src_emap_index, DeviceDeployedEmapEntry(
-        grid = src_emap_entry.grid,
-        type = src_emap_entry.type,
-        id = src_emap_entry.id
-    ))
-
-    device_deployed_emap.write (dst_emap_index, DeviceDeployedEmapEntry(
-        grid = dst_emap_entry.grid,
-        type = dst_emap_entry.type,
-        id = dst_emap_entry.id
-    ))
-
-    #
-    # Update `utb_tether_count_of_deployed_device` and `utb_tether_labels_of_deployed_device` for both src and dst device
-    #
-    let (tether_count) = utb_tether_count_of_deployed_device.read (emap_entry.src_device_id)
-    utb_tether_count_of_deployed_device.write (emap_entry.src_device_id, tether_count - 1)
-    utb_tether_labels_of_deployed_device.write (emap_entry.src_device_id, tether_count - 1, 0)
-
-    let (tether_count) = utb_tether_count_of_deployed_device.read (emap_entry.dst_device_id)
-    utb_tether_count_of_deployed_device.write (emap_entry.dst_device_id, tether_count - 1)
-    utb_tether_labels_of_deployed_device.write (emap_entry.dst_device_id, tether_count - 1, 0)
+    let (tether_count) = utx_tether_count_of_deployed_device.read (utx_device_type, emap_entry.dst_device_id)
+    utx_tether_count_of_deployed_device.write (utx_device_type, emap_entry.dst_device_id, tether_count - 1)
+    utx_tether_labels_of_deployed_device.write (utx_device_type, emap_entry.dst_device_id, tether_count - 1, 0)
 
     return ()
 end
 
-func recurse_pickup_utb_given_start_end_utb_index {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        start_idx,
-        end_idx,
-        idx
+func recurse_pickup_utx_given_start_end_utx_index {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        utx_device_type : felt,
+        start_idx : felt,
+        end_idx : felt,
+        idx : felt
     ) -> ():
     alloc_locals
 
@@ -898,21 +875,22 @@ func recurse_pickup_utb_given_start_end_utb_index {syscall_ptr : felt*, pedersen
         return ()
     end
 
-    let (grid_to_clear) = utb_deployed_index_to_grid.read (start_idx + idx)
+    let (grid_to_clear) = utx_deployed_index_to_grid.read (utx_device_type, start_idx + idx)
     grid_stats.write (grid_to_clear, GridStat(0,0,0,0))
 
-    recurse_pickup_utb_given_start_end_utb_index (start_idx, end_idx, idx + 1)
+    recurse_pickup_utx_given_start_end_utx_index (utx_device_type, start_idx, end_idx, idx + 1)
     return()
 end
 
 #
-# Tether utb-set to src and device manually;
-# useful when player retethers a deployed utb-set to new devices
-# and wishes to avoid picking up and deploying utb-set again
+# Tether utx-set to src and device manually;
+# useful when player wants to re-tether a deployed utx-set to new devices
+# instead of having to pick up and redeploy the utx-set
 #
-func utb_tether_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func utx_tether_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
-        utb_grid : Vec2,
+        utx_device_type : felt,
+        utx_grid : Vec2,
         src_device_grid : Vec2,
         dst_device_grid : Vec2
     ) -> ():
@@ -927,99 +905,122 @@ end
 ##############################
 
 func are_resource_producer_consumer_relationship {range_check_ptr} (
-    device_type0, device_type1) -> ():
+    utx_device_type, device_type0, device_type1) -> ():
 
     # TODO: refactor this code to improve extensibility
 
     alloc_locals
+    # upgrade input to local for error-message accessibility
     local x = device_type0
     local y = device_type1
+    local z = utx_device_type
 
-    #
-    # From harvester to corresponding refinery / enrichment facility
-    #
-    # iron harvester => iron refinery
-    if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_FE_REFN + 1) == 1:
-        return ()
+
+    if utx_device_type == ns_device_types.DEVICE_UTB:
+        #
+        # From harvester to corresponding refinery / enrichment facility
+        #
+        # iron harvester => iron refinery
+        if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_FE_REFN + 1) == 1:
+            return ()
+        end
+
+        # aluminum harvester => aluminum refinery
+        if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_AL_REFN + 1) == 1:
+            return ()
+        end
+
+        # copper harvester => copper refinery
+        if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_CU_REFN + 1) == 1:
+            return ()
+        end
+
+        # silicon harvester => silicon refinery
+        if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_SI_REFN + 1) == 1:
+            return ()
+        end
+
+        # plutonium harvester => plutonium enrichment facility
+        if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_PEF + 1) == 1:
+            return ()
+        end
+
+        #
+        # From harvester straight to OPSF
+        #
+        # iron harvester => OPSF
+        if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            return ()
+        end
+
+        # aluminum harvester => OPSF
+        if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            return ()
+        end
+
+        # copper harvester => OPSF
+        if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            return ()
+        end
+
+        # silicon harvester => OPSF
+        if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            return ()
+        end
+
+        # plutonium harvester => OPSF
+        if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            return ()
+        end
+
+        #
+        # From refinery/enrichment facility to OPSF
+        #
+        # iron refinery => OPSF
+        if (device_type0 - ns_device_types.DEVICE_FE_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            return ()
+        end
+
+        # aluminum refinery => OPSF
+        if (device_type0 - ns_device_types.DEVICE_AL_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            return ()
+        end
+
+        # copper refinery => OPSF
+        if (device_type0 - ns_device_types.DEVICE_CU_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            return ()
+        end
+
+        # silicon refinery => OPSF
+        if (device_type0 - ns_device_types.DEVICE_SI_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            return ()
+        end
+
+        # plutonium enrichment facility => OPSF
+        if (device_type0 - ns_device_types.DEVICE_PEF + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            return ()
+        end
+
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        ## UTL
+
+        #
+        # SPG / NPG => any of the devices;
+        # meaning device_type0 needs to be power generator (pg) :: {0, 1}
+        # and device_type1 needs to be power consumer (pc) :: {2, 3 ... 14}
+        #
+
+        let (is_device_type0_pg) = is_nn_le (device_type0, 1)
+        let (is_device_type1_pc) = is_nn_le (device_type1 - 2, 12)
+        if is_device_type0_pg * is_device_type1_pc == 1:
+            return ()
+        end
+
+        tempvar range_check_ptr = range_check_ptr
     end
 
-    # aluminum harvester => aluminum refinery
-    if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_AL_REFN + 1) == 1:
-        return ()
-    end
-
-    # copper harvester => copper refinery
-    if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_CU_REFN + 1) == 1:
-        return ()
-    end
-
-    # silicon harvester => silicon refinery
-    if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_SI_REFN + 1) == 1:
-        return ()
-    end
-
-    # plutonium harvester => plutonium enrichment facility
-    if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_PEF + 1) == 1:
-        return ()
-    end
-
-    #
-    # From harvester straight to OPSF
-    #
-    # iron harvester => OPSF
-    if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
-        return ()
-    end
-
-    # aluminum harvester => OPSF
-    if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
-        return ()
-    end
-
-    # copper harvester => OPSF
-    if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
-        return ()
-    end
-
-    # silicon harvester => OPSF
-    if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
-        return ()
-    end
-
-    # plutonium harvester => OPSF
-    if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
-        return ()
-    end
-
-    #
-    # From refinery/enrichment facility to OPSF
-    #
-    # iron refinery => OPSF
-    if (device_type0 - ns_device_types.DEVICE_FE_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
-        return ()
-    end
-
-    # aluminum refinery => OPSF
-    if (device_type0 - ns_device_types.DEVICE_AL_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
-        return ()
-    end
-
-    # copper refinery => OPSF
-    if (device_type0 - ns_device_types.DEVICE_CU_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
-        return ()
-    end
-
-    # silicon refinery => OPSF
-    if (device_type0 - ns_device_types.DEVICE_SI_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
-        return ()
-    end
-
-    # plutonium enrichment facility => OPSF
-    if (device_type0 - ns_device_types.DEVICE_PEF + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
-        return ()
-    end
-
-    with_attr error_message("resource producer-consumer relationship check failed, with device_type0 = {x} and device_type1 = {y}"):
+    with_attr error_message("resource producer-consumer relationship check failed, with utx_device_type = {z}, device_type0 = {x} and device_type1 = {y}"):
         assert 1 = 0
     end
     return ()
@@ -1159,15 +1160,13 @@ end
 
 func resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> ():
-
     #
-    # recursively traverse `utb_set_deployed_emap`
+    # recursively traverse `utx_set_deployed_emap`
     #
-    let (emap_size) = utb_set_deployed_emap_size.read ()
+    let (emap_size) = utx_set_deployed_emap_size.read (ns_device_types.DEVICE_UTB)
     recurse_resource_transfer_across_utb_sets (
         len = emap_size, idx = 0
     )
-
     return ()
 end
 
@@ -1191,7 +1190,7 @@ func recurse_resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_pt
     # check if source device and destination device are still deployed;
     # note: haven't figured out how to do conditional jump in recursion elegantly
     #
-    let (emap_entry) = utb_set_deployed_emap.read (idx)
+    let (emap_entry) = utx_set_deployed_emap.read (ns_device_types.DEVICE_UTB, idx)
     let (is_src_tethered) = is_not_zero (emap_entry.src_device_id)
     let (is_dst_tethered) = is_not_zero (emap_entry.dst_device_id)
     if is_src_tethered * is_dst_tethered == 1:
@@ -1335,43 +1334,48 @@ end
 
 
 #
-# Iterating over utb emap
+# Iterating over utx emap
 #
-func iterate_utb_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func iterate_utx_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        utx_device_type : felt
     ) -> (
         emap_len : felt,
-        emap : UtbSetDeployedEmapEntry*
+        emap : UtxSetDeployedEmapEntry*
     ):
     alloc_locals
 
-    let (emap_size) = utb_set_deployed_emap_size.read ()
-    let (emap : UtbSetDeployedEmapEntry*) = alloc ()
+    let (emap_size) = utx_set_deployed_emap_size.read (utx_device_type)
+    let (emap : UtxSetDeployedEmapEntry*) = alloc ()
 
-    recurse_traverse_utb_deployed_emap (emap_size, emap, 0)
+    recurse_traverse_utx_deployed_emap (utx_device_type, emap_size, emap, 0)
 
     return (emap_size, emap)
 end
 
-func recurse_traverse_utb_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    len : felt,
-    arr : UtbSetDeployedEmapEntry*,
-    idx : felt) -> ():
+func recurse_traverse_utx_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        utx_device_type : felt,
+        len : felt,
+        arr : UtxSetDeployedEmapEntry*,
+        idx : felt
+    ) -> ():
 
     if idx == len:
         return ()
     end
 
-    let (emap_entry) = utb_set_deployed_emap.read (idx)
+    let (emap_entry) = utx_set_deployed_emap.read (utx_device_type, idx)
     assert arr[idx] = emap_entry
 
-    recurse_traverse_utb_deployed_emap (len, arr, idx+1)
+    recurse_traverse_utx_deployed_emap (utx_device_type, len, arr, idx+1)
 
     return ()
 end
 
 @view
-func iterate_utb_deployed_emap_grab_all_utbs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func iterate_utx_deployed_emap_grab_all_utxs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        utx_device_type : felt
     ) -> (
+
         grids_len : felt,
         grids : Vec2*
     ):
@@ -1379,14 +1383,15 @@ func iterate_utb_deployed_emap_grab_all_utbs {syscall_ptr : felt*, pedersen_ptr 
 
     #
     # Double recursion:
-    # recurse over utb-deployed emap,
+    # recurse over utx-deployed emap,
     # then for each entry, recurse from index start to index end to grab the grids
     # return one big array of grids
     #
 
     let (grids : Vec2*) = alloc ()
-    let (outer_loop_len) = utb_set_deployed_emap_size.read ()
-    let (count_final) = recurse_outer_grab_utbs (
+    let (outer_loop_len) = utx_set_deployed_emap_size.read (utx_device_type)
+    let (count_final) = recurse_outer_grab_utxs (
+        utx_device_type = utx_device_type,
         len = outer_loop_len,
         idx = 0,
         arr = grids,
@@ -1396,7 +1401,8 @@ func iterate_utb_deployed_emap_grab_all_utbs {syscall_ptr : felt*, pedersen_ptr 
     return (count_final, grids)
 end
 
-func recurse_outer_grab_utbs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func recurse_outer_grab_utxs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        utx_device_type : felt,
         len : felt,
         idx : felt,
         arr : Vec2*,
@@ -1413,17 +1419,18 @@ func recurse_outer_grab_utbs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     #
     # inner recursion
     #
-    let (emap_entry) = utb_set_deployed_emap.read (idx)
-    let utb_idx_start = emap_entry.utb_deployed_index_start
-    let utb_idx_end = emap_entry.utb_deployed_index_end
+    let (emap_entry)  = utx_set_deployed_emap.read (utx_device_type, idx)
+    let utx_idx_start = emap_entry.utx_deployed_index_start
+    let utx_idx_end   = emap_entry.utx_deployed_index_end
 
-    with_attr error_message ("utb_idx_start should not equal to utb_idx_end for any utb emap entry."):
-        assert_not_equal (utb_idx_start, utb_idx_end)
+    with_attr error_message ("utx_idx_start should not equal to utx_idx_end for any utx emap entry."):
+        assert_not_equal (utx_idx_start, utx_idx_end)
     end
 
-    recurse_inner_grab_utbs (
-        idx_start = utb_idx_start,
-        idx_end = utb_idx_end,
+    recurse_inner_grab_utxs (
+        utx_device_type = utx_device_type,
+        idx_start = utx_idx_start,
+        idx_end = utx_idx_end,
         off = 0,
         arr = arr
     )
@@ -1431,16 +1438,18 @@ func recurse_outer_grab_utbs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     #
     # tail recursion
     #
-    let (count_final) = recurse_outer_grab_utbs (
+    let (count_final) = recurse_outer_grab_utxs (
+        utx_device_type,
         len,
         idx + 1,
-        &arr [utb_idx_end - utb_idx_start],
-        count + utb_idx_end - utb_idx_start
+        &arr [utx_idx_end - utx_idx_start],
+        count + utx_idx_end - utx_idx_start
     )
     return (count_final)
 end
 
-func recurse_inner_grab_utbs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func recurse_inner_grab_utxs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        utx_device_type : felt,
         idx_start : felt,
         idx_end : felt,
         off : felt,
@@ -1452,14 +1461,15 @@ func recurse_inner_grab_utbs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
         return ()
     end
 
-    let (grid : Vec2) = utb_deployed_index_to_grid.read (idx_start + off)
+    let (grid : Vec2) = utx_deployed_index_to_grid.read (utx_device_type, idx_start + off)
 
     local offset = off
     with_attr error_message ("`arr` at {offset} already occupied."):
         assert arr[off] = grid
     end
 
-    recurse_inner_grab_utbs (
+    recurse_inner_grab_utxs (
+        utx_device_type,
         idx_start,
         idx_end,
         off + 1,
@@ -1510,8 +1520,9 @@ end
 
 
 @external
-func mock_utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func mock_utx_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
+        utx_device_type : felt,
         locs_x_len : felt,
         locs_x : felt*,
         locs_y_len : felt,
@@ -1522,6 +1533,8 @@ func mock_utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
         dst_device_grid_y : felt
     ) -> ():
     alloc_locals
+
+    assert_device_type_is_utx (utx_device_type)
 
     # since our Account implementation can't sign arbitary struct,
     # for testing purposes we need to break locs array into two arrays,
@@ -1538,8 +1551,9 @@ func mock_utb_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
         idx = 0
     )
 
-    utb_deploy (
+    utx_deploy (
         caller,
+        utx_device_type,
         locs_len,
         locs,
         Vec2 (src_device_grid_x, src_device_grid_y),
@@ -1570,13 +1584,13 @@ end
 
 
 @external
-func mock_utb_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func mock_utx_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
         grid_x : felt,
         grid_y : felt
     ) -> ():
 
-    utb_pickup_by_grid (
+    utx_pickup_by_grid (
         caller,
         Vec2 (grid_x, grid_y)
     )
@@ -1586,16 +1600,18 @@ end
 
 
 @external
-func mock_utb_tether_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func mock_utx_tether_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         caller : felt,
-        utb_grid : Vec2,
+        utx_device_type : felt,
+        utx_grid : Vec2,
         src_device_grid : Vec2,
         dst_device_grid : Vec2
     ) -> ():
 
-    utb_tether_by_grid (
+    utx_tether_by_grid (
         caller,
-        utb_grid,
+        utx_device_type,
+        utx_grid,
         src_device_grid,
         dst_device_grid
     )
@@ -1606,9 +1622,10 @@ end
 
 @external
 func mock_are_resource_producer_consumer_relationship {range_check_ptr} (
-    device_type0, device_type1) -> ():
+    utx_device_type, device_type0, device_type1) -> ():
 
     are_resource_producer_consumer_relationship (
+        utx_device_type,
         device_type0,
         device_type1
     )
@@ -1700,55 +1717,56 @@ end
 
 
 @view
-func admin_read_utb_set_deployed_emap_size {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> (size : felt):
-    let (size) = utb_set_deployed_emap_size.read ()
+func admin_read_utx_set_deployed_emap_size {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    utx_device_type : felt) -> (size : felt):
+    let (size) = utx_set_deployed_emap_size.read (utx_device_type)
     return (size)
 end
 
 @view
-func admin_read_utb_set_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    emap_index : felt) -> (emap_entry : UtbSetDeployedEmapEntry):
-    let (emap_entry) = utb_set_deployed_emap.read (emap_index)
+func admin_read_utx_set_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    utx_device_type : felt, emap_index : felt) -> (emap_entry : UtxSetDeployedEmapEntry):
+    let (emap_entry) = utx_set_deployed_emap.read (utx_device_type, emap_index)
     return (emap_entry)
 end
 
 @view
-func admin_read_utb_set_deployed_label_to_emap_index {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    label : felt) -> (emap_index : felt):
-    let (emap_index) = utb_set_deployed_label_to_emap_index.read (label)
+func admin_read_utx_set_deployed_label_to_emap_index {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    utx_device_type : felt, label : felt) -> (emap_index : felt):
+    let (emap_index) = utx_set_deployed_label_to_emap_index.read (utx_device_type, label)
     return (emap_index)
 end
 
 @view
-func admin_read_utb_deployed_index_to_grid_size {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    ) -> (size : felt):
-    let (size) = utb_deployed_index_to_grid_size.read ()
+func admin_read_utx_deployed_index_to_grid_size {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    utx_device_type : felt) -> (size : felt):
+    let (size) = utx_deployed_index_to_grid_size.read (utx_device_type)
     return (size)
 end
 
 @view
-func admin_read_utb_deployed_index_to_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    index : felt) -> (grid : Vec2):
-    let (grid) = utb_deployed_index_to_grid.read (index)
+func admin_read_utx_deployed_index_to_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    utx_device_type : felt, index : felt) -> (grid : Vec2):
+    let (grid) = utx_deployed_index_to_grid.read (utx_device_type, index)
     return (grid)
 end
 
 
 @view
-func admin_read_utb_tether_count_of_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    device_id : felt) -> (count : felt):
+func admin_read_utx_tether_count_of_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    utx_device_type : felt, device_id : felt) -> (count : felt):
 
-    let (count) = utb_tether_count_of_deployed_device.read (device_id)
+    let (count) = utx_tether_count_of_deployed_device.read (utx_device_type, device_id)
 
     return (count)
 end
 
 
 @view
-func admin_read_utb_tether_labels_of_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    device_id : felt, idx : felt) -> (utb_set_label : felt):
+func admin_read_utx_tether_labels_of_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    utx_device_type, device_id : felt, idx : felt) -> (utx_set_label : felt):
 
-    let (utb_set_label) = utb_tether_labels_of_deployed_device.read (device_id, idx)
+    let (utx_set_label) = utx_tether_labels_of_deployed_device.read (utx_device_type, device_id, idx)
 
-    return (utb_set_label)
+    return (utx_set_label)
 end

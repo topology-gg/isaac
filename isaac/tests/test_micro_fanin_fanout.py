@@ -294,9 +294,9 @@ async def test_micro (account_factory):
     LOGGER.info (f'> ------------')
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr,
+            user_addr, 12,
             4, 181, 182, 183, 184, # locs_x
             4, 85 , 85 , 85 , 85, # locs_y
             180, 85, 185, 85
@@ -306,9 +306,9 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr,
+            user_addr, 12,
             22, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 213, 212, 211, 210, 209, 208, 207, 206, 205, # locs_x
             22, 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 86 , 100, 100, 100, 100, 100, 100, 100, 100, 100, # locs_y
             186, 86, 204, 100
@@ -331,8 +331,8 @@ async def test_micro (account_factory):
     locs_y = [n_utb] + locs_y
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata = [user_addr] + locs_x + locs_y + [160, 130, 170, 145]
+        selector_name = 'mock_utx_deploy',
+        calldata = [user_addr, 12] + locs_x + locs_y + [160, 130, 170, 145]
     )
     LOGGER.info (f'> connected aluminum harvester #1 with aluminum refinery #1 with {n_utb} UTBs.')
 
@@ -343,8 +343,8 @@ async def test_micro (account_factory):
     locs_y = [n_utb] + locs_y
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata = [user_addr] + locs_x + locs_y + [171, 145, 200, 104]
+        selector_name = 'mock_utx_deploy',
+        calldata = [user_addr, 12] + locs_x + locs_y + [171, 145, 200, 104]
     )
     LOGGER.info (f'> connected aluminum refinery #1 with OPSF with {n_utb} UTBs.\n')
 
@@ -364,8 +364,8 @@ async def test_micro (account_factory):
     locs_y = [n_utb] + locs_y
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata = [user_addr] + locs_x + locs_y + [180, 180, 170, 146]
+        selector_name = 'mock_utx_deploy',
+        calldata = [user_addr, 12] + locs_x + locs_y + [180, 180, 170, 146]
     )
     LOGGER.info (f'> connected aluminum harvester #2 with aluminum refinery #1 with {n_utb} UTBs.\n')
 
@@ -385,8 +385,8 @@ async def test_micro (account_factory):
     locs_y = [n_utb] + locs_y
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata = [user_addr] + locs_x + locs_y + [180, 180, 190, 180]
+        selector_name = 'mock_utx_deploy',
+        calldata = [user_addr, 12] + locs_x + locs_y + [180, 180, 190, 180]
     )
     LOGGER.info (f'> connected aluminum harvester #2 with aluminum refinery #2 with {n_utb} UTBs.')
 
@@ -398,8 +398,8 @@ async def test_micro (account_factory):
     locs_y = [n_utb] + locs_y
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
-        calldata = [user_addr] + locs_x + locs_y + [191, 180, 202, 104]
+        selector_name = 'mock_utx_deploy',
+        calldata = [user_addr, 12] + locs_x + locs_y + [191, 180, 202, 104]
     )
     LOGGER.info (f'> connected aluminum refinery #2 with OPSF with {n_utb} UTBs.\n')
 

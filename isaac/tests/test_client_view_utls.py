@@ -64,15 +64,27 @@ async def test_micro (account_factory):
     )
 
     #
-    # admin gives user 2 iron harvesters
+    # admin gives user 1 solar power generator
     #
     await admin['signer'].send_transaction(
         account = admin['account'], to = contract.contract_address,
         selector_name = 'admin_write_device_undeployed_ledger',
         calldata=[
             user['account'].contract_address,
-            2, # DEVICE_FE_HARV
-            2
+            0, # SPG
+            1
+        ])
+
+    #
+    # admin gives user 1 nuclear power generator
+    #
+    await admin['signer'].send_transaction(
+        account = admin['account'], to = contract.contract_address,
+        selector_name = 'admin_write_device_undeployed_ledger',
+        calldata=[
+            user['account'].contract_address,
+            1, # NPG
+            1
         ])
 
     #
@@ -88,23 +100,23 @@ async def test_micro (account_factory):
         ])
 
     #
-    # admin gives user 10 UTBs
+    # admin gives user 10 UTLs
     #
     await admin['signer'].send_transaction(
         account = admin['account'], to = contract.contract_address,
         selector_name = 'admin_write_device_undeployed_ledger',
         calldata=[
             user['account'].contract_address,
-            12, # UTB
+            13, # UTB
             10
         ])
 
 
     #
-    # user deploys H1 => R1
+    # user deploys SPG => R1
     #
-    LOGGER.info (f'> user deploys: H1 => R1')
-    H1_grid = (150, 85)
+    LOGGER.info (f'> user deploys: SPG => R1')
+    Spg_grid = (150, 85)
     R1_grid = (153, 85) # 152-153, 85-86
 
     await user['signer'].send_transaction(
@@ -112,8 +124,8 @@ async def test_micro (account_factory):
         selector_name = 'mock_device_deploy',
         calldata=[
             user_addr,
-            2, # DEVICE_FE_HARV
-            H1_grid[0], H1_grid[1]
+            0, # SPG
+            Spg_grid[0], Spg_grid[1]
         ])
 
     await user['signer'].send_transaction(
@@ -129,17 +141,17 @@ async def test_micro (account_factory):
         account = user['account'], to = contract.contract_address,
         selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr, 12,
+            user_addr, 13, # UTL
             2, 151, 152, # locs_x
             2, 85, 85, # locs_y
             150, 85, 153, 85
         ])
 
     #
-    # user deploys H2 => R2
+    # user deploys NPG => R2
     #
-    LOGGER.info (f'> user deploys: H2 => R2')
-    H2_grid = (110, 140)
+    LOGGER.info (f'> user deploys: NPG => R2')
+    Npg_grid = (108, 138) # 108-110, 138-140
     R2_grid = (110, 149) # 110-111, 149-150
 
     await user['signer'].send_transaction(
@@ -147,8 +159,8 @@ async def test_micro (account_factory):
         selector_name = 'mock_device_deploy',
         calldata=[
             user_addr,
-            2, # DEVICE_FE_HARV
-            H2_grid[0], H2_grid[1]
+            1, # NPG
+            Npg_grid[0], Npg_grid[1]
         ])
 
     await user['signer'].send_transaction(
@@ -164,7 +176,7 @@ async def test_micro (account_factory):
         account = user['account'], to = contract.contract_address,
         selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr, 12,
+            user_addr, 13, # UTL
             8, 110, 110, 110, 110, 110, 110, 110, 110, # locs_x
             8, 141, 142, 143, 144, 145, 146, 147, 148, # locs_y
             110, 140, 110, 149
@@ -174,13 +186,13 @@ async def test_micro (account_factory):
     # grab all utb grids and check correctness
     #
 
-    ret = await contract.admin_read_utx_set_deployed_emap_size(12).call()
+    ret = await contract.admin_read_utx_set_deployed_emap_size(13).call()
     size = ret.result.size
     for i in range(size):
-        ret = await contract.admin_read_utx_set_deployed_emap(12, i).call()
+        ret = await contract.admin_read_utx_set_deployed_emap(13, i).call()
         LOGGER.info (f"> emap entry: {ret.result.emap_entry}")
 
-    ret = await contract.iterate_utx_deployed_emap_grab_all_utxs(12).call()
+    ret = await contract.iterate_utx_deployed_emap_grab_all_utxs(13).call()
     LOGGER.info (f"> grids: {ret.result.grids}")
 
     grids = ret.result.grids

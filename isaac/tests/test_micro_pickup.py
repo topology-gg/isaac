@@ -155,9 +155,9 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr,
+            user_addr, 12,
             1, 179, # locs_x
             1, 85 , # locs_y
             180, 85, 178, 85
@@ -165,9 +165,9 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr,
+            user_addr, 12,
             1, 181, # locs_x
             1, 85 , # locs_y
             180, 85, 182, 85
@@ -210,9 +210,9 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr,
+            user_addr, 12,
             1, 179, # locs_x
             1, 50 , # locs_y
             180, 50, 178, 50
@@ -220,9 +220,9 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr,
+            user_addr, 12,
             1, 181, # locs_x
             1, 50 , # locs_y
             180, 50, 182, 50
@@ -265,9 +265,9 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr,
+            user_addr, 12,
             1, 179, # locs_x
             1, 30 , # locs_y
             178, 30, 180, 30
@@ -275,9 +275,9 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr,
+            user_addr, 12,
             1, 182, # locs_x
             1, 30 , # locs_y
             183, 30, 181, 30
@@ -320,9 +320,9 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr,
+            user_addr, 12,
             1, 179, # locs_x
             1, 10 , # locs_y
             178, 10, 180, 10
@@ -330,9 +330,9 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utb_deploy',
+        selector_name = 'mock_utx_deploy',
         calldata=[
-            user_addr,
+            user_addr, 12,
             1, 182, # locs_x
             1, 10 , # locs_y
             183, 10, 181, 10

@@ -72,6 +72,24 @@ namespace ns_device_types:
     const DEVICE_TRANSFORMER_MAX = 11
 end
 
+func assert_device_type_is_utx {} (device_type : felt) -> ():
+    alloc_locals
+
+    if device_type == ns_device_types.DEVICE_UTB:
+        return ()
+    end
+
+    if device_type == ns_device_types.DEVICE_UTL:
+        return ()
+    end
+
+    local x = device_type
+    with_attr error_message ("device_type ({x}) is neither UTB (12) or UTL (13)."):
+        assert 0 = 1
+    end
+    return ()
+end
+
 #
 # Every device is a square i.e. xdim == ydim
 # possible dimensions: 1x1, 2x2, 3x3, 5x5
