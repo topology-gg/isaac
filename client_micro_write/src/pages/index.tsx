@@ -43,17 +43,49 @@ const Home: NextPage = () => {
   //
   const { data: utbDeployedEmapResult } = useStarknetCall({
     contract: serverContract,
-    method: 'client_view_utb_deployed_emap',
-    args: [],
+    method: 'client_view_utx_deployed_emap',
+    args: [12],
   })
   const utbDeployedEmapValue = useMemo(() => {
     if (utbDeployedEmapResult && utbDeployedEmapResult.length > 0) {
-      console.log("> Receiving valid utbDeployedEmapResult[0]:", utbDeployedEmapResult[0])
+      console.log("> Receiving valid utxDeployedEmapResult[0]:", utbDeployedEmapResult[0])
 
       const json = JSON.stringify(utbDeployedEmapResult[0]);
       return json
     }
   }, [utbDeployedEmapResult])
+
+  //
+  // read deployed-utl emap
+  //
+  const { data: utlDeployedEmapResult } = useStarknetCall({
+    contract: serverContract,
+    method: 'client_view_utx_deployed_emap',
+    args: [13],
+  })
+  const utlDeployedEmapValue = useMemo(() => {
+    if (utlDeployedEmapResult && utlDeployedEmapResult.length > 0) {
+      console.log("> Receiving valid utxDeployedEmapResult[0]:", utlDeployedEmapResult[0])
+
+      const json = JSON.stringify(utlDeployedEmapResult[0]);
+      return json
+    }
+  }, [utlDeployedEmapResult])
+
+  //
+  // read amount of undeployed device-type-0 owned
+  //
+  const { data: deviceType0UndeployedAmountResult } = useStarknetCall({
+    contract: serverContract,
+    method: 'admin_read_device_undeployed_ledger',
+    args: [account, 0],
+  })
+  const deviceType0UndeployedAmountValue = useMemo(() => {
+    if (deviceType0UndeployedAmountResult && deviceType0UndeployedAmountResult.length > 0) {
+      const value = toBN(deviceType0UndeployedAmountResult[0])
+      return value.toString(10)
+    }
+  }, [deviceType0UndeployedAmountResult])
 
   //
   // read amount of undeployed device-type-2 owned
@@ -101,6 +133,21 @@ const Home: NextPage = () => {
   }, [utbUndeployedAmountResult])
 
   //
+  // read amount of undeployed utb (type 12) owned
+  //
+  const { data: utlUndeployedAmountResult } = useStarknetCall({
+    contract: serverContract,
+    method: 'admin_read_device_undeployed_ledger',
+    args: [account, 13],
+  })
+  const utlUndeployedAmountValue = useMemo(() => {
+    if (utlUndeployedAmountResult && utlUndeployedAmountResult.length > 0) {
+      const value = toBN(utlUndeployedAmountResult[0])
+      return value.toString(10)
+    }
+  }, [utlUndeployedAmountResult])
+
+  //
   // read amount of undeployed device-type-14 owned
   //
   const { data: deviceType14UndeployedAmountResult } = useStarknetCall({
@@ -142,7 +189,7 @@ const Home: NextPage = () => {
 
   const { invoke:invokeClientForwardWorld } = useStarknetInvoke({
     contract: serverContract,
-    method: 'client_forward_world',
+    method: 'executeTask'
   })
   const onSubmitForwardWorld = (data: any) => {
     if (!account) {
@@ -154,34 +201,6 @@ const Home: NextPage = () => {
     else {
       invokeClientForwardWorld ({ args: [] })
       console.log('submit client-forward-world tx')
-    }
-  }
-
-  const { invoke:invokeUTBDeploy } = useStarknetInvoke({
-    contract: serverContract,
-    method: 'client_deploy_utb_by_grids',
-  })
-  const onSubmitTestDeployUTB = (data: any) => {
-    if (!account) {
-      console.log('user wallet not connected yet.')
-    }
-    else if (!serverContract) {
-      console.log('frontend not connected to server contract')
-    }
-    else {
-      invokeUTBDeploy ({ args: [
-        {x:50, y:150}, {x:58, y:150},
-        [
-          {x:51, y:150},
-          {x:52, y:150},
-          {x:53, y:150},
-          {x:54, y:150},
-          {x:55, y:150},
-          {x:56, y:150},
-          {x:57, y:150}
-        ]
-      ] })
-      console.log('submit utb-deploy tx')
     }
   }
 
@@ -232,13 +251,16 @@ const Home: NextPage = () => {
       <h2>Isaac's server contract</h2>
       <p>Address: {serverContract?.address}</p>
 
-      <p>Device-deployed Emap: {deviceDeployedEmapValue}</p>
-      <p>UTB-deployed Emap: {utbDeployedEmapValue}</p>
+      <p>Device-deployed enumerable-map: {deviceDeployedEmapValue}</p>
+      <p>UTB-deployed enumerable-map: {utbDeployedEmapValue}</p>
+      <p>UTL-deployed enumerable-map: {utlDeployedEmapValue}</p>
 
-      <p>Device-type-2 undeployed ammount: {deviceType2UndeployedAmountValue}</p>
-      <p>Device-type-7 undeployed ammount: {deviceType7UndeployedAmountValue}</p>
-      <p>Device-type-12 undeployed ammount: {utbUndeployedAmountValue}</p>
-      <p>Device-type-14 undeployed ammount: {deviceType14UndeployedAmountValue}</p>
+      <p>Solar Power Generator (device-type-0) undeployed ammount: {deviceType0UndeployedAmountValue}</p>
+      <p>FE Harvester (device-type-2) undeployed ammount: {deviceType2UndeployedAmountValue}</p>
+      <p>FE Refinery (evice-type-7) undeployed ammount: {deviceType7UndeployedAmountValue}</p>
+      <p>UTB (device-type-12) undeployed ammount: {utbUndeployedAmountValue}</p>
+      <p>UTL (device-type-13) undeployed ammount: {utlUndeployedAmountValue}</p>
+      <p>OPSF (device-type-14) undeployed ammount: {deviceType14UndeployedAmountValue}</p>
 
       <form onSubmit={handleSubmitGive(onSubmitGiveSelfUndeployedDevice)}>
         <input type="submit" value="Give self undeployed device"/>
@@ -264,10 +286,6 @@ const Home: NextPage = () => {
         {errorsDP.gridXRequired && <span> (This field is required) </span>}
         <input defaultValue="grid.y" {...registerDP("gridYRequired", { required: true })} />
         {errorsDP.gridYRequired && <span> (This field is required) </span>}
-      </form>
-
-      <form onSubmit={handleSubmitFW(onSubmitTestDeployUTB)}>
-        <input type="submit" value="UTB from (51,150) to (57,150) connecting (50,150) with (58,150)"/>
       </form>
 
       <form onSubmit={handleSubmitFW(onSubmitForwardWorld)}>
