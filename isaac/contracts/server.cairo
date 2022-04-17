@@ -1,18 +1,21 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.math import assert_le
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
-from contracts.design.constants import (GYOZA)
+from contracts.design.constants import (
+    GYOZA, MIN_L2_BLOCK_NUM_BETWEEN_FORWARD
+)
 from contracts.macro import (forward_world_macro)
 from contracts.micro import (
     device_deploy, device_pickup_by_grid,
-    utb_deploy, utb_pickup_by_grid, forward_world_micro,
+    utx_deploy, utx_pickup_by_grid, forward_world_micro,
     iterate_device_deployed_emap, DeviceDeployedEmapEntry,
-    iterate_utb_deployed_emap, UtbSetDeployedEmapEntry,
-    iterate_utb_deployed_emap_grab_all_utbs
+    iterate_utx_deployed_emap, UtxSetDeployedEmapEntry,
+    iterate_utx_deployed_emap_grab_all_utxs
 )
 from contracts.util.structs import (
     Vec2, Dynamic, Dynamics
@@ -21,11 +24,16 @@ from contracts.util.structs import (
 ##############################
 
 @storage_var
-func last_l2_block () -> (block_num : felt):
+func l2_block_at_last_forward () -> (block_num : felt):
 end
 
-@storage_var
-func micro_contract_address () -> (addr : felt):
+@view
+func client_view_l2_block_at_last_forward {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (block_num : felt):
+
+    let (block_num) = l2_block_at_last_forward.read ()
+
+    return (block_num)
 end
 
 @constructor
@@ -87,7 +95,7 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     # Record L2 block at reality genesis
     #
     let (block) = get_block_number ()
-    last_l2_block.write (block)
+    l2_block_at_last_forward.write (block)
 
     return()
 end
@@ -124,25 +132,28 @@ end
 func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
 
-    let (caller) = get_caller_address ()
-    with_attr error_message ("Isaac currently operates under gyoza the benevolent dictator. Only gyoza can tick Isaac forward."):
-        assert caller = GYOZA
-    end
-
     #
-    # Make sure only one L2 block has passed
-    # TODO: allow fast-foward >1 L2 blocks in case of unexpected network / yagi issues
+    # Permission control (removed; allowing any third party to trigger world-forwarding for maximum availability)
     #
-    # let (block_curr) = get_block_number ()
-    # let (block_last) = last_l2_block.read ()
-    # let block_diff = block_curr - block_last
-    # with_attr error_message("last block must be exactly one block away from current block."):
-    #     assert block_diff = 1
+    # let (caller) = get_caller_address ()
+    # with_attr error_message ("Isaac currently operates under gyoza the benevolent dictator. Only gyoza can tick Isaac forward."):
+    #     assert caller = GYOZA
     # end
 
     #
+    # Make sure *at least* X L2 block has passed
+    #
+    let (block_curr) = get_block_number ()
+    let (block_last) = l2_block_at_last_forward.read ()
+    let block_diff = block_curr - block_last
+    local min_dist = MIN_L2_BLOCK_NUM_BETWEEN_FORWARD
+    with_attr error_message("last block must be at least {min_dist} block away from current block."):
+        assert_le (MIN_L2_BLOCK_NUM_BETWEEN_FORWARD, block_diff)
+    end
+    l2_block_at_last_forward.write (block_curr)
+
+    #
     # Forward macro world - orbital positions of trisolar system, and spin orientation of planet
-    # TODO: allow fast-foward >1 DT, requiring recursive calls to forward_world_macro ()
     #
     let (macro_state : Dynamics) = macro_state_curr.read ()
     let (phi : felt) = phi_curr.read ()
@@ -192,7 +203,8 @@ func client_pickup_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuilt
 end
 
 @external
-func client_deploy_utb_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func client_deploy_utx_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        utx_device_type : felt,
         src_device_grid : Vec2,
         dst_device_grid : Vec2,
         locs_len : felt,
@@ -201,8 +213,9 @@ func client_deploy_utb_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
 
     let (caller) = get_caller_address ()
 
-    utb_deploy (
+    utx_deploy (
         caller,
+        utx_device_type,
         locs_len,
         locs,
         src_device_grid,
@@ -213,12 +226,12 @@ func client_deploy_utb_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
 end
 
 @external
-func client_pickup_utb_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func client_pickup_utx_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     grid : Vec2) -> ():
 
     let (caller) = get_caller_address ()
 
-    utb_pickup_by_grid (caller, grid)
+    utx_pickup_by_grid (caller, grid)
 
     return ()
 end
@@ -241,25 +254,27 @@ end
 
 
 @view
-func client_view_utb_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func client_view_utx_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        utx_device_type : felt
     ) -> (
         emap_len : felt,
-        emap : UtbSetDeployedEmapEntry*
+        emap : UtxSetDeployedEmapEntry*
     ):
 
-    let (emap_len, emap) = iterate_utb_deployed_emap ()
+    let (emap_len, emap) = iterate_utx_deployed_emap (utx_device_type)
 
     return (emap_len, emap)
 end
 
 @view
-func client_view_all_utb_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func client_view_all_utx_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        utx_device_type : felt
     ) -> (
         grids_len : felt,
         grids : Vec2*
     ):
 
-    let (grids_len, grids) = iterate_utb_deployed_emap_grab_all_utbs ()
+    let (grids_len, grids) = iterate_utx_deployed_emap_grab_all_utxs (utx_device_type)
 
     return (grids_len, grids)
 end

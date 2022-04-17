@@ -1,7 +1,17 @@
 from starkware.cairo.common.registers import get_label_location
 from contracts.util.structs import (Vec2)
 
+#
+# Permission control - if needed
+#
 const GYOZA = 0x077d04506374b4920d6c35ecaded1ed7d26dd283ee64f284481e2574e77852c6
+
+#
+# Duration control
+# TODO: may be desirable to forward macro and micro at different time scale
+# --> towards multi-scale simulation
+#
+const MIN_L2_BLOCK_NUM_BETWEEN_FORWARD = 2
 
 #
 # Constants for numerical precision / stability

@@ -99,7 +99,11 @@ func are_contiguous_grids_given_valid_grids_on_same_face {range_check_ptr} (
     let (y_diff_abs) = abs_value (grid0.y - grid1.y)
     let sum_diff_abs = x_diff_abs + y_diff_abs
 
-    with_attr error_message ("L1-norm of two grids != 1"):
+    local x0 = grid0.x
+    local y0 = grid0.y
+    local x1 = grid1.x
+    local y1 = grid1.y
+    with_attr error_message ("L1-norm of ({x0},{y0}) and ({x1},{y1}) != 1"):
         assert sum_diff_abs = 1
     end
 

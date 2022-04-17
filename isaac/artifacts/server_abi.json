@@ -85,17 +85,17 @@
     {
         "members": [
             {
-                "name": "utb_set_deployed_label",
+                "name": "utx_set_deployed_label",
                 "offset": 0,
                 "type": "felt"
             },
             {
-                "name": "utb_deployed_index_start",
+                "name": "utx_deployed_index_start",
                 "offset": 1,
                 "type": "felt"
             },
             {
-                "name": "utb_deployed_index_end",
+                "name": "utx_deployed_index_end",
                 "offset": 2,
                 "type": "felt"
             },
@@ -110,7 +110,7 @@
                 "type": "felt"
             }
         ],
-        "name": "UtbSetDeployedEmapEntry",
+        "name": "UtxSetDeployedEmapEntry",
         "size": 5,
         "type": "struct"
     },
@@ -159,8 +159,13 @@
         "type": "struct"
     },
     {
-        "inputs": [],
-        "name": "iterate_utb_deployed_emap_grab_all_utbs",
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            }
+        ],
+        "name": "iterate_utx_deployed_emap_grab_all_utxs",
         "outputs": [
             {
                 "name": "grids_len",
@@ -223,6 +228,10 @@
                 "type": "felt"
             },
             {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
                 "name": "locs_x_len",
                 "type": "felt"
             },
@@ -255,7 +264,7 @@
                 "type": "felt"
             }
         ],
-        "name": "mock_utb_deploy",
+        "name": "mock_utx_deploy",
         "outputs": [],
         "type": "function"
     },
@@ -274,7 +283,7 @@
                 "type": "felt"
             }
         ],
-        "name": "mock_utb_pickup_by_grid",
+        "name": "mock_utx_pickup_by_grid",
         "outputs": [],
         "type": "function"
     },
@@ -285,7 +294,11 @@
                 "type": "felt"
             },
             {
-                "name": "utb_grid",
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "utx_grid",
                 "type": "Vec2"
             },
             {
@@ -297,12 +310,16 @@
                 "type": "Vec2"
             }
         ],
-        "name": "mock_utb_tether_by_grid",
+        "name": "mock_utx_tether_by_grid",
         "outputs": [],
         "type": "function"
     },
     {
         "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
             {
                 "name": "device_type0",
                 "type": "felt"
@@ -502,8 +519,13 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "admin_read_utb_set_deployed_emap_size",
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_utx_set_deployed_emap_size",
         "outputs": [
             {
                 "name": "size",
@@ -516,15 +538,19 @@
     {
         "inputs": [
             {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
                 "name": "emap_index",
                 "type": "felt"
             }
         ],
-        "name": "admin_read_utb_set_deployed_emap",
+        "name": "admin_read_utx_set_deployed_emap",
         "outputs": [
             {
                 "name": "emap_entry",
-                "type": "UtbSetDeployedEmapEntry"
+                "type": "UtxSetDeployedEmapEntry"
             }
         ],
         "stateMutability": "view",
@@ -532,12 +558,16 @@
     },
     {
         "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
             {
                 "name": "label",
                 "type": "felt"
             }
         ],
-        "name": "admin_read_utb_set_deployed_label_to_emap_index",
+        "name": "admin_read_utx_set_deployed_label_to_emap_index",
         "outputs": [
             {
                 "name": "emap_index",
@@ -548,8 +578,13 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "admin_read_utb_deployed_index_to_grid_size",
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_read_utx_deployed_index_to_grid_size",
         "outputs": [
             {
                 "name": "size",
@@ -562,11 +597,15 @@
     {
         "inputs": [
             {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
                 "name": "index",
                 "type": "felt"
             }
         ],
-        "name": "admin_read_utb_deployed_index_to_grid",
+        "name": "admin_read_utx_deployed_index_to_grid",
         "outputs": [
             {
                 "name": "grid",
@@ -579,11 +618,15 @@
     {
         "inputs": [
             {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
                 "name": "device_id",
                 "type": "felt"
             }
         ],
-        "name": "admin_read_utb_tether_count_of_deployed_device",
+        "name": "admin_read_utx_tether_count_of_deployed_device",
         "outputs": [
             {
                 "name": "count",
@@ -596,6 +639,10 @@
     {
         "inputs": [
             {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
                 "name": "device_id",
                 "type": "felt"
             },
@@ -604,10 +651,22 @@
                 "type": "felt"
             }
         ],
-        "name": "admin_read_utb_tether_labels_of_deployed_device",
+        "name": "admin_read_utx_tether_labels_of_deployed_device",
         "outputs": [
             {
-                "name": "utb_set_label",
+                "name": "utx_set_label",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "client_view_l2_block_at_last_forward",
+        "outputs": [
+            {
+                "name": "block_num",
                 "type": "felt"
             }
         ],
@@ -679,6 +738,10 @@
     {
         "inputs": [
             {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
                 "name": "src_device_grid",
                 "type": "Vec2"
             },
@@ -695,7 +758,7 @@
                 "type": "Vec2*"
             }
         ],
-        "name": "client_deploy_utb_by_grids",
+        "name": "client_deploy_utx_by_grids",
         "outputs": [],
         "type": "function"
     },
@@ -706,7 +769,7 @@
                 "type": "Vec2"
             }
         ],
-        "name": "client_pickup_utb_by_grid",
+        "name": "client_pickup_utx_by_grid",
         "outputs": [],
         "type": "function"
     },
@@ -727,8 +790,13 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "client_view_utb_deployed_emap",
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            }
+        ],
+        "name": "client_view_utx_deployed_emap",
         "outputs": [
             {
                 "name": "emap_len",
@@ -736,15 +804,20 @@
             },
             {
                 "name": "emap",
-                "type": "UtbSetDeployedEmapEntry*"
+                "type": "UtxSetDeployedEmapEntry*"
             }
         ],
         "stateMutability": "view",
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "client_view_all_utb_grids",
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            }
+        ],
+        "name": "client_view_all_utx_grids",
         "outputs": [
             {
                 "name": "grids_len",
