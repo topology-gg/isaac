@@ -31,7 +31,7 @@ function fp_felt_to_num(felt: BigNumber) {
 }
 
 const Sun: FC<any> = ({ x, y, colour, opacity}) => (
-  <circle cx={x} cy={y} r={5} fill={colour} fillOpacity={opacity} />
+  <circle cx={x} cy={y} r={8} fill={colour} fillOpacity={opacity} />
 );
 
 const Planet: FC<any> = ({ x, y, side, colour, opacity}) => (
