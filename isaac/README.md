@@ -1,5 +1,5 @@
 # Isaac
-note: changed name from Escape from Centauri (too mouthy) to Isaac, which reflects the Newtonian mechanics involved in this game, and also borrows the sense of world genesis from its connotation with the Bible figure.
+The naming reflects the Newtonian mechanics involved in this game, and also borrows the sense of world genesis from its connotation with the Bible figure.
 
 ### Web client urls (view only)
 - Macro view (trisolar system): https://isaac-macro-view.netlify.app/
