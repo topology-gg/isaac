@@ -23,6 +23,29 @@ from contracts.util.structs import (
 
 ##############################
 
+#
+# For yagi automation
+#
+@view
+func probeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (bool : felt):
+
+    let (_, bool) = can_forward_world ()
+
+    return (bool)
+end
+
+@external
+func executeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> ():
+
+    client_forward_world ()
+
+    return ()
+end
+
+##############################
+
 @storage_var
 func l2_block_at_last_forward () -> (block_num : felt):
 end
@@ -128,7 +151,21 @@ func view_macro_state_curr {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     return (macro_state)
 end
 
-@external
+func can_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (block_curr : felt, bool : felt):
+    alloc_locals
+
+    #
+    # At least MIN_L2_BLOCK_NUM_BETWEEN_FORWARD between last-update block and current block
+    #
+    let (block_curr) = get_block_number ()
+    let (block_last) = l2_block_at_last_forward.read ()
+    let block_diff = block_curr - block_last
+    let (bool) = is_le (MIN_L2_BLOCK_NUM_BETWEEN_FORWARD, block_diff)
+
+    return (block_curr, bool)
+end
+
 func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
 
@@ -141,14 +178,12 @@ func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     # end
 
     #
-    # Make sure *at least* X L2 block has passed
+    # Confirm world can be forwarded now
     #
-    let (block_curr) = get_block_number ()
-    let (block_last) = l2_block_at_last_forward.read ()
-    let block_diff = block_curr - block_last
+    let (block_curr, bool) = can_forward_world ()
     local min_dist = MIN_L2_BLOCK_NUM_BETWEEN_FORWARD
-    with_attr error_message("last block must be at least {min_dist} block away from current block."):
-        assert_le (MIN_L2_BLOCK_NUM_BETWEEN_FORWARD, block_diff)
+    with_attr error_message("last-update block must be at least {min_dist} block away from current block."):
+        assert bool = 1
     end
     l2_block_at_last_forward.write (block_curr)
 
