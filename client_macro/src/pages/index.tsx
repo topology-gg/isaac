@@ -11,6 +11,40 @@ const STARK_PRIME = new BigNumber('361850278866613121369732278309507010562310721
 const STARK_PRIME_HALF = new BigNumber('1809251394333065606848661391547535052811553607665798349986546028067936010240')
 const SVG_HALF_WIDTH = 100
 
+
+function getWindowDimensions() {
+  if (typeof window !== 'undefined') {
+    const { innerWidth: width, innerHeight: height } = window;
+    console.log("window is defined!")
+    return {
+      width,
+      height
+    };
+  } else {
+    console.log('You are on the server')
+    return {
+      width:700,
+      height:700
+    }
+  }
+
+}
+
+function useWindowDimensions() {
+  const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
+
+  useEffect(() => {
+    function handleResize() {
+      setWindowDimensions(getWindowDimensions());
+    }
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return windowDimensions;
+}
+
 function fp_felt_to_string(felt: BigNumber) {
 
   const felt_descaled = fp_felt_to_num (felt)
@@ -171,8 +205,16 @@ const Home: NextPage = () => {
   const sun3_color = "rgba(242,64,99,255)"
   const plnt_color = "rgba(248,216,218,255)"
 
+  const {height : window_height, width : window_width} = useWindowDimensions ()
+
+  let svg_style = {
+    width : "100%",
+    height : window_height - 15,
+    backgroundColor: "rgba(62,52,90,255)"
+  }
+
   return (
-    <svg viewBox="-100 -100 200 200" style={{ width: "100%", height: "770", backgroundColor: "rgba(62,52,90,255)" }}>
+    <svg viewBox="-100 -100 200 200" style={svg_style}>
       <defs>
         <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
             markerWidth="5" markerHeight="5"
