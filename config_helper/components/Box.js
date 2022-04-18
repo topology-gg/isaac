@@ -16,12 +16,12 @@ const planetSurfaceColor = "rgba(216,228,200,255)";
 const deviceTypeToColorMap = {
     0: "rgba(26,67,118,255)", // SPG
     1: "purple", // NPG
-    2: "rgba(233,129,137,255)", // FE harvester
+    2: "rgba(240,99,106,255)", // FE harvester
     3: "green",
     4: "yellow",
     5: "yellow",
     6: "yellow",
-    7: "rgba(225,122,97,255)", // FE refinery
+    7: "rgba(243,157,96,255)", // FE refinery
     8: "yellow",
     9: "yellow",
     10: "yellow",
