@@ -1,0 +1,51 @@
+[
+    {
+        "members": [
+            {
+                "name": "type",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "offset": 1,
+                "type": "Vec2"
+            }
+        ],
+        "name": "DeviceDeployInfo",
+        "size": 3,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "x",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "y",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Vec2",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "inputs": [
+            {
+                "name": "arr_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr",
+                "type": "DeviceDeployInfo*"
+            }
+        ],
+        "name": "multi_device_deploy",
+        "outputs": [],
+        "type": "function"
+    }
+]

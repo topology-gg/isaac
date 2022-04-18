@@ -663,6 +663,24 @@
     },
     {
         "inputs": [],
+        "name": "probeTask",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "executeTask",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "client_view_l2_block_at_last_forward",
         "outputs": [
             {
@@ -701,12 +719,6 @@
             }
         ],
         "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [],
-        "name": "client_forward_world",
-        "outputs": [],
         "type": "function"
     },
     {
