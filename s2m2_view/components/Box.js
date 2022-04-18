@@ -10,12 +10,12 @@ import { Vector2 } from "three";
 import { createSurface } from './surfaceHelper'
 
 let gridSize = 100;
-const canvasSize = 1024;
-// const planetSurfaceColor = "rgba(226,234,243,255)";
-const planetSurfaceColor = "rgba(216,228,200,255)";
+const canvasSize = 2048;
+// const planetSurfaceColor = "rgba(246,210,176,255)";
+const planetSurfaceColor = "rgba(196,208,180,255)";
 const deviceTypeToColorMap = {
     0: "rgba(26,67,118,255)", // SPG
-    1: "purple", // NPG
+    1: "rgba(156,95,130,255)", // NPG
     2: "rgba(240,99,106,255)", // FE harvester
     3: "green",
     4: "yellow",
@@ -72,7 +72,7 @@ function drawDeviceCell(ctx, shapeDim, gridSize, canvasSize, cellX, cellY, color
         ctx.strokeStyle = 'rgba(20,20,20,255)';
         ctx.rect(x, y, w, w);
         ctx.fill();
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
         ctx.closePath()
 
@@ -80,7 +80,7 @@ function drawDeviceCell(ctx, shapeDim, gridSize, canvasSize, cellX, cellY, color
     }
     else if (shape == 'circle') {
         ctx.beginPath()
-        ctx.arc(x + (w/2), y + (w/2), w/2, 0, 2 * Math.PI, false);
+        ctx.arc(x + (w/2), y + (w/2), w/2.5, 0, 2 * Math.PI, false);
         ctx.fill();
         ctx.lineWidth = 1;
         ctx.strokeStyle = 'black';
@@ -124,9 +124,9 @@ function drawResources(ctx, surfaceArray, clock) {
                     const highs = [183, 220, 239]
                     const ranges = [highs[0]-lows[0], highs[1]-lows[1], highs[2]-lows[2]] // refactor this line
                     const offsets = [ // refactor this line
-                        clock.getElapsedTime() * 800 % (ranges[0]*2),
-                        clock.getElapsedTime() * 800 % (ranges[1]*2),
-                        clock.getElapsedTime() * 800 % (ranges[2]*2)
+                        clock.getElapsedTime() * 500 % (ranges[0]*2),
+                        clock.getElapsedTime() * 500 % (ranges[1]*2),
+                        clock.getElapsedTime() * 500 % (ranges[2]*2)
                     ]
 
                     // TODO:
