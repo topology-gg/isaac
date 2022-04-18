@@ -2,6 +2,7 @@ import ReactDOM from "react-dom";
 import React, { useEffect, useRef, useState } from "react";
 import './ColorMaterial'
 
+import * as THREE from "three"
 import { Canvas, useFrame } from "@react-three/fiber";
 import { degToRad } from "three/src/math/MathUtils";
 import { Vector2 } from "three";
@@ -10,22 +11,24 @@ import { createSurface } from './surfaceHelper'
 
 let gridSize = 100;
 const canvasSize = 1024;
+// const planetSurfaceColor = "rgba(226,234,243,255)";
+const planetSurfaceColor = "rgba(216,228,200,255)";
 const deviceTypeToColorMap = {
-    0: "blue", // SPG
+    0: "rgba(26,67,118,255)", // SPG
     1: "purple", // NPG
-    2: "red", // FE harvester
+    2: "rgba(233,129,137,255)", // FE harvester
     3: "green",
     4: "yellow",
     5: "yellow",
     6: "yellow",
-    7: "orange", // FE refinery
+    7: "rgba(225,122,97,255)", // FE refinery
     8: "yellow",
     9: "yellow",
     10: "yellow",
     11: "yellow",
-    12: "rgba(50, 50, 50, 0.8)", // UTB; just reference (color determined by lerping per frame for blinking effect)
-    13: "rgba(115, 215, 255, 0.8)", // UTL; just reference (color determined by lerping per frame for blinking effect)
-    14: "yellow"
+    12: "rgba(224,225,209,0)", // UTB; just reference (color determined by lerping per frame for blinking effect)
+    13: "rgba(183,220,239,255)", // UTL; just reference (color determined by lerping per frame for blinking effect)
+    14: "rgba(242,228,67,255)" // OPSF
 }
 const deviceTypeToGridSizeMap = {
     0: 1, // spg
@@ -48,22 +51,50 @@ const xRotationSpeed = 0.0
 const yRotationSpeed = 0.0
 const zRotationSpeed = 0.0
 
-function drawCell(ctx, shapeDim, gridSize, canvasSize, cellX, cellY, color = "yellow") {
+function drawSurfaceCell (ctx, gridSize, canvasSize, cellX, cellY) {
+    ctx.fillStyle = planetSurfaceColor;
+    let x = cellX * (canvasSize / gridSize)
+    let y = cellY * (canvasSize / gridSize)
+    let w = 1 * (canvasSize / gridSize)
+    ctx.fillRect(x, y, w, w);
+}
+
+function drawDeviceCell(ctx, shapeDim, gridSize, canvasSize, cellX, cellY, color = "yellow", shape) {
     ctx.fillStyle = color;
-    ctx.fillRect(
-        cellX * (canvasSize / gridSize) + 3,
-        cellY * (canvasSize / gridSize) + 3,
-        shapeDim * (canvasSize / gridSize) - 6,
-        shapeDim * (canvasSize / gridSize) - 6
-    );
+
+    const pad = 3
+    const x = cellX * (canvasSize / gridSize) + pad
+    const y = cellY * (canvasSize / gridSize) + pad
+    const w = shapeDim * (canvasSize / gridSize) - 2*pad
+
+    if (shape == 'square') {
+        ctx.beginPath()
+        ctx.strokeStyle = 'rgba(20,20,20,255)';
+        ctx.rect(x, y, w, w);
+        ctx.fill();
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.closePath()
+
+        // ctx.fillRect(x, y, w, w);
+    }
+    else if (shape == 'circle') {
+        ctx.beginPath()
+        ctx.arc(x + (w/2), y + (w/2), w/2, 0, 2 * Math.PI, false);
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+        ctx.closePath()
+    }
 }
 
 function drawGrid(ctx, gridSize, canvasSize) {
     for (let i = 0; i < gridSize + 1; i++) {
         const x = i * (canvasSize / gridSize);
         ctx.beginPath();
-        ctx.lineWidth = 0.5;
-        ctx.strokeStyle = 'rgba(50, 50, 50, 0.2)';
+        ctx.lineWidth = 0.8;
+        ctx.strokeStyle = 'rgba(50, 50, 50, 1)';
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvasSize);
         ctx.moveTo(0, x);
@@ -72,29 +103,25 @@ function drawGrid(ctx, gridSize, canvasSize) {
     }
 }
 
-// function drawLine(ctx, time, canvasSize) {
-//     const x = ((time * canvasSize) / gridSize) % canvasSize;
-//     ctx.beginPath();
-//     ctx.lineWidth = 3;
-//     ctx.strokeStyle = "white";
-//     ctx.moveTo(x, 0);
-//     ctx.lineTo(x, canvasSize);
-//     ctx.stroke();
-// }
-
 function drawResources(ctx, surfaceArray, clock) {
     for (var i = 0; i < surfaceArray.length; i++) {
         for (var j = 0; j < surfaceArray[i].length; j++) {
-            if (surfaceArray[i][j] != -1) {
+            drawSurfaceCell (ctx, gridSize, canvasSize, i, j)
+        }
+    }
 
+    for (var i = 0; i < surfaceArray.length; i++) {
+        for (var j = 0; j < surfaceArray[i].length; j++) {
+            if (surfaceArray[i][j] != -1) {
                 let color
+                let shape
                 if (surfaceArray[i][j] == 13) {
                     //
                     // deal with UTL flashing
                     // let color oscillates between two colors
                     //
-                    const lows = [0, 143, 200]
-                    const highs = [85, 205, 255]
+                    const lows = [183-50, 220-50, 239-50]
+                    const highs = [183, 220, 239]
                     const ranges = [highs[0]-lows[0], highs[1]-lows[1], highs[2]-lows[2]] // refactor this line
                     const offsets = [ // refactor this line
                         clock.getElapsedTime() * 800 % (ranges[0]*2),
@@ -117,14 +144,15 @@ function drawResources(ctx, surfaceArray, clock) {
 
                     color = `rgba(${val_r}, ${val_g}, ${val_b}, 0.8)`;
                     // console.log('> drawing UTL with color', color)
+                    shape = 'circle'
                 }
                 else if (surfaceArray[i][j] == 12) {
                     //
                     // deal with UTB flashing
                     // let color oscillates between two colors
                     //
-                    const low = 40
-                    const high = 120
+                    const low = 120
+                    const high = 225
                     const range = high-low
                     const offset = clock.getElapsedTime() * 200 % (range*2);
                     let val
@@ -136,21 +164,24 @@ function drawResources(ctx, surfaceArray, clock) {
                     }
                     color = `rgba(${val}, ${val}, ${val}, 0.8)`;
                     // console.log('> drawing UTB with color', color)
+                    shape = 'circle'
                 }
                 else {
                     color = deviceTypeToColorMap [ surfaceArray[i][j] ]
+                    shape = 'square'
                 }
 
                 const deviceGridSize = deviceTypeToGridSizeMap [ surfaceArray[i][j] ]
                 // console.log ('drawing type', surfaceArray[i][j], 'as', color, 'at', i, j, 'of size', deviceGridSize)
-                drawCell(
+                drawDeviceCell(
                     ctx,
                     deviceGridSize,
                     gridSize,
                     canvasSize,
                     i,
                     j,
-                    color
+                    color,
+                    shape
                 );
             }
         }
