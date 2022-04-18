@@ -24,7 +24,7 @@ function getWindowDimensions() {
     console.log('You are on the server')
     return {
       width:700,
-      height:700
+      height:815
     }
   }
 
