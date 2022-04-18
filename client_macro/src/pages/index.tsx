@@ -31,11 +31,11 @@ function fp_felt_to_num(felt: BigNumber) {
 }
 
 const Sun: FC<any> = ({ x, y, colour, opacity}) => (
-  <circle cx={x} cy={y} r={8} fill={colour} fillOpacity={opacity} />
+  <circle cx={x} cy={y} r={8} fill={colour} fillOpacity={opacity} stroke="black" strokeWidth="0.6"/>
 );
 
 const Planet: FC<any> = ({ x, y, side, colour, opacity}) => (
-  <rect x={x-side/2} y={y-side/2} width={side} height={side} fill={colour} fillOpacity={opacity} />
+  <rect x={x-side/2} y={y-side/2} width={side} height={side} fill={colour} fillOpacity={opacity} stroke="black" strokeWidth="0.4"/>
 );
 
 const VerticalGridLineMajor: FC<any> = ({ x }) => (
