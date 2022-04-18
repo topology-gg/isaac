@@ -166,8 +166,13 @@ const Home: NextPage = () => {
 
   const planet_transform_str = `rotate(${phiValue} ${macroValues?.[0][0]} ${macroValues?.[0][1]})`
 
+  const sun1_color = "rgba(244,168,129,255)"
+  const sun2_color = "rgba(243,131,128,255)"
+  const sun3_color = "rgba(242,64,99,255)"
+  const plnt_color = "rgba(248,216,218,255)"
+
   return (
-    <svg viewBox="-100 -100 200 200" style={{ width: "100%", height: "770", backgroundColor: "black" }}>
+    <svg viewBox="-100 -100 200 200" style={{ width: "100%", height: "770", backgroundColor: "rgba(62,52,90,255)" }}>
       <defs>
         <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
             markerWidth="5" markerHeight="5"
@@ -212,11 +217,11 @@ const Home: NextPage = () => {
 
       {/* positions */}
       <g transform = {planet_transform_str}>
-        <Planet x={macroValues?.[0][0]} y={macroValues?.[0][1]} side={2} colour='#3fc7ff' opacity={0.8}/>
+        <Planet x={macroValues?.[0][0]} y={macroValues?.[0][1]} side={2} colour={plnt_color} opacity={0.8}/>
       </g>
-      <Sun x={macroValues?.[0][2]} y={macroValues?.[0][3]} colour="#fff979" opacity={0.8}/>
-      <Sun x={macroValues?.[0][4]} y={macroValues?.[0][5]} colour="#fff979" opacity={0.8}/>
-      <Sun x={macroValues?.[0][6]} y={macroValues?.[0][7]} colour="#fff979" opacity={0.8}/>
+      <Sun x={macroValues?.[0][2]} y={macroValues?.[0][3]} colour={sun1_color} opacity={0.8}/>
+      <Sun x={macroValues?.[0][4]} y={macroValues?.[0][5]} colour={sun2_color} opacity={0.8}/>
+      <Sun x={macroValues?.[0][6]} y={macroValues?.[0][7]} colour={sun3_color} opacity={0.8}/>
 
     </svg>
   )
