@@ -291,11 +291,6 @@ const Home: NextPage = () => {
       <h3>Recent Transactions</h3>
       <TransactionList />
 
-      <h3>Viewing global enumerable maps in contract</h3>
-      <p>Device-deployed enumerable-map: {deviceDeployedEmapValue}</p>
-      <p>UTB-deployed enumerable-map: {utbDeployedEmapValue}</p>
-      <p>UTL-deployed enumerable-map: {utlDeployedEmapValue}</p>
-
       <h3>Viewing your undeployed device balance in contract</h3>
       <p>Solar Power Generator (device-type-0) undeployed ammount: {deviceType0UndeployedAmountValue}</p>
       <p>FE Harvester (device-type-2) undeployed ammount: {deviceType2UndeployedAmountValue}</p>
@@ -303,6 +298,11 @@ const Home: NextPage = () => {
       <p>UTB (device-type-12) undeployed ammount: {utbUndeployedAmountValue}</p>
       <p>UTL (device-type-13) undeployed ammount: {utlUndeployedAmountValue}</p>
       <p>OPSF (device-type-14) undeployed ammount: {deviceType14UndeployedAmountValue}</p>
+
+      <h3>Viewing global enumerable maps in contract</h3>
+      <p>Device-deployed enumerable-map: {deviceDeployedEmapValue}</p>
+      <p>UTB-deployed enumerable-map: {utbDeployedEmapValue}</p>
+      <p>UTL-deployed enumerable-map: {utlDeployedEmapValue}</p>
 
     </div>
   )
