@@ -88,6 +88,21 @@ const Home: NextPage = () => {
   }, [deviceType0UndeployedAmountResult])
 
   //
+  // read amount of undeployed device-type-1 owned
+  //
+  const { data: deviceType1UndeployedAmountResult } = useStarknetCall({
+    contract: serverContract,
+    method: 'admin_read_device_undeployed_ledger',
+    args: [account, 1],
+  })
+  const deviceType1UndeployedAmountValue = useMemo(() => {
+    if (deviceType1UndeployedAmountResult && deviceType1UndeployedAmountResult.length > 0) {
+      const value = toBN(deviceType1UndeployedAmountResult[0])
+      return value.toString(10)
+    }
+  }, [deviceType1UndeployedAmountResult])
+
+  //
   // read amount of undeployed device-type-2 owned
   //
   const { data: deviceType2UndeployedAmountResult } = useStarknetCall({
@@ -133,7 +148,7 @@ const Home: NextPage = () => {
   }, [utbUndeployedAmountResult])
 
   //
-  // read amount of undeployed utb (type 12) owned
+  // read amount of undeployed utl (type 13) owned
   //
   const { data: utlUndeployedAmountResult } = useStarknetCall({
     contract: serverContract,
@@ -293,6 +308,7 @@ const Home: NextPage = () => {
 
       <h3>Viewing your undeployed device balance in contract</h3>
       <p>Solar Power Generator (device-type-0) undeployed ammount: {deviceType0UndeployedAmountValue}</p>
+      <p>Nuclear Power Generator (device-type-1) undeployed ammount: {deviceType1UndeployedAmountValue}</p>
       <p>FE Harvester (device-type-2) undeployed ammount: {deviceType2UndeployedAmountValue}</p>
       <p>FE Refinery (evice-type-7) undeployed ammount: {deviceType7UndeployedAmountValue}</p>
       <p>UTB (device-type-12) undeployed ammount: {utbUndeployedAmountValue}</p>
