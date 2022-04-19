@@ -246,24 +246,20 @@ const Home: NextPage = () => {
 
   return (
     <div>
-      <h2>Wallet</h2>
+      <h2>ISAAC</h2>
       <ConnectWallet />
-      <h2>Isaac's server contract</h2>
+
+      <h3>Contract interaction</h3>
       <p>Address: {serverContract?.address}</p>
 
-      <p>Device-deployed enumerable-map: {deviceDeployedEmapValue}</p>
-      <p>UTB-deployed enumerable-map: {utbDeployedEmapValue}</p>
-      <p>UTL-deployed enumerable-map: {utlDeployedEmapValue}</p>
-
-      <p>Solar Power Generator (device-type-0) undeployed ammount: {deviceType0UndeployedAmountValue}</p>
-      <p>FE Harvester (device-type-2) undeployed ammount: {deviceType2UndeployedAmountValue}</p>
-      <p>FE Refinery (evice-type-7) undeployed ammount: {deviceType7UndeployedAmountValue}</p>
-      <p>UTB (device-type-12) undeployed ammount: {utbUndeployedAmountValue}</p>
-      <p>UTL (device-type-13) undeployed ammount: {utlUndeployedAmountValue}</p>
-      <p>OPSF (device-type-14) undeployed ammount: {deviceType14UndeployedAmountValue}</p>
+      {/* <p>Address of multi_deploy.cairo:
+        <a href="https://goerli.voyager.online/contract/0x063cfb28813ffdbce2fbb6979404b7902dfbe560989dc90f99fb37575629bdb1" target="_blank">
+          0x063cfb28813ffdbce2fbb6979404b7902dfbe560989dc90f99fb37575629bdb1
+        </a>
+      </p> */}
 
       <form onSubmit={handleSubmitGive(onSubmitGiveSelfUndeployedDevice)}>
-        <input type="submit" value="Give self undeployed device"/>
+        <input type="submit" value="Give yourself undeployed device"/>
         <input defaultValue="type" {...registerGive("typeRequired", { required: true })} />
         {errorsGive.typeRequired && <span> (This field is required) </span>}
         <input defaultValue="amount" {...registerGive("amountRequired", { required: true })} />
@@ -292,8 +288,22 @@ const Home: NextPage = () => {
         <input type="submit" value="Forward world"/>
       </form>
 
-      <h2>Recent Transactions</h2>
+      <h3>Recent Transactions</h3>
       <TransactionList />
+
+      <h3>Viewing global enumerable maps in contract</h3>
+      <p>Device-deployed enumerable-map: {deviceDeployedEmapValue}</p>
+      <p>UTB-deployed enumerable-map: {utbDeployedEmapValue}</p>
+      <p>UTL-deployed enumerable-map: {utlDeployedEmapValue}</p>
+
+      <h3>Viewing your undeployed device balance in contract</h3>
+      <p>Solar Power Generator (device-type-0) undeployed ammount: {deviceType0UndeployedAmountValue}</p>
+      <p>FE Harvester (device-type-2) undeployed ammount: {deviceType2UndeployedAmountValue}</p>
+      <p>FE Refinery (evice-type-7) undeployed ammount: {deviceType7UndeployedAmountValue}</p>
+      <p>UTB (device-type-12) undeployed ammount: {utbUndeployedAmountValue}</p>
+      <p>UTL (device-type-13) undeployed ammount: {utlUndeployedAmountValue}</p>
+      <p>OPSF (device-type-14) undeployed ammount: {deviceType14UndeployedAmountValue}</p>
+
     </div>
   )
 }

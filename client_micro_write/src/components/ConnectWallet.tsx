@@ -7,5 +7,5 @@ export function ConnectWallet() {
     return <p>Account: {account}</p>
   }
 
-  return <button onClick={() => connect(new InjectedConnector())}>Connect</button>
+  return <button onClick={() => connect(new InjectedConnector())}>Connect Argent X Wallet</button>
 }
