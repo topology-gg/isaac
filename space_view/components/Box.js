@@ -53,9 +53,10 @@ const zRotationSpeed = 0.0
 
 function drawSurfaceCell (ctx, gridSize, canvasSize, cellX, cellY) {
     ctx.fillStyle = planetSurfaceColor;
-    let x = cellX * (canvasSize / gridSize)
-    let y = cellY * (canvasSize / gridSize)
-    let w = 1 * (canvasSize / gridSize)
+    let pad = 1
+    let x = cellX * (canvasSize / gridSize) + pad
+    let y = cellY * (canvasSize / gridSize) + pad
+    let w = 1 * (canvasSize / gridSize) - 2*pad
     ctx.fillRect(x, y, w, w);
 }
 
@@ -78,7 +79,16 @@ function drawDeviceCell(ctx, shapeDim, gridSize, canvasSize, cellX, cellY, color
 
         // ctx.fillRect(x, y, w, w);
     }
-    else if (shape == 'circle') {
+    else if (shape == 'smol-circle') {
+        ctx.beginPath()
+        ctx.arc(x + (w/2), y + (w/2), w/3, 0, 2 * Math.PI, false);
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = 'black';
+        ctx.stroke();
+        ctx.closePath()
+    }
+    else if (shape == 'big-circle') {
         ctx.beginPath()
         ctx.arc(x + (w/2), y + (w/2), w/2.5, 0, 2 * Math.PI, false);
         ctx.fill();
@@ -93,7 +103,7 @@ function drawGrid(ctx, gridSize, canvasSize) {
     for (let i = 0; i < gridSize + 1; i++) {
         const x = i * (canvasSize / gridSize);
         ctx.beginPath();
-        ctx.lineWidth = 0.8;
+        ctx.lineWidth = 3;
         ctx.strokeStyle = 'rgba(50, 50, 50, 1)';
         ctx.moveTo(x, 0);
         ctx.lineTo(x, canvasSize);
@@ -144,15 +154,15 @@ function drawResources(ctx, surfaceArray, clock) {
 
                     color = `rgba(${val_r}, ${val_g}, ${val_b}, 0.8)`;
                     // console.log('> drawing UTL with color', color)
-                    shape = 'circle'
+                    shape = 'smol-circle'
                 }
                 else if (surfaceArray[i][j] == 12) {
                     //
                     // deal with UTB flashing
                     // let color oscillates between two colors
                     //
-                    const low = 120
-                    const high = 225
+                    const low = 30
+                    const high = 80
                     const range = high-low
                     const offset = clock.getElapsedTime() * 200 % (range*2);
                     let val
@@ -164,7 +174,7 @@ function drawResources(ctx, surfaceArray, clock) {
                     }
                     color = `rgba(${val}, ${val}, ${val}, 0.8)`;
                     // console.log('> drawing UTB with color', color)
-                    shape = 'circle'
+                    shape = 'big-circle'
                 }
                 else {
                     color = deviceTypeToColorMap [ surfaceArray[i][j] ]
@@ -303,6 +313,13 @@ export default function Box(props) {
         ctx4.scale(-1,1)
         ctx4.translate (-canvasSize, 0);
 
+        drawGrid(ctx, gridSize, canvasSize);
+        drawGrid(ctx2, gridSize, canvasSize);
+        drawGrid(ctx3, gridSize, canvasSize);
+        drawGrid(ctx4, gridSize, canvasSize);
+        drawGrid(ctx5, gridSize, canvasSize);
+        drawGrid(ctx6, gridSize, canvasSize);
+
         if (surface) {
             drawResources(ctx, surface[0], clock)
             drawResources(ctx2, surface[1], clock)
@@ -311,13 +328,6 @@ export default function Box(props) {
             drawResources(ctx5, surface[4], clock)
             drawResources(ctx6, surface[5], clock)
         }
-
-        drawGrid(ctx, gridSize, canvasSize);
-        drawGrid(ctx2, gridSize, canvasSize);
-        drawGrid(ctx3, gridSize, canvasSize);
-        drawGrid(ctx4, gridSize, canvasSize);
-        drawGrid(ctx5, gridSize, canvasSize);
-        drawGrid(ctx6, gridSize, canvasSize);
 
         if (textureRef.current) {
             textureRef.current.needsUpdate = true;
