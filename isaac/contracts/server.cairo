@@ -7,7 +7,8 @@ from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
 from contracts.design.constants import (
-    GYOZA, MIN_L2_BLOCK_NUM_BETWEEN_FORWARD
+    GYOZA, MIN_L2_BLOCK_NUM_BETWEEN_FORWARD,
+    ns_macro_init
 )
 from contracts.macro import (forward_world_macro)
 from contracts.micro import (
@@ -60,9 +61,7 @@ func client_view_l2_block_at_last_forward {syscall_ptr : felt*, pedersen_ptr : H
 end
 
 @constructor
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        # micro_contract_addr : felt
-    ):
+func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
 
     #
     # Initialize macro world - trisolar system placement & planet rotation
@@ -70,44 +69,47 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     macro_state_curr.write (Dynamics(
         sun0 = Dynamic(
             q = Vec2(
-                x = 7186568302368001097728,
-                y = 3618502788666131213697322783095070105623107215331596698172105163871871827969
+                x = ns_macro_init.sun0_qx,
+                y = ns_macro_init.sun0_qy
             ),
             qd = Vec2(
-                x=95543324142078754816,
-                y=88608606963963625472
+                x = ns_macro_init.sun0_px,
+                y = ns_macro_init.sun0_py
             )
         ),
         sun1 = Dynamic(
             q = Vec2(
-                x = 3618502788666131213697322783095070105623107215331596692786523753767870922753,
-                y = 1800986892264000192512
+                x = ns_macro_init.sun1_qx,
+                y = ns_macro_init.sun1_qy
             ),
             qd = Vec2(
-                x = 95543324142078754816,
-                y = 88608606963963625472
+                x = ns_macro_init.sun1_px,
+                y = ns_macro_init.sun1_py
             )
         ),
         sun2 = Dynamic(
-            q = Vec2(x = 0, y = 0),
+            q = Vec2(
+                x = ns_macro_init.sun2_qx,
+                y = ns_macro_init.sun2_qy
+            ),
             qd = Vec2(
-                x = 3618502788666131213697322783095070105623107215331596699782005407851714510849,
-                y = 3618502788666131213697322783095070105623107215331596699795874842207944769537
+                x = ns_macro_init.sun2_px,
+                y = ns_macro_init.sun2_py
             )
         ),
         plnt = Dynamic(
             q = Vec2(
-                x = 3593284151184000548864,
-                y = 3618502788666131213697322783095070105623107215331596699072598610003871924225
+                x = ns_macro_init.plnt_qx,
+                y = ns_macro_init.plnt_qy
             ),
             qd = Vec2(
-                x = 3618502788666131213697322783095070105623107215331596699899597191411196059649,
-                y = 3618502788666131213697322783095070105623107215331596699904931589240515387393
+                x = ns_macro_init.plnt_px,
+                y = ns_macro_init.plnt_py
             )
         )
     ))
 
-    phi_curr.write (0)
+    phi_curr.write (ns_macro_init.phi)
 
     #
     # TODO: initialize mini world - determining the seed for resource distribution function
