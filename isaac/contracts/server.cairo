@@ -28,7 +28,7 @@ from contracts.util.structs import (
 # For yagi automation
 #
 @view
-func probeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func yagiProbeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> (bool : felt):
 
     let (_, bool) = can_forward_world ()
@@ -37,7 +37,7 @@ func probeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
 end
 
 @external
-func executeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func yagiExecuteTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> ():
 
     client_forward_world ()
