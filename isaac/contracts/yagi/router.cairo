@@ -23,8 +23,18 @@ end
 func isaac_server_address () -> (addr: felt):
 end
 
+@view
+func view_isaac_server_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> (curr_address : felt):
+
+    let (curr_address) = isaac_server_address.read ()
+
+    return (curr_address)
+end
+
 @external
 func change_isaac_server_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (new_address : felt) -> ():
+
+    # GYOZA is the benevolent dictator until Isaac stabilizes
     let (caller) = get_caller_address ()
     assert caller = GYOZA
 
@@ -42,6 +52,8 @@ func probeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
 end
 
 func executeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+
+    # this function may eventually accept input to run executeTask()
 
     let (server_address) = isaac_server_address.read ()
     let (empty_array: felt*) = alloc()
