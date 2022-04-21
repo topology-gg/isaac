@@ -43,6 +43,7 @@ func change_isaac_server_address {syscall_ptr : felt*, pedersen_ptr : HashBuilti
     return ()
 end
 
+@view
 func probeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> (bool : felt):
     let (server_address) = isaac_server_address.read ()
 
@@ -51,6 +52,7 @@ func probeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     return (bool)
 end
 
+@external
 func executeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
 
     # this function may eventually accept input to run executeTask()

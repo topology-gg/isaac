@@ -663,7 +663,7 @@
     },
     {
         "inputs": [],
-        "name": "probeTask",
+        "name": "yagiProbeTask",
         "outputs": [
             {
                 "name": "bool",
@@ -675,7 +675,7 @@
     },
     {
         "inputs": [],
-        "name": "executeTask",
+        "name": "yagiExecuteTask",
         "outputs": [],
         "type": "function"
     },
