@@ -6,6 +6,6 @@ import ServerAbi from '~/abi/server_abi.json'
 export function useServerContract() {
   return useContract({
     abi: ServerAbi as Abi,
-    address: '0x0025ecf8ef3993263fec37a54dd730c5d10fa347d1427c584de0a48ec292b4b4',
+    address: '0x31bd38f4c37a31e55a5aba3538581cbe2ba6dc7f79b35adce686b6a8ea948cd',
   })
 }
