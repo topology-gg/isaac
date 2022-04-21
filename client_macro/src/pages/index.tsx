@@ -118,7 +118,7 @@ const Home: NextPage = () => {
   const macroValues = useMemo(() => {
     if (macroResult && macroResult.length > 0) {
 
-      // console.log('got macroResult: ', macroResult[0])
+      console.log('got macroResult: ', macroResult[0])
 
       // console.log("planet x: ", new BigNumber(macroResult[0].plnt.q.x).dividedBy(10 ** 20).toString(10))
 
@@ -146,10 +146,10 @@ const Home: NextPage = () => {
 
       console.log("sun0_vx_raw_scaled", sun0_vx_raw_scaled.toString(10))
       console.log("sun0_vy_raw_scaled", sun0_vy_raw_scaled.toString(10))
-      // console.log("sun1_vx_raw_scaled", sun1_vx_raw_scaled.toString(10))
-      // console.log("sun1_vy_raw_scaled", sun1_vy_raw_scaled.toString(10))
-      // console.log("sun2_vx_raw_scaled", sun2_vx_raw_scaled.toString(10))
-      // console.log("sun2_vy_raw_scaled", sun2_vy_raw_scaled.toString(10))
+      console.log("sun1_vx_raw_scaled", sun1_vx_raw_scaled.toString(10))
+      console.log("sun1_vy_raw_scaled", sun1_vy_raw_scaled.toString(10))
+      console.log("sun2_vx_raw_scaled", sun2_vx_raw_scaled.toString(10))
+      console.log("sun2_vy_raw_scaled", sun2_vy_raw_scaled.toString(10))
 
       const plnt_x_plus_vx_str = plnt_vx_raw_scaled?.plus(plnt_x).toString(10)
       const plnt_y_plus_vy_str = plnt_vy_raw_scaled?.plus(plnt_y).toString(10)
