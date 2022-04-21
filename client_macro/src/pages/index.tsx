@@ -9,8 +9,6 @@ import { RectAreaLight } from 'three'
 
 const STARK_PRIME = new BigNumber('3618502788666131213697322783095070105623107215331596699973092056135872020481')
 const STARK_PRIME_HALF = new BigNumber('1809251394333065606848661391547535052811553607665798349986546028067936010240')
-const SVG_HALF_WIDTH = 100
-
 
 function getWindowDimensions() {
   if (typeof window !== 'undefined') {
@@ -64,31 +62,31 @@ function fp_felt_to_num(felt: BigNumber) {
   return felt_descaled
 }
 
-const Sun: FC<any> = ({ x, y, colour, opacity}) => (
-  <circle cx={x} cy={y} r={8} fill={colour} fillOpacity={opacity} stroke="black" strokeWidth="0.6"/>
+const Sun: FC<any> = ({ x, y, radius, colour, opacity }) => (
+  <circle cx={x} cy={y} r={radius} fill={colour} fillOpacity={opacity} stroke="black" strokeWidth="0.01"/>
 );
 
-const Planet: FC<any> = ({ x, y, side, colour, opacity}) => (
-  <rect x={x-side/2} y={y-side/2} width={side} height={side} fill={colour} fillOpacity={opacity} stroke="black" strokeWidth="0.4"/>
+const Planet: FC<any> = ({ x, y, side, colour, opacity }) => (
+  <rect x={x-side/2} y={y-side/2} width={side} height={side} fill={colour} fillOpacity={opacity} stroke="black" strokeWidth="0.01"/>
 );
 
-const VerticalGridLineMajor: FC<any> = ({ x }) => (
-  <line x1={x} y1={-1*SVG_HALF_WIDTH} x2={x} y2={SVG_HALF_WIDTH} stroke="white" strokeWidth="0.1" />
+const VerticalGridLineMajor: FC<any> = ({ x, svg_half_width }) => (
+  <line x1={x} y1={-1*svg_half_width} x2={x} y2={svg_half_width} stroke="white" strokeWidth="0.01" />
 );
-const VerticalGridLineMinor: FC<any> = ({ x }) => (
-  <line x1={x} y1={-1*SVG_HALF_WIDTH} x2={x} y2={SVG_HALF_WIDTH} stroke="white" strokeWidth="0.03" />
-);
-
-const HorizontalGridLineMajor: FC<any> = ({ y }) => (
-  <line x1={-2*SVG_HALF_WIDTH} y1={y} x2={2*SVG_HALF_WIDTH} y2={y} stroke="white" strokeWidth="0.1" />
+const VerticalGridLineMinor: FC<any> = ({ x, svg_half_width }) => (
+  <line x1={x} y1={-1*svg_half_width} x2={x} y2={svg_half_width} stroke="white" strokeWidth="0.01" />
 );
 
-const HorizontalGridLineMinor: FC<any> = ({ y }) => (
-  <line x1={-2*SVG_HALF_WIDTH} y1={y} x2={2*SVG_HALF_WIDTH} y2={y} stroke="white" strokeWidth="0.03" />
+const HorizontalGridLineMajor: FC<any> = ({ y, svg_half_width }) => (
+  <line x1={-2*svg_half_width} y1={y} x2={2*svg_half_width} y2={y} stroke="white" strokeWidth="0.01" />
+);
+
+const HorizontalGridLineMinor: FC<any> = ({ y, svg_half_width }) => (
+  <line x1={-2*svg_half_width} y1={y} x2={2*svg_half_width} y2={y} stroke="white" strokeWidth="0.01" />
 );
 
 const VelocityArrow: FC<any> = ({ arr }) => (
-  <line x1={arr[0]} y1={arr[1]} x2={arr[2]} y2={arr[3]} stroke="#999999" strokeWidth="0.5" strokeOpacity="0.8" markerEnd="url(#arrow)"/>
+  <line x1={arr[0]} y1={arr[1]} x2={arr[2]} y2={arr[3]} stroke="#999999" strokeWidth="0.01" strokeOpacity="0.8" markerEnd="url(#arrow)"/>
 );
 
 
@@ -134,7 +132,7 @@ const Home: NextPage = () => {
       console.log("sun0_x", sun0_x.toString(10))
       console.log("sun0_y", sun0_y.toString(10))
 
-      const VEL_MULT = 10
+      const VEL_MULT = 1
       const plnt_vx_raw_scaled = fp_felt_to_num(new BigNumber (macroResult[0].plnt.qd.x)).multipliedBy(VEL_MULT)
       const plnt_vy_raw_scaled = fp_felt_to_num(new BigNumber (macroResult[0].plnt.qd.y)).multipliedBy(VEL_MULT)
       const sun0_vx_raw_scaled = fp_felt_to_num(new BigNumber (macroResult[0].sun0.qd.x)).multipliedBy(VEL_MULT)
@@ -213,8 +211,25 @@ const Home: NextPage = () => {
     backgroundColor: "rgba(62,52,90,255)"
   }
 
+  const max_x = Math.max (
+    Math.abs(Number(macroValues?.[0][0])),
+    Math.abs(Number(macroValues?.[0][2])),
+    Math.abs(Number(macroValues?.[0][4])),
+    Math.abs(Number(macroValues?.[0][6]))
+  )
+  const max_y = Math.max (
+    Math.abs(Number(macroValues?.[0][1])),
+    Math.abs(Number(macroValues?.[0][3])),
+    Math.abs(Number(macroValues?.[0][5])),
+    Math.abs(Number(macroValues?.[0][7]))
+  )
+  const max_dim = Math.max (max_x, max_y)
+  const viewbox_dim = max_dim * 1.5
+  const viewbox_str = `${-1*viewbox_dim} ${-1*viewbox_dim} ${2*viewbox_dim} ${2*viewbox_dim}`
+  const SVG_HALF_WIDTH = 1
+
   return (
-    <svg viewBox="-100 -100 200 200" style={svg_style}>
+    <svg viewBox={viewbox_str} style={svg_style}>
       <defs>
         <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
             markerWidth="5" markerHeight="5"
@@ -223,32 +238,32 @@ const Home: NextPage = () => {
         </marker>
       </defs>
 
-      <VerticalGridLineMajor x={0} />
-      <VerticalGridLineMinor x={SVG_HALF_WIDTH*0.25} />
-      <VerticalGridLineMajor x={SVG_HALF_WIDTH*0.5} />
-      <VerticalGridLineMinor x={SVG_HALF_WIDTH*0.75} />
-      <VerticalGridLineMajor x={SVG_HALF_WIDTH} />
-      <VerticalGridLineMinor x={SVG_HALF_WIDTH*1.25} />
-      <VerticalGridLineMajor x={SVG_HALF_WIDTH*1.5} />
-      <VerticalGridLineMinor x={SVG_HALF_WIDTH*1.75} />
-      <VerticalGridLineMinor x={SVG_HALF_WIDTH*-0.25} />
-      <VerticalGridLineMajor x={SVG_HALF_WIDTH*-0.5} />
-      <VerticalGridLineMinor x={SVG_HALF_WIDTH*-0.75} />
-      <VerticalGridLineMajor x={SVG_HALF_WIDTH*-1} />
-      <VerticalGridLineMinor x={SVG_HALF_WIDTH*-1.25} />
-      <VerticalGridLineMajor x={SVG_HALF_WIDTH*-1.5} />
-      <VerticalGridLineMinor x={SVG_HALF_WIDTH*-1.75} />
+      {/* <VerticalGridLineMajor x={0} />
+      <VerticalGridLineMinor x={SVG_HALF_WIDTH*0.25} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMajor x={SVG_HALF_WIDTH*0.5}  svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMinor x={SVG_HALF_WIDTH*0.75} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMajor x={SVG_HALF_WIDTH} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMinor x={SVG_HALF_WIDTH*1.25} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMajor x={SVG_HALF_WIDTH*1.5} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMinor x={SVG_HALF_WIDTH*1.75} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMinor x={SVG_HALF_WIDTH*-0.25}svg_width={SVG_HALF_WIDTH} />
+      <VerticalGridLineMajor x={SVG_HALF_WIDTH*-0.5} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMinor x={SVG_HALF_WIDTH*-0.75} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMajor x={SVG_HALF_WIDTH*-1} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMinor x={SVG_HALF_WIDTH*-1.25} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMajor x={SVG_HALF_WIDTH*-1.5} svg_width={SVG_HALF_WIDTH}/>
+      <VerticalGridLineMinor x={SVG_HALF_WIDTH*-1.75} svg_width={SVG_HALF_WIDTH}/>
 
-      <HorizontalGridLineMajor y={0} />
-      <HorizontalGridLineMinor y={SVG_HALF_WIDTH*0.25} />
-      <HorizontalGridLineMajor y={SVG_HALF_WIDTH*0.5} />
-      <HorizontalGridLineMinor y={SVG_HALF_WIDTH*0.75} />
-      <HorizontalGridLineMajor y={SVG_HALF_WIDTH} />
+      <HorizontalGridLineMajor y={0} svg_width={SVG_HALF_WIDTH}/>
+      <HorizontalGridLineMinor y={SVG_HALF_WIDTH*0.25} svg_width={SVG_HALF_WIDTH}/>
+      <HorizontalGridLineMajor y={SVG_HALF_WIDTH*0.5} svg_width={SVG_HALF_WIDTH}/>
+      <HorizontalGridLineMinor y={SVG_HALF_WIDTH*0.75} svg_width={SVG_HALF_WIDTH}/>
+      <HorizontalGridLineMajor y={SVG_HALF_WIDTH} svg_width={SVG_HALF_WIDTH}/>
 
-      <HorizontalGridLineMinor y={SVG_HALF_WIDTH*-0.25} />
-      <HorizontalGridLineMajor y={SVG_HALF_WIDTH*-0.5} />
-      <HorizontalGridLineMinor y={SVG_HALF_WIDTH*-0.75} />
-      <HorizontalGridLineMajor y={SVG_HALF_WIDTH*-1} />
+      <HorizontalGridLineMinor y={SVG_HALF_WIDTH*-0.25} svg_width={SVG_HALF_WIDTH}/>
+      <HorizontalGridLineMajor y={SVG_HALF_WIDTH*-0.5} svg_width={SVG_HALF_WIDTH}/>
+      <HorizontalGridLineMinor y={SVG_HALF_WIDTH*-0.75} svg_width={SVG_HALF_WIDTH}/>
+      <HorizontalGridLineMajor y={SVG_HALF_WIDTH*-1} svg_width={SVG_HALF_WIDTH}/> */}
 
 
       {/* velocity vectors */}
@@ -259,11 +274,11 @@ const Home: NextPage = () => {
 
       {/* positions */}
       <g transform = {planet_transform_str}>
-        <Planet x={macroValues?.[0][0]} y={macroValues?.[0][1]} side={2} colour={plnt_color} opacity={0.8}/>
+        <Planet x={macroValues?.[0][0]} y={macroValues?.[0][1]} side={0.15} colour={plnt_color} opacity={0.8}/>
       </g>
-      <Sun x={macroValues?.[0][2]} y={macroValues?.[0][3]} colour={sun1_color} opacity={0.8}/>
-      <Sun x={macroValues?.[0][4]} y={macroValues?.[0][5]} colour={sun2_color} opacity={0.8}/>
-      <Sun x={macroValues?.[0][6]} y={macroValues?.[0][7]} colour={sun3_color} opacity={0.8}/>
+      <Sun x={macroValues?.[0][2]} y={macroValues?.[0][3]} radius = {0.35} colour={sun1_color} opacity={0.8}/>
+      <Sun x={macroValues?.[0][4]} y={macroValues?.[0][5]} radius = {0.35} colour={sun2_color} opacity={0.8}/>
+      <Sun x={macroValues?.[0][6]} y={macroValues?.[0][7]} radius = {0.35} colour={sun3_color} opacity={0.8}/>
 
     </svg>
   )
