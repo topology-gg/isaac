@@ -16,7 +16,7 @@ import { Canvas, useThree } from '@react-three/fiber'
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 import ServerAbi from '../abi/server_abi.json'
-export const SERVER_ADDRESS = '0x0025ecf8ef3993263fec37a54dd730c5d10fa347d1427c584de0a48ec292b4b4'
+export const SERVER_ADDRESS = '0x31bd38f4c37a31e55a5aba3538581cbe2ba6dc7f79b35adce686b6a8ea948cd'
 function useServerContract() {
     return useContract({ abi: ServerAbi, address: SERVER_ADDRESS })
 }
