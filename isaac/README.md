@@ -72,6 +72,14 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - forward world state at micro scale: production stats on the planet; iterate over harvestors, refinery, transmission/transport, PEF / OPSF
 
 #### todos
+- Test perlin noise (potentially make visualization for resource distribution)
+- Parametrize resource transfer rate (function of distance), energy transfer, resource transform/production rate (function of energy supplied), device construction recipes.
+- OPSF: device construction and withdrawal + testing
+- Game over determination - detecting collision between planet and any of the three suns + testing
+- NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
+- Conceptualise high-level signup flow, civilisation reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol
+- Player transfers device between each other + testing
+=== before demo ===
 - (DONE) resource update at device (naive) + resource transported across transportation belts (naive) + testing
 - (DONE) test macro.cairo (forwarding trisolar system and planet rotation)
 - (DONE) device pickup + testing
@@ -90,21 +98,9 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) utl logic: add an extra key to all utb-related storage_var, and modify program accordingly
 - (DONE) utl logic: energy update at device + energy transported across utl-set + testing
 - (DONE) hook up isaac with yagi (4/17 latest)
-- getting ready for demo day: deploy more devices, utb-sets
-- make slide deck and prepare for demo procedure for DEFCON
-- bonus: macro sun glowing (color animation), hover show coordinates in text etc
---------
-- test perlin noise (potentially make visualization for resource distribution)
-- OPSF device construction - design the parametrized recipes - and device withdrawal + testing
-- game over determination - detecting collision between planet and any of the three suns + testing
-- NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
-- NLSCM: near-light-speed cruise missile for pushing suns (simulation would constrain the available n_step for user-implemented cairo logic of the maneuver algorithm)
-- [demo] conceptualise high-level signup flow, civilisation reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol
-- [demo] Rudimentary write-up on game design &/ technical considerations for audience to read during/after demo
-- use perlin-based resource concentration + parametrized resource update rate per element + testing
-- parametrized resource transport rate per element & decay over distance + testing
-- game over determination - detecting escape velocity plus escape condition (require game design thinking) + testing
-- player transfers device between each other + testing
+- (DONE) getting ready for demo day: deploy more devices, utb-sets
+- (DONE) make slide deck and prepare for demo procedure for DEFCON 
+
 
 #### future items / directions
 - symplectic integration - check out https://github.com/hannorein/rebound and https://rebound.readthedocs.io/en/latest/#papers
