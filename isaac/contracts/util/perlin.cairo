@@ -57,38 +57,44 @@ func get_random_vecs {range_check_ptr} (
     ):
 
     if face == 0:
+        # (-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0), (-1.0, -1.0)
         return (
-            Vec2 (-1, 1), Vec2 (-1, 1), Vec2 (-1, -1), Vec2 (-1, 1)
+            Vec2 (-1, 1), Vec2 (-1, 1), Vec2 (-1, 1), Vec2 (-1, -1)
         )
     end
 
     if face == 1:
+        # (1.0, 1.0), (-1.0, 1.0), (1.0, -1.0), (-1.0, -1.0)
         return (
-            Vec2 (-1, 1), Vec2 (1, 1), Vec2 (-1, -1), Vec2 (1, -1)
+            Vec2 (1, 1), Vec2 (-1, 1), Vec2 (1, -1), Vec2 (-1, -1)
         )
     end
 
     if face == 2:
+        # (-1.0, 1.0), (-1.0, -1.0), (-1.0, -1.0), (1.0, -1.0)
         return (
-            Vec2 (-1, -1), Vec2 (-1, 1), Vec2 (1, -1), Vec2 (-1, -1)
+            Vec2 (-1, 1), Vec2 (-1, -1), Vec2 (-1, -1), Vec2 (1, -1)
         )
     end
 
     if face == 3:
+        # (-1.0, -1.0), (1.0, -1.0), (1.0, -1.0), (1.0, 1.0)
         return (
-            Vec2 (1, -1), Vec2 (-1, -1), Vec2 (1, 1), Vec2 (1, -1)
+            Vec2 (-1, -1), Vec2 (1, -1), Vec2 (1, -1), Vec2 (1, 1)
         )
     end
 
     if face == 4:
+        # (-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, -1.0)
         return (
-            Vec2 (1, -1), Vec2 (-1, -1), Vec2 (-1, -1), Vec2 (1, 1)
+            Vec2 (-1, -1), Vec2 (1, -1), Vec2 (1, 1), Vec2 (-1, -1)
         )
     end
 
     if face == 5:
+        # (1.0, 1.0), (-1.0, -1.0), (1.0, 1.0), (-1.0, 1.0)
         return (
-            Vec2 (-1, -1), Vec2 (1, 1), Vec2 (-1, 1), Vec2 (1, 1)
+            Vec2 (1, 1), Vec2 (-1, -1), Vec2 (1, 1), Vec2 (-1, 1)
         )
     end
 
@@ -159,7 +165,7 @@ func adjust {range_check_ptr} (
 end
 
 @event
-func debug_emit_vec2 (x : Vec2):
+func debug_emit_vec2 (vec : Vec2):
 end
 
 @event
@@ -180,10 +186,10 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     #
     # Compute four positional vectors - from corners to pos - in fixed-point range
     #
-    let pv_bottom_left = Vec2 (pos.x * SCALE_FP, pos.y * SCALE_FP)
-    let pv_top_left = Vec2 (pos.x * SCALE_FP, pos.y * SCALE_FP - 99 * SCALE_FP)
-    let pv_bottom_right = Vec2 (pos.x * SCALE_FP - 99 * SCALE_FP, pos.y)
-    let pv_top_right = Vec2 (pos.x * SCALE_FP - 99 * SCALE_FP, pos.y * SCALE_FP - 99 * SCALE_FP)
+    let pv_bottom_left = Vec2 (pos.x * SCALE_FP_DIV_100, pos.y * SCALE_FP_DIV_100)
+    let pv_top_left = Vec2 (pos.x * SCALE_FP_DIV_100, pos.y * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100)
+    let pv_bottom_right = Vec2 (pos.x * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100, pos.y * SCALE_FP_DIV_100)
+    let pv_top_right = Vec2 (pos.x * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100, pos.y * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100)
 
     debug_emit_vec2.emit (pv_bottom_left)
     debug_emit_vec2.emit (pv_top_left)
@@ -208,10 +214,10 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     #
     # Compute dot products
     #
-    let (prod_bottom_left)  = dot (pv_bottom_left, rv_bottom_left)
-    let (prod_top_left)     = dot (pv_top_left, rv_top_left)
+    let (prod_bottom_left)  = dot (pv_bottom_left,  rv_bottom_left)
+    let (prod_top_left)     = dot (pv_top_left,     rv_top_left)
     let (prod_bottom_right) = dot (pv_bottom_right, rv_bottom_right)
-    let (prod_top_right)    = dot (pv_top_right, rv_top_right)
+    let (prod_top_right)    = dot (pv_top_right,    rv_top_right)
 
     debug_emit_felt.emit (prod_bottom_left)
     debug_emit_felt.emit (prod_top_left)
@@ -242,6 +248,8 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     # value adjustment
     #
     let (res) = adjust (lerp_final)
+
+    debug_emit_felt.emit (res)
 
     return (res)
 end
