@@ -71,8 +71,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - forward world state at macro scale: trisolar system physics
 - forward world state at micro scale: production stats on the planet; iterate over harvestors, refinery, transmission/transport, PEF / OPSF
 
-#### todos
-=== after defcon demo ===
+#### todos - after defcon demo
 - (DONE) Test perlin noise
 - Parametrize resource transfer rate (function of distance), energy transfer, resource transform/production rate (function of energy supplied), device construction recipes.
 - OPSF: device construction and withdrawal + testing
@@ -81,7 +80,8 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - Conceptualise isaac-protocol: high-level signup flow, civilisation reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol
 - Implement and test isaac-protocol
 - Player transfers device between each other + testing
-=== before defcon demo ===
+
+#### todos log - before defcon demo
 - (DONE) resource update at device (naive) + resource transported across transportation belts (naive) + testing
 - (DONE) test macro.cairo (forwarding trisolar system and planet rotation)
 - (DONE) device pickup + testing
