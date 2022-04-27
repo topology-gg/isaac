@@ -80,6 +80,9 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - Conceptualise isaac-protocol: high-level signup flow, civilisation reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol
 - Implement and test isaac-protocol
 - Player transfers device between each other + testing
+- event emission for future query needs - at world forwarding, client action performed etc
+- CLI tool for viewing Isaac world - owner stats, grid stats, deployed-device stats by id etc
+- potentially allow source device connected directly with destination device as neighbors
 
 #### todos log - before defcon demo
 - (DONE) resource update at device (naive) + resource transported across transportation belts (naive) + testing
