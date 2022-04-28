@@ -22,6 +22,14 @@ const SCALE_FP_DIV_100 = 10**18
 const SCALE_FP_SQRT = 10**10
 
 #
+# Constant for parametrizing perlin generation
+#
+namespace ns_perlin:
+    const SCALER = 666
+    const BOUND = 1000
+end
+
+#
 # Constants for macro physics simulation
 #
 # orbital
@@ -65,6 +73,35 @@ const PLANET_DIM = 100
 # TODO: params to control resource distribution via e.g. perlin noise
 
 #
+# Constants for solar power generation parametrization
+#
+namespace ns_solar_power:
+    const MULT = 10
+    const BOUND = 100
+end
+
+#
+# Constants for nuclear power generation parametrization
+#
+namespace ns_nuclear_power:
+    const BASE_ENERGY = 50
+    const BOOST_DIVIDER = 20
+end
+
+#
+# Constants for decay function parametrization
+#
+namespace ns_decay_function:
+    const UTB_DECAY_BASE   = 20
+    const UTB_DECAY_LAMBDA = 15
+    const UTB_DECAY_SCALE  = 1000
+
+    const UTL_DECAY_BASE   = 20
+    const UTL_DECAY_LAMBDA = 18
+    const UTL_DECAY_SCALE  = 1000
+end
+
+#
 # Constants for element type
 #
 namespace ns_element_types:
@@ -78,6 +115,52 @@ namespace ns_element_types:
     const ELEMENT_SI_REF = 7 # silicon refined
     const ELEMENT_PU_RAW = 8 # plutonium-241 raw
     const ELEMENT_PU_ENR = 9 # plutonium-241 enriched
+end
+
+#
+# Constants for base multipler_per_tick for harvester per element type
+#
+namespace ns_base_harvester_multiplier:
+    const ELEMENT_FE_RAW = 10 # iron raw
+    const ELEMENT_AL_RAW = 8 # aluminum raw
+    const ELEMENT_CU_RAW = 6 # copper raw
+    const ELEMENT_SI_RAW = 4 # silicon raw
+    const ELEMENT_PU_RAW = 2 # plutonium-241 raw
+end
+
+#
+# Constants for boost factor for harvester per element type
+#
+namespace ns_harvester_boost_factor:
+    const ELEMENT_FE_RAW = 15 # iron raw
+    const ELEMENT_AL_RAW = 15 # aluminum raw
+    const ELEMENT_CU_RAW = 15 # copper raw
+    const ELEMENT_SI_RAW = 15 # silicon raw
+    const ELEMENT_PU_RAW = 15 # plutonium-241 raw
+    const BOUND = 100
+end
+
+#
+# Constants for base quantity_per_tick for harvester per element type
+#
+namespace ns_base_transformer_quantity:
+    const ELEMENT_FE_RAW = 5 # iron raw
+    const ELEMENT_AL_RAW = 4 # aluminum raw
+    const ELEMENT_CU_RAW = 3 # copper raw
+    const ELEMENT_SI_RAW = 2 # silicon raw
+    const ELEMENT_PU_RAW = 1 # plutonium-241 raw
+end
+
+#
+# Constants for boost factor for transformer per element type
+#
+namespace ns_transformer_boost_factor:
+    const ELEMENT_FE_RAW = 15 # iron raw
+    const ELEMENT_AL_RAW = 15 # aluminum raw
+    const ELEMENT_CU_RAW = 15 # copper raw
+    const ELEMENT_SI_RAW = 15 # silicon raw
+    const ELEMENT_PU_RAW = 15 # plutonium-241 raw
+    const BOUND = 100
 end
 
 #

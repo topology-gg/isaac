@@ -1279,16 +1279,18 @@ func forward_world_micro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     ) -> ():
 
     #
-    # Effect resource update at device;
+    # Effect resource & energy update at device;
     # akin to propagating D->Q for FFs
     #
     resource_update_at_devices ()
+    # TODO: energy_update_at_devices ()
 
     #
     # Effect resource transfer across deployed utb-sets;
     # akin to propagating values through wires
     #
     resource_transfer_across_utb_sets ()
+    # TODO: energy_transfer_across_utl_sets ()
 
     return ()
 end

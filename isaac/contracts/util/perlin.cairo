@@ -6,7 +6,8 @@ from starkware.cairo.common.math_cmp import (is_le, is_not_zero, is_nn_le, is_nn
 from starkware.cairo.common.alloc import alloc
 
 from contracts.design.constants import (
-    PLANET_DIM, SCALE_FP, SCALE_FP_DIV_100, RANGE_CHECK_BOUND
+    PLANET_DIM, SCALE_FP, SCALE_FP_DIV_100, RANGE_CHECK_BOUND,
+    PERLIN_SCALER
 )
 from contracts.util.structs import (Vec2)
 from contracts.macro import (div_fp, mul_fp)
@@ -151,7 +152,7 @@ func adjust {range_check_ptr} (
     x : felt) -> (res : felt):
 
     #
-    # adjust = lambda x : relu (x) *666
+    # adjust = lambda x : relu (x) * PERLIN_SCALER
     #
 
     let (nn) = is_nn (x)
@@ -159,7 +160,7 @@ func adjust {range_check_ptr} (
     if nn == 0:
         return (0)
     else:
-        let (res, _) = signed_div_rem (x * 666, SCALE_FP, RANGE_CHECK_BOUND)
+        let (res, _) = signed_div_rem (x * PERLIN_SCALER, SCALE_FP, RANGE_CHECK_BOUND)
         return (res)
     end
 end
