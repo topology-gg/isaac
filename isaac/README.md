@@ -108,5 +108,6 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 
 
 #### future items / directions
+- layout **Isaac Protocol**: voting power is earned only through gameplay; non tradeable; non transferable; degrade over time (discounting past gameplay contribution) voting power governs the migration of the canonical Isaac contract deploy address so that the DAO can vote yes to a new address; after a rage quit period  the DAO will point to the new address as Isaac server address. Topology will retain most voting power to begin with, and dilute over time. The dilution schedule / function is not thought through yet. Vote is only for upgradeability decision of 1 contract address. "Basically the more you play the more say you have over whatever is played next ... but it decays over time to discount past participation; may need another vote for changing vote calculation & discount factor" -- this will be the first **"Republik"**
 - symplectic integration - check out https://github.com/hannorein/rebound and https://rebound.readthedocs.io/en/latest/#papers
 - planet core convection, manifesting as dynamic resource distribution on the surface
