@@ -1125,7 +1125,7 @@ func recurse_resource_energy_update_at_devices {syscall_ptr : felt*, pedersen_pt
     end
 
     #
-    # For harvester => increase resource based on resource concentration at land # TODO: use energy to boost harvest rate
+    # For harvester => increase resource based on resource concentration at land
     #
     local syscall_ptr : felt* = syscall_ptr
     local pedersen_ptr : HashBuiltin* = pedersen_ptr
@@ -1149,6 +1149,14 @@ func recurse_resource_energy_update_at_devices {syscall_ptr : felt*, pedersen_pt
         harvesters_deployed_id_to_resource_balance.write (
             emap_entry.id,
             quantity_curr + quantity_harvested
+        )
+
+        #
+        # Clear energy balance at this harvester -- only power generator can store energy
+        #
+        device_deployed_id_to_energy_balance.write (
+            emap_entry.id,
+            0
         )
 
         tempvar syscall_ptr = syscall_ptr
@@ -1202,6 +1210,14 @@ func recurse_resource_energy_update_at_devices {syscall_ptr : felt*, pedersen_pt
             )
         )
 
+        #
+        # Clear energy balance at this transformer -- only power generator can store energy
+        #
+        device_deployed_id_to_energy_balance.write (
+            emap_entry.id,
+            0
+        )
+
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
@@ -1211,6 +1227,34 @@ func recurse_resource_energy_update_at_devices {syscall_ptr : felt*, pedersen_pt
         tempvar range_check_ptr = range_check_ptr
     end
 
+    #
+    # Handle OPSF
+    #
+    local syscall_ptr : felt* = syscall_ptr
+    local pedersen_ptr : HashBuiltin* = pedersen_ptr
+    local range_check_ptr = range_check_ptr
+    handle_opsf:
+    if emap_entry.type == ns_device_types.DEVICE_OPSF:
+        #
+        # Clear energy balance at this OPSF -- only power generator can store energy
+        #
+        device_deployed_id_to_energy_balance.write (
+            emap_entry.id,
+            0
+        )
+
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
+
+    #
+    # Tail recursion
+    #
     recurse:
     recurse_resource_energy_update_at_devices (len, idx + 1)
 
@@ -1438,6 +1482,7 @@ func recurse_energy_transfer_across_utl_sets {syscall_ptr : felt*, pedersen_ptr 
         let src_device_id = emap_entry_src.id
         let dst_device_id = emap_entry_dst.id
         let (src_device_energy) = device_deployed_id_to_energy_balance.read (src_device_id)
+        let (dst_device_energy) = device_deployed_id_to_energy_balance.read (dst_device_id)
 
         #
         # Determine energy should send and energy should receive
@@ -1459,12 +1504,12 @@ func recurse_energy_transfer_across_utl_sets {syscall_ptr : felt*, pedersen_ptr 
         )
 
         #
-        # Effect energy update at destination: replacement instead of increment,
-        # enforcing no-energy-storage other than power generator devices
+        # Effect energy update at destination
+        # note: could have multi-fanin resulting higher energy boost
         #
         device_deployed_id_to_energy_balance.write (
             dst_device_id,
-            energy_should_receive
+            dst_device_energy + energy_should_receive
         )
 
         tempvar syscall_ptr = syscall_ptr
