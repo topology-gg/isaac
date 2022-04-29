@@ -77,6 +77,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) `logistics.cairo`: parametrize resource transfer rate (function of distance), energy transfer, resource transform/production rate (function of energy supplied); testing
 - (DONE) `logistics.cairo` hooks up with `micro.cairo`
 - `manufacturing.cairo`: device construction recipes, withdrawal; testing
+- hook up `perlin.cairo` x `micro.cairo`
 - testing: build model for resource & energy management, then use it to test `logistics.cairo` x `micro.cairo` at world forwarding
 - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - Game over determination - detecting collision between planet and any of the three suns + testing
