@@ -71,20 +71,28 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - forward world state at macro scale: trisolar system physics
 - forward world state at micro scale: production stats on the planet; iterate over harvestors, refinery, transmission/transport, PEF / OPSF
 
-#### todos - after defcon demo
+## TODOs:
+#### Isaac
 - (DONE) Test perlin noise
-- Parametrize resource transfer rate (function of distance), energy transfer, resource transform/production rate (function of energy supplied), device construction recipes.
-- OPSF: device construction and withdrawal + testing
-- Game over determination - detecting collision between planet and any of the three suns + testing
+- `logistics.cairo`: parametrize resource transfer rate (function of distance), energy transfer, resource transform/production rate (function of energy supplied); testing
+- `logistics.cairo` hooks up with `micro.cairo`; testing
+- `manufacturing.cairo`: device construction recipes, withdrawal; testing
 - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
-- Conceptualise isaac-protocol: high-level signup flow, civilisation reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol
-- Implement and test isaac-protocol
+- Game over determination - detecting collision between planet and any of the three suns + testing
 - Player transfers device between each other + testing
 - event emission for future query needs - at world forwarding, client action performed etc
-- CLI tool for viewing Isaac world - owner stats, grid stats, deployed-device stats by id etc
-- potentially allow source device connected directly with destination device as neighbors
 
-#### todos log - before defcon demo
+#### Isaac Protocol
+- Conceptualise: high-level signup flow, civilisation reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol; difficulty knobs
+- DAO voting for contract migration determination
+- Implement and test isaac-protocol
+
+#### Isaac clients
+- utb/utl view carries fraction info, enabling transmission animation in `https://isaac-micro-view.netlify.app/`
+- CLI tool for viewing Isaac world - owner stats, grid stats, deployed-device stats by id etc
+- web client to visualize planet in unfolded 2D form, mouse hovers showing coordinate
+
+#### Log - completed before defcon demo
 - (DONE) resource update at device (naive) + resource transported across transportation belts (naive) + testing
 - (DONE) test macro.cairo (forwarding trisolar system and planet rotation)
 - (DONE) device pickup + testing
@@ -105,7 +113,6 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) hook up isaac with yagi (4/17 latest)
 - (DONE) getting ready for demo day: deploy more devices, utb-sets
 - (DONE) make slide deck and prepare for demo procedure for DEFCON 
-
 
 #### future items / directions
 - layout **Isaac Protocol**: voting power is earned only through gameplay; non tradeable; non transferable; degrade over time (discounting past gameplay contribution) voting power governs the migration of the canonical Isaac contract deploy address so that the DAO can vote yes to a new address; after a rage quit period  the DAO will point to the new address as Isaac server address. Topology will retain most voting power to begin with, and dilute over time. The dilution schedule / function is not thought through yet. Vote is only for upgradeability decision of 1 contract address. "Basically the more you play the more say you have over whatever is played next ... but it decays over time to discount past participation; may need another vote for changing vote calculation & discount factor" -- this will be the first **"Republik"**
