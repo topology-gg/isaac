@@ -183,6 +183,7 @@ namespace ns_device_types:
     const DEVICE_UTL = 13 # universal transmission line
     const DEVICE_OPSF = 14 # omnipotent production and storage facility
 
+    const DEVICE_PG_MAX = 1
     const DEVICE_HARVESTER_MIN = 2
     const DEVICE_HARVESTER_MAX = 6
     const DEVICE_TRANSFORMER_MIN = 7

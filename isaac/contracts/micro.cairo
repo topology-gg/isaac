@@ -19,6 +19,10 @@ from contracts.util.grid import (
     locate_face_and_edge_given_valid_grid,
     is_zero
 )
+from contracts.util.logistics import (
+    ns_logistics_harvester, ns_logistics_transformer,
+    ns_logistics_xpg, ns_logistics_utb, ns_logistics_utl
+)
 
 ##############################
 
@@ -70,15 +74,6 @@ func get_resource_concentration_at_grid {} (grid : Vec2, resource_type : felt) -
     return (500)
 end
 
-# this function assumes valid grid as input
-func get_resource_harvest_amount_at_grid {} (grid : Vec2, resource_type : felt) -> (amount : felt):
-    let (resource_concentration) = get_resource_concentration_at_grid (grid, resource_type)
-
-    # reserving `multipler` for the need to adjust linearly the harvesting rate
-    let multiplier = 1
-    return (amount = resource_concentration * multiplier)
-end
-
 ##############################
 ## Devices (including opsf)
 ##############################
@@ -120,7 +115,6 @@ end
 func transformers_deployed_id_to_resource_balances (id : felt) -> (balances : TransformerResourceBalances):
 end
 
-
 @storage_var
 func opsf_deployed_id_to_resource_balances (id : felt, element_type : felt) -> (balance : felt):
 end
@@ -128,6 +122,14 @@ end
 @storage_var
 func opsf_deployed_id_to_device_balances (id : felt, device_type : felt) -> (balance : felt):
 end
+
+#
+# Energy balances
+#
+@storage_var
+func device_deployed_id_to_energy_balance (id : felt) -> (energy : felt):
+end
+
 
 
 func assert_device_footprint_populable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
@@ -667,7 +669,7 @@ func utx_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     #
     # Check the type of (src,dst) meets (producer,consumer) relationship give utx type
     #
-    are_resource_producer_consumer_relationship (
+    are_producer_consumer_relationship (
         utx_device_type,
         src_grid_stat.deployed_device_type,
         dst_grid_stat.deployed_device_type
@@ -904,7 +906,7 @@ end
 
 ##############################
 
-func are_resource_producer_consumer_relationship {range_check_ptr} (
+func are_producer_consumer_relationship {range_check_ptr} (
     utx_device_type, device_type0, device_type1) -> ():
 
     # TODO: refactor this code to improve extensibility
@@ -1052,11 +1054,11 @@ end
 
 ##############################
 
-func resource_update_at_devices {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func resource_energy_update_at_devices {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> ():
 
     let (emap_size) = device_deployed_emap_size.read ()
-    recurse_resource_update_at_devices (
+    recurse_resource_energy_update_at_devices (
         len = emap_size,
         idx = 0
     )
@@ -1064,7 +1066,7 @@ func resource_update_at_devices {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
     return ()
 end
 
-func recurse_resource_update_at_devices {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func recurse_resource_energy_update_at_devices {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         len : felt, idx : felt
     ) -> ():
     alloc_locals
@@ -1078,17 +1080,77 @@ func recurse_resource_update_at_devices {syscall_ptr : felt*, pedersen_ptr : Has
     let (bool_is_transformer) = is_device_transformer (emap_entry.type)
 
     #
+    # For power generator
+    #
+    local syscall_ptr : felt* = syscall_ptr
+    local pedersen_ptr : HashBuiltin* = pedersen_ptr
+    local range_check_ptr = range_check_ptr
+    handle_power_generator:
+    ## solar power generator
+    if emap_entry.type == ns_device_types.DEVICE_SPG:
+        let (energy_generated) = ns_logistics_xpg.spg_solar_exposure_to_energy_generated_per_tick (
+            solar_exposure = 10 # TODO!!!
+        )
+        let (curr_energy) = device_deployed_id_to_energy_balance.read (emap_entry.id)
+        device_deployed_id_to_energy_balance.write (
+            emap_entry.id,
+            curr_energy + energy_generated
+        )
+
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
+
+    ## nuclear power generator
+    if emap_entry.type == ns_device_types.DEVICE_NPG:
+        let (curr_energy) = device_deployed_id_to_energy_balance.read (emap_entry.id)
+        let (energy_generated) = ns_logistics_xpg.npg_energy_supplied_to_energy_generated_per_tick (curr_energy)
+        device_deployed_id_to_energy_balance.write (
+            emap_entry.id,
+            curr_energy + energy_generated
+        )
+
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
+
+    #
     # For harvester => increase resource based on resource concentration at land # TODO: use energy to boost harvest rate
     #
+    local syscall_ptr : felt* = syscall_ptr
+    local pedersen_ptr : HashBuiltin* = pedersen_ptr
+    local range_check_ptr = range_check_ptr
     handle_harvester:
     if bool_is_harvester == 1:
+        #
+        # Get harvest quantity based on {element type, concentration (from perlin), and energy supplied at last tick}
+        #
         let (element_type) = harvester_device_type_to_element_type (emap_entry.type)
-        let (amount_harvested) = get_resource_harvest_amount_at_grid (emap_entry.grid, element_type)
-        let (amount_curr) = harvesters_deployed_id_to_resource_balance.read (emap_entry.id)
+        let (concentration) = get_resource_concentration_at_grid (emap_entry.grid, element_type)
+        let (energy_last_tick) = device_deployed_id_to_energy_balance.read (emap_entry.id)
+        let (quantity_harvested) = ns_logistics_harvester.harvester_quantity_per_tick (
+            element_type, concentration, energy_last_tick
+        )
+
+        #
+        # Update resource balance at this harvester
+        #
+        let (quantity_curr) = harvesters_deployed_id_to_resource_balance.read (emap_entry.id)
         harvesters_deployed_id_to_resource_balance.write (
             emap_entry.id,
-            amount_curr + amount_harvested
+            quantity_curr + quantity_harvested
         )
+
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
@@ -1101,32 +1163,48 @@ func recurse_resource_update_at_devices {syscall_ptr : felt*, pedersen_ptr : Has
     #
     # For transformer (refinery/PEF) => decrease raw resource and increase transformed resource
     #
-    handle_transformer:
     local syscall_ptr : felt* = syscall_ptr
     local pedersen_ptr : HashBuiltin* = pedersen_ptr
     local range_check_ptr = range_check_ptr
+    handle_transformer:
     if bool_is_transformer == 1:
-        let (element_type_raw, element_type_transformed) = transformer_device_type_to_element_types (emap_entry.type)
-        ## TODO: design transform rate per element type
+        #
+        # Determine the max quantity that can be transformed at this tick given element type and energy supplied at last tick
+        #
+        let (element_type_before, element_type_after) = transformer_device_type_to_element_types (emap_entry.type)
         let (balances) = transformers_deployed_id_to_resource_balances.read (emap_entry.id)
-        let (bool_can_transform_resource) = transformer_has_resource_to_transform (emap_entry.type, balances)
+        let (energy_last_tick) = device_deployed_id_to_energy_balance.read (emap_entry.id)
+        let (should_transform_quantity) = ns_logistics_transformer.transformer_quantity_per_tick (
+            element_type_before,
+            energy_last_tick
+        )
 
-        if bool_can_transform_resource == 1:
-            transformers_deployed_id_to_resource_balances.write (
-                emap_entry.id,
-                TransformerResourceBalances (
-                    balances.balance_resource_before_transform - 1,
-                    balances.balance_resource_after_transform + 1,
-                )
-            )
-            tempvar syscall_ptr = syscall_ptr
-            tempvar pedersen_ptr = pedersen_ptr
-            tempvar range_check_ptr = range_check_ptr
+        #
+        # If balance of element_type_before < `should_transform_quantity`, only transform current balance;
+        # otherwise, transform `should_transform_quantity`
+        #
+        local transform_amount
+        let (bool) = is_le (balances.balance_resource_before_transform, should_transform_quantity)
+        if bool == 1:
+            assert transform_amount = balances.balance_resource_before_transform
         else:
-            tempvar syscall_ptr = syscall_ptr
-            tempvar pedersen_ptr = pedersen_ptr
-            tempvar range_check_ptr = range_check_ptr
+            assert transform_amount = should_transform_quantity
         end
+
+        #
+        # Apply transform on balances
+        #
+        transformers_deployed_id_to_resource_balances.write (
+            emap_entry.id,
+            TransformerResourceBalances (
+                balances.balance_resource_before_transform - transform_amount,
+                balances.balance_resource_after_transform + transform_amount
+            )
+        )
+
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
     else:
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
@@ -1134,28 +1212,9 @@ func recurse_resource_update_at_devices {syscall_ptr : felt*, pedersen_ptr : Has
     end
 
     recurse:
-    recurse_resource_update_at_devices (len, idx + 1)
+    recurse_resource_energy_update_at_devices (len, idx + 1)
 
     return ()
-end
-
-## TODO
-func transformer_has_resource_to_transform {range_check_ptr} (
-        device_type : felt,
-        balances : TransformerResourceBalances
-    ) -> (bool : felt):
-
-    if balances.balance_resource_before_transform != 0:
-        return (1)
-    end
-
-    return (0)
-
-    # (reference)
-    # TransformerResourceBalances:
-    #   member balance_resource_before_transform : felt
-    #   member balance_resource_after_transform : felt
-    # end
 end
 
 func resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
@@ -1169,7 +1228,6 @@ func resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_ptr : Hash
     )
     return ()
 end
-
 
 func recurse_resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         len, idx
@@ -1193,9 +1251,14 @@ func recurse_resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_pt
     let (emap_entry) = utx_set_deployed_emap.read (ns_device_types.DEVICE_UTB, idx)
     let (is_src_tethered) = is_not_zero (emap_entry.src_device_id)
     let (is_dst_tethered) = is_not_zero (emap_entry.dst_device_id)
+    let  utb_set_length = emap_entry.utx_deployed_index_end - emap_entry.utx_deployed_index_start
+
+    #
+    # If both sides are tethered => handle resource transportation
+    #
     if is_src_tethered * is_dst_tethered == 1:
         #
-        # Transport resource src => dst
+        # Find out source / destination device type
         #
         let (emap_index_src) = device_deployed_id_to_emap_index.read (emap_entry.src_device_id)
         let (emap_entry_src) = device_deployed_emap.read (emap_index_src)
@@ -1206,37 +1269,78 @@ func recurse_resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_pt
         let (bool_src_harvester) = is_device_harvester (src_type)
         let (bool_dst_opsf) = is_device_opsf (dst_type)
 
-        local transport_amount
+        local quantity_received
         local element_type
+
+        ## Handle source device first
+
+        #
+        # Source device is harvester
+        #
         if bool_src_harvester == 1:
-            # src device is harvester
+            #
+            # Determine quantity to be sent from source
+            #
             let (element_type_) = harvester_device_type_to_element_type (src_type)
             assert element_type = element_type_
             let (src_balance) = harvesters_deployed_id_to_resource_balance.read (emap_entry.src_device_id)
-            let (can_transfer) = is_le (1, src_balance)
+            let (quantity_should_send) = ns_logistics_utb.utb_quantity_should_send_per_tick (
+                src_balance
+            )
 
-            let new_src_balance = can_transfer * (src_balance - transport_amount) + (1 - can_transfer) * src_balance
-            assert transport_amount = can_transfer * 1
+            #
+            # Determine quantity to be received at destination
+            #
+            let (quantity_should_receive) = ns_logistics_utb.utb_quantity_should_receive_per_tick (
+                src_balance,
+                utb_set_length
+            )
+            assert quantity_received = quantity_should_receive
 
-            harvesters_deployed_id_to_resource_balance.write (emap_entry.src_device_id, new_src_balance)
+            #
+            # Update source device resource balance
+            #
+            harvesters_deployed_id_to_resource_balance.write (
+                emap_entry.src_device_id,
+                src_balance - quantity_should_send
+            )
 
             tempvar syscall_ptr = syscall_ptr
             tempvar pedersen_ptr = pedersen_ptr
             tempvar range_check_ptr = range_check_ptr
+
+        #
+        # Source device is transformer
+        #
         else:
-            # src device is transformer; transporting `element_type_after_transform`
+            #
+            # Determine quantity to be sent from source
+            #
             let (_, element_type_) = transformer_device_type_to_element_types (src_type)
             assert element_type = element_type_
-
             let (src_balances) = transformers_deployed_id_to_resource_balances.read (emap_entry.src_device_id)
-            let (can_transfer) = is_le (1, src_balances.balance_resource_after_transform)
+            let src_balance = src_balances.balance_resource_after_transform
+            let (quantity_should_send) = ns_logistics_utb.utb_quantity_should_send_per_tick (
+                src_balance
+            )
 
-            let new_src_balance = can_transfer * (src_balances.balance_resource_after_transform - transport_amount) + (1 - can_transfer) * src_balances.balance_resource_after_transform
-            assert transport_amount = can_transfer * 1
+            #
+            # Determine quantity to be received at destination
+            #
+            let (quantity_should_receive) = ns_logistics_utb.utb_quantity_should_receive_per_tick (
+                src_balance,
+                utb_set_length
+            )
+            assert quantity_received = quantity_should_receive
 
-            transformers_deployed_id_to_resource_balances.write (emap_entry.src_device_id, TransformerResourceBalances(
-                balance_resource_before_transform = src_balances.balance_resource_before_transform,
-                balance_resource_after_transform = new_src_balance
+            #
+            # Update source device resource balance
+            #
+            transformers_deployed_id_to_resource_balances.write (
+                emap_entry.src_device_id,
+                TransformerResourceBalances(
+                    src_balances.balance_resource_before_transform,
+                    src_balance - quantity_should_send
             ))
 
             tempvar syscall_ptr = syscall_ptr
@@ -1244,20 +1348,39 @@ func recurse_resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_pt
             tempvar range_check_ptr = range_check_ptr
         end
 
+        ## Then handle destination device
+
+        #
+        # Destination device is OPSF
+        #
         if bool_dst_opsf == 1:
-            # dst device is OPSF
+            #
+            # Update destination device resource balance
+            #
             let (dst_balance) = opsf_deployed_id_to_resource_balances.read (emap_entry.dst_device_id, element_type)
-            opsf_deployed_id_to_resource_balances.write (emap_entry.dst_device_id, element_type, dst_balance + transport_amount)
+            opsf_deployed_id_to_resource_balances.write (
+                emap_entry.dst_device_id,
+                element_type,
+                dst_balance + quantity_received
+            )
 
             tempvar syscall_ptr = syscall_ptr
             tempvar pedersen_ptr = pedersen_ptr
             tempvar range_check_ptr = range_check_ptr
+
+        #
+        # Destination device is transformer
+        #
         else:
-            # dst device is transformer
+            #
+            # Update destination device resource balance
+            #
             let (dst_balances) = transformers_deployed_id_to_resource_balances.read (emap_entry.dst_device_id)
-            transformers_deployed_id_to_resource_balances.write (emap_entry.dst_device_id, TransformerResourceBalances(
-                balance_resource_before_transform = dst_balances.balance_resource_before_transform + transport_amount,
-                balance_resource_after_transform = dst_balances.balance_resource_after_transform
+            transformers_deployed_id_to_resource_balances.write (
+                emap_entry.dst_device_id,
+                TransformerResourceBalances(
+                    dst_balances.balance_resource_before_transform + quantity_received,
+                    dst_balances.balance_resource_after_transform
             ))
 
             tempvar syscall_ptr = syscall_ptr
@@ -1275,22 +1398,107 @@ func recurse_resource_transfer_across_utb_sets {syscall_ptr : felt*, pedersen_pt
 end
 
 
+func energy_transfer_across_utl_sets {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> ():
+    #
+    # recursively traverse `utx_set_deployed_emap`
+    #
+    let (emap_size) = utx_set_deployed_emap_size.read (ns_device_types.DEVICE_UTL)
+    recurse_energy_transfer_across_utl_sets (
+        len = emap_size, idx = 0
+    )
+    return ()
+end
+
+func recurse_energy_transfer_across_utl_sets {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        len, idx
+    ) -> ():
+    alloc_locals
+
+    if idx == len:
+        return ()
+    end
+
+    #
+    # check if source device and destination device are still deployed
+    #
+    let (emap_entry) = utx_set_deployed_emap.read (ns_device_types.DEVICE_UTL, idx)
+    let (is_src_tethered) = is_not_zero (emap_entry.src_device_id)
+    let (is_dst_tethered) = is_not_zero (emap_entry.dst_device_id)
+    let  utl_set_length = emap_entry.utx_deployed_index_end - emap_entry.utx_deployed_index_start
+
+    if is_src_tethered * is_dst_tethered == 1:
+        #
+        # Get device id of source and destination
+        #
+        let (emap_index_src) = device_deployed_id_to_emap_index.read (emap_entry.src_device_id)
+        let (emap_entry_src) = device_deployed_emap.read (emap_index_src)
+        let (emap_index_dst) = device_deployed_id_to_emap_index.read (emap_entry.dst_device_id)
+        let (emap_entry_dst) = device_deployed_emap.read (emap_index_dst)
+        let src_device_id = emap_entry_src.id
+        let dst_device_id = emap_entry_dst.id
+        let (src_device_energy) = device_deployed_id_to_energy_balance.read (src_device_id)
+
+        #
+        # Determine energy should send and energy should receive
+        #
+        let (energy_should_send) = ns_logistics_utl.utl_energy_should_send_per_tick (
+            src_device_energy
+        )
+        let (energy_should_receive) = ns_logistics_utl.utl_energy_should_receive_per_tick (
+            src_device_energy,
+            utl_set_length
+        )
+
+        #
+        # Effect energy update at source
+        #
+        device_deployed_id_to_energy_balance.write (
+            src_device_id,
+            src_device_energy - energy_should_send
+        )
+
+        #
+        # Effect energy update at destination: replacement instead of increment,
+        # enforcing no-energy-storage other than power generator devices
+        #
+        device_deployed_id_to_energy_balance.write (
+            dst_device_id,
+            energy_should_receive
+        )
+
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
+
+
+    recurse_energy_transfer_across_utl_sets (
+        len,
+        idx + 1
+    )
+    return ()
+end
+
 func forward_world_micro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> ():
 
     #
     # Effect resource & energy update at device;
-    # akin to propagating D->Q for FFs
+    # akin to propagating D->Q for flip-flops in digital circuit
     #
-    resource_update_at_devices ()
-    # TODO: energy_update_at_devices ()
+    resource_energy_update_at_devices ()
 
     #
     # Effect resource transfer across deployed utb-sets;
-    # akin to propagating values through wires
+    # akin to propagating values through wires in digital circuit
     #
     resource_transfer_across_utb_sets ()
-    # TODO: energy_transfer_across_utl_sets ()
+    energy_transfer_across_utl_sets ()
 
     return ()
 end
@@ -1623,10 +1831,10 @@ end
 
 
 @external
-func mock_are_resource_producer_consumer_relationship {range_check_ptr} (
+func mock_are_producer_consumer_relationship {range_check_ptr} (
     utx_device_type, device_type0, device_type1) -> ():
 
-    are_resource_producer_consumer_relationship (
+    are_producer_consumer_relationship (
         utx_device_type,
         device_type0,
         device_type1
