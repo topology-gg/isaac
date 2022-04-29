@@ -74,9 +74,10 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 ## TODOs:
 #### Isaac
 - (DONE) Test perlin noise
-- `logistics.cairo`: parametrize resource transfer rate (function of distance), energy transfer, resource transform/production rate (function of energy supplied); testing
-- `logistics.cairo` hooks up with `micro.cairo`; testing
+- (DONE) `logistics.cairo`: parametrize resource transfer rate (function of distance), energy transfer, resource transform/production rate (function of energy supplied); testing
+- (DONE) `logistics.cairo` hooks up with `micro.cairo`
 - `manufacturing.cairo`: device construction recipes, withdrawal; testing
+- testing: build model for resource & energy management, then use it to test `logistics.cairo` x `micro.cairo` at world forwarding
 - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - Game over determination - detecting collision between planet and any of the three suns + testing
 - Player transfers device between each other + testing
@@ -84,7 +85,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - documentation: Lucid charts for contract architecture; formula for coord transform, various parametrization schemes
 
 #### Isaac Protocol
-- Conceptualise: high-level signup flow, civilisation reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol; difficulty knobs
+- Conceptualise: high-level signup flow, civilisation init & reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol; difficulty knobs (init: need to parametrize initial devices for players)
 - DAO voting for contract migration determination
 - Implement and test isaac-protocol
 
