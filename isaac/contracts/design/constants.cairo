@@ -115,6 +115,8 @@ namespace ns_element_types:
     const ELEMENT_SI_REF = 7 # silicon refined
     const ELEMENT_PU_RAW = 8 # plutonium-241 raw
     const ELEMENT_PU_ENR = 9 # plutonium-241 enriched
+
+    const ELEMENT_COUNT = 10
 end
 
 #
@@ -182,12 +184,36 @@ namespace ns_device_types:
     const DEVICE_UTB = 12 # universal transportation belt
     const DEVICE_UTL = 13 # universal transmission line
     const DEVICE_OPSF = 14 # omnipotent production and storage facility
+    const DEVICE_NDPE = 15 # nuclear driller & propulsion engine
 
     const DEVICE_PG_MAX = 1
     const DEVICE_HARVESTER_MIN = 2
     const DEVICE_HARVESTER_MAX = 6
     const DEVICE_TRANSFORMER_MIN = 7
     const DEVICE_TRANSFORMER_MAX = 11
+end
+
+#
+# Constants for energy requirement per device type
+# Note: resource requirement is coded in `manufacturing.cairo`
+#
+namespace ns_energy_requirements:
+    const DEVICE_SPG     = 1 # solar power generator
+    const DEVICE_NPG     = 1 # nuclear power generator
+    const DEVICE_FE_HARV = 1 # iron harvester
+    const DEVICE_AL_HARV = 1 # aluminum harvester
+    const DEVICE_CU_HARV = 1 # copper harvester
+    const DEVICE_SI_HARV = 1 # silicon harvester
+    const DEVICE_PU_HARV = 1 # plutoniium harvester
+    const DEVICE_FE_REFN = 1 # iron refinery
+    const DEVICE_AL_REFN = 1 # aluminum refinery
+    const DEVICE_CU_REFN = 1 # copper refinery
+    const DEVICE_SI_REFN = 1 # silicon refinery
+    const DEVICE_PEF     = 1 # plutonium enrichment facility
+    const DEVICE_UTB     = 1 # universal transportation belt
+    const DEVICE_UTL     = 1 # universal transmission line
+    const DEVICE_OPSF    = 1 # omnipotent production and storage facility
+    const DEVICE_NDPE    = 1 # nuclear driller & propulsion engine
 end
 
 func assert_device_type_is_utx {} (device_type : felt) -> ():

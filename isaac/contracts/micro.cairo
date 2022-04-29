@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash_chain import hash_chain
-from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal)
+from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le)
 from starkware.cairo.common.math_cmp import (is_le, is_nn_le, is_not_zero)
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
@@ -22,6 +22,9 @@ from contracts.util.grid import (
 from contracts.util.logistics import (
     ns_logistics_harvester, ns_logistics_transformer,
     ns_logistics_xpg, ns_logistics_utb, ns_logistics_utl
+)
+from contracts.util.manufacturing import (
+    ns_manufacturing
 )
 
 ##############################
@@ -106,7 +109,9 @@ end
 func device_deployed_id_to_emap_index (id : felt) -> (emap_index : felt):
 end
 
-# harvester-type device-id to resource-balance lookup; for simplicity, device-id uniquely identifies resource type harvested
+#
+# Resource balances
+#
 @storage_var
 func harvesters_deployed_id_to_resource_balance (id : felt) -> (balance : felt):
 end
@@ -119,18 +124,12 @@ end
 func opsf_deployed_id_to_resource_balances (id : felt, element_type : felt) -> (balance : felt):
 end
 
-@storage_var
-func opsf_deployed_id_to_device_balances (id : felt, device_type : felt) -> (balance : felt):
-end
-
 #
 # Energy balances
 #
 @storage_var
 func device_deployed_id_to_energy_balance (id : felt) -> (energy : felt):
 end
-
-
 
 func assert_device_footprint_populable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         type : felt, grid : Vec2
@@ -1734,6 +1733,109 @@ func recurse_inner_grab_utxs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
 end
 
 ######################################
+## OPSF functions
+######################################
+
+#
+# Client invokes to build device at OPSF; can build multiple devices of the same type with one invoke
+#
+func opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        caller : felt,
+        grid : Vec2,
+        device_type : felt,
+        device_count : felt
+    ) -> ():
+    alloc_locals
+
+    #
+    # Check if `caller` owns the device at `opsf_grid`
+    #
+    let (grid_stat) = grid_stats.read (grid)
+    assert grid_stat.populated = 1
+    assert grid_stat.deployed_device_owner = caller
+
+    #
+    # Check if an OPSF is deployed at `opsf_grid`
+    #
+    assert grid_stat.deployed_device_type = ns_device_types.DEVICE_OPSF
+    let opsf_device_id = grid_stat.deployed_device_id
+
+    #
+    # Get resource & energy requirement for manufacturing one device of type `device_type`
+    #
+    let (
+        energy : felt,
+        resource_arr_len : felt,
+        resource_arr : felt*
+    ) = ns_manufacturing.get_resource_energy_requirement_given_device_type (
+        device_type
+    )
+
+    #
+    # Consume opsf energy; revert if insufficient
+    #
+    let (curr_energy) = device_deployed_id_to_energy_balance.read (opsf_device_id)
+    assert_le (energy, curr_energy)
+    device_deployed_id_to_energy_balance.write (
+        opsf_device_id,
+        curr_energy - energy
+    )
+
+    #
+    # Recurse update resource balance at this OPSF; revert if any balance is insufficient
+    #
+    recurse_consume_device_balance_at_opsf (
+        opsf_device_id = opsf_device_id,
+        device_count = device_count,
+        len = resource_arr_len,
+        arr = resource_arr,
+        idx = 0
+    )
+    return ()
+end
+
+func recurse_consume_device_balance_at_opsf {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        opsf_device_id : felt,
+        device_count : felt,
+        len : felt,
+        arr : felt*,
+        idx : felt
+    ) -> ():
+    alloc_locals
+
+    if idx == len:
+        return ()
+    end
+
+    #
+    # Check if opsf has sufficient resource balance of this type
+    #
+    let (curr_balance) = opsf_deployed_id_to_resource_balances.read (
+        opsf_device_id, idx
+    )
+    let quantity_should_consume = arr[idx] * device_count
+    assert_le (quantity_should_consume, curr_balance)
+
+    #
+    # Update opsf's resource balance of this type
+    #
+    opsf_deployed_id_to_resource_balances.write (
+        opsf_device_id, idx,
+        curr_balance - quantity_should_consume
+    )
+
+    #
+    # Tail recursion
+    #
+    recurse_consume_device_balance_at_opsf (
+        opsf_device_id,
+        device_count,
+        len,
+        arr,
+        idx + 1
+    )
+    return ()
+end
 
 ######################################
 ## Mock functions for testing purposes
@@ -1959,14 +2061,6 @@ end
 func admin_read_opsf_deployed_id_to_resource_balances {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     id : felt, element_type : felt) -> (balance : felt):
     let (balance) = opsf_deployed_id_to_resource_balances.read (id, element_type)
-    return (balance)
-end
-
-
-@view
-func admin_read_opsf_deployed_id_to_device_balances {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    id : felt, device_type : felt) -> (balance : felt):
-    let (balance) = opsf_deployed_id_to_device_balances.read (id, device_type)
     return (balance)
 end
 
