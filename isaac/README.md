@@ -85,7 +85,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - documentation: Lucid charts for contract architecture; formula for coord transform, various parametrization schemes
 
 #### Isaac Protocol
-- Conceptualise: high-level signup flow, civilisation reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol; difficulty knobs
+- Conceptualise: high-level signup flow, civilisation init & reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol; difficulty knobs (init: need to parametrize initial devices for players)
 - DAO voting for contract migration determination
 - Implement and test isaac-protocol
 
