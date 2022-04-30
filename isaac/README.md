@@ -99,7 +99,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 #### Isaac clients
 - utb/utl view carries fraction info, enabling transmission animation in `https://isaac-micro-view.netlify.app/`
 - CLI tool for viewing Isaac world - owner stats, grid stats, deployed-device stats by id etc
-- web client to visualize planet in unfolded 2D form, mouse hovers showing coordinate
+- web client to visualize planet in unfolded 2D form, mouse hovers showing coordinate, js implementation of perlin noise to show resource concentration at any grid of any element type
 
 #### Log - completed before defcon demo
 - (DONE) resource update at device (naive) + resource transported across transportation belts (naive) + testing
