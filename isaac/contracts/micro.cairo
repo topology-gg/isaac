@@ -1770,15 +1770,18 @@ func opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     ) = ns_manufacturing.get_resource_energy_requirement_given_device_type (
         device_type
     )
+    local energy_should_consume = energy * device_count
 
     #
     # Consume opsf energy; revert if insufficient
     #
-    let (curr_energy) = device_deployed_id_to_energy_balance.read (opsf_device_id)
-    assert_le (energy, curr_energy)
+    let (local curr_energy) = device_deployed_id_to_energy_balance.read (opsf_device_id)
+    with_attr error_message ("insufficient energy; {energy_should_consume} required, {curr_energy} available at OPSF."):
+        assert_le (energy_should_consume, curr_energy)
+    end
     device_deployed_id_to_energy_balance.write (
         opsf_device_id,
-        curr_energy - energy
+        curr_energy - energy_should_consume
     )
 
     #
@@ -1791,6 +1794,16 @@ func opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
         arr = resource_arr,
         idx = 0
     )
+
+    #
+    # If both resource & energy update above are successful, give devices to caller
+    #
+    let (curr_amount) = device_undeployed_ledger.read (caller, device_type)
+    device_undeployed_ledger.write (
+        caller, device_type,
+        curr_amount + device_count
+    )
+
     return ()
 end
 
@@ -1810,11 +1823,15 @@ func recurse_consume_device_balance_at_opsf {syscall_ptr : felt*, pedersen_ptr :
     #
     # Check if opsf has sufficient resource balance of this type
     #
-    let (curr_balance) = opsf_deployed_id_to_resource_balances.read (
+    let (local curr_balance) = opsf_deployed_id_to_resource_balances.read (
         opsf_device_id, idx
     )
-    let quantity_should_consume = arr[idx] * device_count
-    assert_le (quantity_should_consume, curr_balance)
+    local quantity_should_consume = arr[idx] * device_count
+
+    local element_type = idx
+    with_attr error_message ("insufficient quantity of type {element_type}; {quantity_should_consume} required, {curr_balance} available at OPSF."):
+        assert_le (quantity_should_consume, curr_balance)
+    end
 
     #
     # Update opsf's resource balance of this type
@@ -1991,6 +2008,20 @@ func mock_are_producer_consumer_relationship {range_check_ptr} (
 end
 
 @external
+func mock_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        caller : felt,
+        grid_x : felt,
+        grid_y : felt,
+        device_type : felt,
+        device_count : felt
+    ) -> ():
+
+    opsf_build_device (caller, Vec2(grid_x, grid_y), device_type, device_count)
+
+    return ()
+end
+
+@external
 func mock_forward_world_micro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> ():
 
@@ -2064,6 +2095,26 @@ func admin_read_opsf_deployed_id_to_resource_balances {syscall_ptr : felt*, pede
     return (balance)
 end
 
+@external
+func admin_write_opsf_deployed_id_to_resource_balances {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    id : felt, element_type : felt, balance : felt) -> ():
+    opsf_deployed_id_to_resource_balances.write (id, element_type, balance)
+    return ()
+end
+
+@view
+func admin_read_device_deployed_id_to_energy_balance {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    id : felt) -> (energy : felt):
+    let (energy) = device_deployed_id_to_energy_balance.read (id)
+    return (energy)
+end
+
+@external
+func admin_write_device_deployed_id_to_energy_balance {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    id : felt, energy : felt) -> ():
+    device_deployed_id_to_energy_balance.write (id, energy)
+    return ()
+end
 
 @view
 func admin_read_utx_set_deployed_emap_size {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (

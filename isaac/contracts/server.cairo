@@ -11,12 +11,14 @@ from contracts.design.constants import (
     ns_macro_init
 )
 from contracts.macro import (forward_world_macro)
+
 from contracts.micro import (
     device_deploy, device_pickup_by_grid,
     utx_deploy, utx_pickup_by_grid, forward_world_micro,
     iterate_device_deployed_emap, DeviceDeployedEmapEntry,
     iterate_utx_deployed_emap, UtxSetDeployedEmapEntry,
-    iterate_utx_deployed_emap_grab_all_utxs
+    iterate_utx_deployed_emap_grab_all_utxs,
+    opsf_build_device
 )
 from contracts.util.structs import (
     Vec2, Dynamic, Dynamics
@@ -314,4 +316,23 @@ func client_view_all_utx_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
     let (grids_len, grids) = iterate_utx_deployed_emap_grab_all_utxs (utx_device_type)
 
     return (grids_len, grids)
+end
+
+@external
+func client_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        grid : Vec2,
+        device_type : felt,
+        device_count : felt
+    ) -> ():
+
+    let (caller) = get_caller_address ()
+
+    opsf_build_device (
+        caller,
+        grid,
+        device_type,
+        device_count
+    )
+
+    return ()
 end
