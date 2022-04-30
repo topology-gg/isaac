@@ -30,9 +30,9 @@ async def test_perlin ():
     #
     # Compute values from contract
     #
-    LOGGER.info (f'> Deploying mock_perlin.cairo ..')
+    LOGGER.info (f'> Deploying mock_distribution.cairo ..')
     contract = await starknet.deploy (
-        source = 'contracts/mocks/mock_perlin.cairo',
+        source = 'contracts/mocks/mock_distribution.cairo',
         constructor_calldata = [])
 
     # ret = await contract.mock_get_perlin_value(0, contract.Vec2(51,101)).call()

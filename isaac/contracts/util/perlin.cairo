@@ -148,74 +148,12 @@ func lerp {range_check_ptr} (
     return (d)
 end
 
-func adjust {range_check_ptr} (
-        x : felt,
-        scaler : felt,
-        offset : felt
-    ) -> (res : felt):
-
-    #
-    # adjust = lambda x : relu (x - offset) * scaler
-    #
-
-    let (nn) = is_nn (x - offset)
-
-    if nn == 0:
-        return (0)
-    else:
-        let (res, _) = signed_div_rem (x * scaler, SCALE_FP, RANGE_CHECK_BOUND)
-        return (res)
-    end
-end
-
 @event
 func debug_emit_vec2 (vec : Vec2):
 end
 
 @event
 func debug_emit_felt (x : felt):
-end
-
-func get_adjusted_perlin_value {syscall_ptr : felt*, range_check_ptr} (
-        face : felt, grid : Vec2, element_type : felt
-    ) -> (res : felt):
-    alloc_locals
-
-    #
-    # Get params for given `element_type
-    #
-    let (
-        face_permut_offset,
-        scaler,
-        offset
-    ) = ns_perlin.get_params (
-        element_type
-    )
-
-    #
-    # Get permuted face
-    #
-    let (permuated_face, _) = unsigned_div_rem (face + face_permut_offset, 6)
-
-    #
-    # Get perlin value
-    #
-    let (value) = get_perlin_value (
-        face,
-        permuated_face,
-        grid
-    )
-
-    #
-    # Adjust value for given scaler and offset derived from `element_type`
-    #
-    let (res) = adjust (
-        x = value,
-        scaler = scaler,
-        offset = offset
-    )
-
-    return (res)
 end
 
 func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (

@@ -13,7 +13,12 @@ from contracts.design.constants import (
     transformer_device_type_to_element_types,
     get_device_dimension_ptr
 )
-from contracts.util.structs import (Vec2)
+from contracts.util.structs import (
+    Vec2
+)
+from contracts.util.distribution import (
+    ns_distribution
+)
 from contracts.util.grid import (
     is_valid_grid, are_contiguous_grids_given_valid_grids,
     locate_face_and_edge_given_valid_grid,
@@ -61,7 +66,9 @@ end
 # note: if desirable, this function can be replicated as-is in frontend (instead of polling contract from starknet) to compute only-once
 # the distribution of concentration value per resource type per grid
 #
-func get_resource_concentration_at_grid {} (grid : Vec2, resource_type : felt) -> (resource_concentration : felt):
+func get_resource_concentration_at_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        grid : Vec2, resource_type : felt
+    ) -> (resource_concentration : felt):
     alloc_locals
 
     # Requirement 1 / have a different distribution per resource type
@@ -69,12 +76,12 @@ func get_resource_concentration_at_grid {} (grid : Vec2, resource_type : felt) -
     # Requirement 3 / expose parameters controlling these distributions as constants in `contracts.design.constants` for easier tuning
     # Requirement 4 / deal with fixed-point representation for concentration values
 
-    # with_attr error_message ("function not implemented."):
-    #     assert 1 = 0
-    # end
+    let (resource_concentration) = ns_distribution.get_concentration_at_grid_given_element_type (
+        grid,
+        resource_type
+    )
 
-    ## assuming the concentration value has a range of [0,1000)
-    return (500)
+    return (resource_concentration)
 end
 
 ##############################

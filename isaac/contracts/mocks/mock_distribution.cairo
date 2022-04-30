@@ -2,10 +2,9 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from contracts.util.structs import (Vec2)
-from contracts.util.perlin import (
+from contracts.util.distribution import (
     get_adjusted_perlin_value
 )
-
 
 @view
 func mock_get_adjusted_perlin_value {syscall_ptr : felt*, range_check_ptr} (
