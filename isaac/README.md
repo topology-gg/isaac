@@ -83,6 +83,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - Game over determination - detecting collision between planet and any of the three suns + testing
 - Player transfers device between each other + testing
 - event emission for future query needs - at world forwarding, client action performed etc
+- inject randomness to planet dynamics by employing Fiat-Shamir
 - bonus: think refactoring codebase -- extract all storage vars from `micro.cairo` into a separate contract with getters and setters; then break `micro.cairo` into `micro_device.cairo`, `micro_utx.cairo`, `micro_forwarding.cairo` etc
 - documentation: Lucid charts for contract architecture; formula for coord transform, various parametrization schemes
 
