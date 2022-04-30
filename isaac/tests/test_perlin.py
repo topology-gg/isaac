@@ -59,9 +59,10 @@ async def test_perlin ():
     # Generate contract values and compare against expected values
     #
     i = 0
+    element_type = 0 # ELEMENT_FE_RAW
     for (y,x) in zip(random_y,random_x):
         grid = contract.Vec2 (x, 100+y) # face0 has 100 as y-offset
-        ret = await contract.mock_get_perlin_value(0, grid).call()
+        ret = await contract.mock_get_adjusted_perlin_value(0, grid, element_type).call()
 
         got = ret.result.res
         expected = math.floor(arr2d[y][x])

@@ -22,14 +22,6 @@ const SCALE_FP_DIV_100 = 10**18
 const SCALE_FP_SQRT = 10**10
 
 #
-# Constant for parametrizing perlin generation
-#
-namespace ns_perlin:
-    const SCALER = 666
-    const BOUND = 1000
-end
-
-#
 # Constants for macro physics simulation
 #
 # orbital
@@ -117,6 +109,69 @@ namespace ns_element_types:
     const ELEMENT_PU_ENR = 9 # plutonium-241 enriched
 
     const ELEMENT_COUNT = 10
+end
+
+
+#
+# Constant for parametrizing perlin generation
+#
+namespace ns_perlin:
+    func get_params {range_check_ptr} (
+            element_type : felt
+        ) -> (
+            face_permut_offset : felt,
+            scaler : felt,
+            offset : felt
+        ):
+
+        if element_type == ns_element_types.ELEMENT_FE_RAW:
+            return (
+                face_permut_offset = 0,
+                scaler = 666,
+                offset = 0
+            )
+        end
+
+        if element_type == ns_element_types.ELEMENT_AL_RAW:
+            return (
+                face_permut_offset = 1,
+                scaler = 719,
+                offset = 30 * SCALE_FP_DIV_100
+            )
+        end
+
+        if element_type == ns_element_types.ELEMENT_CU_RAW:
+            return (
+                face_permut_offset = 2,
+                scaler = 742,
+                offset = 50 * SCALE_FP_DIV_100
+            )
+        end
+
+        if element_type == ns_element_types.ELEMENT_SI_RAW:
+            return (
+                face_permut_offset = 3,
+                scaler = 777,
+                offset = 70 * SCALE_FP_DIV_100
+            )
+        end
+
+        if element_type == ns_element_types.ELEMENT_PU_RAW:
+            return (
+                face_permut_offset = 4,
+                scaler = 805,
+                offset = 110 * SCALE_FP_DIV_100
+            )
+        end
+
+        with_attr error_message ("Invalid element type."):
+            assert 1 = 0
+        end
+
+        return (0,0,0)
+    end
+
+    const BOUND = 1000
 end
 
 #

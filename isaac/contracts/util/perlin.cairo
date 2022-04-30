@@ -1,13 +1,13 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import (assert_nn, assert_le, assert_not_zero, abs_value, signed_div_rem)
+from starkware.cairo.common.math import (assert_nn, assert_le, assert_not_zero, abs_value, signed_div_rem, unsigned_div_rem)
 from starkware.cairo.common.math_cmp import (is_le, is_not_zero, is_nn_le, is_nn)
 from starkware.cairo.common.alloc import alloc
 
 from contracts.design.constants import (
     PLANET_DIM, SCALE_FP, SCALE_FP_DIV_100, RANGE_CHECK_BOUND,
-    PERLIN_SCALER
+    ns_perlin
 )
 from contracts.util.structs import (Vec2)
 from contracts.macro import (div_fp, mul_fp)
@@ -149,18 +149,21 @@ func lerp {range_check_ptr} (
 end
 
 func adjust {range_check_ptr} (
-    x : felt) -> (res : felt):
+        x : felt,
+        scaler : felt,
+        offset : felt
+    ) -> (res : felt):
 
     #
-    # adjust = lambda x : relu (x) * PERLIN_SCALER
+    # adjust = lambda x : relu (x - offset) * scaler
     #
 
-    let (nn) = is_nn (x)
+    let (nn) = is_nn (x - offset)
 
     if nn == 0:
         return (0)
     else:
-        let (res, _) = signed_div_rem (x * PERLIN_SCALER, SCALE_FP, RANGE_CHECK_BOUND)
+        let (res, _) = signed_div_rem (x * scaler, SCALE_FP, RANGE_CHECK_BOUND)
         return (res)
     end
 end
@@ -173,9 +176,50 @@ end
 func debug_emit_felt (x : felt):
 end
 
+func get_adjusted_perlin_value {syscall_ptr : felt*, range_check_ptr} (
+        face : felt, grid : Vec2, element_type : felt
+    ) -> (res : felt):
+    alloc_locals
+
+    #
+    # Get params for given `element_type
+    #
+    let (
+        face_permut_offset,
+        scaler,
+        offset
+    ) = ns_perlin.get_params (
+        element_type
+    )
+
+    #
+    # Get permuted face
+    #
+    let (permuated_face, _) = unsigned_div_rem (face + face_permut_offset, 6)
+
+    #
+    # Get perlin value
+    #
+    let (value) = get_perlin_value (
+        face,
+        permuated_face,
+        grid
+    )
+
+    #
+    # Adjust value for given scaler and offset derived from `element_type`
+    #
+    let (res) = adjust (
+        x = value,
+        scaler = scaler,
+        offset = offset
+    )
+
+    return (res)
+end
 
 func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
-        face : felt, grid : Vec2
+        face : felt, permuted_face : felt, grid : Vec2
     ) -> (res : felt):
     alloc_locals
 
@@ -192,10 +236,10 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     let pv_bottom_right = Vec2 (pos.x * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100, pos.y * SCALE_FP_DIV_100)
     let pv_top_right = Vec2 (pos.x * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100, pos.y * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100)
 
-    debug_emit_vec2.emit (pv_bottom_left)
-    debug_emit_vec2.emit (pv_top_left)
-    debug_emit_vec2.emit (pv_bottom_right)
-    debug_emit_vec2.emit (pv_top_right)
+    # debug_emit_vec2.emit (pv_bottom_left)
+    # debug_emit_vec2.emit (pv_top_left)
+    # debug_emit_vec2.emit (pv_bottom_right)
+    # debug_emit_vec2.emit (pv_top_right)
 
     #
     # Retrieve four random vectors given face
@@ -205,12 +249,12 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
         rv_top_left : Vec2,
         rv_bottom_right : Vec2,
         rv_top_right : Vec2
-    ) = get_random_vecs (face)
+    ) = get_random_vecs (permuted_face)
 
-    debug_emit_vec2.emit (rv_bottom_left)
-    debug_emit_vec2.emit (rv_top_left)
-    debug_emit_vec2.emit (rv_bottom_right)
-    debug_emit_vec2.emit (rv_top_right)
+    # debug_emit_vec2.emit (rv_bottom_left)
+    # debug_emit_vec2.emit (rv_top_left)
+    # debug_emit_vec2.emit (rv_bottom_right)
+    # debug_emit_vec2.emit (rv_top_right)
 
     #
     # Compute dot products
@@ -220,10 +264,10 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     let (prod_bottom_right) = dot (pv_bottom_right, rv_bottom_right)
     let (prod_top_right)    = dot (pv_top_right,    rv_top_right)
 
-    debug_emit_felt.emit (prod_bottom_left)
-    debug_emit_felt.emit (prod_top_left)
-    debug_emit_felt.emit (prod_bottom_right)
-    debug_emit_felt.emit (prod_top_right)
+    # debug_emit_felt.emit (prod_bottom_left)
+    # debug_emit_felt.emit (prod_top_left)
+    # debug_emit_felt.emit (prod_bottom_right)
+    # debug_emit_felt.emit (prod_top_right)
 
     #
     # Compute u,v from fade()
@@ -231,8 +275,8 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     let (u) = fade (pos.x * SCALE_FP_DIV_100)
     let (v) = fade (pos.y * SCALE_FP_DIV_100)
 
-    debug_emit_felt.emit (u)
-    debug_emit_felt.emit (v)
+    # debug_emit_felt.emit (u)
+    # debug_emit_felt.emit (v)
 
     #
     # Perform lerp
@@ -241,16 +285,9 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     let (lerp_right) = lerp (v, prod_bottom_right, prod_top_right)
     let (lerp_final) = lerp (u, lerp_left, lerp_right)
 
-    debug_emit_felt.emit (lerp_left)
-    debug_emit_felt.emit (lerp_right)
-    debug_emit_felt.emit (lerp_final)
+    # debug_emit_felt.emit (lerp_left)
+    # debug_emit_felt.emit (lerp_right)
+    # debug_emit_felt.emit (lerp_final)
 
-    #
-    # value adjustment
-    #
-    let (res) = adjust (lerp_final)
-
-    debug_emit_felt.emit (res)
-
-    return (res)
+    return (lerp_final)
 end
