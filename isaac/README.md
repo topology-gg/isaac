@@ -1,5 +1,8 @@
 # Isaac
-The naming reflects the Newtonian mechanics involved in this game, and also borrows the sense of world genesis from its connotation with the Bible figure.
+The naming reflects:
+1. the Newtonian mechanics involved
+2. the sense of world genesis from its connotation with the Bible figure
+3. the subjectivity involved in describing the mechanics of an objective reality, given Isaac is a name for the human species
 
 ### Web client urls (view only)
 - Macro view (trisolar system): https://isaac-macro-view.netlify.app/
