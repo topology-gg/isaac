@@ -111,7 +111,6 @@ async def test_micro (account_factory):
             10
         ])
 
-
     #
     # user deploys SPG => R1
     #

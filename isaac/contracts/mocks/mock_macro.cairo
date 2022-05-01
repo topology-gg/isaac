@@ -6,34 +6,33 @@ from starkware.cairo.common.alloc import alloc
 from contracts.util.structs import (
     Vec2, Dynamic, Dynamics
 )
-from contracts.macro import (
-    forward_world_macro,
-    differentiate
+from contracts.macro.macro_simulation import (
+    rk4, forward_planet_spin
 )
 
 @external
-func mock_forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        state : Dynamics,
-        phi : felt
+func mock_rk4 {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        dt : felt,
+        state : Dynamics
     ) -> (
-        state_nxt : Dynamics,
-        phi_nxt : felt
+        state_nxt : Dynamics
     ):
 
-    let (state_nxt, phi_nxt) = forward_world_macro (state, phi)
+    let (state_nxt) = rk4 (dt, state)
 
-    return (state_nxt, phi_nxt)
+    return (state_nxt)
 end
 
 
 @external
-func mock_differentiate {syscall_ptr : felt*, range_check_ptr} (
-        state : Dynamics
+func mock_forward_planet_spin {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        phi : felt
     ) -> (
-        state_diff : Dynamics
+        phi_nxt : felt
     ):
 
-    let (state_diff) = differentiate (state)
+    let (phi_nxt) = forward_planet_spin (phi)
 
-    return (state_diff)
+    return (phi_nxt)
 end
+

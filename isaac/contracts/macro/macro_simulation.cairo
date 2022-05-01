@@ -9,6 +9,10 @@ from contracts.design.constants import (
 )
 from contracts.util.structs import (Vec2, Dynamic, Dynamics)
 
+from contracts.macro.macro_state import (
+    ns_macro_state_functions
+)
+
 #
 # Runge-Kutta 4th-order method
 #
@@ -177,20 +181,35 @@ func forward_planet_spin {range_check_ptr} (phi) -> (phi_nxt):
     end
 end
 
-func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        state : Dynamics,
-        phi : felt
-    ) -> (
-        state_nxt : Dynamics,
-        phi_nxt : felt
-    ):
+func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
 
-    let (state_nxt : Dynamics) = rk4 (dt=DT, state=state)
-    let (phi_nxt) = forward_planet_spin (phi)
-    ## add handling of momentum kick created by NDPE launch
+    #
+    # Retrieve currnet macro states
+    #
+    let (state_curr : Dynamics) = ns_macro_state_functions.macro_state_curr_read ()
+    let (phi_curr : Dynamics) = ns_macro_state_functions.phi_curr_read ()
 
-    return (state_nxt, phi_nxt)
+    #
+    # Perform state forwarding
+    #
+    let (state_nxt : Dynamics) = rk4 (
+        dt = DT,
+        state = state_curr
+    )
+    let (phi_nxt) = forward_planet_spin (
+        phi = phi_curr
+    )
+
+    ## TODO: add handling of momentum kick created by NDPE launch
+
+    #
+    # Update macro states
+    #
+    ns_macro_state_functions.macro_state_curr_write (state_nxt)
+    ns_macro_state_functions.phi_curr_write (phi_nxt)
+
+    return ()
 end
 
 #

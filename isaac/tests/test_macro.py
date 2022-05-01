@@ -56,7 +56,8 @@ async def test_macro ():
         LOGGER.info (f"> initial macro state in felts: {state_init}")
 
         n_rand = random.randint (0, 500)
-        dt = 0.06
+        dt = 0.005
+        dt_fp = int (dt * SCALE_FP)
         s_test = forward (state=s_init, constants=constants, N=n_rand, dt=dt)
 
         #
@@ -76,11 +77,17 @@ async def test_macro ():
             plnt = contract.Dynamic (q = contract.Vec2(sf[12], sf[14]), qd = contract.Vec2(sf[13], sf[15])),
         )
         # LOGGER.info (f"> state to test = {state}")
-        ret = await contract.mock_forward_world_macro(
-            state,
-            phi_fp
+        ret = await contract.mock_rk4(
+            dt_fp,
+            state
         ).call()
         sn = ret.result.state_nxt
+
+        ret = await contract.mock_forward_planet_spin (
+            phi_fp
+        ).call()
+        phi_nxt = ret.result.phi_nxt
+
         sn_list = [
             sn.sun0.q.x, sn.sun0.qd.x, sn.sun0.q.y, sn.sun0.qd.y,
             sn.sun1.q.x, sn.sun1.qd.x, sn.sun1.q.y, sn.sun1.qd.y,
@@ -88,7 +95,7 @@ async def test_macro ():
             sn.plnt.q.x, sn.plnt.qd.x, sn.plnt.q.y, sn.plnt.qd.y
         ]
         s_contract_1dt = convert_array_from_fp_felt (sn_list)
-        phi_contract_1dt = convert_from_fp_felt (ret.result.phi_nxt)
+        phi_contract_1dt = convert_from_fp_felt (phi_nxt)
 
         #
         # 4. forward the testing dynamics + radian by 1dt to obtain test-1dt dynamics + radian
@@ -112,7 +119,7 @@ async def test_macro ():
         abs_err = abs(phi_contract_1dt - phi_test_1dt)
         assert abs_err <= ABS_ERR_TOL
 
-        LOGGER.info (f"> test {i}/{N_TEST} passed.\n")
+        LOGGER.info (f"> test {i+1}/{N_TEST} passed.\n")
 
 #######
 
@@ -221,7 +228,7 @@ def prepare ():
 
     # Note: when SCALE_CONST is C^2, SCALE_Q must be C^3, and SCALE_V must be sqrt(C),
     #       to scale quantities correctly
-    C = 4.2
+    C = 1.6
     SCALE_V = math.sqrt (C) # sqrt(4) = 2
     SCALE_Q = C**3 # 4^3 = 64
     SCALE_CONST = C**2 # 4^2 = 16
@@ -247,7 +254,7 @@ def prepare ():
 #
 # Forward via integration
 #
-def forward (state, constants, N=105, dt=0.06):
+def forward (state, constants, N=105, dt=0.005):
 
     ss = [state]
     for i in range(N):

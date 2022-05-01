@@ -21,7 +21,9 @@ from contracts.util.structs import (
 # Import functions / namespaces for macro world
 # TODO: extract macro state from this contract to `macro_state.cairo`
 #
-from contracts.macro import (forward_world_macro)
+from contracts.macro.macro_simulation import (
+    forward_world_macro
+)
 
 #
 # Import states / functions / namespaces for micro world
@@ -31,15 +33,6 @@ from contracts.micro.micro_devices import (ns_micro_devices)
 from contracts.micro.micro_utx import (ns_micro_utx)
 from contracts.micro.micro_forwarding import (ns_micro_forwarding)
 from contracts.micro.micro_iterator import (ns_micro_iterator)
-
-# from contracts.micro import (
-#     device_deploy, device_pickup_by_grid,
-#     utx_deploy, utx_pickup_by_grid, forward_world_micro,
-#     iterate_device_deployed_emap, DeviceDeployedEmapEntry,
-#     iterate_utx_deployed_emap, UtxSetDeployedEmapEntry,
-#     iterate_utx_deployed_emap_grab_all_utxs,
-#     opsf_build_device
-# )
 
 
 ##############################
@@ -65,7 +58,9 @@ func yagiExecuteTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
     return ()
 end
 
-##############################
+###############################
+# Server states and constructor
+###############################
 
 @storage_var
 func l2_block_at_last_forward () -> (block_num : felt):
@@ -147,32 +142,7 @@ end
 
 ##############################
 
-#
-# phi: the spin orientation of the planet in the trisolar coordinate system;
-# spin axis perpendicular to the plane of orbital motion
-#
-@storage_var
-func phi_curr () -> (phi : felt):
-end
-
-@storage_var
-func macro_state_curr () -> (macro_state : Dynamics):
-end
-
 @view
-func view_phi_curr {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    ) -> (phi : felt):
-    let (phi) = phi_curr.read ()
-    return (phi)
-end
-
-@view
-func view_macro_state_curr {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    ) -> (macro_state : Dynamics):
-    let (macro_state) = macro_state_curr.read ()
-    return (macro_state)
-end
-
 func can_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> (block_curr : felt, bool : felt):
     alloc_locals
@@ -188,6 +158,7 @@ func can_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     return (block_curr, bool)
 end
 
+@external
 func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
 
@@ -212,16 +183,7 @@ func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     #
     # Forward macro world - orbital positions of trisolar system, and spin orientation of planet
     #
-    let (macro_state : Dynamics) = macro_state_curr.read ()
-    let (phi : felt) = phi_curr.read ()
-
-    let (
-        macro_state_nxt : Dynamics,
-        phi_nxt : felt
-    ) = forward_world_macro (macro_state, phi)
-
-    macro_state_curr.write (macro_state_nxt)
-    phi_curr.write (phi_nxt)
+    forward_world_macro ()
 
     #
     # Forward micro world - all activities on the surface of the planet
