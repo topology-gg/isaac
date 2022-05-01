@@ -415,6 +415,23 @@ func flat_utx_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     return ()
 end
 
+@external
+func flat_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        grid_x : felt,
+        grid_y : felt,
+        device_type : felt,
+        device_count : felt
+    ) -> ():
+
+    client_opsf_build_device (
+        Vec2 (grid_x, grid_y),
+        device_type,
+        device_count
+    )
+
+    return ()
+end
+
 #
 # Exposing iterator functions for observing the micro world
 #
@@ -480,3 +497,41 @@ func admin_give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuilt
 
     return ()
 end
+
+
+@external
+func admin_write_opsf_deployed_id_to_resource_balances {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    id : felt, element_type : felt, balance : felt):
+
+    #
+    # Confirm admin identity
+    #
+    # let (caller) = get_caller_address ()
+    # with_attr error_message ("Only admin can invoke this function."):
+    #     assert caller = GYOZA
+    # end
+
+    ns_micro_state_functions.opsf_deployed_id_to_resource_balances_write (id, element_type, balance)
+
+    return ()
+end
+
+@external
+func admin_write_device_deployed_id_to_energy_balance {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    id : felt, energy : felt):
+
+    #
+    # Confirm admin identity
+    #
+    # let (caller) = get_caller_address ()
+    # with_attr error_message ("Only admin can invoke this function."):
+    #     assert caller = GYOZA
+    # end
+
+    ns_micro_state_functions.device_deployed_id_to_energy_balance_write (id, energy)
+
+    return ()
+end
+
+
+

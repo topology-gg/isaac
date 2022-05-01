@@ -63,9 +63,9 @@ async def test_micro (account_factory):
     player = users[1]
 
     starknet, accounts = account_factory
-    LOGGER.info (f'> Deploying micro.cairo ..')
+    LOGGER.info (f'> Deploying server.cairo ..')
     contract = await starknet.deploy (
-        source = 'contracts/micro.cairo',
+        source = 'contracts/server.cairo',
         constructor_calldata = []
     )
     LOGGER.info ('')
@@ -75,7 +75,7 @@ async def test_micro (account_factory):
     #
     await admin['signer'].send_transaction(
         account = admin['account'], to = contract.contract_address,
-        selector_name = 'admin_write_device_undeployed_ledger',
+        selector_name = 'admin_give_undeployed_device',
         calldata=[
             player['account'].contract_address,
             14, # OPSF
@@ -89,14 +89,13 @@ async def test_micro (account_factory):
     opsf_grid = {'x':50, 'y':150}
     await player['signer'].send_transaction(
         account = player['account'], to = contract.contract_address,
-        selector_name = 'mock_device_deploy',
+        selector_name = 'flat_device_deploy',
         calldata=[
-            player['account'].contract_address,
             14, # OPSF
             opsf_grid['x'], opsf_grid['y']
         ])
 
-    ret = await contract.admin_read_grid_stats( contract.Vec2(opsf_grid['x'], opsf_grid['y']) ).call()
+    ret = await contract.grid_stats_read( contract.Vec2(opsf_grid['x'], opsf_grid['y']) ).call()
     assert ret.result.grid_stat.populated == 1
     assert ret.result.grid_stat.deployed_device_type == 14
     assert ret.result.grid_stat.deployed_device_owner == int(player['account'].contract_address)
@@ -108,9 +107,8 @@ async def test_micro (account_factory):
     with pytest.raises(Exception) as e_info:
         await player['signer'].send_transaction(
             account = player['account'], to = contract.contract_address,
-            selector_name = 'mock_opsf_build_device',
+            selector_name = 'flat_opsf_build_device',
             calldata=[
-                player['account'].contract_address,
                 opsf_grid['x'], opsf_grid['y'],
                 0, # manufacture SPG
                 3
@@ -135,9 +133,8 @@ async def test_micro (account_factory):
     with pytest.raises(Exception) as e_info:
         await player['signer'].send_transaction(
             account = player['account'], to = contract.contract_address,
-            selector_name = 'mock_opsf_build_device',
+            selector_name = 'flat_opsf_build_device',
             calldata=[
-                player['account'].contract_address,
                 opsf_grid['x'], opsf_grid['y'],
                 0, # manufacture SPG
                 3
@@ -154,9 +151,8 @@ async def test_micro (account_factory):
 
     await player['signer'].send_transaction(
         account = player['account'], to = contract.contract_address,
-        selector_name = 'mock_opsf_build_device',
+        selector_name = 'flat_opsf_build_device',
         calldata=[
-            player['account'].contract_address,
             opsf_grid['x'], opsf_grid['y'],
             0, # manufacture SPG
             3
@@ -166,26 +162,26 @@ async def test_micro (account_factory):
     #
     # Check player's undeployed device balance, and check OPSF resource & energy balance
     #
-    ret = await contract.admin_read_device_undeployed_ledger (
+    ret = await contract.device_undeployed_ledger_read (
         player['account'].contract_address,
         0
     ).call()
     assert ret.result.amount == 3
     LOGGER.info (f"> Player has 3 x SPGs undeployed as expected.")
 
-    ret = await contract.admin_read_opsf_deployed_id_to_resource_balances (
+    ret = await contract.opsf_deployed_id_to_resource_balances_read (
         opsf_id,
         3
     ).call()
     assert ret.result.balance == 77
 
-    ret = await contract.admin_read_opsf_deployed_id_to_resource_balances (
+    ret = await contract.opsf_deployed_id_to_resource_balances_read (
         opsf_id,
         7
     ).call()
     assert ret.result.balance == 99
 
-    ret = await contract.admin_read_device_deployed_id_to_energy_balance (
+    ret = await contract.device_deployed_id_to_energy_balance_read (
         opsf_id
     ).call()
     assert ret.result.energy == 555
