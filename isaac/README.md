@@ -82,7 +82,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) `manufacturing.cairo`: device construction recipes; testing
 - (DONE) hook up `perlin.cairo` x `micro.cairo`
 - (DONE) refactoring codebase -- extract all storage vars from `micro.cairo` into a separate contract with getters and setters; then break `micro.cairo` into `micro_device.cairo`, `micro_utx.cairo`, `micro_forwarding.cairo` etc; modify test with new contract architecture to pass
-- refactor macro state out of server contract; modify macro test to pass
+- (DONE) refactor macro state out of server contract; modify macro test to pass
 - coordinate transform macro => micro for solar exposure calculation
 - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - testing: build model for resource & energy management, then use it to test `logistics.cairo` x `micro.cairo` at world forwarding
