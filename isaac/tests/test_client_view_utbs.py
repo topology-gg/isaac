@@ -57,9 +57,9 @@ async def test_micro (account_factory):
     user_addr = user['account'].contract_address
 
     starknet, accounts = account_factory
-    LOGGER.info (f'> Deploying micro.cairo ..\n')
+    LOGGER.info (f'> Deploying server.cairo ..\n')
     contract = await starknet.deploy (
-        source = 'contracts/micro.cairo',
+        source = 'contracts/server.cairo',
         constructor_calldata = []
     )
 
@@ -68,7 +68,7 @@ async def test_micro (account_factory):
     #
     await admin['signer'].send_transaction(
         account = admin['account'], to = contract.contract_address,
-        selector_name = 'admin_write_device_undeployed_ledger',
+        selector_name = 'admin_give_undeployed_device',
         calldata=[
             user['account'].contract_address,
             2, # DEVICE_FE_HARV
@@ -80,7 +80,7 @@ async def test_micro (account_factory):
     #
     await admin['signer'].send_transaction(
         account = admin['account'], to = contract.contract_address,
-        selector_name = 'admin_write_device_undeployed_ledger',
+        selector_name = 'admin_give_undeployed_device',
         calldata=[
             user['account'].contract_address,
             7, # DEVICE_FE_REFN
@@ -92,7 +92,7 @@ async def test_micro (account_factory):
     #
     await admin['signer'].send_transaction(
         account = admin['account'], to = contract.contract_address,
-        selector_name = 'admin_write_device_undeployed_ledger',
+        selector_name = 'admin_give_undeployed_device',
         calldata=[
             user['account'].contract_address,
             12, # UTB
@@ -109,30 +109,28 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_device_deploy',
+        selector_name = 'flat_device_deploy',
         calldata=[
-            user_addr,
             2, # DEVICE_FE_HARV
             H1_grid[0], H1_grid[1]
         ])
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_device_deploy',
+        selector_name = 'flat_device_deploy',
         calldata=[
-            user_addr,
             7, # DEVICE_FE_REFN
             R1_grid[0], R1_grid[1]
         ])
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utx_deploy',
+        selector_name = 'flat_utx_deploy',
         calldata=[
-            user_addr, 12,
+            12,
+            150, 85, 153, 85,
             2, 151, 152, # locs_x
-            2, 85, 85, # locs_y
-            150, 85, 153, 85
+            2, 85, 85 # locs_y
         ])
 
     #
@@ -144,43 +142,41 @@ async def test_micro (account_factory):
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_device_deploy',
+        selector_name = 'flat_device_deploy',
         calldata=[
-            user_addr,
             2, # DEVICE_FE_HARV
             H2_grid[0], H2_grid[1]
         ])
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_device_deploy',
+        selector_name = 'flat_device_deploy',
         calldata=[
-            user_addr,
             7, # DEVICE_FE_REFN
             R2_grid[0], R2_grid[1]
         ])
 
     await user['signer'].send_transaction(
         account = user['account'], to = contract.contract_address,
-        selector_name = 'mock_utx_deploy',
+        selector_name = 'flat_utx_deploy',
         calldata=[
-            user_addr, 12,
+            12,
+            110, 140, 110, 149,
             8, 110, 110, 110, 110, 110, 110, 110, 110, # locs_x
-            8, 141, 142, 143, 144, 145, 146, 147, 148, # locs_y
-            110, 140, 110, 149
+            8, 141, 142, 143, 144, 145, 146, 147, 148 # locs_y
         ])
 
     #
     # grab all utb grids and check correctness
     #
 
-    ret = await contract.admin_read_utx_set_deployed_emap_size(12).call()
+    ret = await contract.utx_set_deployed_emap_size_read(12).call()
     size = ret.result.size
     for i in range(size):
-        ret = await contract.admin_read_utx_set_deployed_emap(12, i).call()
+        ret = await contract.utx_set_deployed_emap_read(12, i).call()
         LOGGER.info (f"> emap entry: {ret.result.emap_entry}")
 
-    ret = await contract.iterate_utx_deployed_emap_grab_all_utxs(12).call()
+    ret = await contract.client_view_all_utx_grids(12).call()
     LOGGER.info (f"> grids: {ret.result.grids}")
 
     grids = ret.result.grids
