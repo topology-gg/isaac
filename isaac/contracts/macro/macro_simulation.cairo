@@ -188,7 +188,7 @@ func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     # Retrieve currnet macro states
     #
     let (state_curr : Dynamics) = ns_macro_state_functions.macro_state_curr_read ()
-    let (phi_curr : Dynamics) = ns_macro_state_functions.phi_curr_read ()
+    let (phi_curr : felt) = ns_macro_state_functions.phi_curr_read ()
 
     #
     # Perform state forwarding

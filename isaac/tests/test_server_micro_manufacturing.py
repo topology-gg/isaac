@@ -65,7 +65,7 @@ async def test_micro (account_factory):
     starknet, accounts = account_factory
     LOGGER.info (f'> Deploying server.cairo ..')
     contract = await starknet.deploy (
-        source = 'contracts/server.cairo',
+        source = 'contracts/server/server.cairo',
         constructor_calldata = []
     )
     LOGGER.info ('')

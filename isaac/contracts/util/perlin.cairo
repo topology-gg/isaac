@@ -10,7 +10,7 @@ from contracts.design.constants import (
     ns_perlin
 )
 from contracts.util.structs import (Vec2)
-from contracts.macro import (div_fp, mul_fp)
+from contracts.macro.macro_simulation import (div_fp, mul_fp)
 
 # See README for illustration of the coordinate system and face/edge indexing scheme
 

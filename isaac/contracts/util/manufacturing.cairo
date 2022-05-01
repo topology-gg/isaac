@@ -6,8 +6,10 @@ from starkware.cairo.common.math_cmp import (is_le, is_not_zero, is_nn_le, is_nn
 from starkware.cairo.common.registers import get_label_location
 from starkware.cairo.common.alloc import alloc
 from contracts.util.structs import (Vec2)
-from contracts.macro import (div_fp, mul_fp)
 
+from contracts.macro.macro_simulation import (
+    div_fp, mul_fp
+)
 from contracts.design.constants import (
     ns_element_types,
     ns_device_types,

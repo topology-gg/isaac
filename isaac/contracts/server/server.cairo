@@ -18,12 +18,18 @@ from contracts.util.structs import (
 )
 
 #
+# Import getters and setters for server states
+#
+from contracts.server.server_state import (
+    ns_server_state_functions
+)
+
+#
 # Import functions / namespaces for macro world
 # TODO: extract macro state from this contract to `macro_state.cairo`
 #
-from contracts.macro.macro_simulation import (
-    forward_world_macro
-)
+from contracts.macro.macro_simulation import (forward_world_macro)
+from contracts.macro.macro_state import (ns_macro_state_functions)
 
 #
 # Import states / functions / namespaces for micro world
@@ -62,26 +68,13 @@ end
 # Server states and constructor
 ###############################
 
-@storage_var
-func l2_block_at_last_forward () -> (block_num : felt):
-end
-
-@view
-func client_view_l2_block_at_last_forward {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    ) -> (block_num : felt):
-
-    let (block_num) = l2_block_at_last_forward.read ()
-
-    return (block_num)
-end
-
 @constructor
 func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
 
     #
     # Initialize macro world - trisolar system placement & planet rotation
     #
-    macro_state_curr.write (Dynamics(
+    ns_macro_state_functions.macro_state_curr_write (Dynamics(
         sun0 = Dynamic(
             q = Vec2(
                 x = ns_macro_init.sun0_qx,
@@ -124,7 +117,7 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
         )
     ))
 
-    phi_curr.write (ns_macro_init.phi)
+    ns_macro_state_functions.phi_curr_write (ns_macro_init.phi)
 
     #
     # TODO: initialize mini world - determining the seed for resource distribution function
@@ -135,7 +128,7 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     # Record L2 block at reality genesis
     #
     let (block) = get_block_number ()
-    l2_block_at_last_forward.write (block)
+    ns_server_state_functions.l2_block_at_last_forward_write (block)
 
     return()
 end
@@ -151,7 +144,7 @@ func can_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     # At least MIN_L2_BLOCK_NUM_BETWEEN_FORWARD between last-update block and current block
     #
     let (block_curr) = get_block_number ()
-    let (block_last) = l2_block_at_last_forward.read ()
+    let (block_last) = ns_server_state_functions.l2_block_at_last_forward_read ()
     let block_diff = block_curr - block_last
     let (bool) = is_le (MIN_L2_BLOCK_NUM_BETWEEN_FORWARD, block_diff)
 
@@ -178,7 +171,7 @@ func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     with_attr error_message("last-update block must be at least {min_dist} block away from current block."):
         assert bool = 1
     end
-    l2_block_at_last_forward.write (block_curr)
+    ns_server_state_functions.l2_block_at_last_forward_write (block_curr)
 
     #
     # Forward macro world - orbital positions of trisolar system, and spin orientation of planet
