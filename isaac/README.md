@@ -98,6 +98,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - Conceptualise: high-level signup flow, civilisation init & reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol; difficulty knobs (init: need to parametrize initial devices for players)
 - DAO voting for contract migration determination
 - Implement and test isaac-protocol
+- Protocol review: Peteris and Mewny
 
 #### Isaac clients
 - utb/utl view carries fraction info, enabling transmission animation in `https://isaac-micro-view.netlify.app/`
