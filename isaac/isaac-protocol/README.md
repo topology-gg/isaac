@@ -48,7 +48,7 @@ Recognizing the benefit for giving the creator dominant share in the infancy sta
                       |                  ∧
                       --> creator share  |
 ```
-Notice the difference between thick arrow (`=>`) and thin arrow (`->`). Thick arrows denote morphisms that are mutable via governance, while thin arrows denote morphisms that are immutable with the protocol. This design is in the spirit of governance minimization: minimizing the number of moving parts in the system while maintaining its degrees of freedom. Schema 4 is the schema employed by Isaac DAO.
+Notice the difference between thick arrow (`=>`) and thin arrow (`->`). Thick arrows denote morphisms that are mutable via governance, while thin arrows denote morphisms that are immutable with the protocol. This design is in the spirit of governance minimization: minimizing the number of moving parts in the system while maintaining its degrees of freedom. Schema 4 is the schema employed by Isaac Protocol and implemented as part of Isaac DAO.
 
 #### Minimally enforceable decision reached through voting
 To retain autonomy of the governance model, let us constrain the decision to be enforceable by the protocol contract alone: decision to point towards a particular contract address endorsed by the DAO to fulfill certain functionality for the protocol.
