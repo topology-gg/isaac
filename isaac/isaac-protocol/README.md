@@ -76,5 +76,5 @@ given a group of experienced players who have high probability of winning an Isa
 Taking all above into consideration, Isaac Protocol adopts solution (1) at its origin, with static initial condition setup.
 
 #### Denial of participation attack
-without proper mitigation strategy employed by the matchmaking component, a malicious player could queue with a large amount of sybil addresses, boosting its probability of getting assigned into servers, which are assumed to be of limited quantity. The malicious player then stay idle throughout the entire game until it terminates (based on timer or some condition such as civilization destruction). By doing this the malicious player denies other players from participating in the game.
+without proper mitigation strategy employed by the matchmaking component, a malicious player could queue with a large amount of sybil addresses, boosting its probability of getting assigned into servers, which are assumed to be of limited quantity. The malicious player then stays idle throughout the entire game until it terminates (based on timer or some condition such as civilization destruction). By doing this the malicious player denies other players from participating in the game.
 
