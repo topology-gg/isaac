@@ -62,6 +62,7 @@ In particular, Isaac DAO has *three* votable decisions, each corresponding to a 
 ### Protocol system diagram
 ![image](https://user-images.githubusercontent.com/59590480/166982252-494fbe4e-648f-491d-a2a8-2bc4653c30af.png)
 
+note: Server implements a state machine with two states: `idle` and `active`. This requires a state machine pattern in Starknet-Cairo.
 
 ### Adversarial considerations
 #### Server clone attack
