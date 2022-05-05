@@ -84,7 +84,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) refactoring codebase -- extract all storage vars from `micro.cairo` into a separate contract with getters and setters; then break `micro.cairo` into `micro_device.cairo`, `micro_utx.cairo`, `micro_forwarding.cairo` etc; modify test with new contract architecture to pass
 - (DONE) refactor macro state out of server contract; modify macro test to pass
 - (DONE) create server folder, refactor server state out of server contract; modify test to pass
-- **coordinate transform macro => micro for solar exposure calculation**
+- (DONE) coordinate transform macro => micro for solar exposure calculation
 - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - testing: build model for resource & energy management, then use it to test `logistics.cairo` x `micro.cairo` at world forwarding
 - Game over determination - detecting collision between planet and any of the three suns + testing
@@ -92,6 +92,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - event emission for future query needs - at world forwarding, client action performed etc
 - visualize macro dynamics to find robust initial condition for v.1
 - inject randomness to planet dynamics by employing Fiat-Shamir
+- refactor contract architecture again
 - documentation: Lucid charts for contract architecture; formula for coord transform, various parametrization schemes
 
 #### Isaac Protocol
