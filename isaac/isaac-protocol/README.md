@@ -59,6 +59,10 @@ In particular, Isaac DAO has *three* votable decisions, each corresponding to a 
 3. contract address of the contract that exposes a *pure* function that implements the morphism `{{share}} => {vote}`
 
 
+### Protocol system diagram
+![image](https://user-images.githubusercontent.com/59590480/166982252-494fbe4e-648f-491d-a2a8-2bc4653c30af.png)
+
+
 ### Adversarial considerations
 #### Server clone attack
 given a group of experienced players who have high probability of winning an Isaac instance, if Isaac Protocol allows permissionless and dynamic instance deployment, the group may prompt the Protocol to deploy N instances at the same time, and copy all actions performed on one instance to the other N-1 instances (i.e. copy-trade), therefore amplifying their governance right distribution when the instance is won, assuming determinism for each instance (same actions => same outcome). Pontential solutions:
