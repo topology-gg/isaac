@@ -110,7 +110,6 @@ func are_contiguous_grids_given_valid_grids_on_same_face {range_check_ptr} (
     return ()
 end
 
-
 func locate_face_and_edge_given_valid_grid {range_check_ptr} (
         grid : Vec2
     ) -> (

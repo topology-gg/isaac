@@ -6,6 +6,7 @@ from starkware.cairo.common.math_cmp import (is_le, is_not_zero, is_nn_le, is_nn
 from starkware.cairo.common.alloc import alloc
 
 from contracts.design.constants import (
+    SCALE_FP,
     ns_device_types, ns_element_types,
     ns_base_harvester_multiplier, ns_harvester_boost_factor,
     ns_base_transformer_quantity, ns_transformer_boost_factor,
@@ -206,10 +207,10 @@ end
 ###########################
 
 namespace ns_logistics_xpg:
-    func spg_solar_exposure_to_energy_generated_per_tick {range_check_ptr} (
-        solar_exposure : felt) -> (energy_generated : felt):
+    func spg_solar_exposure_fp_to_energy_generated_per_tick {range_check_ptr} (
+        solar_exposure_fp : felt) -> (energy_generated : felt):
 
-        let (energy_generated, _) = unsigned_div_rem (solar_exposure * ns_solar_power.MULT, ns_solar_power.BOUND)
+        let (energy_generated, _) = unsigned_div_rem (solar_exposure_fp * ns_solar_power.MULT, ns_solar_power.BOUND * SCALE_FP)
 
         return (energy_generated)
     end

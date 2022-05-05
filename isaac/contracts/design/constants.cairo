@@ -33,6 +33,7 @@ const MASS_SUN2 = 1 * SCALE_FP
 # rotation
 const OMEGA_DT_PLANET = 624 / 100 * 6 / 100 * SCALE_FP # unit: radiant; takes ~100 DT to complete 2*pi
 const TWO_PI = 6283185 / 1000000 * SCALE_FP
+const PI = TWO_PI / 2
 
 #
 # macro dynamics initialization
@@ -68,8 +69,10 @@ const PLANET_DIM = 100
 # Constants for solar power generation parametrization
 #
 namespace ns_solar_power:
+    const BASE_RADIATION = 200 * SCALE_FP
+    const OBLIQUE_RADIATION = 50 * SCALE_FP
     const MULT = 10
-    const BOUND = 100
+    const BOUND = 1
 end
 
 #

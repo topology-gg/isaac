@@ -14,7 +14,7 @@ from contracts.design.constants import (
     get_device_dimension_ptr
 )
 from contracts.util.structs import (
-    Vec2
+    Vec2, Dynamic, Dynamics
 )
 from contracts.util.grid import (
     is_valid_grid, are_contiguous_grids_given_valid_grids,
@@ -35,23 +35,51 @@ from contracts.micro.micro_devices import (
 from contracts.micro.micro_grids import (
     ns_micro_grids
 )
+from contracts.micro.micro_solar import (
+    ns_micro_solar, MacroStatesForTransform
+)
+from contracts.macro.macro_state import (
+    ns_macro_state_functions
+)
 
 namespace ns_micro_forwarding:
 
     func resource_energy_update_at_devices {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         ) -> ():
+        alloc_locals
 
+        #
+        # Get current macro states
+        #
+        let (macro_state_curr : Dynamics) = ns_macro_state_functions.macro_state_curr_read ()
+        let (phi_curr : felt) = ns_macro_state_functions.phi_curr_read ()
+
+        #
+        # Get macro distances, vectors, and surface-normals of planet sides before going into recursion
+        # to avoid redundant calculations
+        #
+        let (macro_states_for_transform : MacroStatesForTransform) = ns_micro_solar.get_macro_states_for_transform (
+            macro_state_curr,
+            phi_curr
+        )
+
+        #
+        # Recurse over all deployed devices
+        #
         let (emap_size) = ns_micro_state_functions.device_deployed_emap_size_read ()
         recurse_resource_energy_update_at_devices (
             len = emap_size,
-            idx = 0
+            idx = 0,
+            macro_states = macro_states_for_transform
         )
 
         return ()
     end
 
     func recurse_resource_energy_update_at_devices {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-            len : felt, idx : felt
+            len : felt,
+            idx : felt,
+            macro_states : MacroStatesForTransform
         ) -> ():
         alloc_locals
 
@@ -72,8 +100,14 @@ namespace ns_micro_forwarding:
         handle_power_generator:
         ## solar power generator
         if emap_entry.type == ns_device_types.DEVICE_SPG:
-            let (energy_generated) = ns_logistics_xpg.spg_solar_exposure_to_energy_generated_per_tick (
-                solar_exposure = 10 # TODO!!!
+
+            #
+            # Determine solar exposure
+            #
+            let (solar_exposure_fp) = ns_micro_solar.get_solar_exposure_fp (emap_entry.grid, macro_states)
+
+            let (energy_generated) = ns_logistics_xpg.spg_solar_exposure_fp_to_energy_generated_per_tick (
+                solar_exposure_fp
             )
             let (curr_energy) = ns_micro_state_functions.device_deployed_id_to_energy_balance_read (emap_entry.id)
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
@@ -240,7 +274,7 @@ namespace ns_micro_forwarding:
         # Tail recursion
         #
         recurse:
-        recurse_resource_energy_update_at_devices (len, idx + 1)
+        recurse_resource_energy_update_at_devices (len, idx + 1, macro_states)
 
         return ()
     end
