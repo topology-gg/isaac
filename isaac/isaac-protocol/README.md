@@ -23,7 +23,7 @@ The core schema of P2G is as follows:
 where the set operator (`{}`) denotes the set of unique participant involved (i.e. `mapping address -> a'`), identified only by address - until we have decentralized identity systems at our disposal. Notice that financial contribution is *not* involved in the schema, for better or worse. Given the utter lack of governance models that does not use coin-voting, let us keep financial contribution completely irrelevant in this experimental protocol.
 
 #### Voting methods
-Recognizing the opportunity of experimenting with various voting methods, let us decouple governance share from vote:
+Recognizing the opportunity of experimenting with various voting methods e.g. quadratic voting, let us decouple governance share from vote:
 ```
 {onchain participation} => {share} => {vote} .. schema 2
 ```
