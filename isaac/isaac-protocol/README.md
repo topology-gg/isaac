@@ -3,7 +3,7 @@
 ### Introduction
 Isaac Protocol represents an experiment for both governance minimization and Open Game Development directly on the blockchain. Following the spirit of Solve2Mint (S2M; https://www.guiltygyoza.xyz/2022/02/solve2mint; https://solve2mint.netlify.app/), Isaac Protocol experiments with the concept of Play2Govern (P2G). P2G is a governance framework that distributes governance right to those who contribute the most in playing an onchain game. P2G is one of the implications of running a game, or a *reality*, fully onchain, such that quantitative metrics can be derived directly from onchain participation activity; the derivation (or more formally, `function : onchain-activity -> governance right`) is encoded transparently in smart contract and enforced autonomously with the security guarantees of the host blockchain and rollup, strengthening the credible neutrality of the governance protocol.
 
-Decentralized Autonomous Organization is a fascinating concept, yet we recognize that most DAOs to date are not quite autonomous. The design of Isaac Protocol will strive for governance minimization in order to maximize the autonomy of itself.
+Decentralized Autonomous Organization is a fascinating concept, yet we recognize that most DAOs to date are not quite autonomous. The design of Isaac Protocol will strive for governance minimization in order to enable robust autonomy of the Isaac DAO.
 
 Open Game Development has proven extremely difficult. Recognizing the strength of the blockchain as a coordination engine, it is intriguing to design robust processes and modular primitives that could coordinate such intense and multi-faceted activity as game creation on the blockchain, leveraging the fact that the game itself is fully onchain.
 
