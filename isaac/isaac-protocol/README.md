@@ -18,21 +18,21 @@ Open Game Development has proven extremely difficult. Recognizing the strength o
 #### Core schema
 The core schema of P2G is as follows:
 ```
-{onchain participation} => {governance right in collective decision making} ... schema 1
+{onchain participation} => {governance right in collective decision making} .. schema 1
 ```
 where the set operator (`{}`) denotes the set of unique participant involved (i.e. `mapping address -> a'`), identified only by address - until we have decentralized identity systems at our disposal. Notice that financial contribution is *not* involved in the schema, for better or worse. Given the utter lack of governance models that does not use coin-voting, let us keep financial contribution completely irrelevant in this experimental protocol.
 
 #### Voting methods
 Recognizing the opportunity of experimenting with various voting methods, let us decouple governance share from vote:
 ```
-{onchain participation} => {share} => {vote} ... schema 2
+{onchain participation} => {share} => {vote} .. schema 2
 ```
 where we have a morphism that transforms onchain participation (quantified, based on a particular _measure_) into numbers of shares, and a separate morphism that transforms numbers of shares into numbers of votes.
 
 #### Time dimensionality
 Recognizing the value of *discounting past participation* to prevent dead equity, as well as the discontinuity in the subject to be governed going through upgrades, let us add the dimensionality of time into `share`:
 ```
-{onchain participation} => {{share}} => {vote} ... schema 3
+{onchain participation} => {{share}} => {vote} .. schema 3
 ```
 where an outer set operator is added to `{share}` to denote the unique timestamp / epoch assocated with each `{share}` (i.e. `mapping timestamp/epoch -> (mapping address -> a'))`. With this additional dimensionality, the morphism that transforms numbers of shares into numbers of votes can treat shares earned in different "epoch" of the subject to be governed differentially. One example is to implement some discount factor `0 < γ < 1` such that
 ```
@@ -44,7 +44,7 @@ where `share_{i}` denotes the set of share numbers at epoch `i` of the subject, 
 #### Benevolent dictator - special share
 Recognizing the benefit for giving the creator dominant share in the infancy stage of the subject to be governed, let us add a special kind of share exclusive to the creator:
 ```
-{onchain participation} => {{share}} => {vote} ... schema 4
+{onchain participation} => {{share}} => {vote} .. schema 4
                       |                  ∧
                       --> creator share  |
 ```
