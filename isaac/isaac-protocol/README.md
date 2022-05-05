@@ -30,19 +30,19 @@ Recognizing the opportunity of experimenting with various voting methods e.g. qu
 where we have a morphism that transforms onchain participation (quantified, based on a particular _measure_) into numbers of shares, and a separate morphism that transforms numbers of shares into numbers of votes.
 
 #### Time dimensionality
-Recognizing the value of *discounting past participation* to prevent dead equity, as well as the discontinuity in the subject to be governed going through upgrades, let us add the dimensionality of time into `share`:
+Recognizing the value of *discounting past participation* to prevent dead equity, as well as the discontinuity in the subject being governed going through upgrades, let us add the dimensionality of time into `share`:
 ```
 {onchain participation} => {{share}} => {vote} .. schema 3
 ```
-where an outer set operator is added to `{share}` to denote the unique timestamp / epoch assocated with each `{share}` (i.e. `mapping timestamp/epoch -> (mapping address -> a'))`. With this additional dimensionality, the morphism that transforms numbers of shares into numbers of votes can treat shares earned in different "epoch" of the subject to be governed differentially. One example is to implement some discount factor `0 < γ < 1` such that
+where an outer set operator is added to `{share}` to denote the unique timestamp / epoch assocated with each `{share}` (i.e. `mapping timestamp/epoch -> (mapping address -> a'))`. With this additional dimension, the morphism that transforms numbers of shares into numbers of votes can treat shares earned in different "epoch" of the subject being governed differentially. One example is to implement some discount factor `0 < γ < 1` such that
 ```
-vote = 1 * share_{n} + γ * share_{n-1} + γ^n * share_0
+vote = 1 * share_{n} + γ * share_{n-1} + γ^n * share_0 ∀participant
 ```
-where `share_{i}` denotes the set of share numbers at epoch `i` of the subject, with `i=0` denoting the genesis epoch.
+where `share_{i}` denotes the number of shares at epoch `i` of the subject being governed, with `i=0` denoting the genesis epoch.
 
 
 #### Benevolent dictator - special share
-Recognizing the benefit for giving the creator dominant share in the infancy stage of the subject to be governed, let us add a special kind of share exclusive to the creator:
+Recognizing the benefit for giving the creator dominant share in the infancy stage of the subject being governed, let us add a special kind of share exclusive to the creator:
 ```
 {onchain participation} => {{share}} => {vote} .. schema 4
                       |                  ∧
