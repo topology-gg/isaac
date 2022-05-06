@@ -50,6 +50,8 @@ Recognizing the benefit for giving the creator dominant share in the infancy sta
 ```
 Notice the difference between thick arrow (`=>`) and thin arrow (`->`). Thick arrows denote morphisms that are mutable via governance, while thin arrows denote morphisms that are immutable with the protocol. This design is in the spirit of governance minimization: minimizing the number of moving parts in the system while maintaining its degrees of freedom. Schema 4 is the schema employed by Isaac Protocol and implemented as part of Isaac DAO.
 
+TODO: think about "at civ survival, any address in that civ who hasn't launched NDPE will be considered idle player and get discounted shares" -- radical? unfair? not practical?
+
 #### Minimally enforceable decision reached through voting
 To retain autonomy of the governance model, let us constrain the decision to be enforceable by the protocol contract alone: decision to point towards a particular contract address endorsed by the DAO to fulfill certain functionality for the protocol.
 
