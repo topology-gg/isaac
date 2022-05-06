@@ -86,9 +86,9 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) create server folder, refactor server state out of server contract; modify test to pass
 - (DONE) coordinate transform macro => micro for solar exposure calculation
 - NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
-- testing: build model for resource & energy management, then use it to test `logistics.cairo` x `micro.cairo` at world forwarding
-- Game over determination - detecting collision between planet and any of the three suns + testing
 - Player transfers device between each other + testing
+- Game over determination - detecting collision between planet and any of the three suns + testing
+- testing: build model for resource & energy management, then use it to test `logistics.cairo` x `micro.cairo` at world forwarding
 - event emission for future query needs - at world forwarding, client action performed etc
 - visualize macro dynamics to find robust initial condition for v.1
 - inject randomness to planet dynamics by employing Fiat-Shamir
