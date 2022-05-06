@@ -21,7 +21,7 @@ from contracts.util.structs import (
 func l2_block_at_last_forward () -> (block_num : felt):
 end
 
-namespace ns_server_state_functions:
+namespace ns_world_state_functions:
 
     #
     # Getters

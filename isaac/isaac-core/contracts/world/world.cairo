@@ -18,10 +18,10 @@ from contracts.util.structs import (
 )
 
 #
-# Import getters and setters for server states
+# Import getters and setters for world states
 #
-from contracts.server.server_state import (
-    ns_server_state_functions
+from contracts.world.world_state import (
+    ns_world_state_functions
 )
 
 #
@@ -128,7 +128,7 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     # Record L2 block at reality genesis
     #
     let (block) = get_block_number ()
-    ns_server_state_functions.l2_block_at_last_forward_write (block)
+    ns_world_state_functions.l2_block_at_last_forward_write (block)
 
     return()
 end
@@ -144,7 +144,7 @@ func can_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     # At least MIN_L2_BLOCK_NUM_BETWEEN_FORWARD between last-update block and current block
     #
     let (block_curr) = get_block_number ()
-    let (block_last) = ns_server_state_functions.l2_block_at_last_forward_read ()
+    let (block_last) = ns_world_state_functions.l2_block_at_last_forward_read ()
     let block_diff = block_curr - block_last
     let (bool) = is_le (MIN_L2_BLOCK_NUM_BETWEEN_FORWARD, block_diff)
 
@@ -171,7 +171,7 @@ func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     with_attr error_message("last-update block must be at least {min_dist} block away from current block."):
         assert bool = 1
     end
-    ns_server_state_functions.l2_block_at_last_forward_write (block_curr)
+    ns_world_state_functions.l2_block_at_last_forward_write (block_curr)
 
     #
     # Forward macro world - orbital positions of trisolar system, and spin orientation of planet

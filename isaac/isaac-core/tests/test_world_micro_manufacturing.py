@@ -63,9 +63,9 @@ async def test_micro (account_factory):
     player = users[1]
 
     starknet, accounts = account_factory
-    LOGGER.info (f'> Deploying server.cairo ..')
+    LOGGER.info (f'> Deploying world.cairo ..')
     contract = await starknet.deploy (
-        source = 'contracts/server/server.cairo',
+        source = 'contracts/world/world.cairo',
         constructor_calldata = []
     )
     LOGGER.info ('')
