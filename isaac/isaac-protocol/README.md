@@ -81,3 +81,5 @@ Taking all above into consideration, Isaac Protocol adopts solution (1) at its o
 #### Denial of participation attack
 without proper mitigation strategy employed by the matchmaking component, a malicious player could queue with a large amount of sybil addresses, boosting its probability of getting assigned into servers, which are assumed to be of limited quantity. The malicious player then stays idle throughout the entire game until it terminates (based on timer or some condition such as civilization destruction). By doing this the malicious player denies other players from participating in the game. To deal with this at the protocol level, we need a quantitative measure of idleness/malice, which may be tricky.
 
+#### Fungibility attack (credit: Peteris Erins)
+Although `share` is non-transferable, knowing this people could create account contracts owned by their accounts and effectively made `share` transferable again. Those account contracts could accumulate `share` and thus voting power, and eventually a market for them could arise. This would allow a governance attack on Isaac.
