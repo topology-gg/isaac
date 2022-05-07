@@ -85,7 +85,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) refactor macro state out of server contract; modify macro test to pass
 - (DONE) create server folder, refactor server state out of server contract; modify test to pass
 - (DONE) coordinate transform macro => micro for solar exposure calculation
-- NDPE: launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
+- NDPE: *any owner launching her deployed NDPE will launch all deployed NDPEs at once; NDPE like all other devices is transferrable; onchain-participation => shares depends on whether a survived player has launched NDPE at least once or not* launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - Player transfers device between each other + testing
 - Game over determination - detecting collision between planet and any of the three suns + testing
 - testing: build model for resource & energy management, then use it to test `logistics.cairo` x `micro.cairo` at world forwarding
