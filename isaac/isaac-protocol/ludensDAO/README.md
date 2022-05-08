@@ -36,3 +36,20 @@ Note that all _Ludens_ are welcome to participate in code review and pull reques
 
 #### Permissionless exit
 Given the fact that there is no financial token involved in the governance model (no capital lock-in), and the fact that the entire LudensDAO contract and subject contract are fully and transparently onchain (such as on a ZK Rollup), anyone can exit by forking the entire system. The only moat any LudensDAO has would be the culture, relationship, and capability of the angel and ludens to govern and evolve its Subject.
+
+### Contract interfaces (in Cairo syntax)
+#### LudensDAO
+1. `@external angel_submit_development_proposal ()`
+2. `@external ludens_submit_reassignment_proposal ()`
+3. `@external ludens_vote_development_proposal ()`
+4. `@external ludens_vote_reassignment_proposal ()`
+5. `@view view_subject_contract_address ()`
+6. `@view view_charter_contract_address ()`
+7. `@view view_angel_contract_address ()`
+8. TODO: interface between LudensDAO <=> Subject
+
+#### Subject
+1. TODO: interface between Subject <=> LudensDAO
+
+#### Charter
+1. TODO: interface between Charter <=> LudensDAO
