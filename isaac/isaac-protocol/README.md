@@ -56,23 +56,6 @@ In particular, Isaac DAO has *four* votable decisions, each corresponding to a c
 
 note: Server implements a state machine with two states: `idle` and `active`. This requires a state machine pattern in Starknet-Cairo.
 
-### Breakdown of each deployed contract
-#### DAO.cairo
-Exposed functions for context (e.g. game) / protocol development purposes:
-1. `@external governor_submit_development_proposal ()`: only governor can invoke this function; each proposal entails one of the four votable decisions described above; transaction reverts if there is an active development proposal.
-2. `@view view_current_active_development_proposal ()`: view what development proposal is active currently.
-3. `@external vote_development_proposal ()`: any shareholder can invoke this function to cast one's vote for the current active development proposal; transaction reverts if one has already voted for the current active developmentproposal.
-4. `@view view_context_address ()`
-5. `@view view_share_function_address ()`
-6. `@view view_vote_function_addres ()`
-7. `@view view_governance_parameter_address ()`
-
-Exposed functions for governor reassignment purposes:
-1. `@external shareholder_submit_reassignment_proposal ()`: any shareholder can invoke this function; proposal entails the address of a new proposed governor; transaction reverts if there is an active reassignment proposal.
-2. `@view view_current_active_reassignment_proposal ()`: view what reassignment proposal is active currently
-3. `@external vote_reassignment_proposal ()`: any shareholder can invoke this function to cast one's vote for the current active reassignment proposal; transaction reverts if one has already voted for the current active reassignment proposal.
-4. `@view view_governor_address ()`
-
 ### Adversarial considerations
 #### Server clone attack
 given a group of experienced players who have high probability of winning an Isaac instance, if Isaac Protocol allows permissionless and dynamic instance deployment, the group may prompt the Protocol to deploy N instances at the same time, and copy all actions performed on one instance to the other N-1 instances (i.e. copy-trade), therefore amplifying their governance right distribution when the instance is won, assuming determinism for each instance (same actions => same outcome). Pontential solutions:
