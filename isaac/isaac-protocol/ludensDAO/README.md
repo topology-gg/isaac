@@ -43,10 +43,12 @@ Given the fact that there is no financial token involved in the governance model
 2. `@external ludens_submit_reassignment_proposal ()`
 3. `@external ludens_vote_development_proposal ()`
 4. `@external ludens_vote_reassignment_proposal ()`
-5. `@view view_subject_contract_address ()`
-6. `@view view_charter_contract_address ()`
-7. `@view view_angel_contract_address ()`
-8. TODO: interface between LudensDAO <=> Subject
+5. `@view view_active_development_proposal ()`
+6. `@view view_active_reassignment_proposal ()`
+7. `@view view_subject_contract_address ()`
+8. `@view view_charter_contract_address ()`
+9. `@view view_angel_contract_address ()`
+10. TODO: interface between LudensDAO <=> Subject
 
 #### Subject
 1. TODO: interface between Subject <=> LudensDAO
