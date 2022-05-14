@@ -18,7 +18,7 @@ from contracts.util.structs import (
 )
 
 @storage_var
-func lobby_address () -> (address : felt):
+func isaac_address () -> (address : felt):
 end
 
 @storage_var
@@ -47,10 +47,10 @@ namespace ns_universe_state_functions:
     # Getters
     #
     @view
-    func lobby_address_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func isaac_address_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         ) -> (address : felt):
 
-        let (address) = lobby_address.read ()
+        let (address) = isaac_address.read ()
 
         return (address)
     end
@@ -104,10 +104,10 @@ namespace ns_universe_state_functions:
     #
     # Setters
     #
-    func lobby_address_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func isaac_address_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         address : felt) -> ():
 
-        lobby_address.write (address)
+        isaac_address.write (address)
 
         return ()
     end

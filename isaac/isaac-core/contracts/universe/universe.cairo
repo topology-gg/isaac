@@ -95,12 +95,12 @@ func assert_caller_in_civilization {syscall_ptr : felt*, pedersen_ptr : HashBuil
     return ()
 end
 
-func assert_caller_is_lobby {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+func assert_caller_is_isaac {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
 
     let (caller) = get_caller_address ()
-    let (lobby_address) = ns_universe_state_functions.lobby_address_read ()
+    let (isaac_address) = ns_universe_state_functions.isaac_address_read ()
     with_attr error_message ("caller is not the lobby contract"):
-        assert caller = lobby_address
+        assert caller = isaac_address
     end
 
     return ()
@@ -122,7 +122,7 @@ func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
 end
 
 @external
-func set_lobby_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func set_isaac_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     address) -> ():
 
     #
@@ -133,15 +133,15 @@ func set_lobby_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     #
     # Check if lobby address is already set
     #
-    let (curr_lobby_address) = ns_universe_state_functions.lobby_address_read ()
+    let (curr_isaac_address) = ns_universe_state_functions.isaac_address_read ()
     with_attr error_message ("Lobby address already set"):
-        assert curr_lobby_address = 0
+        assert curr_isaac_address = 0
     end
 
     #
     # Set lobby address
     #
-    ns_universe_state_functions.lobby_address_write (address)
+    ns_universe_state_functions.isaac_address_write (address)
 
     return ()
 end
@@ -231,9 +231,9 @@ func activate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     ) -> ():
 
     #
-    # Only lobby contract can invoke this function
+    # Only isaac contract can invoke this function
     #
-    assert_caller_is_lobby ()
+    assert_caller_is_isaac ()
 
     #
     # Confirm getting `CIV_SIZE` worth of player addresses

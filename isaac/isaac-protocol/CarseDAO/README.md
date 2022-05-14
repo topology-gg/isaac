@@ -1,4 +1,4 @@
-# LudensDAO
+# CarseDAO
 
 ### Foreword
 This document will unabashedly make use of short sentences and paragraphs for maximum readability.
@@ -20,7 +20,7 @@ LudensDAO strives to become a DAO standard for _P2G_ -- _play-to-govern_ -- that
 - **Subject**: the smart contract which Ludens play in, and which the DAO endorses and governs e.g. an onchain game / _reality_; Ludens' shares in DAO are derived directly and only from Subject, which forms the foundation of the P2G model.
 - **Charter**: the smart contract which specifies the various functions and parameters involved in the governance scheme, and which the DAO honors when enforcing governance processes.
 - **Ludens**: those who play in Subject and participate in DAO through submitting _reassignment proposals_ and voting on all proposals.
-- **Angel**: the one who submits _development proposals_. 
+- **Angel**: the one who submits _development proposals_.
 
 #### Delegated development reflecting code maintenance pattern
 Recognizing the fact that development of open source code happens _offchain_ anyways, and that there is always a core maintainer of open source code repositories, LudensDAO recognizes one *Angel* at any given moment, who has the exclusive right to propose *development proposals*. Development proposals entail only two different flavors:
