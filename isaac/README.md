@@ -87,6 +87,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) coordinate transform macro => micro for solar exposure calculation
 - (DONE) contract reorganization to have <isaac.cairo - lobby.cairo> deployed, which is connected with all instances of <universe.cairo> deployed
 - Implement top-level isaac.cairo
+- Implement function that passes participation info from universe.cairo => lobby/isaac.cairo
 - Implement NDPE function: *any owner launching her deployed NDPE will launch all deployed NDPEs at once; NDPE like all other devices is transferrable; onchain-participation => shares depends on whether a survived player has launched NDPE at least once or not* launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - Implement universe termination function
 - Player transfers device between each other + testing
