@@ -574,6 +574,37 @@ namespace ns_micro_devices:
         return ()
     end
 
+    func launch_all_deployed_ndpe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            caller : felt,
+            grid : Vec2
+        ) -> (
+            impulse_to_planet : Vec2
+        ):
+        alloc_locals
+
+        #
+        # Check if `caller` owns the device at `opsf_grid`
+        #
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (grid)
+        assert grid_stat.populated = 1
+        assert grid_stat.deployed_device_owner = caller
+
+        #
+        # Check if an NDPE is deployed at `opsf_grid`
+        #
+        assert grid_stat.deployed_device_type = ns_device_types.DEVICE_NDPE
+        let ndpe_device_id = grid_stat.deployed_device_id
+
+        #
+        # Loop over all deployed NDPEs
+        #
+        # TODO
+
+        let impulse_to_planet : Vec2 = Vec2 (0,0)
+
+        return (impulse_to_planet)
+    end
+
     func are_producer_consumer_relationship {range_check_ptr} (
         utx_device_type, device_type0, device_type1) -> ():
 

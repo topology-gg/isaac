@@ -10,7 +10,10 @@ from starkware.starknet.common.syscalls import (get_block_number, get_caller_add
 # Import constants and structs
 #
 from contracts.design.constants import (
-    GYOZA, MIN_L2_BLOCK_NUM_BETWEEN_FORWARD,
+    GYOZA,
+    MIN_L2_BLOCK_NUM_BETWEEN_FORWARD,
+    UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM,
+    CIV_SIZE,
     ns_macro_init
 )
 from contracts.util.structs import (
@@ -18,10 +21,10 @@ from contracts.util.structs import (
 )
 
 #
-# Import getters and setters for world states
+# Import getters and setters for universe states
 #
-from contracts.world.world_state import (
-    ns_world_state_functions
+from contracts.universe.universe_state import (
+    ns_universe_state_functions
 )
 
 #
@@ -45,6 +48,9 @@ from contracts.micro.micro_iterator import (ns_micro_iterator)
 
 #
 # For yagi automation
+# Note: each universe is forwarded by yagi individually because of the
+#       complexity of universe forwarding; aggregating all universe forwarding
+#       into one transaction is more susceptible to exceeding n_step upper bound per tx.
 #
 @view
 func yagiProbeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
@@ -59,17 +65,114 @@ end
 func yagiExecuteTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> ():
 
-    client_forward_world ()
+    anyone_forward_world ()
 
     return ()
 end
 
-###############################
-# Server states and constructor
-###############################
+################
+# Access control
+################
+
+func assert_caller_is_admin {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+
+    let (caller) = get_caller_address ()
+    with_attr error_message ("Isaac currently operates under gyoza the benevolent dictator. Only gyoza can tick Isaac forward."):
+        assert caller = GYOZA
+    end
+
+    return ()
+end
+
+func assert_caller_in_civilization {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    address : felt) -> ():
+
+    let (bool) = ns_universe_state_functions.civilization_player_address_to_bool (address)
+    with_attr error_message ("caller is not in the civilization of this universe"):
+        assert bool = 1
+    end
+
+    return ()
+end
+
+func assert_caller_is_lobby {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+
+    let (caller) = get_caller_address ()
+    let (lobby_address) = ns_universe_state_functions.lobby_address_read ()
+    with_attr error_message ("caller is not the lobby contract"):
+        assert caller = lobby_address
+    end
+
+    return ()
+end
+
+##########################
+# Init and reset functions
+##########################
 
 @constructor
-func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
+func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
+
+    # let (curr_block_height) = get_block_number ()
+    # ns_universe_state_functions.l2_block_at_genesis_write (curr_block_height)
+
+    reset_and_deactivate_universe ()
+
+    return()
+end
+
+@external
+func set_lobby_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    address) -> ():
+
+    #
+    # Only GYOZA can set lobby address
+    #
+    assert_caller_is_admin ()
+
+    #
+    # Check if lobby address is already set
+    #
+    let (curr_lobby_address) = ns_universe_state_functions.lobby_address_read ()
+    with_attr error_message ("Lobby address already set"):
+        assert curr_lobby_address = 0
+    end
+
+    #
+    # Set lobby address
+    #
+    ns_universe_state_functions.lobby_address_write (address)
+
+    return ()
+end
+
+func recurse_reset_civilization_registry {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    idx : felt) -> ():
+
+    if idx == CIV_SIZE:
+        return ()
+    end
+
+    #
+    # reset registry entry for `idx`
+    #
+    let (player_address) = ns_universe_state_functions.civilization_player_idx_to_address_read (idx)
+    ns_universe_state_functions.civilization_player_idx_to_address_write (idx, 0)
+    ns_universe_state_functions.civilization_player_address_to_bool_write (player_address, 0)
+
+    #
+    # Tail recursion
+    #
+    recurse_reset_civilization_registry (idx + 1)
+end
+
+func reset_and_deactivate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+    alloc_locals
+
+    #
+    # Clear civilization registry
+    #
+    recurse_reset_civilization_registry (0)
 
     #
     # Initialize macro world - trisolar system placement & planet rotation
@@ -116,21 +219,84 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
             )
         )
     ))
-
     ns_macro_state_functions.phi_curr_write (ns_macro_init.phi)
 
-    #
-    # TODO: initialize mini world - determining the seed for resource distribution function
-    #
+    return ()
+end
 
+@external
+func activate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        arr_player_adr_len : felt,
+        arr_player_adr : felt*
+    ) -> ():
 
     #
-    # Record L2 block at reality genesis
+    # Only lobby contract can invoke this function
+    #
+    assert_caller_is_lobby ()
+
+    #
+    # Confirm getting `CIV_SIZE` worth of player addresses
+    #
+    assert player_adr_len = CIV_SIZE
+
+    #
+    # Recursively activate civilization records given player addresses
+    #
+    recurse_populate_civilization_player_states (
+        player_adr,
+        0
+    )
+
+    #
+    # Record L2 block at universe activation
+    # in both `l2_block_at_last_forward` and `l2_block_at_genesis`
     #
     let (block) = get_block_number ()
-    ns_world_state_functions.l2_block_at_last_forward_write (block)
+    ns_universe_state_functions.l2_block_at_last_forward_write (block)
+    ns_universe_state_functions.l2_block_at_genesis_write (block)
 
-    return()
+    return ()
+end
+
+func recurse_populate_civilization_player_states {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        arr_player_adr : felt*,
+        idx : felt
+    ) -> ():
+
+    if idx == CIV_SIZE:
+        return ()
+    end
+
+    #
+    # Activate civilization record for player address
+    #
+    ns_universe_state_functions.civilization_player_idx_to_address_write (idx, arr_player_adr[idx])
+    ns_universe_state_functions.civilization_player_address_to_bool (arr_player_adr[idx], 1)
+
+    #
+    # Tail recursion
+    #
+    recurse_populate_civilization_player_states (
+        arr_player_adr,
+        idx + 1
+    )
+    return ()
+end
+
+func is_universe_active {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (bool):
+
+    # check player address at `idx=0` is not zero in civilization registry
+    # (idle universe would have all player address equal to zero in civilization registry
+
+    let (player_address) = ns_universe_state_functions.civilization_player_idx_to_address_read (0)
+    if player_address = 0:
+        return (0)
+    else:
+        return (1)
+    end
+
 end
 
 ##############################
@@ -141,18 +307,28 @@ func can_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     alloc_locals
 
     #
+    # Universe is active
+    #
+    let (bool_universe_is_active) = is_universe_active ()
+
+    #
     # At least MIN_L2_BLOCK_NUM_BETWEEN_FORWARD between last-update block and current block
     #
     let (block_curr) = get_block_number ()
-    let (block_last) = ns_world_state_functions.l2_block_at_last_forward_read ()
+    let (block_last) = ns_universe_state_functions.l2_block_at_last_forward_read ()
     let block_diff = block_curr - block_last
-    let (bool) = is_le (MIN_L2_BLOCK_NUM_BETWEEN_FORWARD, block_diff)
+    let (bool_sufficient_block_has_passed) = is_le (MIN_L2_BLOCK_NUM_BETWEEN_FORWARD, block_diff)
+
+    #
+    # Aggregate flags
+    #
+    let bool = bool_universe_is_active * bool_sufficient_block_has_passed
 
     return (block_curr, bool)
 end
 
 @external
-func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+func anyone_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
 
     #
@@ -171,7 +347,7 @@ func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     with_attr error_message("last-update block must be at least {min_dist} block away from current block."):
         assert bool = 1
     end
-    ns_world_state_functions.l2_block_at_last_forward_write (block_curr)
+    ns_universe_state_functions.l2_block_at_last_forward_write (block_curr)
 
     #
     # Forward macro world - orbital positions of trisolar system, and spin orientation of planet
@@ -183,7 +359,59 @@ func client_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     #
     ns_micro_forwarding.forward_world_micro ()
 
+    #
+    # Check if this universe can be terminated
+    #
+    let (bool_universe_terminable) = is_universe_terminable (block_curr)
+
+    #
+    # Initiate termination process if universe is terminable
+    #
+    terminate_universe_and_communicate_with_lobby ()
+
     return ()
+end
+
+func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> ():
+    alloc_locals
+
+    reset_and_deactivate_universe ()
+
+    #
+    # Notify lobby of info for P2G participation calculation
+    #
+    # TODO
+
+
+    return ()
+end
+
+func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    block_curr : felt) -> (bool : felt):
+    alloc_locals
+
+    #
+    # Check universe age against max age
+    #
+    let (block_genesis) = ns_universe_state_functions.l2_block_at_genesis_read ()
+    let universe_age = block_curr - block_genesis
+    let (bool_universe_max_age_reached) = is_le (UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM, universe_age)
+
+    #
+    # Check macro state against escape condition
+    #
+    # TODO
+    let bool_universe_escape_condition_met = 0
+
+    #
+    # Aggregate flags and return accordingly
+    #
+    if bool_universe_max_age_reached + bool_universe_escape_condition_met != 0:
+        return (1)
+    else:
+        return (0)
+    end
 end
 
 ##############################
@@ -193,10 +421,11 @@ end
 #
 
 @external
-func client_deploy_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func player_deploy_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     type : felt, grid : Vec2) -> ():
 
     let (caller) = get_caller_address ()
+    assert_caller_in_civilization (caller)
 
     ns_micro_devices.device_deploy (caller, type, grid)
 
@@ -204,10 +433,11 @@ func client_deploy_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuilt
 end
 
 @external
-func client_pickup_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func player_pickup_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     grid : Vec2) -> ():
 
     let (caller) = get_caller_address ()
+    assert_caller_in_civilization (caller)
 
     ns_micro_devices.device_pickup_by_grid (caller, grid)
 
@@ -215,7 +445,7 @@ func client_pickup_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuilt
 end
 
 @external
-func client_deploy_utx_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func player_deploy_utx_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         utx_device_type : felt,
         src_device_grid : Vec2,
         dst_device_grid : Vec2,
@@ -224,6 +454,7 @@ func client_deploy_utx_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
     ) -> ():
 
     let (caller) = get_caller_address ()
+    assert_caller_in_civilization (caller)
 
     ns_micro_utx.utx_deploy (
         caller,
@@ -238,10 +469,11 @@ func client_deploy_utx_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
 end
 
 @external
-func client_pickup_utx_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func player_pickup_utx_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     grid : Vec2) -> ():
 
     let (caller) = get_caller_address ()
+    assert_caller_in_civilization (caller)
 
     ns_micro_utx.utx_pickup_by_grid (caller, grid)
 
@@ -249,13 +481,14 @@ func client_pickup_utx_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
 end
 
 @external
-func client_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func player_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         grid : Vec2,
         device_type : felt,
         device_count : felt
     ) -> ():
 
     let (caller) = get_caller_address ()
+    assert_caller_in_civilization (caller)
 
     ns_micro_devices.opsf_build_device (
         caller,
@@ -266,6 +499,35 @@ func client_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*,
 
     return ()
 end
+
+@external
+func player_launch_all_deployed_ndpe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        grid : Vec2
+    ) -> ():
+
+    ## Note: caller is expected to provide a grid where caller has an NDPE deployed
+
+    let (caller) = get_caller_address ()
+    assert_caller_in_civilization (caller)
+
+    let (impulse_to_planet : Vec2) = ns_micro_devices.launch_all_deployed_ndpe (
+        caller,
+        grid
+    )
+
+    #
+    # Effect impulse in macro
+    #
+    # TODO
+
+    #
+    # Effect participation in protocol
+    #
+    # TODO
+
+    return ()
+end
+
 
 #
 # State-changing functions with input arguments flattened (no struct) for testing purposes
@@ -278,7 +540,7 @@ func flat_device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
         grid_y : felt
     ) -> ():
 
-    client_deploy_device_by_grid (
+    player_deploy_device_by_grid (
         type,
         Vec2 (grid_x, grid_y)
     )
@@ -294,7 +556,7 @@ func flat_device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
     ) -> ():
     alloc_locals
 
-    client_pickup_device_by_grid (
+    player_pickup_device_by_grid (
         Vec2 (grid_x, grid_y)
     )
 
@@ -327,7 +589,7 @@ func flat_utx_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
         idx = 0
     )
 
-    client_deploy_utx_by_grids (
+    player_deploy_utx_by_grids (
         utx_device_type,
         Vec2 (src_device_grid_x, src_device_grid_y),
         Vec2 (dst_device_grid_x, dst_device_grid_y),
@@ -363,7 +625,7 @@ func flat_utx_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
         grid_y : felt
     ) -> ():
 
-    client_pickup_utx_by_grid (
+    player_pickup_utx_by_grid (
         Vec2 (grid_x, grid_y)
     )
 
@@ -378,7 +640,7 @@ func flat_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
         device_count : felt
     ) -> ():
 
-    client_opsf_build_device (
+    player_opsf_build_device (
         Vec2 (grid_x, grid_y),
         device_type,
         device_count
@@ -392,7 +654,7 @@ end
 #
 
 @view
-func client_view_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func anyone_view_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> (
         emap_len : felt,
         emap : DeviceDeployedEmapEntry*
@@ -404,7 +666,7 @@ func client_view_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashB
 end
 
 @view
-func client_view_utx_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func anyone_view_utx_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         utx_device_type : felt
     ) -> (
         emap_len : felt,
@@ -417,7 +679,7 @@ func client_view_utx_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuil
 end
 
 @view
-func client_view_all_utx_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func anyone_view_all_utx_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         utx_device_type : felt
     ) -> (
         grids_len : felt,
@@ -429,9 +691,9 @@ func client_view_all_utx_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
     return (grids_len, grids)
 end
 
-#
-# Admin functions
-#
+######################################
+# Admin functions for testing purposes
+######################################
 
 @external
 func admin_give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
