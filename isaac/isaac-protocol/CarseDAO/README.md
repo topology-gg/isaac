@@ -6,14 +6,15 @@ This document will unabashedly make use of short sentences and paragraphs for ma
 ### Introduction: Infinite Game, and Play-to-Govern
 CarseDAO strives to become a DAO standard for _P2G_ -- _play-to-govern_.
 
-#### CarseDAO schema
-![image](https://user-images.githubusercontent.com/59590480/167301300-ff523f07-38e0-4605-947f-c478770762d2.png)
+### CarseDAO schema
+![image](https://user-images.githubusercontent.com/59590480/168449006-bae9fe4f-20e1-402b-9eca-80bc05370799.png)
 - **CarseDAO**: the Decentralized Autonomous Organization smart contract.
 - **Subject**: the smart contract which Players play in, and which the DAO endorses and governs e.g. an onchain game / _reality_; Players' shares in DAO are derived directly and only from Subject, which forms the foundation of the P2G model.
 - **Charter**: the smart contract which specifies the various functions and parameters involved in the governance scheme, and which the DAO honors when enforcing governance processes.
 - **Players**: those who play in Subject and participate in DAO through submitting _reassignment proposals_ and voting on all proposals.
 - **Angel**: the one who submits _development proposals_.
 
+### CarseDAO core features
 #### Delegated development reflecting code maintenance pattern
 Recognizing the fact that development of open source code happens _offchain_ anyways, and that there is always a core maintainer of open source code repositories, CarseDAO recognizes one *Angel* at any given moment, who has the exclusive right to propose *development proposals*. Development proposals entail only two different flavors:
 1. to replace the address to Charter contract which the DAO honors;
@@ -29,7 +30,7 @@ Note that all _Players_ are welcome to participate in code review and pull reque
 #### Permissionless exit
 Given the fact that there is no financial token involved in the governance model (no capital lock-in), and the fact that the entire CarseDAO contract and subject contract are fully and transparently onchain (such as on a ZK Rollup), anyone can exit by forking the entire system. The only moat any CarseDAO has would be the culture, relationship, and capability of the angel and players to govern and evolve its Subject.
 
-#### P2G schema
+### P2G schema
 1. The P2G schema can be succinctly summarized as: `{onchain participation} => {{shares}} => {votes}`
 2. The set operator denotes a key-value map from players' addresses to the values of the variable i.e. `mapping address -> a'`
 3. The outer set operator around `{shares}` denotes a key-value map from the "time" dimension to the address-variable map i.e. `mapping time -> (mapping address -> a')`. Including the time dimension allows one to involve time in the calculation of votes. For example, it may be desirable to implement a discounting scheme for the morphism `{{shares}} => {votes}`:
