@@ -35,6 +35,18 @@ from contracts.micro.micro_state import (
     ns_micro_state_functions,
     GridStat, DeviceDeployedEmapEntry, TransformerResourceBalances, UtxSetDeployedEmapEntry
 )
+from contracts.micro.micro_ndpe import (
+    compute_impulse_in_micro_coord
+)
+from contracts.micro.micro_solar import (
+    ns_micro_solar
+)
+from contracts.universe.universe_state import (
+    ns_universe_state_functions
+)
+from contracts.macro.macro_state import (
+    ns_macro_state_functions
+)
 
 ##############################
 ## Devices (including opsf)
@@ -43,7 +55,7 @@ from contracts.micro.micro_state import (
 namespace ns_micro_devices:
 
     func assert_device_footprint_populable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-            type : felt, grid : Vec2
+            type : felt, grid : Vec2, civ_idx : felt
         ):
         alloc_locals
 
@@ -60,7 +72,7 @@ namespace ns_micro_devices:
         #
         # Check 1x1
         #
-        assert_valid_unpopulated_and_same_face (grid, face)
+        assert_valid_unpopulated_and_same_face (grid, face, civ_idx)
 
         if device_dim == 1:
             return ()
@@ -70,13 +82,13 @@ namespace ns_micro_devices:
         # Check 2x2
         #
         let grid_ = Vec2 (grid.x + 1, grid.y)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 1, grid.y + 1)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x, grid.y + 1)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         if device_dim == 2:
             return ()
@@ -86,19 +98,19 @@ namespace ns_micro_devices:
         # Check 3x3
         #
         let grid_ = Vec2 (grid.x + 2, grid.y)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 2, grid.y + 1)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 2, grid.y + 2)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 1, grid.y + 2)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x, grid.y + 2)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         if device_dim == 3:
             return ()
@@ -108,64 +120,64 @@ namespace ns_micro_devices:
         # Check 5x5
         #
         let grid_ = Vec2 (grid.x + 3, grid.y)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 3, grid.y + 1)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 3, grid.y + 2)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 3, grid.y + 3)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 2, grid.y + 3)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 1, grid.y + 3)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x, grid.y + 3)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 4, grid.y)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 4, grid.y + 1)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 4, grid.y + 2)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 4, grid.y + 3)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 4, grid.y + 4)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 3, grid.y + 4)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 2, grid.y + 4)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x + 1, grid.y + 4)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         let grid_ = Vec2 (grid.x, grid.y + 4)
-        assert_valid_unpopulated_and_same_face (grid_, face)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
 
         return ()
     end
 
     func assert_valid_unpopulated_and_same_face {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-            grid : Vec2, face_tgt : felt
+            grid : Vec2, face_tgt : felt, civ_idx : felt
         ) -> ():
         alloc_locals
 
         is_valid_grid (grid)
 
-        let (grid_stat) = ns_micro_state_functions.grid_stats_read (grid)
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
         assert grid_stat.populated = 0
 
         let (face, _, _, _) = locate_face_and_edge_given_valid_grid (grid)
@@ -175,7 +187,7 @@ namespace ns_micro_devices:
     end
 
     func update_grid_with_new_grid_stat {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-            type : felt, grid : Vec2, grid_stat : GridStat
+            type : felt, grid : Vec2, grid_stat : GridStat, civ_idx : felt
         ) -> ():
         alloc_locals
 
@@ -185,7 +197,7 @@ namespace ns_micro_devices:
         #
         # 1x1
         #
-        ns_micro_state_functions.grid_stats_write (grid, grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, grid, grid_stat)
 
         if device_dim == 1:
             return ()
@@ -194,9 +206,9 @@ namespace ns_micro_devices:
         #
         # 2x2
         #
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 1, grid.y), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 1, grid.y + 1), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x, grid.y + 1), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 1, grid.y), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 1, grid.y + 1), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x, grid.y + 1), grid_stat)
 
         if device_dim == 2:
             return ()
@@ -205,11 +217,11 @@ namespace ns_micro_devices:
         #
         # 3x3
         #
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 2, grid.y), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 2, grid.y + 1), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 2, grid.y + 2), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 1, grid.y + 2), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x, grid.y + 2), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 2, grid.y), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 2, grid.y + 1), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 2, grid.y + 2), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 1, grid.y + 2), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x, grid.y + 2), grid_stat)
 
         if device_dim == 3:
             return ()
@@ -218,23 +230,23 @@ namespace ns_micro_devices:
         #
         # 5x5
         #
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 3, grid.y), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 3, grid.y + 1), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 3, grid.y + 2), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 3, grid.y + 3), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 2, grid.y + 3), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 1, grid.y + 3), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x, grid.y + 3), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 3, grid.y), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 3, grid.y + 1), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 3, grid.y + 2), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 3, grid.y + 3), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 2, grid.y + 3), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 1, grid.y + 3), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x, grid.y + 3), grid_stat)
 
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 4, grid.y), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 4, grid.y + 1), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 4, grid.y + 2), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 4, grid.y + 3), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 4, grid.y + 4), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 3, grid.y + 4), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 2, grid.y + 4), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x + 1, grid.y + 4), grid_stat)
-        ns_micro_state_functions.grid_stats_write (Vec2 (grid.x, grid.y + 4), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 4, grid.y), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 4, grid.y + 1), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 4, grid.y + 2), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 4, grid.y + 3), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 4, grid.y + 4), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 3, grid.y + 4), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 2, grid.y + 4), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 1, grid.y + 4), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x, grid.y + 4), grid_stat)
 
         return ()
     end
@@ -245,6 +257,11 @@ namespace ns_micro_devices:
             grid : Vec2
         ) -> ():
         alloc_locals
+
+        #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
 
         #
         # Check if caller owns at least 1 undeployed device of type `type`
@@ -260,7 +277,8 @@ namespace ns_micro_devices:
         #
         # Create new device id
         #
-        tempvar data_ptr : felt* = new (4, caller, type, grid.x, grid.y)
+        let (block_height) = get_block_number ()
+        tempvar data_ptr : felt* = new (5, block_height, caller, type, grid.x, grid.y)
         let (new_id) = hash_chain {hash_ptr = pedersen_ptr} (data_ptr)
 
         #
@@ -272,7 +290,7 @@ namespace ns_micro_devices:
             deployed_device_id =  new_id,
             deployed_device_owner = caller
         )
-        update_grid_with_new_grid_stat (type, grid, new_grid_stat)
+        update_grid_with_new_grid_stat (type, grid, new_grid_stat, civ_idx)
 
         #
         # Update `device_deployed_emap`
@@ -355,9 +373,14 @@ namespace ns_micro_devices:
         alloc_locals
 
         #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
+
+        #
         # Check if caller owns the device on `grid`
         #
-        let (grid_stat) = ns_micro_state_functions.grid_stats_read (grid)
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
         assert grid_stat.populated = 1
         assert grid_stat.deployed_device_owner = caller
 
@@ -454,7 +477,9 @@ namespace ns_micro_devices:
             deployed_device_type = 0,
             deployed_device_id = 0,
             deployed_device_owner = 0
-        ))
+            ),
+            civ_idx
+        )
 
         return ()
     end
@@ -468,9 +493,14 @@ namespace ns_micro_devices:
         alloc_locals
 
         #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
+
+        #
         # Check if `caller` owns the device at `opsf_grid`
         #
-        let (grid_stat) = ns_micro_state_functions.grid_stats_read (grid)
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
         assert grid_stat.populated = 1
         assert grid_stat.deployed_device_owner = caller
 
@@ -577,15 +607,18 @@ namespace ns_micro_devices:
     func launch_all_deployed_ndpe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
             caller : felt,
             grid : Vec2
-        ) -> (
-            impulse_to_planet : Vec2
-        ):
+        ) -> ():
         alloc_locals
+
+        #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
 
         #
         # Check if `caller` owns the device at `opsf_grid`
         #
-        let (grid_stat) = ns_micro_state_functions.grid_stats_read (grid)
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
         assert grid_stat.populated = 1
         assert grid_stat.deployed_device_owner = caller
 
@@ -596,13 +629,105 @@ namespace ns_micro_devices:
         let ndpe_device_id = grid_stat.deployed_device_id
 
         #
-        # Loop over all deployed NDPEs
+        # Recurse over all deployed devices to pick up NDPEs
+        # and compute aggregate impulse + deduct energy consumed
+        # Note: we could have declared a dedicated storage mapping for NDPE devices;
+        # given the relative infrequency of invoking this function,
+        # we chose temporarily to lump deployed devices of all type in one `device_deployed_emap`
         #
-        # TODO
+        let (emap_size) = ns_micro_state_functions.device_deployed_emap_size_read ()
+        let (impulse_sum_in_micro_coord : Vec2) = recurse_operate_all_ndpes (
+            len = emap_size,
+            idx = 0,
+            impulse_sum = Vec2 (0,0),
+            civ_idx = civ_idx
+        )
 
-        let impulse_to_planet : Vec2 = Vec2 (0,0)
+        #
+        # Coordinate transform from micro to macro
+        #
+        # 1. get phi
+        # 2. rotate `impulse_sum_in_micro_coord` by phi using function implemented in `micro_solar.cairo`
+        let (curr_phi) = ns_macro_state_functions.phi_curr_read ()
+        let (impulse_sum_in_macro_coord : Vec2) = ns_micro_solar.compute_vector_rotate (
+            vec = impulse_sum_in_micro_coord,
+            phi = curr_phi
+        )
 
-        return (impulse_to_planet)
+        #
+        # Add impulse_sum to macro's impulse cache (storage_var)
+        #
+        let (curr_impulse_cached : Vec2) = ns_macro_state_functions.impulse_cache_read ()
+        ns_macro_state_functions.impulse_cache_write (Vec2(
+            curr_impulse_cached.x + impulse_sum_in_macro_coord.x,
+            curr_impulse_cached.y + impulse_sum_in_macro_coord.y
+        ))
+
+        return (impulse_sum_in_macro_coord)
+    end
+
+    func recurse_operate_all_ndpes {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            len : felt,
+            idx : felt,
+            impulse_sum : felt,
+            civ_idx : felt
+        ) -> (impulse_sum_final : felt):
+        alloc_locals
+
+        if idx == len:
+            return (impulse_sum_final = impulse_sum)
+        end
+
+        #
+        # Grab emap entry and check if it is an NDPE
+        #
+        local impulse : Vec2
+        let (emap_entry) = ns_micro_state_functions.device_deployed_emap_read (idx)
+        if emap_entry.type == ns_device_types.DEVICE_NDPE:
+            #
+            # Get owner of this deployed NDPE for participation record purposes,
+            # and update universe state accordingly
+            #
+            let (grid_stat : GridStat) = ns_micro_state_functions.grid_stats_read (civ_idx, emap_entry.grid)
+            ns_universe_state_functions.civilization_player_address_to_has_launched_ndpe_write (
+                grid_stat.deployed_device_owner,
+                1
+            )
+
+            #
+            # Get energy stored at this NDPE, and clear energy storage at this NDPE
+            #
+            let (curr_energy) = ns_micro_state_functions.device_deployed_id_to_energy_balance_read (emap_entry.id)
+            ns_micro_state_functions.device_deployed_id_to_energy_balance_write (emap_entry.id, 0)
+
+            #
+            # Use all of the energy to generate impulse,
+            # which is a function of energy (magnitude) and face (directionality)
+            #
+            let (face) = locate_face_and_edge_given_valid_grid (emap_entry.grid)
+            let (impulse_ : Vec2) = compute_impulse_in_micro_coord (curr_energy, face)
+            assert impulse = impulse_
+        else:
+            #
+            # Not an NDPE => no impulse generated by this device
+            #
+            assert impulse = Vec2 (0,0)
+        end
+
+        #
+        # Tail recursion
+        #
+        let (impulse_sum_final : Vec2) = recurse_operate_all_ndpes (
+            len,
+            idx + 1,
+            Vec2 (impulse_sum.x + impulse.x, impulse_sum.y + impulse.y)
+        )
+        return (impulse_sum_final)
+    end
+
+    func transfer_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> ():
+
     end
 
     func are_producer_consumer_relationship {range_check_ptr} (

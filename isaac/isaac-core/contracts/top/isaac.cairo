@@ -15,3 +15,4 @@ from contracts.lobby.lobby_state import (
 
 ## This contract is endorseable by IsaacDAO, which implements the CarseDAO standard
 
+## TODO: clear `player_has_launched_ndpe` in isaac_state when universe is reset

@@ -4,7 +4,8 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import signed_div_rem, sign, assert_nn, assert_not_zero, unsigned_div_rem, sqrt
 from starkware.cairo.common.math_cmp import is_le
 from contracts.design.constants import (
-    G, MASS_SUN0, MASS_SUN1, MASS_SUN2, OMEGA_DT_PLANET, TWO_PI,
+    G, MASS_SUN0, MASS_SUN1, MASS_SUN2, MASS_PLNT,
+    OMEGA_DT_PLANET, TWO_PI,
     RANGE_CHECK_BOUND, SCALE_FP, SCALE_FP_SQRT, DT
 )
 from contracts.util.structs import (Vec2, Dynamic, Dynamics)
@@ -181,14 +182,43 @@ func forward_planet_spin {range_check_ptr} (phi) -> (phi_nxt):
     end
 end
 
+func forward_planet_dynamics_applying_impulse {range_check_ptr} (
+        dynamic_pre_impulse : Dynamic,
+        impulse_fp : Vec2
+    ) -> (
+        dynamic_post_impulse : Dynamic
+    ):
+
+    let (delta_vx) = div_fp (impulse_fp.x, MASS_PLNT)
+    let (delta_vy) = div_fp (impulse_fp.y, MASS_PLNT)
+    let dynamic_post_impulse : Dynamic = Dynamic (
+        q = dynamic_pre_impulse.q,
+        qd = Vec2 (
+            dynamic_pre_impulse.qd.x + delta_vx,
+            dynamic_pre_impulse.qd.y + delta_vy,
+        )
+    )
+
+    return (dynamic_post_impulse)
+end
+
 func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
 
     #
-    # Retrieve currnet macro states
+    # Retrieve currnet macro states and impulse cache
     #
     let (state_curr : Dynamics) = ns_macro_state_functions.macro_state_curr_read ()
     let (phi_curr : felt) = ns_macro_state_functions.phi_curr_read ()
+    let (impulse_aggregated : Vec2) = ns_macro_state_functions.impulse_cache_read ()
+
+    #
+    # Apply impulse to plnt dynamic
+    #
+    let (plnt_dynamic_post_impulse) = forward_planet_dynamics_applying_impulse (
+        state_curr.plnt,
+        impulse_aggregated
+    )
 
     #
     # Perform state forwarding
@@ -201,13 +231,12 @@ func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
         phi = phi_curr
     )
 
-    ## TODO: add handling of momentum kick created by NDPE launch
-
     #
-    # Update macro states
+    # Update macro states and clear impulse cache
     #
     ns_macro_state_functions.macro_state_curr_write (state_nxt)
     ns_macro_state_functions.phi_curr_write (phi_nxt)
+    ns_macro_state_functions.impulse_cache_write ( Vec2(0,0) )
 
     return ()
 end

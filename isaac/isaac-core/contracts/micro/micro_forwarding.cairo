@@ -170,7 +170,7 @@ namespace ns_micro_forwarding:
             )
 
             #
-            # Clear energy balance at this harvester -- only power generator can store energy
+            # Clear energy balance at this harvester
             #
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
                 emap_entry.id,
@@ -229,7 +229,7 @@ namespace ns_micro_forwarding:
             )
 
             #
-            # Clear energy balance at this transformer -- only power generator can store energy
+            # Clear energy balance at this transformer
             #
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
                 emap_entry.id,
@@ -248,27 +248,27 @@ namespace ns_micro_forwarding:
         #
         # Handle OPSF
         #
-        local syscall_ptr : felt* = syscall_ptr
-        local pedersen_ptr : HashBuiltin* = pedersen_ptr
-        local range_check_ptr = range_check_ptr
-        handle_opsf:
-        if emap_entry.type == ns_device_types.DEVICE_OPSF:
-            #
-            # Clear energy balance at this OPSF -- only power generator can store energy
-            #
-            ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
-                emap_entry.id,
-                0
-            )
+        # local syscall_ptr : felt* = syscall_ptr
+        # local pedersen_ptr : HashBuiltin* = pedersen_ptr
+        # local range_check_ptr = range_check_ptr
+        # handle_opsf:
+        # if emap_entry.type == ns_device_types.DEVICE_OPSF:
+        #     #
+        #     # Clear energy balance at this OPSF -- only power generator can store energy
+        #     #
+        #     ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
+        #         emap_entry.id,
+        #         0
+        #     )
 
-            tempvar syscall_ptr = syscall_ptr
-            tempvar pedersen_ptr = pedersen_ptr
-            tempvar range_check_ptr = range_check_ptr
-        else:
-            tempvar syscall_ptr = syscall_ptr
-            tempvar pedersen_ptr = pedersen_ptr
-            tempvar range_check_ptr = range_check_ptr
-        end
+        #     tempvar syscall_ptr = syscall_ptr
+        #     tempvar pedersen_ptr = pedersen_ptr
+        #     tempvar range_check_ptr = range_check_ptr
+        # else:
+        #     tempvar syscall_ptr = syscall_ptr
+        #     tempvar pedersen_ptr = pedersen_ptr
+        #     tempvar range_check_ptr = range_check_ptr
+        # end
 
         #
         # Tail recursion

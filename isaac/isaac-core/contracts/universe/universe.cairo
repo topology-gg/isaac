@@ -42,7 +42,7 @@ from contracts.micro.micro_devices import (ns_micro_devices)
 from contracts.micro.micro_utx import (ns_micro_utx)
 from contracts.micro.micro_forwarding import (ns_micro_forwarding)
 from contracts.micro.micro_iterator import (ns_micro_iterator)
-
+from contracts.micro.micro_reset import (ns_micro_reset)
 
 ##############################
 
@@ -84,10 +84,10 @@ func assert_caller_is_admin {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     return ()
 end
 
-func assert_caller_in_civilization {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    address : felt) -> ():
+func assert_address_in_civilization {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    address) -> ():
 
-    let (bool) = ns_universe_state_functions.civilization_player_address_to_bool (address)
+    let (bool) = ns_universe_state_functions.civilization_player_address_to_bool_read (address)
     with_attr error_message ("caller is not in the civilization of this universe"):
         assert bool = 1
     end
@@ -159,6 +159,7 @@ func recurse_reset_civilization_registry {syscall_ptr : felt*, pedersen_ptr : Ha
     let (player_address) = ns_universe_state_functions.civilization_player_idx_to_address_read (idx)
     ns_universe_state_functions.civilization_player_idx_to_address_write (idx, 0)
     ns_universe_state_functions.civilization_player_address_to_bool_write (player_address, 0)
+    ns_universe_state_functions.civilization_player_address_to_has_launched_ndpe_write (player_address, 0)
 
     #
     # Tail recursion
@@ -170,14 +171,26 @@ func reset_and_deactivate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuil
     alloc_locals
 
     #
+    # Reset micro world - all storages in `micro_state.cairo`
+    #
+    ns_micro_reset.reset_world_micro ()
+
+    #
+    # Reset macro world - trisolar system placement & planet rotation
+    #
+    ns_macro_state_functions.macro_state_curr_write (macro_initial_state)
+    ns_macro_state_functions.phi_curr_write (ns_macro_init.phi)
+
+    #
     # Clear civilization registry
     #
     recurse_reset_civilization_registry (0)
 
-    #
-    # Initialize macro world - trisolar system placement & planet rotation
-    #
-    ns_macro_state_functions.macro_state_curr_write (Dynamics(
+    return ()
+end
+
+func macro_initial_state {} () -> (dynamics : Dynamics):
+    return (Dynamics(
         sun0 = Dynamic(
             q = Vec2(
                 x = ns_macro_init.sun0_qx,
@@ -219,9 +232,6 @@ func reset_and_deactivate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuil
             )
         )
     ))
-    ns_macro_state_functions.phi_curr_write (ns_macro_init.phi)
-
-    return ()
 end
 
 @external
@@ -238,15 +248,21 @@ func activate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     #
     # Confirm getting `CIV_SIZE` worth of player addresses
     #
-    assert player_adr_len = CIV_SIZE
+    assert arr_player_adr_len = CIV_SIZE
 
     #
     # Recursively activate civilization records given player addresses
     #
     recurse_populate_civilization_player_states (
-        player_adr,
+        arr_player_adr,
         0
     )
+
+    #
+    # Increment civilization index
+    #
+    let (curr_civ_idx) = ns_universe_state_functions.civilization_index_read ()
+    ns_universe_state_functions.civilization_index_write (curr_civ_idx + 1)
 
     #
     # Record L2 block at universe activation
@@ -272,7 +288,7 @@ func recurse_populate_civilization_player_states {syscall_ptr : felt*, pedersen_
     # Activate civilization record for player address
     #
     ns_universe_state_functions.civilization_player_idx_to_address_write (idx, arr_player_adr[idx])
-    ns_universe_state_functions.civilization_player_address_to_bool (arr_player_adr[idx], 1)
+    ns_universe_state_functions.civilization_player_address_to_bool_write (arr_player_adr[idx], 1)
 
     #
     # Tail recursion
@@ -291,7 +307,7 @@ func is_universe_active {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range
     # (idle universe would have all player address equal to zero in civilization registry
 
     let (player_address) = ns_universe_state_functions.civilization_player_idx_to_address_read (0)
-    if player_address = 0:
+    if player_address == 0:
         return (0)
     else:
         return (1)
@@ -367,7 +383,7 @@ func anyone_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     #
     # Initiate termination process if universe is terminable
     #
-    terminate_universe_and_communicate_with_lobby ()
+    terminate_universe_and_notify_lobby ()
 
     return ()
 end
@@ -376,6 +392,9 @@ func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : Ha
     ) -> ():
     alloc_locals
 
+    #
+    # Reset universe
+    #
     reset_and_deactivate_universe ()
 
     #
@@ -401,7 +420,9 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     #
     # Check macro state against escape condition
     #
-    # TODO
+    with_attr error_message ("is_universe_terminable() not implemented"):
+        assert 1 = 0
+    end
     let bool_universe_escape_condition_met = 0
 
     #
@@ -425,7 +446,7 @@ func player_deploy_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuilt
     type : felt, grid : Vec2) -> ():
 
     let (caller) = get_caller_address ()
-    assert_caller_in_civilization (caller)
+    assert_address_in_civilization (caller)
 
     ns_micro_devices.device_deploy (caller, type, grid)
 
@@ -437,7 +458,7 @@ func player_pickup_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuilt
     grid : Vec2) -> ():
 
     let (caller) = get_caller_address ()
-    assert_caller_in_civilization (caller)
+    assert_address_in_civilization (caller)
 
     ns_micro_devices.device_pickup_by_grid (caller, grid)
 
@@ -454,7 +475,7 @@ func player_deploy_utx_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
     ) -> ():
 
     let (caller) = get_caller_address ()
-    assert_caller_in_civilization (caller)
+    assert_address_in_civilization (caller)
 
     ns_micro_utx.utx_deploy (
         caller,
@@ -473,7 +494,7 @@ func player_pickup_utx_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
     grid : Vec2) -> ():
 
     let (caller) = get_caller_address ()
-    assert_caller_in_civilization (caller)
+    assert_address_in_civilization (caller)
 
     ns_micro_utx.utx_pickup_by_grid (caller, grid)
 
@@ -488,7 +509,7 @@ func player_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*,
     ) -> ():
 
     let (caller) = get_caller_address ()
-    assert_caller_in_civilization (caller)
+    assert_address_in_civilization (caller)
 
     ns_micro_devices.opsf_build_device (
         caller,
@@ -508,7 +529,7 @@ func player_launch_all_deployed_ndpe {syscall_ptr : felt*, pedersen_ptr : HashBu
     ## Note: caller is expected to provide a grid where caller has an NDPE deployed
 
     let (caller) = get_caller_address ()
-    assert_caller_in_civilization (caller)
+    assert_address_in_civilization (caller)
 
     let (impulse_to_planet : Vec2) = ns_micro_devices.launch_all_deployed_ndpe (
         caller,
@@ -528,6 +549,35 @@ func player_launch_all_deployed_ndpe {syscall_ptr : felt*, pedersen_ptr : HashBu
     return ()
 end
 
+@external
+func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        type : felt,
+        amount : felt
+        to : felt
+    ) -> ():
+
+    #
+    # Confirm caller & to are both in this civilization
+    #
+    let (caller) = get_caller_address ()
+    assert_address_in_civilization (caller)
+    assert_address_in_civilization (to)
+
+    #
+    # Confirm caller has at least `amount` number of undeployed devices of type `type`
+    #
+    let (from_curr_amount) = ns_micro_state_functions.device_undeployed_ledger_read (caller, type)
+    assert_le (amount, from_curr_amount)
+
+    #
+    # Make transfer
+    #
+    let (to_curr_amount) = ns_micro_state_functions.device_undeployed_ledger_read (to, type)
+    ns_micro_state_functions.device_undeployed_ledger_write (caller, type, from_curr_amount - amount)
+    ns_micro_state_functions.device_undeployed_ledger_write (to,     type, to_curr_amount + amount)
+
+    return ()
+end
 
 #
 # State-changing functions with input arguments flattened (no struct) for testing purposes
@@ -714,7 +764,6 @@ func admin_give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuilt
 
     return ()
 end
-
 
 @external
 func admin_write_opsf_deployed_id_to_resource_balances {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (

@@ -29,6 +29,10 @@ end
 func macro_state_curr () -> (macro_state : Dynamics):
 end
 
+@storage_var
+func impulse_cache () -> (impulse_aggregated : Vec2):
+end
+
 namespace ns_macro_state_functions:
 
     #
@@ -48,6 +52,13 @@ namespace ns_macro_state_functions:
         return (macro_state)
     end
 
+    @view
+    func impulse_cache_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> (impulse_aggregated : Vec2):
+        let (impulse_aggregated : Vec2) = impulse_cache.read ()
+        return (impulse_aggregated)
+    end
+
     #
     # Setters
     #
@@ -60,6 +71,12 @@ namespace ns_macro_state_functions:
     func macro_state_curr_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         macro_state : Dynamics) -> ():
         macro_state_curr.write (macro_state)
+        return ()
+    end
+
+    func impulse_cache_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        impulse_aggregated : Vec2) -> ():
+        impulse_cache.write (impulse_aggregated)
         return ()
     end
 

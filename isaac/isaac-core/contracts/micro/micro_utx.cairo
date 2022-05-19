@@ -130,7 +130,8 @@ namespace ns_micro_utx:
         #
         let (utx_idx_start) = ns_micro_state_functions.utx_deployed_index_to_grid_size_read (utx_device_type)
         let utx_idx_end = utx_idx_start + locs_len
-        tempvar data_ptr : felt* = new (3, caller, utx_idx_start, utx_idx_end)
+        let (block_height) = get_block_number ()
+        tempvar data_ptr : felt* = new (4, block_height, caller, utx_idx_start, utx_idx_end)
         let (new_label) = hash_chain {hash_ptr = pedersen_ptr} (data_ptr)
         recurse_utx_deploy (
             caller = caller,

@@ -33,8 +33,13 @@ end
 func civilization_player_idx_to_address (idx : felt) -> (address : felt):
 end
 
+## bool: is in the current civilization
 @storage_var
 func civilization_player_address_to_bool (address : felt) -> (bool : felt):
+end
+
+@storage_var
+func civilization_player_address_to_has_launched_ndpe (address : felt) -> (bool : felt):
 end
 
 @storage_var
@@ -92,6 +97,15 @@ namespace ns_universe_state_functions:
     end
 
     @view
+    func civilization_player_address_to_has_launched_ndpe_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        address : felt) -> (bool : felt):
+
+        let (bool) = civilization_player_address_to_has_launched_ndpe.read (address)
+
+        return (bool)
+    end
+
+    @view
     func l2_block_at_last_forward_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         ) -> (block_height : felt):
 
@@ -140,6 +154,14 @@ namespace ns_universe_state_functions:
         address : felt, bool : felt) -> ():
 
         civilization_player_address_to_bool.write (address, bool)
+
+        return ()
+    end
+
+    func civilization_player_address_to_has_launched_ndpe_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        address : felt, bool : felt) -> ():
+
+        civilization_player_address_to_has_launched_ndpe.write (address, bool)
 
         return ()
     end

@@ -19,8 +19,11 @@ struct GridStat:
     member deployed_device_owner : felt
 end
 
+# @storage_var
+# func grid_stats (grid : Vec2) -> (grid_stat : GridStat):
+# end
 @storage_var
-func grid_stats (grid : Vec2) -> (grid_stat : GridStat):
+func grid_stats (civ_idx : felt, grid : Vec2) -> (grid_stat : GridStat):
 end
 
 ##############################
@@ -137,8 +140,8 @@ namespace ns_micro_state_functions:
 
     @view
     func grid_stats_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        grid : Vec2) -> (grid_stat : GridStat):
-        let (grid_stat) = grid_stats.read (grid)
+        civ_idx : felt, grid : Vec2) -> (grid_stat : GridStat):
+        let (grid_stat) = grid_stats.read (civ_idx, grid)
         return (grid_stat)
     end
 
@@ -251,8 +254,8 @@ namespace ns_micro_state_functions:
     ##############################
 
     func grid_stats_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        grid : Vec2, grid_stat : GridStat) -> ():
-        grid_stats.write (grid, grid_stat)
+        civ_idx : felt, grid : Vec2, grid_stat : GridStat) -> ():
+        grid_stats.write (civ_idx, grid, grid_stat)
         return ()
     end
 
