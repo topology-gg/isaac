@@ -87,10 +87,12 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) coordinate transform macro => micro for solar exposure calculation
 - (DONE) contract reorganization to have <isaac.cairo - lobby.cairo> deployed, which is connected with all instances of <universe.cairo> deployed
 - Must: Implement top-level isaac.cairo
-- Must: Implement function that passes participation info from universe.cairo => lobby/isaac.cairo
-- Must: Implement NDPE function: *any owner launching her deployed NDPE will launch all deployed NDPEs at once; NDPE like all other devices is transferrable; onchain-participation => shares depends on whether a survived player has launched NDPE at least once or not* launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim; testing
 - Must: Implement universe termination function
-- Must: Player transfers device between each other + testing
+- Must: Implement function that passes participation info from universe.cairo => lobby/isaac.cairo
+- (DONE) Must: Implement NDPE function: *any owner launching her deployed NDPE will launch all deployed NDPEs at once; NDPE like all other devices is transferrable; onchain-participation => shares depends on whether a survived player has launched NDPE at least once or not* launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim
+- (DONE) Must: Player transfers undeployed device between each other
+- Good: test player transferring undeployed device between each other
+- Good: test NDPE function
 - Good: build model for resource & energy management, then use it to test `logistics.cairo` x `micro.cairo` at world forwarding
 - Good: event emission for future query needs - at world forwarding, client action performed etc
 - Good: visualize macro dynamics to find robust initial condition for v.1
