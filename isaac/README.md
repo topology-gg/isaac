@@ -102,10 +102,10 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 
 #### Isaac Protocol - IsaacDAO
 - (DONE) Conceptualise: high-level signup flow, civilisation init & reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol; difficulty knobs (init: need to parametrize initial devices for players)
-- Spec out CarseDAO standard, which embodies the player-to-govern (P2G) spirit
-- Design IsaacDAO
-- Implement IsaacDAO
-- CarseDAO and IsaacDAO review
+- (DONE) Spec out CarseDAO standard, which embodies the player-to-govern (P2G) spirit
+- (DONE) Design & Implement IsaacDAO
+- (MUST) Test IsaacDAO
+- CarseDAO and IsaacDAO writeup review and code review
 
 #### Isaac clients
 - utb/utl view carries fraction info, enabling transmission animation in `https://isaac-micro-view.netlify.app/`
