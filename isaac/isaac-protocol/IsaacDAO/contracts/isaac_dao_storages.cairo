@@ -10,6 +10,11 @@ struct Components:
     member angel : felt
 end
 
+struct Play:
+    member player_address : felt
+    member grade : felt
+end
+
 @storage_vars
 func player_votes_available (address : felt) -> (votes : felt):
 end

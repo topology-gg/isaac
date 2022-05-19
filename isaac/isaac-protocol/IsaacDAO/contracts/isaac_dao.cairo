@@ -8,7 +8,7 @@ from starkware.starknet.common.syscalls import (get_block_number, get_caller_add
 
 from contracts.isaac_dao_storages import (
     ns_isaac_dao_storages,
-    Components
+    Components, Play
 )
 from contracts.fsm_storages import (
     Proposal
@@ -81,8 +81,18 @@ func assert_caller_is_angel {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
 
     let (caller) = get_caller_address ()
     let (votable_addresses) = ns_isaac_dao_storages.dao_votable_addresses_read ()
-    let curr_angel_address = votable_addresses.angel
-    assert caller = curr_angel_address
+    assert caller = votable_addresses.angel
+
+    return ()
+end
+
+func assert_caller_is_subject {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> ():
+    alloc_locals
+
+    let (caller) = get_caller_address ()
+    let (votable_addresses) = ns_isaac_dao_storages.dao_votable_addresses_read ()
+    assert caller = votable_addresses.subject
 
     return ()
 end
@@ -338,6 +348,58 @@ end
 #
 # Subject return player participation info
 #
+@external
+func subject_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        arr_play_len : felt,
+        arr_play : Play*
+    ) -> ():
+    alloc_locals
+
+    #
+    # Subject qualification
+    #
+    assert_caller_is_subject ()
+
+    #
+    # Issue new votes to players reported by subject
+    #
+    recurse_issue_new_vote_given_play (
+        arr_play_len,
+        arr_play,
+        0
+    )
+
+    return ()
+end
+
+func recurse_issue_new_vote_given_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        arr_play_len : felt,
+        arr_play : Play*,
+        idx : felt
+    ) -> ():
+    alloc_locals
+
+    if idx == arr_play_len:
+        return ()
+    end
+
+    #
+    # Issue new votes to player, where number of new votes is derived from play grade by Charter
+    #
+    let (new_votes) = get_votes_from_charter_given_play_grade (arr_play[idx].grade)
+    let (curr_votes) = ns_isaac_dao_storages.player_votes_available_read ()
+    ns_isaac_dao_storages.player_votes_available_write (curr_votes + new_votes)
+
+    #
+    # Tail recursion
+    #
+    recurse_issue_new_vote_given_play (
+        arr_play_len,
+        arr_play,
+        idx + 1
+    )
+    return ()
+end
 
 ##########################
 
@@ -356,6 +418,19 @@ func get_period_from_charter {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     return (period)
 end
 
+func get_votes_from_charter_given_play_grade {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    play_grade : felt) -> (votes : felt):
+
+    let (votable_addresses) = ns_isaac_dao_storages.dao_votable_addresses_read ()
+    let charter_address = votable_addresses.charter
+    let (votes) = IContractCharter.lookup_votes_given_play_grade (
+        charter_address,
+        play_grade
+    )
+
+    return (votes)
+end
+
 ##########################
 
 #
@@ -364,6 +439,9 @@ end
 @contract_interface
 namespace IContractCharter:
     func lookup_proposal_duration () -> (duration : felt):
+    end
+
+    func lookup_votes_given_play_grade (play_grade : felt) -> (votes : felt):
     end
 end
 
