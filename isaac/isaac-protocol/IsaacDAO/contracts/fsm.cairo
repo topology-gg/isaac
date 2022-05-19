@@ -8,7 +8,7 @@ from starkware.starknet.common.syscalls import (get_block_number, get_caller_add
 
 from contracts.fsm_storages import (
     ns_fsm_storages,
-    Proposal, S_IDLE, S_VOTE
+    Proposal
 )
 
 ##############################
@@ -27,18 +27,10 @@ func assert_caller_is_dao {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     return ()
 end
 
-func assert_in_idle_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+func assert_in_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (state_query : felt) -> ():
 
     let (state) = ns_fsm_storages.state_read ()
-    assert state == S_IDLE
-
-    return ()
-end
-
-func assert_in_vote_state {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
-
-    let (state) = ns_fsm_storages.state_read ()
-    assert state == S_VOTE
+    assert state = state_query
 
     return ()
 end
@@ -51,17 +43,17 @@ end
 
 @constructor
 func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        voter_name : felt
+        fsm_name : felt
     ):
     #
     # Set name
     #
-    ns_fsm_storages.name_write (voter_name)
+    ns_fsm_storages.name_write (fsm_name)
 
     #
     # State initialization
     #
-    ns_fsm_storages.state_write (S_IDLE)
+    ns_fsm_storages.state_write ('S_IDLE')
 
     return()
 end
@@ -104,12 +96,17 @@ func voting_start {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     #
     # Check if in idle state
     #
-    assert_in_idle_state ()
+    assert_in_state ('S_IDLE')
 
     #
     # Save proposal
     #
     ns_fsm_storages.current_proposal_write (proposal)
+
+    #
+    # Make state transition
+    #
+    ns_fsm_storages.state_write ('S_VOTE')
 
     return ()
 end
@@ -119,9 +116,7 @@ end
 #
 @external
 func voting_end {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    ) -> (
-        number_of_votes_supporting_proposal : felt
-    ):
+    ) -> ():
     alloc_locals
 
     #
@@ -132,27 +127,43 @@ func voting_end {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     #
     # Check if in vote state
     #
-    assert_in_vote_state ()
+    assert_in_state ('S_VOTE')
 
     #
-    # Check if proposal period has passed since voting started
+    # Check if proposal period has passed since voting started; reset proposal
     #
     let (block_height) = get_block_number ()
     let (proposal) = ns_fsm_storages.current_proposal_read ()
     let block_elapsed = block_height - proposal.start_l2_block_height
     assert_le (proposal.period, block_elapsed)
+    ns_fsm_storages.current_proposal_write (Proposal(0,0,0))
+
 
     #
     # Read and reset votes
     #
-    let (votes) = ns_fsm_storages.votes_supporting_current_proposal_read ()
-    ns_fsm_storages.votes_supporting_current_proposal_write (0)
+    let (votes_for) = ns_fsm_storages.votes_for_current_proposal_read ()
+    let (votes_against) = ns_fsm_storages.votes_against_current_proposal_read ()
+    ns_fsm_storages.votes_for_current_proposal_write (0)
+    ns_fsm_storages.votes_against_current_proposal_write (0)
+    let (pass) = is_le (votes_against + 1, votes_for) # votes_against < votes_for
 
     #
-    # Return
+    # Make state transition
     #
-    let number_of_votes_supporting_proposal = votes
-    return (number_of_votes_supporting_proposal)
+    ns_fsm_storages.state_write ('S_IDLE')
+
+    #
+    # Report voting result to IsaacDAO
+    #
+    let (dao_address) = ns_fsm_storages.owner_dao_address_read ()
+    IContractIsaacDAO.fsm_report_voting_result (
+        dao_address,
+        pass,
+        proposal.address
+    )
+
+    return ()
 end
 
 #
@@ -160,7 +171,7 @@ end
 #
 @external
 func cast_vote {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        votes : felt
+        votes : felt, for : felt
     ) -> ():
 
     #
@@ -184,22 +195,24 @@ func cast_vote {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     #
     # Update votes
     #
-    let (curr_votes) = ns_fsm_storages.votes_supporting_current_proposal_read ()
-    ns_fsm_storages.votes_supporting_current_proposal_write (curr_votes + votes)
+    if for == 1:
+        let (curr_votes_for) = ns_fsm_storages.votes_for_current_proposal_read ()
+        ns_fsm_storages.votes_for_current_proposal_write (curr_votes_for + votes)
+    else:
+        let (curr_votes_against) = ns_fsm_storages.votes_against_current_proposal_read ()
+        ns_fsm_storages.votes_against_current_proposal_write (curr_votes_against + votes)
+    end
 
     return ()
 end
 
 ##############################
 
-# #
-# # Interfacing with deployed `universe.cairo`
-# #
-# @contract_interface
-# namespace IContractUniverse:
-#     func update_civilization_player_addresses (
-#         arr_player_adr_len : felt,
-#         arr_player_adr : felt*
-#     ) -> ():
-#     end
-# end
+#
+# Interfacing with `isaac_dao.cairo`
+#
+@contract_interface
+namespace IContractIsaacDAO:
+    func fsm_report_voting_result (pass : felt, proposed_address : felt) -> ():
+    end
+end

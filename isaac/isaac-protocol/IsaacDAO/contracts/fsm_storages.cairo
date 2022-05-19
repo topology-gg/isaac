@@ -1,13 +1,8 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_le
-from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
-from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
-const S_IDLE = 10
-const S_VOTE = 20
 
 struct Proposal:
     member address : felt
@@ -32,7 +27,11 @@ func owner_dao_address () -> (address : felt):
 end
 
 @storage_vars
-func votes_supporting_current_proposal () -> (votes : felt):
+func votes_for_current_proposal () -> (votes : felt):
+end
+
+@storage_vars
+func votes_against_current_proposal () -> (votes : felt):
 end
 
 namespace ns_fsm_storages:
@@ -78,10 +77,19 @@ namespace ns_fsm_storages:
     end
 
     @view
-    func votes_supporting_current_proposal_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func votes_for_current_proposal_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         ) -> (votes : felt):
 
-        let (votes) = votes_supporting_current_proposal.read ()
+        let (votes) = votes_for_current_proposal.read ()
+
+        return (votes)
+    end
+
+    @view
+    func votes_against_current_proposal_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> (votes : felt):
+
+        let (votes) = votes_against_current_proposal.read ()
 
         return (votes)
     end
@@ -122,10 +130,18 @@ namespace ns_fsm_storages:
         return ()
     end
 
-    func votes_supporting_current_proposal_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func votes_for_current_proposal_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         votes : felt) -> ():
 
-        votes_supporting_current_proposal.write (votes)
+        votes_for_current_proposal.write (votes)
+
+        return ()
+    end
+
+    func votes_against_current_proposal_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        votes : felt) -> ():
+
+        votes_against_current_proposal.write (votes)
 
         return ()
     end
