@@ -10,27 +10,27 @@ struct Proposal:
     member start_l2_block_height : felt
 end
 
-@storage_vars
+@storage_var
 func name () -> (literal : felt):
 end
 
-@storage_vars
+@storage_var
 func state () -> (s : felt):
 end
 
-@storage_vars
+@storage_var
 func current_proposal () -> (proposal : Proposal):
 end
 
-@storage_vars
+@storage_var
 func owner_dao_address () -> (address : felt):
 end
 
-@storage_vars
+@storage_var
 func votes_for_current_proposal () -> (votes : felt):
 end
 
-@storage_vars
+@storage_var
 func votes_against_current_proposal () -> (votes : felt):
 end
 
@@ -71,7 +71,7 @@ namespace ns_fsm_storages:
     func owner_dao_address_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         ) -> (address : felt):
 
-        let (address) = ownder_dao_address.read ()
+        let (address) = owner_dao_address.read ()
 
         return (address)
     end
@@ -125,7 +125,7 @@ namespace ns_fsm_storages:
     func owner_dao_address_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         address : felt) -> ():
 
-        ownder_dao_address.write (address)
+        owner_dao_address.write (address)
 
         return ()
     end

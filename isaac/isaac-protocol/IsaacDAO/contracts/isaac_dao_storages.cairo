@@ -15,19 +15,19 @@ struct Play:
     member grade : felt
 end
 
-@storage_vars
+@storage_var
 func player_votes_available (address : felt) -> (votes : felt):
 end
 
-@storage_vars
+@storage_var
 func current_epoch () -> (epoch : felt):
 end
 
-@storage_vars
+@storage_var
 func votable_addresses () -> (addresses : Components):
 end
 
-@storage_vars
+@storage_var
 func fsm_addresses () -> (addresses : Components):
 end
 
