@@ -5,6 +5,7 @@ from starkware.cairo.common.math import signed_div_rem, sign, assert_nn, assert_
 from starkware.cairo.common.math_cmp import is_le
 from contracts.design.constants import (
     G, MASS_SUN0, MASS_SUN1, MASS_SUN2, MASS_PLNT,
+    G_MASS_SUN0, G_MASS_SUN1, G_MASS_SUN2,
     OMEGA_DT_PLANET, TWO_PI,
     RANGE_CHECK_BOUND, SCALE_FP, SCALE_FP_SQRT, DT
 )
@@ -152,12 +153,10 @@ func differentiate {syscall_ptr : felt*, range_check_ptr} (
     return (state_diff)
 end
 
-func distance_cube {range_check_ptr} (
+func distance_sq {range_check_ptr} (
         pos0 : Vec2, pos1 : Vec2
     ) -> (res : felt):
     alloc_locals
-
-    # TODO: optimize away potential FP compensation that is redundant
 
     let x_delta = pos0.x - pos1.x
     let (x_delta_sq) = mul_fp (x_delta, x_delta)
@@ -166,9 +165,19 @@ func distance_cube {range_check_ptr} (
     let (y_delta_sq) = mul_fp (y_delta, y_delta)
 
     let diff_sq = x_delta_sq + y_delta_sq
-    let (diff) = sqrt_fp (diff_sq)
 
+    return (diff_sq)
+end
+
+func distance_cube {range_check_ptr} (
+        pos0 : Vec2, pos1 : Vec2
+    ) -> (res : felt):
+    alloc_locals
+
+    let (diff_sq) = distance_sq (pos0, pos1)
+    let (diff) = sqrt_fp (diff_sq)
     let (res) = mul_fp (diff_sq, diff)
+
     return (res)
 end
 
@@ -188,6 +197,7 @@ func forward_planet_dynamics_applying_impulse {range_check_ptr} (
     ) -> (
         dynamic_post_impulse : Dynamic
     ):
+    alloc_locals
 
     let (delta_vx) = div_fp (impulse_fp.x, MASS_PLNT)
     let (delta_vy) = div_fp (impulse_fp.y, MASS_PLNT)
@@ -239,6 +249,84 @@ func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     ns_macro_state_functions.impulse_cache_write ( Vec2(0,0) )
 
     return ()
+end
+
+#
+# Check for escape condition
+#
+func is_world_macro_escape_condition_met {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (met : felt):
+    alloc_locals
+
+    #
+    # The escape condition has two parts:
+    # 1. velocity: the planet's velocity >= escape velocity, the velocity such that kinetic energy + gravitational potential = 0
+    # 2. range: calculate the center of suns' masses `center_suns`; the planet's distance from `center_suns` is >= 2x the largest among sun-to-center_suns distances
+    # I don't think these conditions are ideal; I have yet to come up with an algorithm that is decidable and has minimized complexity.
+    #
+
+    #
+    # 1-1. compute escape velocity (use square terms to prevent sqrt operations)
+    #       1/2 * m_planet * v_esc^2 = Sum { G * M_sun_i * m_planet / r_sun_planet }
+    #    => v_esc^2 = 2 * Sum { G * M_sun_i / r_sun_planet } = Sun { unit_potential_sun_i }
+    #    compare this against v_planet^2
+    let (state_curr : Dynamics) = ns_macro_state_functions.macro_state_curr_read ()
+
+    let (d_sun0_plnt_sq) = distance_sq (state_curr.sun0.q, state_curr.plnt.q)
+    let (d_sun1_plnt_sq) = distance_sq (state_curr.sun1.q, state_curr.plnt.q)
+    let (d_sun2_plnt_sq) = distance_sq (state_curr.sun2.q, state_curr.plnt.q)
+
+    let (d_sun0_plnt) = sqrt_fp (d_sun0_plnt_sq)
+    let (d_sun1_plnt) = sqrt_fp (d_sun1_plnt_sq)
+    let (d_sun2_plnt) = sqrt_fp (d_sun2_plnt_sq)
+
+    let (unit_potential_sun0) = div_fp (G_MASS_SUN0, d_sun0_plnt)
+    let (unit_potential_sun1) = div_fp (G_MASS_SUN1, d_sun1_plnt)
+    let (unit_potential_sun2) = div_fp (G_MASS_SUN2, d_sun2_plnt)
+
+    let vel_escape_sq = 2 * (unit_potential_sun0 + unit_potential_sun1 + unit_potential_sun2)
+
+    #
+    # 1-2. check escape velocity against planet's current velocity magnitude
+    #
+    let (vel_x_sq) = mul_fp (state_curr.plnt.qd.x, state_curr.plnt.qd.x)
+    let (vel_y_sq) = mul_fp (state_curr.plnt.qd.y, state_curr.plnt.qd.y)
+    let vel_sq = vel_x_sq + vel_y_sq
+    let (bool_escape_velocity_reached) = is_le (vel_escape_sq, vel_sq)
+
+    #
+    # 2-1. Compute center of suns' masses `center_suns`
+    # Note: assuming three suns have identical mass!
+    #
+    let sum_sun_xs = state_curr.sun0.q.x + state_curr.sun1.q.x + state_curr.sun2.q.x
+    let sum_sun_ys = state_curr.sun0.q.y + state_curr.sun1.q.y + state_curr.sun2.q.y
+    let (sun_avg_x, _) = signed_div_rem(sum_sun_xs, 3, RANGE_CHECK_BOUND)
+    let (sun_avg_y, _) = signed_div_rem(sum_sun_ys, 3, RANGE_CHECK_BOUND)
+    let center_suns : Vec2 = Vec2 (sun_avg_x, sun_avg_y)
+
+    #
+    # 2-2. Compute distances (in square terms) between suns and `center_suns`
+    #
+    let (d_sun0_center_sq) = distance_sq (center_suns, state_curr.sun0.q)
+    let (d_sun1_center_sq) = distance_sq (center_suns, state_curr.sun1.q)
+    let (d_sun2_center_sq) = distance_sq (center_suns, state_curr.sun2.q)
+
+    #
+    # 2-3. Compute distance (in square term) between planet and `center_suns`, check its square >= 2 * d_sunx_center_sq for all x
+    #      i.e. ~1.414x in distance terms
+    #
+    let (d_plnt_center_sq) = distance_sq (center_suns, state_curr.plnt.q)
+    let (bool_0) = is_le (d_sun0_center_sq * 2, d_sun0_center_sq)
+    let (bool_1) = is_le (d_sun1_center_sq * 2, d_sun0_center_sq)
+    let (bool_2) = is_le (d_sun2_center_sq * 2, d_sun0_center_sq)
+    let bool_escape_range_reached = bool_0 * bool_1 * bool_2
+
+    #
+    # Merge flags
+    #
+    let met = bool_escape_velocity_reached * bool_escape_range_reached
+
+    return (met)
 end
 
 #

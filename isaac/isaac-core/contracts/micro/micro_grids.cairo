@@ -22,10 +22,11 @@ from contracts.util.distribution import (
 
 namespace ns_micro_grids:
 
-    func is_unpopulated_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (grid : Vec2) -> ():
+    func is_unpopulated_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        civ_idx : felt, grid : Vec2) -> ():
         alloc_locals
 
-        let (grid_stat : GridStat) = ns_micro_state_functions.grid_stats_read (grid)
+        let (grid_stat : GridStat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
         local g : Vec2 = grid
 
         with_attr error_message ("grid ({g.x}, {g.y}) is already populated"):

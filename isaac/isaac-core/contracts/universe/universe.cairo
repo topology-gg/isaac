@@ -31,7 +31,10 @@ from contracts.universe.universe_state import (
 # Import functions / namespaces for macro world
 # TODO: extract macro state from this contract to `macro_state.cairo`
 #
-from contracts.macro.macro_simulation import (forward_world_macro)
+from contracts.macro.macro_simulation import (
+    forward_world_macro,
+    is_world_macro_escape_condition_met
+)
 from contracts.macro.macro_state import (ns_macro_state_functions)
 
 #
@@ -165,6 +168,7 @@ func recurse_reset_civilization_registry {syscall_ptr : felt*, pedersen_ptr : Ha
     # Tail recursion
     #
     recurse_reset_civilization_registry (idx + 1)
+    return ()
 end
 
 func reset_and_deactivate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
@@ -178,6 +182,7 @@ func reset_and_deactivate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuil
     #
     # Reset macro world - trisolar system placement & planet rotation
     #
+    let (macro_initial_state) = get_macro_initial_state ()
     ns_macro_state_functions.macro_state_curr_write (macro_initial_state)
     ns_macro_state_functions.phi_curr_write (ns_macro_init.phi)
 
@@ -189,7 +194,7 @@ func reset_and_deactivate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuil
     return ()
 end
 
-func macro_initial_state {} () -> (dynamics : Dynamics):
+func get_macro_initial_state {} () -> (dynamics : Dynamics):
     return (Dynamics(
         sun0 = Dynamic(
             q = Vec2(
@@ -383,7 +388,17 @@ func anyone_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     #
     # Initiate termination process if universe is terminable
     #
-    terminate_universe_and_notify_lobby ()
+    if bool_universe_terminable == 1:
+        terminate_universe_and_notify_lobby ()
+
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
 
     return ()
 end
@@ -420,13 +435,10 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     #
     # Check macro state against escape condition
     #
-    with_attr error_message ("is_universe_terminable() not implemented"):
-        assert 1 = 0
-    end
-    let bool_universe_escape_condition_met = 0
+    let (bool_universe_escape_condition_met) = is_world_macro_escape_condition_met ()
 
     #
-    # Aggregate flags and return accordingly
+    # Compute union of flags
     #
     if bool_universe_max_age_reached + bool_universe_escape_condition_met != 0:
         return (1)
@@ -528,23 +540,21 @@ func player_launch_all_deployed_ndpe {syscall_ptr : felt*, pedersen_ptr : HashBu
 
     ## Note: caller is expected to provide a grid where caller has an NDPE deployed
 
+    #
+    # Player qualification
+    #
     let (caller) = get_caller_address ()
     assert_address_in_civilization (caller)
 
-    let (impulse_to_planet : Vec2) = ns_micro_devices.launch_all_deployed_ndpe (
+    #
+    # Invoking `launch_all_deployed_ndpe()` to launch all ndpes:
+    # update impulse cache, which will be incorporated in next macro world forwarding,
+    # as well as record which player has launched deployed-ndpe - for play record purposes (IsaacDAO)
+    #
+    ns_micro_devices.launch_all_deployed_ndpe (
         caller,
         grid
     )
-
-    #
-    # Effect impulse in macro
-    #
-    # TODO
-
-    #
-    # Effect participation in protocol
-    #
-    # TODO
 
     return ()
 end
@@ -552,7 +562,7 @@ end
 @external
 func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         type : felt,
-        amount : felt
+        amount : felt,
         to : felt
     ) -> ():
 

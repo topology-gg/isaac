@@ -39,6 +39,9 @@ const MASS_SUN0 = 1 * SCALE_FP
 const MASS_SUN1 = 1 * SCALE_FP
 const MASS_SUN2 = 1 * SCALE_FP
 const MASS_PLNT = 1 * SCALE_FP_DIV_10000
+const G_MASS_SUN0 = 1 * SCALE_FP
+const G_MASS_SUN1 = 1 * SCALE_FP
+const G_MASS_SUN2 = 1 * SCALE_FP
 ## Rotation
 const OMEGA_DT_PLANET = 624 / 100 * 6 / 100 * SCALE_FP # unit: radiant; takes ~100 DT to complete 2*pi
 const TWO_PI = 6283185 / 1000000 * SCALE_FP

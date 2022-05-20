@@ -38,6 +38,9 @@ from contracts.micro.micro_devices import (
 from contracts.micro.micro_grids import (
     ns_micro_grids
 )
+from contracts.universe.universe_state import (
+    ns_universe_state_functions
+)
 
 ##############################
 ## utx
@@ -70,6 +73,11 @@ namespace ns_micro_utx:
         assert_device_type_is_utx (utx_device_type)
 
         #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
+
+        #
         # Check if caller owns at least `locs_len` amount of undeployed utx
         #
         let (local owned_utx_amount) = ns_micro_state_functions.device_undeployed_ledger_read (caller, utx_device_type)
@@ -81,8 +89,8 @@ namespace ns_micro_utx:
         #
         # Check if caller owns src and dst device
         #
-        let (src_grid_stat) = ns_micro_state_functions.grid_stats_read (src_device_grid)
-        let (dst_grid_stat) = ns_micro_state_functions.grid_stats_read (dst_device_grid)
+        let (src_grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, src_device_grid)
+        let (dst_grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, dst_device_grid)
         with_attr error_message ("source-device grid is not populated"):
             assert src_grid_stat.populated = 1
         end
@@ -140,7 +148,8 @@ namespace ns_micro_utx:
             arr = locs,
             idx = 0,
             utx_idx = utx_idx_start,
-            set_label = new_label
+            set_label = new_label,
+            civ_idx = civ_idx
         )
 
         #
@@ -200,7 +209,8 @@ namespace ns_micro_utx:
             arr : Vec2*,
             idx : felt,
             utx_idx : felt,
-            set_label : felt
+            set_label : felt,
+            civ_idx : felt
         ) -> ():
         alloc_locals
 
@@ -215,7 +225,7 @@ namespace ns_micro_utx:
         is_valid_grid (arr[idx])
 
         # 2. check loc is not already populated
-        ns_micro_grids.is_unpopulated_grid (arr[idx])
+        ns_micro_grids.is_unpopulated_grid (civ_idx, arr[idx])
 
         # 3. check loc is contiguous with previous loc, unless idx==0
         if idx == 0:
@@ -234,14 +244,17 @@ namespace ns_micro_utx:
         #
         # Update global grid_stats ledger
         #
-        ns_micro_state_functions.grid_stats_write (arr[idx], GridStat (
-            populated = 1,
-            deployed_device_type = utx_device_type,
-            deployed_device_id = set_label,
-            deployed_device_owner = caller
-        ))
+        ns_micro_state_functions.grid_stats_write (
+            civ_idx, arr[idx],
+            GridStat (
+                populated = 1,
+                deployed_device_type = utx_device_type,
+                deployed_device_id = set_label,
+                deployed_device_owner = caller
+            )
+        )
 
-        recurse_utx_deploy (caller, utx_device_type, len, arr, idx+1, utx_idx+1, set_label)
+        recurse_utx_deploy (caller, utx_device_type, len, arr, idx+1, utx_idx+1, set_label, civ_idx)
         return ()
     end
 
@@ -256,9 +269,14 @@ namespace ns_micro_utx:
         alloc_locals
 
         #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
+
+        #
         # Check the grid contains an utx owned by caller
         #
-        let (grid_stat) = ns_micro_state_functions.grid_stats_read (grid)
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
         assert grid_stat.populated = 1
         assert grid_stat.deployed_device_owner = caller
         let utx_device_type = grid_stat.deployed_device_type
@@ -282,7 +300,8 @@ namespace ns_micro_utx:
             utx_device_type = utx_device_type,
             start_idx = utx_start_index,
             end_idx = utx_end_index,
-            idx = 0
+            idx = 0,
+            civ_idx = civ_idx
         )
 
         #
@@ -319,7 +338,8 @@ namespace ns_micro_utx:
             utx_device_type : felt,
             start_idx : felt,
             end_idx : felt,
-            idx : felt
+            idx : felt,
+            civ_idx : felt
         ) -> ():
         alloc_locals
 
@@ -328,9 +348,12 @@ namespace ns_micro_utx:
         end
 
         let (grid_to_clear) = ns_micro_state_functions.utx_deployed_index_to_grid_read (utx_device_type, start_idx + idx)
-        ns_micro_state_functions.grid_stats_write (grid_to_clear, GridStat(0,0,0,0))
+        ns_micro_state_functions.grid_stats_write (
+            civ_idx, grid_to_clear,
+            GridStat(0,0,0,0)
+        )
 
-        recurse_pickup_utx_given_start_end_utx_index (utx_device_type, start_idx, end_idx, idx + 1)
+        recurse_pickup_utx_given_start_end_utx_index (utx_device_type, start_idx, end_idx, idx + 1, civ_idx)
         return()
     end
 
