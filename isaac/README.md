@@ -105,7 +105,10 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) Spec out CarseDAO standard, which embodies the player-to-govern (P2G) spirit
 - (DONE) Design & Implement IsaacDAO
 - (MUST) Test IsaacDAO
-- CarseDAO and IsaacDAO writeup review and code review
+
+### Isaac gitbook
+- design Isaac gitbook structure / table of contents -- Isaac high-level philosophy, Isaac universe, IsaacDAO and CarseDAO
+- populate gitbook
 
 #### Isaac clients
 - utb/utl view carries fraction info, enabling transmission animation in `https://isaac-micro-view.netlify.app/`
