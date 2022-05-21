@@ -62,7 +62,8 @@ end
 # One-time initialization of dao address that owns this voter state machine
 #
 @external
-func init_owner_dao_address (address : felt) -> ():
+func init_owner_dao_address_once {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    address : felt) -> ():
     #
     # Make sure address is not set yet
     #
@@ -167,12 +168,55 @@ func voting_end {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
 end
 
 #
+# Function for checking if voting_end can be invoked
+#
+@view
+func can_invoke_voting_end {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (bool : felt):
+    alloc_locals
+
+    #
+    # Check if in vote state
+    #
+    let (state) = ns_fsm_storages.state_read ()
+    local bool_correct_state
+    if state == 'S_VOTE':
+        assert bool_correct_state = 1
+    else:
+        assert bool_correct_state = 0
+    end
+
+    #
+    # Check if proposal period has passed since voting started
+    #
+    let (block_height) = get_block_number ()
+    let (proposal) = ns_fsm_storages.current_proposal_read ()
+    let block_elapsed = block_height - proposal.start_l2_block_height
+    let (bool_period_passed) = is_le (proposal.period, block_elapsed)
+
+    #
+    # Aggregate flags
+    #
+    let bool = bool_correct_state * bool_period_passed
+
+    return (bool)
+end
+
+@view
+func return_current_block_number {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (number : felt):
+    let (number) = get_block_number ()
+    return (number)
+end
+
+#
 # Function for casting vote
 #
 @external
 func cast_vote {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         votes : felt, for : felt
     ) -> ():
+    alloc_locals
 
     #
     # Only the owner dao can invoke this function
@@ -182,7 +226,7 @@ func cast_vote {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     #
     # Check if in vote state
     #
-    assert_in_vote_state ()
+    assert_in_state ('S_VOTE')
 
     #
     # Check if proposal period has *not* passed since voting started

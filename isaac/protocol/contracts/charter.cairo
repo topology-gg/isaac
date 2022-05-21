@@ -17,6 +17,7 @@ end
 @view
 func lookup_votes_given_play_grade {} (
     play_grade : felt) -> (votes : felt):
+    alloc_locals
 
     if play_grade == 0:
         return (NEW_VOTES_FOR_GRADE_0)
@@ -30,5 +31,5 @@ func lookup_votes_given_play_grade {} (
     with_attr error_message ("play_grade value (pg) unrecognized"):
         assert 1 = 0
     end
-    return ()
+    return (0)
 end

@@ -2,12 +2,12 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_le, assert_lt
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
-from contracts.isaac_dao_storages import (
-    ns_isaac_dao_storages,
+from contracts.dao_storages import (
+    ns_dao_storages,
     Components, Play
 )
 from contracts.fsm_storages import (
@@ -16,26 +16,103 @@ from contracts.fsm_storages import (
 
 ##############################
 
-# #
-# # For yagi automation
-# #
-# @view
-# func yagiProbeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-#     ) -> (bool : felt):
+#
+# For yagi automation
+#
+@view
+func probe_can_end_vote {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (bool : felt):
 
-#     let (_, _, bool) = can_dispatch_player_to_universe ()
+    let (_, _, _, _, bool) = can_end_vote ()
 
-#     return (bool)
-# end
+    return (bool)
+end
 
-# @external
-# func yagiExecuteTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-#     ) -> ():
+@external
+func anyone_execute_end_vote {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> ():
+    alloc_locals
 
-#     anyone_dispatch_player_to_universe ()
+    let (
+        fsm_addresses  : Components,
+        bool_can_end_vote_subject,
+        bool_can_end_vote_charter,
+        bool_can_end_vote_angel,
+        bool
+    ) = can_end_vote ()
+    assert bool = 1
 
-#     return ()
-# end
+    ## messy reference management - necessary evil
+    local syscall_ptr : felt* = syscall_ptr
+    local pedersen_ptr : HashBuiltin* = pedersen_ptr
+    local range_check_ptr = range_check_ptr
+    if bool_can_end_vote_subject == 1:
+        IContractFsm.voting_end (fsm_addresses.subject)
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
+
+    local syscall_ptr : felt* = syscall_ptr
+    local pedersen_ptr : HashBuiltin* = pedersen_ptr
+    local range_check_ptr = range_check_ptr
+    if bool_can_end_vote_charter == 1:
+        IContractFsm.voting_end (fsm_addresses.charter)
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
+
+    local syscall_ptr : felt* = syscall_ptr
+    local pedersen_ptr : HashBuiltin* = pedersen_ptr
+    local range_check_ptr = range_check_ptr
+    if bool_can_end_vote_angel == 1:
+        IContractFsm.voting_end (fsm_addresses.angel)
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
+
+    return ()
+end
+
+func can_end_vote {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (
+        fsm_addresses : Components,
+        bool_can_end_vote_subject : felt,
+        bool_can_end_vote_charter : felt,
+        bool_can_end_vote_angel : felt,
+        bool : felt
+    ):
+    alloc_locals
+
+    let (fsm_addresses : Components) = ns_dao_storages.fsm_addresses_read ()
+    let (bool_can_end_vote_subject) = IContractFsm.can_invoke_voting_end (fsm_addresses.subject)
+    let (bool_can_end_vote_charter) = IContractFsm.can_invoke_voting_end (fsm_addresses.charter)
+    let (bool_can_end_vote_angel)   = IContractFsm.can_invoke_voting_end (fsm_addresses.angel)
+    let bool_sum = bool_can_end_vote_subject + bool_can_end_vote_charter + bool_can_end_vote_angel
+    let (bool) = is_not_zero (bool_sum)
+
+    return (
+        fsm_addresses,
+        bool_can_end_vote_subject,
+        bool_can_end_vote_charter,
+        bool_can_end_vote_angel,
+        bool
+    )
+end
 
 ##########################
 
@@ -52,7 +129,7 @@ func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
     #
     # Initialize votable addresses
     #
-    ns_isaac_dao_storages.votable_addresses_write (Components(
+    ns_dao_storages.votable_addresses_write (Components(
         subject = address_subject,
         charter = address_charter,
         angel = address_angel
@@ -61,7 +138,7 @@ func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
     #
     # Initialize fsm addresses
     #
-    ns_isaac_dao_storages.fsm_addresses_write (Components(
+    ns_dao_storages.fsm_addresses_write (Components(
         subject = fsm_address_subject,
         charter = fsm_address_charter,
         angel = fsm_address_angel
@@ -80,7 +157,7 @@ func assert_caller_is_angel {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     alloc_locals
 
     let (caller) = get_caller_address ()
-    let (votable_addresses) = ns_isaac_dao_storages.votable_addresses_read ()
+    let (votable_addresses) = ns_dao_storages.votable_addresses_read ()
     assert caller = votable_addresses.angel
 
     return ()
@@ -91,7 +168,7 @@ func assert_caller_is_subject {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*,
     alloc_locals
 
     let (caller) = get_caller_address ()
-    let (votable_addresses) = ns_isaac_dao_storages.votable_addresses_read ()
+    let (votable_addresses) = ns_dao_storages.votable_addresses_read ()
     assert caller = votable_addresses.subject
 
     return ()
@@ -138,7 +215,7 @@ func angel_propose_new_subject {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
     #
     # Submit proposal to fsm
     #
-    let (fsm_addresses) = ns_isaac_dao_storages.fsm_addresses_read ()
+    let (fsm_addresses) = ns_dao_storages.fsm_addresses_read ()
     IContractFsm.voting_start (
         fsm_addresses.subject,
         proposal
@@ -165,7 +242,7 @@ func angel_propose_new_charter {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
     #
     # Submit proposal to fsm
     #
-    let (fsm_addresses) = ns_isaac_dao_storages.fsm_addresses_read ()
+    let (fsm_addresses) = ns_dao_storages.fsm_addresses_read ()
     IContractFsm.voting_start (
         fsm_addresses.charter,
         proposal
@@ -192,7 +269,7 @@ func angel_propose_new_angel {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     #
     # Submit proposal to fsm
     #
-    let (fsm_addresses) = ns_isaac_dao_storages.fsm_addresses_read ()
+    let (fsm_addresses) = ns_dao_storages.fsm_addresses_read ()
     IContractFsm.voting_start (
         fsm_addresses.angel,
         proposal
@@ -216,14 +293,14 @@ func player_vote_new_x {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     # Qualification
     #
     let (caller) = get_caller_address ()
-    let (votes_avail) = ns_isaac_dao_storages.player_votes_available_read (caller)
+    let (votes_avail) = ns_dao_storages.player_votes_available_read (caller)
     assert_lt (0, votes) # 0 < votes
     assert_le (votes, votes_avail) # votes <= votes_avail
 
     #
     # Spend votes
     #
-    ns_isaac_dao_storages.player_votes_available_write (caller, votes_avail - votes)
+    ns_dao_storages.player_votes_available_write (caller, votes_avail - votes)
     IContractFsm.cast_vote (
         fsm_address,
         votes,
@@ -238,7 +315,7 @@ func player_vote_new_subject {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     votes : felt, for : felt) ->  ():
     alloc_locals
 
-    let (fsm_addresses) = ns_isaac_dao_storages.fsm_addresses_read ()
+    let (fsm_addresses) = ns_dao_storages.fsm_addresses_read ()
     player_vote_new_x (votes, for, fsm_addresses.subject)
 
     return ()
@@ -249,7 +326,7 @@ func player_vote_new_charter {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     votes : felt, for : felt) ->  ():
     alloc_locals
 
-    let (fsm_addresses) = ns_isaac_dao_storages.fsm_addresses_read ()
+    let (fsm_addresses) = ns_dao_storages.fsm_addresses_read ()
     player_vote_new_x (votes, for, fsm_addresses.charter)
 
     return ()
@@ -260,7 +337,7 @@ func player_vote_new_angel {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     votes : felt, for : felt) ->  ():
     alloc_locals
 
-    let (fsm_addresses) = ns_isaac_dao_storages.fsm_addresses_read ()
+    let (fsm_addresses) = ns_dao_storages.fsm_addresses_read ()
     player_vote_new_x (votes, for, fsm_addresses.angel)
 
     return ()
@@ -279,9 +356,9 @@ func fsm_report_voting_result {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*,
     #
     # Prepare for change depending on fsm address (1:1 mapped to votable address) and pass/fail
     #
-    let (caller) = get_caller_address ()
-    let (fsm_addresses : Components) = ns_isaac_dao_storages.fsm_addresses_read ()
-    let (curr_votable_addresses : Components) = ns_isaac_dao_storages.votable_addresses_read ()
+    let (local caller) = get_caller_address ()
+    let (fsm_addresses : Components) = ns_dao_storages.fsm_addresses_read ()
+    let (curr_votable_addresses : Components) = ns_dao_storages.votable_addresses_read ()
     local new_votable_addresses : Components
 
     if caller == fsm_addresses.subject:
@@ -291,11 +368,18 @@ func fsm_report_voting_result {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*,
                 charter = curr_votable_addresses.charter,
                 angel   = curr_votable_addresses.angel
             )
-            # let (curr_epoch) = ns_isaac_dao_storages.current_epoch_read ()
-            # ns_isaac_dao_storages.current_epoch_write (curr_epoch + 1) # subject evolved to its next epoch
+            # let (curr_epoch) = ns_dao_storages.current_epoch_read ()
+            # ns_dao_storages.current_epoch_write (curr_epoch + 1) # subject evolved to its next epoch
+            ns_dao_storages.votable_addresses_write (new_votable_addresses)
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
         else:
-            assert new_votable_addresses = curr_votable_addresses
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
         end
+        return ()
     end
 
     if caller == fsm_addresses.charter:
@@ -305,9 +389,16 @@ func fsm_report_voting_result {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*,
                 charter = proposed_address,
                 angel   = curr_votable_addresses.angel
             )
+            ns_dao_storages.votable_addresses_write (new_votable_addresses)
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
         else:
-            assert new_votable_addresses = curr_votable_addresses
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
         end
+        return ()
     end
 
     if caller == fsm_addresses.angel:
@@ -317,21 +408,20 @@ func fsm_report_voting_result {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*,
                 charter = curr_votable_addresses.charter,
                 angel   = proposed_address
             )
+            ns_dao_storages.votable_addresses_write (new_votable_addresses)
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
         else:
-            assert new_votable_addresses = curr_votable_addresses
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
         end
+        return ()
     end
 
-    #
-    # Update votable addresses
-    #
-    ns_isaac_dao_storages.votable_addresses_write (new_votable_addresses)
-
-    #
-    # Caller not a component FSM of this DAO
-    #
-    not_fsm_address:
-    with_attr error_message ("Caller is not one of the DAO's component-FSM addresses"):
+    caller_is_not_fsm:
+    with_attr error_message ("Caller {caller} is not one of the DAO's component-FSM addresses"):
         assert 1 = 0
     end
     return ()
@@ -381,8 +471,8 @@ func recurse_issue_new_vote_given_play {syscall_ptr : felt*, pedersen_ptr : Hash
     # Issue new votes to player, where number of new votes is derived from play grade by Charter
     #
     let (new_votes) = get_votes_from_charter_given_play_grade (arr_play[idx].grade)
-    let (curr_votes) = ns_isaac_dao_storages.player_votes_available_read (arr_play[idx].player_address)
-    ns_isaac_dao_storages.player_votes_available_write (arr_play[idx].player_address, curr_votes + new_votes)
+    let (curr_votes) = ns_dao_storages.player_votes_available_read (arr_play[idx].player_address)
+    ns_dao_storages.player_votes_available_write (arr_play[idx].player_address, curr_votes + new_votes)
 
     #
     # Tail recursion
@@ -404,7 +494,7 @@ func get_period_from_charter {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     ) -> (period : felt):
     alloc_locals
 
-    let (votable_addresses) = ns_isaac_dao_storages.votable_addresses_read ()
+    let (votable_addresses) = ns_dao_storages.votable_addresses_read ()
     let charter_address = votable_addresses.charter
     let (period) = IContractCharter.lookup_proposal_period (
         charter_address
@@ -417,7 +507,7 @@ func get_votes_from_charter_given_play_grade {syscall_ptr : felt*, pedersen_ptr 
     play_grade : felt) -> (votes : felt):
     alloc_locals
 
-    let (votable_addresses) = ns_isaac_dao_storages.votable_addresses_read ()
+    let (votable_addresses) = ns_dao_storages.votable_addresses_read ()
     let charter_address = votable_addresses.charter
     let (votes) = IContractCharter.lookup_votes_given_play_grade (
         charter_address,
@@ -449,7 +539,27 @@ namespace IContractFsm:
     func voting_start (proposal : Proposal) -> ():
     end
 
+    func voting_end () -> ():
+    end
+
+    func can_invoke_voting_end () -> (bool : felt):
+    end
+
     func cast_vote (votes : felt, for : felt) -> ():
     end
 end
 
+##########################
+
+## function for testing purposes
+@external
+func admin_write_player_votes_available {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    player_address : felt, votes : felt) -> ():
+
+    ns_dao_storages.player_votes_available_write (
+        player_address,
+        votes
+    )
+
+    return ()
+end

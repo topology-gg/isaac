@@ -31,7 +31,7 @@ end
 func fsm_addresses () -> (addresses : Components):
 end
 
-namespace ns_isaac_dao_storages:
+namespace ns_dao_storages:
 
     #
     # Getters
