@@ -34,3 +34,8 @@ struct UtbSetInfo:
     member start_index : felt
     member end_index : felt
 end
+
+struct Play:
+    member player_address : felt
+    member grade : felt
+end

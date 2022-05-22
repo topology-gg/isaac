@@ -30,6 +30,10 @@ end
 func universe_active (idx : felt) -> (is_active : felt):
 end
 
+@storage_var
+func dao_address () -> (address : felt):
+end
+
 namespace ns_lobby_state_functions:
 
     #
@@ -89,6 +93,15 @@ namespace ns_lobby_state_functions:
         return (is_active)
     end
 
+    @view
+    func dao_address_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> (address : felt):
+
+        let (address) = dao_address.read ()
+
+        return (address)
+    end
+
     #
     # Setters
     #
@@ -111,7 +124,7 @@ namespace ns_lobby_state_functions:
     func queue_address_to_index_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         address : felt, idx : felt) -> ():
 
-        lobby_address.write (address, idx)
+        queue_address_to_index.write (address, idx)
 
         return ()
     end
@@ -136,6 +149,14 @@ namespace ns_lobby_state_functions:
         idx : felt, is_active : felt) -> ():
 
         universe_active.write (idx, is_active)
+
+        return ()
+    end
+
+    func dao_address_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        address : felt) -> ():
+
+        dao_address.write (address)
 
         return ()
     end

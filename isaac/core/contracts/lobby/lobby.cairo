@@ -6,6 +6,9 @@ from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
+from contracts.util.structs import (
+    Play
+)
 from contracts.design.constants import (
     CIV_SIZE, UNIVERSE_COUNT
 )
@@ -17,13 +20,23 @@ from contracts.lobby.lobby_state import (
 ##############################
 
 #
-# Interfacing with deployed `universe.cairo`
+# Interfacing with deployed `universe.cairo` and `dao.cairo`
 #
+
 @contract_interface
 namespace IContractUniverse:
-    func update_civilization_player_addresses (
+    func activate_universe (
         arr_player_adr_len : felt,
         arr_player_adr : felt*
+    ) -> ():
+    end
+end
+
+@contract_interface
+namespace IContractDAO:
+    func subject_report_play (
+        arr_play_len : felt,
+        arr_play : Play*
     ) -> ():
     end
 end
@@ -37,7 +50,7 @@ end
 func yagiProbeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> (bool : felt):
 
-    let (_, _, bool) = can_dispatch_player_to_universe ()
+    let (_, _, _, bool) = can_dispatch_player_to_universe ()
 
     return (bool)
 end
@@ -53,6 +66,42 @@ end
 
 ##############################
 
+@constructor
+func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        universe_addresses_len : felt,
+        universe_addresses : felt*
+    ):
+
+    recurse_write_universe_addresses (
+        universe_addresses_len,
+        universe_addresses,
+        0
+    )
+
+    return()
+end
+
+func recurse_write_universe_addresses {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        adr_len : felt,
+        adr : felt*,
+        idx : felt
+    ) -> ():
+
+    if idx == adr_len:
+        return ()
+    end
+
+    ns_lobby_state_functions.universe_addresses_write (idx, adr[idx])
+
+    #
+    # Tail recursion
+    #
+    recurse_write_universe_addresses (adr_len, adr, idx + 1)
+    return ()
+end
+
+##############################
+
 #
 # Functions for dispatching players from queue to universe
 #
@@ -61,9 +110,10 @@ func can_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : HashBu
     ) -> (
         curr_head_idx : felt,
         curr_tail_idx : felt,
-        idle_universe_idx : felt
+        idle_universe_idx : felt,
         bool : felt
     ):
+    alloc_locals
 
     #
     # Check if at least `CIV_SIZE` worth of players in queue for dispatch
@@ -90,7 +140,7 @@ end
 
 func recurse_find_idle_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         bool_has_idle_universe : felt,
-        idle_universe_idx : felt
+        idle_universe_idx : felt,
         idx : felt
     ) -> ():
 
@@ -157,7 +207,7 @@ func anyone_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : Has
     #
     # Forward queue head index
     #
-    queue_head_index_write (curr_head_idx + CIV_SIZE)
+    ns_lobby_state_functions.queue_head_index_write (curr_head_idx + CIV_SIZE)
 
     #
     # Get universe address from idx
@@ -167,7 +217,7 @@ func anyone_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : Has
     #
     # Dispatch
     #
-    IContractUniverse.update_civilization_player_addresses (
+    IContractUniverse.activate_universe (
         universe_address,
         arr_player_adr_len = CIV_SIZE,
         arr_player_adr = arr_player_adr
@@ -190,20 +240,20 @@ func recurse_populate_player_adr_update_queue {syscall_ptr : felt*, pedersen_ptr
     #
     # Populate `arr_player_adr` array
     #
-    let (player_adr) = queue_index_to_address_read (curr_head_idx + offset)
+    let (player_adr) = ns_lobby_state_functions.queue_index_to_address_read (curr_head_idx + offset)
     assert arr_player_adr [offset] = player_adr
 
     #
     # Clear queue entry at `curr_head_idx + offset`
     #
-    queue_address_to_index_write (player_adr, 0)
-    queue_index_to_address_write (curr_head_idx + offset, 0)
+    ns_lobby_state_functions.queue_address_to_index_write (player_adr, 0)
+    ns_lobby_state_functions.queue_index_to_address_write (curr_head_idx + offset, 0)
 
     #
     # Tail recursion
     #
     recurse_populate_player_adr_update_queue (
-        player_adr,
+        arr_player_adr,
         curr_head_idx,
         offset + 1
     )
@@ -211,44 +261,11 @@ func recurse_populate_player_adr_update_queue {syscall_ptr : felt*, pedersen_ptr
     return ()
 end
 
-##########################
+##############################
+
 #
-##########################
-
-@constructor
-func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        universe_addresses_len : felt,
-        universe_addresses : felt*
-    ):
-
-    recurse_write_universe_addresses (
-        universe_addresses_len,
-        universe_addresses,
-        0
-    )
-
-    return()
-end
-
-func recurse_write_universe_addresses {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        adr_len : felt,
-        adr : felt*,
-        idx : felt
-    ) -> ():
-
-    if idx == adr_len:
-        return ()
-    end
-
-    ns_lobby_state_functions.universe_addresses_write (idx, adr[idx])
-
-    #
-    # Tail recursion
-    #
-    recurse_write_universe_addresses (adr_len, adr, idx + 1)
-    return ()
-end
-
+# Function for player to join queue
+#
 @external
 func client_ask_to_queue {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
     alloc_locals
@@ -270,6 +287,44 @@ func client_ask_to_queue {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     ns_lobby_state_functions.queue_tail_index_write (new_player_idx)
     ns_lobby_state_functions.queue_address_to_index_write (caller, new_player_idx)
     ns_lobby_state_functions.queue_index_to_address_write (new_player_idx, caller)
+
+    return ()
+end
+
+##############################
+
+#
+# Functions for:
+# - settting DAO address once
+# - universe to report play records, which is reported up to IsaacDAO
+#
+@external
+func set_dao_address_once {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    address : felt) -> ():
+
+    let (curr_dao_address) = ns_lobby_state_functions.dao_address_read ()
+    with_attr error_message ("DAO address is already set"):
+        assert curr_dao_address = 0
+    end
+
+    ns_lobby_state_functions.dao_address_write (address)
+
+    return ()
+end
+
+@external
+func universe_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        arr_play_len : felt,
+        arr_play : Play*
+    ) -> ():
+    alloc_locals
+
+    let (dao_address) = ns_lobby_state_functions.dao_address_read ()
+    IContractDAO.subject_report_play (
+        dao_address,
+        arr_play_len,
+        arr_play
+    )
 
     return ()
 end

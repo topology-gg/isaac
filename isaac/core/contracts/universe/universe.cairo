@@ -17,7 +17,8 @@ from contracts.design.constants import (
     ns_macro_init
 )
 from contracts.util.structs import (
-    Vec2, Dynamic, Dynamics
+    Vec2, Dynamic, Dynamics,
+    Play
 )
 
 #
@@ -73,6 +74,20 @@ func yagiExecuteTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_ch
     return ()
 end
 
+##############################
+
+#
+# Interface with lobby
+#
+@contract_interface
+namespace IContractLobby:
+    func subject_report_play (
+        arr_play_len : felt,
+        arr_play : Play*
+    ) -> ():
+    end
+end
+
 ################
 # Access control
 ################
@@ -98,12 +113,12 @@ func assert_address_in_civilization {syscall_ptr : felt*, pedersen_ptr : HashBui
     return ()
 end
 
-func assert_caller_is_isaac {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+func assert_caller_is_lobby {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
 
     let (caller) = get_caller_address ()
-    let (isaac_address) = ns_universe_state_functions.isaac_address_read ()
-    with_attr error_message ("caller is not the lobby contract"):
-        assert caller = isaac_address
+    let (lobby_address) = ns_universe_state_functions.lobby_address_read ()
+    with_attr error_message ("Caller is not the lobby contract"):
+        assert caller = lobby_address
     end
 
     return ()
@@ -125,26 +140,26 @@ func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
 end
 
 @external
-func set_isaac_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func set_lobby_address_once {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     address) -> ():
 
     #
     # Only GYOZA can set lobby address
     #
-    assert_caller_is_admin ()
+    # assert_caller_is_admin ()
 
     #
     # Check if lobby address is already set
     #
-    let (curr_isaac_address) = ns_universe_state_functions.isaac_address_read ()
+    let (curr_lobby_address) = ns_universe_state_functions.lobby_address_read ()
     with_attr error_message ("Lobby address already set"):
-        assert curr_isaac_address = 0
+        assert curr_lobby_address = 0
     end
 
     #
     # Set lobby address
     #
-    ns_universe_state_functions.isaac_address_write (address)
+    ns_universe_state_functions.lobby_address_write (address)
 
     return ()
 end
@@ -246,9 +261,9 @@ func activate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     ) -> ():
 
     #
-    # Only isaac contract can invoke this function
+    # Only lobby contract can invoke this function
     #
-    assert_caller_is_isaac ()
+    assert_caller_is_lobby ()
 
     #
     # Confirm getting `CIV_SIZE` worth of player addresses
@@ -383,13 +398,18 @@ func anyone_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     #
     # Check if this universe can be terminated
     #
-    let (bool_universe_terminable) = is_universe_terminable (block_curr)
+    let (
+        bool_universe_terminable,
+        _, bool_universe_escape_condition_met
+    ) = is_universe_terminable (block_curr)
 
     #
     # Initiate termination process if universe is terminable
     #
     if bool_universe_terminable == 1:
-        terminate_universe_and_notify_lobby ()
+        terminate_universe_and_notify_lobby (
+            bool_universe_escape_condition_met
+        )
 
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
@@ -404,6 +424,7 @@ func anyone_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
 end
 
 func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        bool_universe_escape_condition_met : felt
     ) -> ():
     alloc_locals
 
@@ -415,14 +436,29 @@ func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : Ha
     #
     # Notify lobby of info for P2G participation calculation
     #
-    # TODO
-
+    let (lobby_address) = ns_universe_state_functions.lobby_address_read ()
+    let (arr_play : Play*) = alloc ()
+    recurse_prepare_play_record (
+        bool_universe_escape_condition_met,
+        arr_play,
+        0
+    )
+    IContractLobby.subject_report_play (
+        lobby_address,
+        CIV_SIZE,
+        arr_play
+    )
 
     return ()
 end
 
 func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    block_curr : felt) -> (bool : felt):
+        block_curr : felt
+    ) -> (
+        bool : felt,
+        bool_universe_max_age_reached : felt,
+        bool_universe_escape_condition_met : felt
+    ):
     alloc_locals
 
     #
@@ -438,13 +474,40 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     let (bool_universe_escape_condition_met) = is_world_macro_escape_condition_met ()
 
     #
-    # Compute union of flags
+    # Aggregate flags
     #
-    if bool_universe_max_age_reached + bool_universe_escape_condition_met != 0:
-        return (1)
-    else:
-        return (0)
+    let bool = bool_universe_max_age_reached * bool_universe_escape_condition_met
+    return (bool, bool_universe_max_age_reached, bool_universe_escape_condition_met)
+end
+
+func recurse_prepare_play_record {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        bool_universe_escape_condition_met : felt,
+        arr_play : Play*,
+        idx : felt
+    ) -> ():
+    alloc_locals
+
+    if idx == CIV_SIZE:
+        return ()
     end
+
+    let (player_address) = ns_universe_state_functions.civilization_player_idx_to_address_read (idx)
+    let (has_launched_ndpe) = ns_universe_state_functions.civilization_player_address_to_has_launched_ndpe_read (player_address)
+    let grade = bool_universe_escape_condition_met * has_launched_ndpe
+    assert arr_play[idx] = Play (
+        player_address = player_address,
+        grade = grade
+    )
+
+    #
+    # Tail recursion
+    #
+    recurse_prepare_play_record (
+        bool_universe_escape_condition_met,
+        arr_play,
+        idx + 1
+    )
+    return ()
 end
 
 ##############################
