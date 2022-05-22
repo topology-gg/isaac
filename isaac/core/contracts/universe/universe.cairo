@@ -74,7 +74,7 @@ end
 #
 @contract_interface
 namespace IContractLobby:
-    func subject_report_play (
+    func universe_report_play (
         arr_play_len : felt,
         arr_play : Play*
     ) -> ():
@@ -436,7 +436,7 @@ func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : Ha
         arr_play,
         0
     )
-    IContractLobby.subject_report_play (
+    IContractLobby.universe_report_play (
         lobby_address,
         CIV_SIZE,
         arr_play

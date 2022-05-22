@@ -62,11 +62,11 @@ namespace ns_universe_state_functions:
 
     @view
     func l2_block_at_genesis_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        ) -> (address : felt):
+        ) -> (number : felt):
 
-        let (address) = l2_block_at_genesis.read ()
+        let (number) = l2_block_at_genesis.read ()
 
-        return (address)
+        return (number)
     end
 
     @view
@@ -107,11 +107,11 @@ namespace ns_universe_state_functions:
 
     @view
     func l2_block_at_last_forward_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        ) -> (block_height : felt):
+        ) -> (number : felt):
 
-        let (block_height) = l2_block_at_last_forward.read ()
+        let (number) = l2_block_at_last_forward.read ()
 
-        return (block_height)
+        return (number)
     end
 
 
@@ -127,9 +127,9 @@ namespace ns_universe_state_functions:
     end
 
     func l2_block_at_genesis_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        address : felt) -> ():
+        number : felt) -> ():
 
-        l2_block_at_genesis.write (address)
+        l2_block_at_genesis.write (number)
 
         return ()
     end
@@ -167,9 +167,9 @@ namespace ns_universe_state_functions:
     end
 
     func l2_block_at_last_forward_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        block_height : felt) -> ():
+        number : felt) -> ():
 
-        l2_block_at_last_forward.write (block_height)
+        l2_block_at_last_forward.write (number)
 
         return ()
     end

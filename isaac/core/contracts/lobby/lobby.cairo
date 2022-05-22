@@ -119,9 +119,7 @@ func can_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : HashBu
     #
     # Check if at least one Universe is idle
     #
-    local bool_has_idle_universe
-    local idle_universe_idx
-    recurse_find_idle_universe (bool_has_idle_universe, idle_universe_idx, 0)
+    let (bool_has_idle_universe, idle_universe_idx) = recurse_find_idle_universe (0)
 
     #
     # Aggregate flags
@@ -132,41 +130,23 @@ func can_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : HashBu
 end
 
 func recurse_find_idle_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        bool_has_idle_universe : felt,
-        idle_universe_idx : felt,
         idx : felt
-    ) -> ():
+    ) -> (
+        bool_has_idle_universe : felt,
+        idle_universe_idx : felt
+    ):
 
     if idx == UNIVERSE_COUNT:
-        #
-        # No idle universe found
-        #
-        assert bool_has_idle_universe = 0
-        assert idle_universe_idx = 0
-        return ()
+        return (0,0)
     end
 
     let (is_active) = ns_lobby_state_functions.universe_active_read (idx)
-
     if is_active == 0:
-        #
-        # Idle universe found
-        #
-        assert bool_has_idle_universe = 1
-        assert idle_universe_idx = idx
-        return ()
-    else:
-        #
-        # Recurse
-        #
-        recurse_find_idle_universe (
-            bool_has_idle_universe,
-            idle_universe_idx,
-            idx + 1
-        )
+        return (1, idx)
     end
 
-    return ()
+    let (b, i) = recurse_find_idle_universe (idx + 1)
+    return (b, i)
 end
 
 @external
@@ -232,15 +212,16 @@ func recurse_populate_player_adr_update_queue {syscall_ptr : felt*, pedersen_ptr
 
     #
     # Populate `arr_player_adr` array
+    # Note: always start from head index + 1
     #
-    let (player_adr) = ns_lobby_state_functions.queue_index_to_address_read (curr_head_idx + offset)
+    let (player_adr) = ns_lobby_state_functions.queue_index_to_address_read (curr_head_idx + offset + 1)
     assert arr_player_adr [offset] = player_adr
 
     #
     # Clear queue entry at `curr_head_idx + offset`
     #
     ns_lobby_state_functions.queue_address_to_index_write (player_adr, 0)
-    ns_lobby_state_functions.queue_index_to_address_write (curr_head_idx + offset, 0)
+    ns_lobby_state_functions.queue_index_to_address_write (curr_head_idx + offset + 1, 0)
 
     #
     # Tail recursion
@@ -258,9 +239,10 @@ end
 
 #
 # Function for player to join queue
+# NOTE: queue idx starts from 1; 0 is reserved for uninitialized (not in queue)
 #
 @external
-func client_ask_to_queue {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
+func anyone_ask_to_queue {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
     alloc_locals
 
     #
