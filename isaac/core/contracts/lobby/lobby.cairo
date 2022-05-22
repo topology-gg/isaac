@@ -47,7 +47,7 @@ end
 # For yagi automation
 #
 @view
-func yagiProbeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func probe_can_dispatch_to_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> (bool : felt):
 
     let (_, _, _, bool) = can_dispatch_player_to_universe ()
@@ -55,14 +55,7 @@ func yagiProbeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
     return (bool)
 end
 
-@external
-func yagiExecuteTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    ) -> ():
-
-    anyone_dispatch_player_to_universe ()
-
-    return ()
-end
+## Note: hook up router with `anyone_dispatch_player_to_universe ()` for yagi execution
 
 ##############################
 

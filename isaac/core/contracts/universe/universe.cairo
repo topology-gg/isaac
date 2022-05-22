@@ -57,22 +57,15 @@ from contracts.micro.micro_reset import (ns_micro_reset)
 #       into one transaction is more susceptible to exceeding n_step upper bound per tx.
 #
 @view
-func yagiProbeTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func probe_can_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> (bool : felt):
 
-    let (_, bool) = can_forward_world ()
+    let (_, bool) = can_forward_universe ()
 
     return (bool)
 end
 
-@external
-func yagiExecuteTask {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    ) -> ():
-
-    anyone_forward_world ()
-
-    return ()
-end
+## Note: hook up router with `anyone_forward_universe` for yagi execution
 
 ##############################
 
@@ -338,7 +331,7 @@ end
 ##############################
 
 @view
-func can_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func can_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> (block_curr : felt, bool : felt):
     alloc_locals
 
@@ -364,7 +357,7 @@ func can_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
 end
 
 @external
-func anyone_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
 
     #
@@ -378,7 +371,7 @@ func anyone_forward_world {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     #
     # Confirm world can be forwarded now
     #
-    let (block_curr, bool) = can_forward_world ()
+    let (block_curr, bool) = can_forward_universe ()
     local min_dist = MIN_L2_BLOCK_NUM_BETWEEN_FORWARD
     with_attr error_message("last-update block must be at least {min_dist} block away from current block."):
         assert bool = 1
