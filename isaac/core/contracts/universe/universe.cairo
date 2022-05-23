@@ -34,7 +34,8 @@ from contracts.universe.universe_state import (
 #
 from contracts.macro.macro_simulation import (
     forward_world_macro,
-    is_world_macro_escape_condition_met
+    is_world_macro_escape_condition_met,
+    is_world_macro_destructed
 )
 from contracts.macro.macro_state import (ns_macro_state_functions)
 
@@ -393,7 +394,9 @@ func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     #
     let (
         bool_universe_terminable,
-        _, bool_universe_escape_condition_met
+        bool_destruction,
+        bool_universe_max_age_reached,
+        bool_universe_escape_condition_met
     ) = is_universe_terminable (block_curr)
 
     #
@@ -401,6 +404,7 @@ func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     #
     if bool_universe_terminable == 1:
         terminate_universe_and_notify_lobby (
+            bool_destruction,
             bool_universe_escape_condition_met
         )
 
@@ -417,14 +421,10 @@ func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
 end
 
 func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        bool_destruction : felt,
         bool_universe_escape_condition_met : felt
     ) -> ():
     alloc_locals
-
-    #
-    # Reset universe
-    #
-    reset_and_deactivate_universe ()
 
     #
     # Notify lobby of info for P2G participation calculation
@@ -432,6 +432,7 @@ func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : Ha
     let (lobby_address) = ns_universe_state_functions.lobby_address_read ()
     let (arr_play : Play*) = alloc ()
     recurse_prepare_play_record (
+        bool_destruction,
         bool_universe_escape_condition_met,
         arr_play,
         0
@@ -442,6 +443,11 @@ func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : Ha
         arr_play
     )
 
+    #
+    # Reset universe
+    #
+    reset_and_deactivate_universe ()
+
     return ()
 end
 
@@ -449,10 +455,16 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
         block_curr : felt
     ) -> (
         bool : felt,
+        bool_destruction : felt,
         bool_universe_max_age_reached : felt,
         bool_universe_escape_condition_met : felt
     ):
     alloc_locals
+
+    #
+    # Check planet - sun collisions
+    #
+    let (bool_destruction) = is_world_macro_destructed ()
 
     #
     # Check universe age against max age
@@ -469,11 +481,12 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     #
     # Aggregate flags
     #
-    let bool = bool_universe_max_age_reached * bool_universe_escape_condition_met
-    return (bool, bool_universe_max_age_reached, bool_universe_escape_condition_met)
+    let bool = bool_destruction * bool_universe_max_age_reached * bool_universe_escape_condition_met
+    return (bool, bool_destruction, bool_universe_max_age_reached, bool_universe_escape_condition_met)
 end
 
 func recurse_prepare_play_record {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        bool_destruction : felt,
         bool_universe_escape_condition_met : felt,
         arr_play : Play*,
         idx : felt
@@ -486,16 +499,24 @@ func recurse_prepare_play_record {syscall_ptr : felt*, pedersen_ptr : HashBuilti
 
     let (player_address) = ns_universe_state_functions.civilization_player_idx_to_address_read (idx)
     let (has_launched_ndpe) = ns_universe_state_functions.civilization_player_address_to_has_launched_ndpe_read (player_address)
-    let grade = bool_universe_escape_condition_met * has_launched_ndpe
-    assert arr_play[idx] = Play (
-        player_address = player_address,
-        grade = grade
-    )
+
+    if bool_destruction == 1:
+        assert arr_play[idx] = Play (
+            player_address = player_address,
+            grade = -1 # this would map to 0 vote by IsaacDAO's charter
+        )
+    else:
+        assert arr_play[idx] = Play (
+            player_address = player_address,
+            grade = bool_universe_escape_condition_met * has_launched_ndpe
+        )
+    end
 
     #
     # Tail recursion
     #
     recurse_prepare_play_record (
+        bool_destruction,
         bool_universe_escape_condition_met,
         arr_play,
         idx + 1

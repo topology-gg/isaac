@@ -27,9 +27,8 @@ func lookup_votes_given_play_grade {} (
         return (NEW_VOTES_FOR_GRADE_1)
     end
 
-    local pg = play_grade
-    with_attr error_message ("play_grade value (pg) unrecognized"):
-        assert 1 = 0
-    end
+    #
+    # Otherwise return 0 vote
+    #
     return (0)
 end

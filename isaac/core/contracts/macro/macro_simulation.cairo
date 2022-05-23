@@ -8,6 +8,7 @@ from starkware.cairo.common.hash import hash2
 from contracts.design.constants import (
     G, MASS_SUN0, MASS_SUN1, MASS_SUN2, MASS_PLNT,
     G_MASS_SUN0, G_MASS_SUN1, G_MASS_SUN2,
+    RADIUS_SUN0_SQ, RADIUS_SUN1_SQ, RADIUS_SUN2_SQ,
     OMEGA_DT_PLANET, TWO_PI,
     RANGE_CHECK_BOUND, SCALE_FP, SCALE_FP_SQRT, DT,
     ns_perturb
@@ -382,4 +383,41 @@ func is_world_macro_escape_condition_met {syscall_ptr : felt*, pedersen_ptr : Ha
     let met = bool_escape_velocity_reached * bool_escape_range_reached
 
     return (met)
+end
+
+#
+# Check for destruction condition
+#
+func is_world_macro_destructed {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (bool : felt):
+    alloc_locals
+
+    let (state_curr : Dynamics) = ns_macro_state_functions.macro_state_curr_read ()
+
+    #
+    # Check if planet coordinate lies in each sun's radius (in square terms)
+    #
+    let (dist_plnt_sun0_sq) = distance_sq (state_curr.plnt.q, state_curr.sun0.q)
+    let (bool_sun0_collide) = is_le (dist_plnt_sun0_sq, RADIUS_SUN0_SQ)
+    if bool_sun0_collide == 1:
+        return (1)
+    end
+
+    let (dist_plnt_sun1_sq) = distance_sq (state_curr.plnt.q, state_curr.sun1.q)
+    let (bool_sun1_collide) = is_le (dist_plnt_sun1_sq, RADIUS_SUN1_SQ)
+    if bool_sun1_collide == 1:
+        return (1)
+    end
+
+    let (dist_plnt_sun2_sq) = distance_sq (state_curr.plnt.q, state_curr.sun2.q)
+    let (bool_sun2_collide) = is_le (dist_plnt_sun2_sq, RADIUS_SUN2_SQ)
+    if bool_sun2_collide == 1:
+        return (1)
+    end
+
+    #
+    # Otherwise not collided
+    #
+    return (0)
+
 end
