@@ -91,6 +91,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) Must: Player transfers undeployed device between each other
 - (DONE) Implement function that passes participation info from universe.cairo => lobby/isaac.cairo
 - (DONE) discount planet momentum by a miniscule & random percentage each step to dramatize the universe
+- Must: create yagi routers and hook up with lobby contract and multiple universe contracts
 - Good: test player transferring undeployed device between each other
 - Good: test NDPE function
 - Good: build model for resource & energy management, then use it to test `logistics.cairo` x `micro.cairo` at world forwarding
@@ -104,8 +105,9 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) Conceptualise: high-level signup flow, civilisation init & reset procedure, multi-server scheme e.g. 100/1k/10k servers, civ-longevity metrics towards the Isaac protocol; difficulty knobs (init: need to parametrize initial devices for players)
 - (DONE) Spec out CarseDAO standard, which embodies the player-to-govern (P2G) spirit
 - (DONE) Design & Implement IsaacDAO
-- Must: hookup yagi logic for IsaacDAO
-- Must: Test IsaacDAO
+- (DONE) Test IsaacDAO
+- Must: create yagi router and hook up with dao contract
+
 
 ### Isaac gitbook
 - design Isaac gitbook structure / table of contents -- Isaac high-level philosophy, Isaac universe, IsaacDAO and CarseDAO
