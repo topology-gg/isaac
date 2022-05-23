@@ -89,16 +89,15 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) Implement universe termination function
 - (DONE) Must: Implement NDPE function: *any owner launching her deployed NDPE will launch all deployed NDPEs at once; NDPE like all other devices is transferrable; onchain-participation => shares depends on whether a survived player has launched NDPE at least once or not* launch function + coordinate transform from micro => macro + apply momentum to planet during physics sim
 - (DONE) Must: Player transfers undeployed device between each other
-- Must: Implement top-level isaac.cairo
-- Must: Implement function that passes participation info from universe.cairo => lobby/isaac.cairo
-- Must: discount planet momentum by a miniscule & random percentage each step to dramatize the universe
+- (DONE) Implement function that passes participation info from universe.cairo => lobby/isaac.cairo
+- (DONE) discount planet momentum by a miniscule & random percentage each step to dramatize the universe
 - Good: test player transferring undeployed device between each other
 - Good: test NDPE function
 - Good: build model for resource & energy management, then use it to test `logistics.cairo` x `micro.cairo` at world forwarding
 - Good: event emission for future query needs - at world forwarding, client action performed etc
 - Good: visualize macro dynamics to find robust initial condition for v.1
 - Good: inject randomness to planet dynamics by employing Fiat-Shamir
-- Good: refactor contract architecture again
+- Good: refactor contract architecture again - particularly `design/` and `utility/`
 - Good: documentation: Lucid charts for contract architecture; formula for coord transform, various parametrization schemes
 
 #### Isaac Protocol - IsaacDAO
