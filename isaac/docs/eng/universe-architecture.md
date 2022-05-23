@@ -1,0 +1,5 @@
+# Universe contract architecture
+
+### Diagram
+
+...

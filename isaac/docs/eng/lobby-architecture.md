@@ -1,0 +1,5 @@
+# Lobby contract architecture
+
+### Diagram
+
+...

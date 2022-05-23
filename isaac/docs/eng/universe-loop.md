@@ -1,0 +1,5 @@
+# Core reality loop
+
+### Diagram
+
+...
