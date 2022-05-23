@@ -13,12 +13,8 @@ from contracts.design.constants import (
     transformer_device_type_to_element_types,
     get_device_dimension_ptr
 )
-from contracts.util.structs import (
-    Vec2
-)
-from contracts.util.distribution import (
-    ns_distribution
-)
+from contracts.util.structs import (Vec2)
+from contracts.util.distribution import (ns_distribution)
 from contracts.util.grid import (
     is_valid_grid, are_contiguous_grids_given_valid_grids,
     locate_face_and_edge_given_valid_grid,
@@ -28,19 +24,13 @@ from contracts.util.logistics import (
     ns_logistics_harvester, ns_logistics_transformer,
     ns_logistics_xpg, ns_logistics_utb, ns_logistics_utl
 )
-from contracts.util.manufacturing import (
-    ns_manufacturing
-)
+from contracts.util.manufacturing import (ns_manufacturing)
 from contracts.micro.micro_state import (
     ns_micro_state_functions,
     GridStat, DeviceDeployedEmapEntry, TransformerResourceBalances, UtxSetDeployedEmapEntry
 )
-from contracts.micro.micro_ndpe import (
-    compute_impulse_in_micro_coord
-)
-from contracts.micro.micro_solar import (
-    ns_micro_solar
-)
+from contracts.micro.micro_ndpe import (compute_impulse_in_micro_coord)
+from contracts.util.vector_ops import (compute_vector_rotate)
 from contracts.universe.universe_state import (
     ns_universe_state_functions
 )
@@ -649,7 +639,7 @@ namespace ns_micro_devices:
         # 1. get phi
         # 2. rotate `impulse_sum_in_micro_coord` by phi using function implemented in `micro_solar.cairo`
         let (curr_phi) = ns_macro_state_functions.phi_curr_read ()
-        let (impulse_sum_in_macro_coord : Vec2) = ns_micro_solar.compute_vector_rotate (
+        let (impulse_sum_in_macro_coord : Vec2) = compute_vector_rotate (
             vec = impulse_sum_in_micro_coord,
             phi = curr_phi
         )

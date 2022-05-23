@@ -11,18 +11,10 @@ from contracts.design.constants import (
     SCALE_FP, PI,
     ns_solar_power
 )
-from contracts.util.structs import (
-    Vec2, Dynamics
-)
-from contracts.macro.macro_state import (
-    ns_macro_state_functions
-)
-from contracts.macro.macro_simulation import (
-    mul_fp, div_fp, div_fp_ul, sqrt_fp
-)
-from contracts.util.grid import (
-    locate_face_and_edge_given_valid_grid
-)
+from contracts.util.structs import (Vec2, Dynamics)
+from contracts.util.numerics import (mul_fp, div_fp, div_fp_ul, sqrt_fp, sine_7th)
+from contracts.util.vector_ops import (distance_sq, dot_fp, magnitude_fp, compute_vector_rotate, compute_vector_rotate_90)
+from contracts.util.grid import (locate_face_and_edge_given_valid_grid)
 
 ##############################
 
@@ -53,30 +45,14 @@ end
 
 namespace ns_micro_solar:
 
-    func distance_square {range_check_ptr} (
-            pos0 : Vec2, pos1 : Vec2
-        ) -> (res : felt):
-        alloc_locals
-
-        let x_delta = pos0.x - pos1.x
-        let (x_delta_sq) = mul_fp (x_delta, x_delta)
-
-        let y_delta = pos0.y - pos1.y
-        let (y_delta_sq) = mul_fp (y_delta, y_delta)
-
-        let res = x_delta_sq + y_delta_sq
-
-        return (res)
-    end
-
     func get_macro_distance_squares {range_check_ptr} (
             macro_state : Dynamics
         ) -> (
             macro_distance_squares : MacroDistanceSquares
         ):
-        let (distance_sq_to_sun0) = distance_square (macro_state.sun0.q, macro_state.plnt.q)
-        let (distance_sq_to_sun1) = distance_square (macro_state.sun1.q, macro_state.plnt.q)
-        let (distance_sq_to_sun2) = distance_square (macro_state.sun2.q, macro_state.plnt.q)
+        let (distance_sq_to_sun0) = distance_sq (macro_state.sun0.q, macro_state.plnt.q)
+        let (distance_sq_to_sun1) = distance_sq (macro_state.sun1.q, macro_state.plnt.q)
+        let (distance_sq_to_sun2) = distance_sq (macro_state.sun2.q, macro_state.plnt.q)
 
         return (MacroDistanceSquares (
             distance_sq_to_sun0,
@@ -95,105 +71,6 @@ namespace ns_micro_solar:
             vector_plnt_to_sun1 = Vec2(macro_state.sun1.q.x - macro_state.plnt.q.x, macro_state.sun1.q.y - macro_state.plnt.q.y),
             vector_plnt_to_sun2 = Vec2(macro_state.sun2.q.x - macro_state.plnt.q.x, macro_state.sun2.q.y - macro_state.plnt.q.y)
         ))
-    end
-
-    func sine_7th {range_check_ptr} (
-        theta : felt) -> (value : felt):
-        alloc_locals
-
-        #
-        # sin(theta) ~= theta - theta^3/3! + theta^5/5! - theta^7/7!
-        #
-
-        local theta_norm
-        let (bool) = is_le (PI, theta)
-        if bool == 1:
-            assert theta_norm = theta - PI
-        else:
-            assert theta_norm = theta
-        end
-
-        let (local theta_2) = mul_fp (theta_norm, theta_norm)
-        let (local theta_3) = mul_fp (theta_2, theta_norm)
-        let (local theta_5) = mul_fp (theta_2, theta_3)
-        let (local theta_7) = mul_fp (theta_2, theta_5)
-
-        let (theta_3_div6) = div_fp_ul (theta_3, 6)
-        let (theta_5_div120) = div_fp_ul (theta_5, 120)
-        let (theta_7_div5040) = div_fp_ul (theta_7, 5040)
-
-        let value = theta_norm - theta_3_div6 + theta_5_div120 - theta_7_div5040
-
-        if bool == 1:
-            return (-value)
-        else:
-            return (value)
-        end
-    end
-
-    func dot_fp {range_check_ptr} (
-        v1 : Vec2, v2 : Vec2) -> (dot : felt):
-
-        let (x_prod) = mul_fp (v1.x, v2.x)
-        let (y_prod) = mul_fp (v1.y, v2.y)
-
-        return (x_prod + y_prod)
-    end
-
-    func magnitude_fp {range_check_ptr} (
-        v : Vec2) -> (mag : felt):
-
-        let (vx_sq) = mul_fp (v.x, v.x)
-        let (vy_sq) = mul_fp (v.y, v.y)
-        let (mag) = sqrt_fp (vx_sq + vy_sq)
-
-        return (mag)
-    end
-
-    func compute_vector_rotate {range_check_ptr} (
-        vec : Vec2, phi : felt) -> (vec_rotated : Vec2):
-        alloc_locals
-
-        #
-        # Compute cos(phi) and sin(phi)
-        #
-        let (local sin_phi) = sine_7th (phi)
-        let (local sin_phi_sq) = mul_fp (sin_phi, sin_phi)
-        local phi_ = phi
-        with_attr error_message ("sqrt(1-sin^2) went wrong, with sin(phi) = {sin_phi}, phi = {phi_}"):
-            let (cos_phi) = sqrt_fp (1*SCALE_FP - sin_phi_sq)
-        end
-
-        #
-        # Apply rotation matrix
-        # [[cos -sin],
-        #  [sin  cos]]
-        # => [x*cos - y*sin, x*sin + y*cos]
-        #
-        let (x_mul_cos) = mul_fp (vec.x, cos_phi)
-        let (x_mul_sin) = mul_fp (vec.x, sin_phi)
-        let (y_mul_cos) = mul_fp (vec.y, cos_phi)
-        let (y_mul_sin) = mul_fp (vec.y, sin_phi)
-        let vec_rotated : Vec2 = Vec2 (
-            x_mul_cos - y_mul_sin,
-            x_mul_sin + y_mul_cos
-        )
-
-        return (vec_rotated)
-    end
-
-    func compute_vector_rotate_90 {range_check_ptr} (
-        vec : Vec2) -> (vec_rotated : Vec2):
-
-        #
-        # Apply rotation matrix
-        # [[0 -1],
-        #  [1  0]]
-        # => [-y, x]
-        #
-        let vec_rotated : Vec2 = Vec2 (-vec.y, vec.x)
-
-        return (vec_rotated)
     end
 
     func get_surface_normals {range_check_ptr} (

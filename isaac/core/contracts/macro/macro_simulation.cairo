@@ -3,17 +3,21 @@
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import signed_div_rem, sign, assert_nn, assert_not_zero, unsigned_div_rem, sqrt
 from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.hash import hash2
+
 from contracts.design.constants import (
     G, MASS_SUN0, MASS_SUN1, MASS_SUN2, MASS_PLNT,
     G_MASS_SUN0, G_MASS_SUN1, G_MASS_SUN2,
     OMEGA_DT_PLANET, TWO_PI,
-    RANGE_CHECK_BOUND, SCALE_FP, SCALE_FP_SQRT, DT
+    RANGE_CHECK_BOUND, SCALE_FP, SCALE_FP_SQRT, DT,
+    ns_perturb
 )
 from contracts.util.structs import (Vec2, Dynamic, Dynamics)
-
-from contracts.macro.macro_state import (
-    ns_macro_state_functions
-)
+from contracts.util.numerics import (mul_fp, div_fp, div_fp_ul, sqrt_fp)
+from contracts.util.dynamics_ops import (dynamics_add, dynamics_mul_scalar_fp, dynamics_mul_scalar, dynamics_div_scalar)
+from contracts.util.vector_ops import (distance_sq, distance_cube, vec2_add2, vec2_add3, compute_vector_rotate)
+from contracts.util.pseudorandom import (ns_prng)
+from contracts.macro.macro_state import (ns_macro_state_functions)
 
 #
 # Runge-Kutta 4th-order method
@@ -153,34 +157,9 @@ func differentiate {syscall_ptr : felt*, range_check_ptr} (
     return (state_diff)
 end
 
-func distance_sq {range_check_ptr} (
-        pos0 : Vec2, pos1 : Vec2
-    ) -> (res : felt):
-    alloc_locals
-
-    let x_delta = pos0.x - pos1.x
-    let (x_delta_sq) = mul_fp (x_delta, x_delta)
-
-    let y_delta = pos0.y - pos1.y
-    let (y_delta_sq) = mul_fp (y_delta, y_delta)
-
-    let diff_sq = x_delta_sq + y_delta_sq
-
-    return (diff_sq)
-end
-
-func distance_cube {range_check_ptr} (
-        pos0 : Vec2, pos1 : Vec2
-    ) -> (res : felt):
-    alloc_locals
-
-    let (diff_sq) = distance_sq (pos0, pos1)
-    let (diff) = sqrt_fp (diff_sq)
-    let (res) = mul_fp (diff_sq, diff)
-
-    return (res)
-end
-
+#
+# A pure function for forwarding planet's rotation `phi`
+#
 func forward_planet_spin {range_check_ptr} (phi) -> (phi_nxt):
     let phi_nxt_cand = phi + OMEGA_DT_PLANET
     let (overflow) = is_le (TWO_PI, phi_nxt_cand)
@@ -191,7 +170,10 @@ func forward_planet_spin {range_check_ptr} (phi) -> (phi_nxt):
     end
 end
 
-func forward_planet_dynamics_applying_impulse {range_check_ptr} (
+#
+# A pure function for applying impulse on planet's dynamic
+#
+func forward_planet_dynamic_applying_impulse {range_check_ptr} (
         dynamic_pre_impulse : Dynamic,
         impulse_fp : Vec2
     ) -> (
@@ -212,6 +194,61 @@ func forward_planet_dynamics_applying_impulse {range_check_ptr} (
     return (dynamic_post_impulse)
 end
 
+#
+# A state-changing function for computing random perturbation (discount; reducing momentum)
+# to be applied to the planet's dynamic; side effect is updating seed in PRNG
+#
+func forward_planet_dynamic_applying_perturbation {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        dynamic_pre_perturbation : Dynamic
+    ) -> (
+        dynamic_post_perturbation : Dynamic
+    ):
+    alloc_locals
+
+    #
+    # Produce perturbation vector before rotation
+    #
+    let (qdx_scaled) = mul_fp (ns_perturb.MULTIPLIER, dynamic_pre_perturbation.qd.x)
+    let (qdy_scaled) = mul_fp (ns_perturb.MULTIPLIER, dynamic_pre_perturbation.qd.y)
+    let perturb_vec_before_rotation = Vec2 (-qdx_scaled, -qdy_scaled)
+
+    #
+    # Pick a random rotation within bound;
+    # incorporate planet velocity into random seed update (~fiat-shamir)
+    #
+    let (entropy) = hash2 {hash_ptr = pedersen_ptr} (dynamic_pre_perturbation.qd.x, dynamic_pre_perturbation.qd.y)
+    let (prn) = ns_prng.get_prn_mod (
+        mod = 2001,
+        entropy = entropy
+    ) # range: [0, 2000]
+    let prn_shifted = prn - 1000 # range: [-1000, 1000]
+    let (rotation, _) = signed_div_rem(ns_perturb.ROTATION_BOUND * prn_shifted, 1000, RANGE_CHECK_BOUND)
+
+    #
+    # Apply rotation to perturbation vector
+    #
+    let (perturb_vec_after_rotation) = compute_vector_rotate (
+        perturb_vec_before_rotation,
+        rotation
+    )
+
+    #
+    # Apply perturbation to planet dynamic
+    #
+    let dynamic_post_perturbation : Dynamic = Dynamic (
+        q = dynamic_pre_perturbation.q,
+        qd = Vec2 (
+            dynamic_pre_perturbation.qd.x + perturb_vec_after_rotation.x,
+            dynamic_pre_perturbation.qd.y + perturb_vec_after_rotation.y,
+        )
+    )
+
+    return (dynamic_post_perturbation)
+end
+
+#
+# A state-changing function for forwarding the state of macro world
+#
 func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
 
@@ -223,11 +260,29 @@ func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     let (impulse_aggregated : Vec2) = ns_macro_state_functions.impulse_cache_read ()
 
     #
-    # Apply impulse to plnt dynamic
+    # Apply impulse to planet dynamic
     #
-    let (plnt_dynamic_post_impulse) = forward_planet_dynamics_applying_impulse (
+    let (plnt_dynamic_post_impulse) = forward_planet_dynamic_applying_impulse (
         state_curr.plnt,
         impulse_aggregated
+    )
+
+    #
+    # Apply perturbation to planet dynamic
+    #
+    let (plnt_dynamic_post_perturbation) = forward_planet_dynamic_applying_perturbation (
+        plnt_dynamic_post_impulse
+    )
+
+    #
+    # Assemble current state with perturbed planet dynamic;
+    # side effect: seed update at prng with ~fiar-shamir
+    #
+    let state_curr_perturbed : Dynamics = Dynamics (
+        sun0 = state_curr.sun0,
+        sun1 = state_curr.sun1,
+        sun2 = state_curr.sun2,
+        plnt = plnt_dynamic_post_perturbation
     )
 
     #
@@ -235,7 +290,7 @@ func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     #
     let (state_nxt : Dynamics) = rk4 (
         dt = DT,
-        state = state_curr
+        state = state_curr_perturbed
     )
     let (phi_nxt) = forward_planet_spin (
         phi = phi_curr
@@ -327,177 +382,4 @@ func is_world_macro_escape_condition_met {syscall_ptr : felt*, pedersen_ptr : Ha
     let met = bool_escape_velocity_reached * bool_escape_range_reached
 
     return (met)
-end
-
-#
-# Utility functions for fixed-point arithmetic
-#
-func sqrt_fp {range_check_ptr}(x : felt) -> (y : felt):
-    let (x_) = sqrt(x)
-    let y = x_ * SCALE_FP_SQRT # compensate for the square root
-    return (y)
-end
-
-func mul_fp {range_check_ptr} (
-        a : felt,
-        b : felt
-    ) -> (
-        c : felt
-    ):
-    # signed_div_rem by SCALE_FP after multiplication
-    tempvar product = a * b
-    let (c, _) = signed_div_rem(product, SCALE_FP, RANGE_CHECK_BOUND)
-    return (c)
-end
-
-func div_fp {range_check_ptr} (
-        a : felt,
-        b : felt
-    ) -> (
-        c : felt
-    ):
-    # multiply by SCALE_FP before signed_div_rem
-    tempvar a_scaled = a * SCALE_FP
-    let (c, _) = signed_div_rem(a_scaled, b, RANGE_CHECK_BOUND)
-    return (c)
-end
-
-func mul_fp_ul {range_check_ptr} (
-        a : felt,
-        b_ul : felt
-    ) -> (
-        c : felt
-    ):
-    let c = a * b_ul
-    return (c)
-end
-
-func div_fp_ul {range_check_ptr} (
-        a : felt,
-        b_ul : felt
-    ) -> (
-        c : felt
-    ):
-    let (c, _) = signed_div_rem(a, b_ul, RANGE_CHECK_BOUND)
-    return (c)
-end
-
-func vec2_add2 {} (vec2_0 : Vec2, vec2_1 : Vec2) -> (res : Vec2):
-    return (
-        Vec2 (
-            vec2_0.x + vec2_1.x,
-            vec2_0.y + vec2_1.y
-        )
-    )
-end
-
-func vec2_add3 {} (vec2_0 : Vec2, vec2_1 : Vec2, vec2_2 : Vec2) -> (res : Vec2):
-    return (
-        Vec2 (
-            vec2_0.x + vec2_1.x + vec2_2.x,
-            vec2_0.y + vec2_1.y + vec2_2.y
-        )
-    )
-end
-
-#####################################################################
-# Functions to manipulate dynamics.
-# Note that we can of course write generic methods for manipulating
-# arrays of dynamic at the expense of overhead to achieve generality;
-# here we choose performance.
-#####################################################################
-
-#
-# Add two dynamics
-#
-func dynamics_add {} (dynamics0 : Dynamics, dynamics1 : Dynamics) -> (res : Dynamics):
-    alloc_locals
-    let (sun0 : Dynamic) = dynamic_add (dynamics0.sun0, dynamics1.sun0)
-    let (sun1 : Dynamic) = dynamic_add (dynamics0.sun1, dynamics1.sun1)
-    let (sun2 : Dynamic) = dynamic_add (dynamics0.sun2, dynamics1.sun2)
-    let (plnt : Dynamic) = dynamic_add (dynamics0.plnt, dynamics1.plnt)
-
-    return ( Dynamics (sun0, sun1, sun2, plnt) )
-end
-
-func dynamic_add {} (dynamic0 : Dynamic, dynamic1 : Dynamic) -> (res : Dynamic):
-    return (Dynamic (
-        q  = Vec2 (dynamic0.q.x + dynamic1.q.x, dynamic0.q.y + dynamic1.q.y),
-        qd = Vec2 (dynamic0.qd.x + dynamic1.qd.x, dynamic0.qd.y + dynamic1.qd.y)
-    ))
-end
-
-#
-# Multiply a dynamics with a fixed-point scalar
-#
-func dynamics_mul_scalar_fp {range_check_ptr} (dynamics : Dynamics, scalar_fp : felt) -> (res : Dynamics):
-    alloc_locals
-    let (sun0 : Dynamic) = dynamic_mul_scalar_fp (dynamics.sun0, scalar_fp)
-    let (sun1 : Dynamic) = dynamic_mul_scalar_fp (dynamics.sun1, scalar_fp)
-    let (sun2 : Dynamic) = dynamic_mul_scalar_fp (dynamics.sun2, scalar_fp)
-    let (plnt : Dynamic) = dynamic_mul_scalar_fp (dynamics.plnt, scalar_fp)
-
-    return ( Dynamics (sun0, sun1, sun2, plnt) )
-end
-
-func dynamic_mul_scalar_fp {range_check_ptr} (dynamic : Dynamic, scalar_fp : felt) -> (res : Dynamic):
-    let (q_x)  = mul_fp (dynamic.q.x, scalar_fp)
-    let (q_y)  = mul_fp (dynamic.q.y, scalar_fp)
-    let (qd_x) = mul_fp (dynamic.qd.x, scalar_fp)
-    let (qd_y) = mul_fp (dynamic.qd.y, scalar_fp)
-
-    return (Dynamic (
-        q  = Vec2(q_x, q_y),
-        qd = Vec2(qd_x, qd_y)
-    ))
-end
-
-#
-# Multiply a dynamics with a scalar directly
-#
-func dynamics_mul_scalar {range_check_ptr} (dynamics : Dynamics, scalar : felt) -> (res : Dynamics):
-    alloc_locals
-    let (sun0 : Dynamic) = dynamic_mul_scalar (dynamics.sun0, scalar)
-    let (sun1 : Dynamic) = dynamic_mul_scalar (dynamics.sun1, scalar)
-    let (sun2 : Dynamic) = dynamic_mul_scalar (dynamics.sun2, scalar)
-    let (plnt : Dynamic) = dynamic_mul_scalar (dynamics.plnt, scalar)
-
-    return ( Dynamics (sun0, sun1, sun2, plnt) )
-end
-
-func dynamic_mul_scalar {range_check_ptr} (dynamic : Dynamic, scalar : felt) -> (res : Dynamic):
-    let q_x  = dynamic.q.x * scalar
-    let q_y  = dynamic.q.y * scalar
-    let qd_x = dynamic.qd.x * scalar
-    let qd_y = dynamic.qd.y * scalar
-
-    return (Dynamic (
-        q  = Vec2(q_x, q_y),
-        qd = Vec2(qd_x, qd_y)
-    ))
-end
-
-#
-# Divide a dynamics by a scalar directly
-#
-func dynamics_div_scalar {range_check_ptr} (dynamics : Dynamics, scalar : felt) -> (res : Dynamics):
-    alloc_locals
-    let (sun0 : Dynamic) = dynamic_div_scalar (dynamics.sun0, scalar)
-    let (sun1 : Dynamic) = dynamic_div_scalar (dynamics.sun1, scalar)
-    let (sun2 : Dynamic) = dynamic_div_scalar (dynamics.sun2, scalar)
-    let (plnt : Dynamic) = dynamic_div_scalar (dynamics.plnt, scalar)
-
-    return ( Dynamics (sun0, sun1, sun2, plnt) )
-end
-
-func dynamic_div_scalar {range_check_ptr} (dynamic : Dynamic, scalar : felt) -> (res : Dynamic):
-    let (q_x)  = div_fp_ul (dynamic.q.x, scalar)
-    let (q_y)  = div_fp_ul (dynamic.q.y, scalar)
-    let (qd_x) = div_fp_ul (dynamic.qd.x, scalar)
-    let (qd_y) = div_fp_ul (dynamic.qd.y, scalar)
-
-    return (Dynamic (
-        q  = Vec2(q_x, q_y),
-        qd = Vec2(qd_x, qd_y)
-    ))
 end

@@ -12,7 +12,7 @@ const GYOZA = 0x077d04506374b4920d6c35ecaded1ed7d26dd283ee64f284481e2574e77852c6
 # --> towards multi-scale simulation
 #
 const MIN_L2_BLOCK_NUM_BETWEEN_FORWARD = 2
-const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 5040 # 7 days * 24 hours * 60 minutes / 2 minutes (~l2 block time) = 5040
+const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 2520 # 7 days * 24 hours * 60 minutes / 4 minutes (2x l2 block time) = 2520
 
 #
 # Capacity control - size of civilization per universe, and number of universes deployed
@@ -27,6 +27,7 @@ const RANGE_CHECK_BOUND = 2 ** 120
 const SCALE_FP = 10**20
 const SCALE_FP_DIV_100 = 10**18
 const SCALE_FP_DIV_10000 = 10**16
+const SCALE_FP_DIV_100000 = 10**15
 const SCALE_FP_SQRT = 10**10
 
 #
@@ -46,6 +47,25 @@ const G_MASS_SUN2 = 1 * SCALE_FP
 const OMEGA_DT_PLANET = 624 / 100 * 6 / 100 * SCALE_FP # unit: radiant; takes ~100 DT to complete 2*pi
 const TWO_PI = 6283185 / 1000000 * SCALE_FP
 const PI = TWO_PI / 2
+
+#
+# Constants for perturbation applied to planet dynamic macro physics simulation:
+# given planet's qd (Vec2),
+# the unrotated perturbation vector would be `Vec2 (-qd.x, -qd.y) * MULTIPLIER`;
+# the final perturbation vector would be the unrotated perturbation vector rotated by a random radian between a bound
+# defined by ROTATION_BOUND.
+#
+## Determining MULTIPLIER:
+##   forwarding 24 * 60 / 4 = 360 times everyday; aiming for 1% degrade everyday
+##   => we want `multiplier ^ 360 = 0.99`
+##   => `multiplier = 0.9999720827900995 ~= 99997 * SCALE_FP_DIV_100000`
+## Determining ROTATION_BOUND:
+##   we want +- 15 degrees;
+##   15 degrees = 0.523599 in radian ~= 5236 * SCALE_FP_DIV_10000 in fp
+namespace ns_perturb:
+    const MULTIPLIER = 99997 * SCALE_FP_DIV_100000
+    const ROTATION_BOUND = 5236 * SCALE_FP_DIV_10000
+end
 
 #
 # macro dynamics initialization
