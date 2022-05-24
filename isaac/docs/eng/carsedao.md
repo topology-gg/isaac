@@ -1,7 +1,7 @@
 # The CarseDAO Standard
 
 ### Philosophy
-James P. Carse's *Finite and Infinite Games*. CarseDAO strives to be the standard for play-to-govern (P2G), which Topology believes will redefine open game development.
+James P. Carse's *Finite and Infinite Games*. CarseDAO strives to be the standard for play-to-vote (P2V), which Topology believes will redefine open game development.
 
 The more one plays, the more say one has in governing the evolution of the subject.
 
