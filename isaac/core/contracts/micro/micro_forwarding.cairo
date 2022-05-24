@@ -10,6 +10,7 @@ from starkware.starknet.common.syscalls import (get_block_number, get_caller_add
 from contracts.design.constants import (
     ns_device_types, assert_device_type_is_utx,
     harvester_device_type_to_element_type,
+    harvester_element_type_to_max_carry,
     transformer_device_type_to_element_types,
     get_device_dimension_ptr
 )
@@ -161,12 +162,22 @@ namespace ns_micro_forwarding:
             )
 
             #
-            # Update resource balance at this harvester
+            # Update resource balance at this harvester, subject to maximum carry amount
             #
             let (quantity_curr) = ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_read (emap_entry.id)
+            let (max_carry) = harvester_element_type_to_max_carry (element_type)
+            let (bool_max_reached) = is_le (max_carry, quantity_curr + quantity_harvested)
+
+            local new_quantity
+            if bool_max_reached == 1:
+                assert new_quantity = max_carry
+            else:
+                assert new_quantity = quantity_curr + quantity_harvested
+            end
+
             ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_write (
                 emap_entry.id,
-                quantity_curr + quantity_harvested
+                new_quantity
             )
 
             #
