@@ -9,3 +9,6 @@
 ### Diagram
 
 ...
+
+Plural voting (quadratic voting): https://www.radicalxchange.org/concepts/plural-voting/
+

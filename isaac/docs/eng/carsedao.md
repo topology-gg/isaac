@@ -53,7 +53,7 @@ Given the fact that there is no financial incentive involved in the governance m
 
 ### Improvement items
 
-##### Vote discount across epochs of Subject
+##### Vote discount across Subject epochs
 As the subject evolves, CarseDAO points to differernt Subjects; it may be desirable to discount votes earned in past Subject. For example, it may be advantageous to create an intermediate representation between meaningful play and votes called "share", such that the following scheme for granting new votes is possible:
 
 ```
@@ -62,4 +62,4 @@ new vote = 1 * share_{n} + γ * share_{n-1} + γ^n * share_0 ∀participant
 where `n` denotes Subject epoch, `n=0` denotes the genesis Subject for a given CarseDAO, and `0 < γ < 1`.
 
 ##### Subject evolution deadlock
-It is possible for a Subject to be too difficult in recognizing meaningful play while needing to be iterated upon. Despite player's eager participation, if no vote is granted, no proposal could pass, which prevents Subject evolution.
+It is possible for a Subject to be too difficult in recognizing meaningful play while needed to iterate for such difficulty, forming a deadlock. Despite player's eager participation, if no vote is granted, no proposal could pass, which prevents Subject evolution.
