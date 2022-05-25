@@ -16,7 +16,7 @@ The Decentralized Autonomous Organization contract.
 The contract that Players play in, and which the DAO endorses and governs e.g. an onchain game / reality; Players' votes in CarseDAO are derived directly and only from Subject's report of meaningful play, such that to vote, one has to play meaningfully.
 
 ##### Charter
-The contract that specifies the various functions (such as mapping meaningful play into new votes) and parameters ((such as proposal period in terms of number of L2 blocks)) involved in the governance scheme, and which CarseDAO honors when executing governance processes.
+The contract that specifies the various functions (such as mapping meaningful play into new `voices`, which are then mapped to `votes` at the moment of vote casting) and parameters ((such as proposal period in terms of number of L2 blocks)) involved in the governance scheme, and which CarseDAO honors when executing governance processes. By mapping play into `voice` first before mapping to `vote` allows Charter to implement plural (e.g. quadratic) voting schemes, whereby to cast `X` votes a Player needs `X^2` voices.
 
 ##### Players
 The accounts that play in Subject and participate in CarseDAO through spending votes on proposals, either for or against them.
