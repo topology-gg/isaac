@@ -9,7 +9,7 @@ For the planet, Isaac initialize its starting position and velocity differently 
 Isaac currently uses Runge-Kutta 4th order integrator for forwarding the dynamics of the suns and planet. Further, the gravitational pull by the planet on each of the suns is ignored. Not using symplectic method means that the three body system could maintain relatively stable trajectory in the short term and lose stability over the long term due to energy drift.
 
 ### Perturbation injection
-At every tick, Isaac perturbs the planet's dynamic by adding a vector to its velocity that has a random rotation within +-15 degrees in the opposite direction of the velocity, and has a magnitude of ______ of the velocity vector. The magnitude is calculated so that with 360 ticks a day (given testnet block time of 2 minutes, and 2 blocks per tick, `24 * 60 / (2*2) = 360`), the magnitude of the velocity will be discounted by 1% per day.
+At every tick, Isaac perturbs the planet's dynamic by adding a vector to its velocity that has a random rotation within +-15 degrees in the opposite direction of the velocity, and has a magnitude of ______ of the velocity vector. The magnitude is calculated so that with 360 ticks a day (given testnet blocktime of ~2 minutes, and 2 blocks per tick, `24 * 60 / (2*2) = 360`), the magnitude of the velocity will be discounted by ~1% per day.
 
 These parameters are defined in the namespace `ns_perturb` in `core/design/constants.cairo`.
 

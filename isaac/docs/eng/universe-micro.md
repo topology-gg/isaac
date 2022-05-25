@@ -17,5 +17,8 @@
 ### Utx set placement
 - contiguity test
 
+### NDPE launches
+One player launches, the entire civilization launches => forced coordination.
+
 ### Micro world forwarding
 - analogous to circuit simuation
