@@ -64,13 +64,13 @@ const PI = TWO_PI / 2
 #
 ## Determining MULTIPLIER:
 ##   forwarding 24 * 60 / 4 = 360 times everyday; aiming for 1% degrade everyday
-##   => we want `multiplier ^ 360 = 0.99`
-##   => `multiplier = 0.9999720827900995 ~= 99997 * SCALE_FP_DIV_100000`
+##   => we want `(1-x)^360 = 0.99`
+##   => `multiplier = _______ ~= ________ * SCALE_FP_DIV_100000`
 ## Determining ROTATION_BOUND:
 ##   we want +- 15 degrees;
 ##   15 degrees = 0.523599 in radian ~= 5236 * SCALE_FP_DIV_10000 in fp
 namespace ns_perturb:
-    const MULTIPLIER = 99997 * SCALE_FP_DIV_100000
+    const MULTIPLIER = ________
     const ROTATION_BOUND = 5236 * SCALE_FP_DIV_10000
 end
 

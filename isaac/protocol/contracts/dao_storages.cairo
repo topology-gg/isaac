@@ -16,7 +16,7 @@ struct Play:
 end
 
 @storage_var
-func player_votes_available (address : felt) -> (votes : felt):
+func player_voices_available (address : felt) -> (voices : felt):
 end
 
 @storage_var
@@ -38,12 +38,12 @@ namespace ns_dao_storages:
     #
 
     @view
-    func player_votes_available_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        address : felt) -> (votes : felt):
+    func player_voices_available_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        address : felt) -> (voices : felt):
 
-        let (votes) = player_votes_available.read (address)
+        let (voices) = player_voices_available.read (address)
 
-        return (votes)
+        return (voices)
     end
 
     @view
@@ -77,10 +77,10 @@ namespace ns_dao_storages:
     # Setters
     #
 
-    func player_votes_available_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        address : felt, votes : felt) -> ():
+    func player_voices_available_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        address : felt, voices : felt) -> ():
 
-        player_votes_available.write (address, votes)
+        player_voices_available.write (address, voices)
 
         return ()
     end

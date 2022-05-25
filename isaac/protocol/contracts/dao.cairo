@@ -293,14 +293,19 @@ func player_vote_new_x {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     # Qualification
     #
     let (caller) = get_caller_address ()
-    let (votes_avail) = ns_dao_storages.player_votes_available_read (caller)
+    let (voices_avail) = ns_dao_storages.player_voices_available_read (caller)
+    let (voices_required) = get_voices_required_from_charter_given_intended_votes (votes)
     assert_lt (0, votes) # 0 < votes
-    assert_le (votes, votes_avail) # votes <= votes_avail
+    assert_le (voices_required, voices_avail) # voices required <= voices available
 
     #
-    # Spend votes
+    # Spend voices
     #
-    ns_dao_storages.player_votes_available_write (caller, votes_avail - votes)
+    ns_dao_storages.player_voices_available_write (caller, voices_avail - voices_required)
+
+    #
+    # Cast votes
+    #
     IContractFsm.cast_vote (
         fsm_address,
         votes,
@@ -445,9 +450,9 @@ func subject_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     assert_caller_is_subject ()
 
     #
-    # Issue new votes to players reported by subject
+    # Issue new voices to players reported by subject
     #
-    recurse_issue_new_vote_given_play (
+    recurse_issue_new_voice_given_play (
         arr_play_len,
         arr_play,
         0
@@ -456,7 +461,7 @@ func subject_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     return ()
 end
 
-func recurse_issue_new_vote_given_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func recurse_issue_new_voice_given_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         arr_play_len : felt,
         arr_play : Play*,
         idx : felt
@@ -468,16 +473,16 @@ func recurse_issue_new_vote_given_play {syscall_ptr : felt*, pedersen_ptr : Hash
     end
 
     #
-    # Issue new votes to player, where number of new votes is derived from play grade by Charter
+    # Issue new voices to player according to Charter
     #
-    let (new_votes) = get_votes_from_charter_given_play_grade (arr_play[idx].grade)
-    let (curr_votes) = ns_dao_storages.player_votes_available_read (arr_play[idx].player_address)
-    ns_dao_storages.player_votes_available_write (arr_play[idx].player_address, curr_votes + new_votes)
+    let (new_voices) = get_voices_from_charter_given_play_grade (arr_play[idx].grade)
+    let (curr_voices) = ns_dao_storages.player_voices_available_read (arr_play[idx].player_address)
+    ns_dao_storages.player_voices_available_write (arr_play[idx].player_address, curr_voices + new_voices)
 
     #
     # Tail recursion
     #
-    recurse_issue_new_vote_given_play (
+    recurse_issue_new_voice_given_play (
         arr_play_len,
         arr_play,
         idx + 1
@@ -503,18 +508,32 @@ func get_period_from_charter {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     return (period)
 end
 
-func get_votes_from_charter_given_play_grade {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    play_grade : felt) -> (votes : felt):
+func get_voices_from_charter_given_play_grade {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    play_grade : felt) -> (voices : felt):
     alloc_locals
 
     let (votable_addresses) = ns_dao_storages.votable_addresses_read ()
     let charter_address = votable_addresses.charter
-    let (votes) = IContractCharter.lookup_votes_given_play_grade (
+    let (voices) = IContractCharter.lookup_voices_given_play_grade (
         charter_address,
         play_grade
     )
 
-    return (votes)
+    return (voices)
+end
+
+func get_voices_required_from_charter_given_intended_votes {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    intended_votes : felt) -> (voices_required : felt):
+    alloc_locals
+
+    let (votable_addresses) = ns_dao_storages.votable_addresses_read ()
+    let charter_address = votable_addresses.charter
+    let (voices_required) = IContractCharter.lookup_voices_required_given_intended_votes (
+        charter_address,
+        intended_votes
+    )
+
+    return (voices_required)
 end
 
 ##########################
@@ -527,7 +546,10 @@ namespace IContractCharter:
     func lookup_proposal_period () -> (period : felt):
     end
 
-    func lookup_votes_given_play_grade (play_grade : felt) -> (votes : felt):
+    func lookup_voices_given_play_grade (play_grade : felt) -> (votes : felt):
+    end
+
+    func lookup_voices_required_given_intended_votes (intended_votes : felt) -> (voices_required : felt):
     end
 end
 
@@ -553,12 +575,12 @@ end
 
 ## function for testing purposes
 @external
-func admin_write_player_votes_available {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    player_address : felt, votes : felt) -> ():
+func admin_write_player_voices_available {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    player_address : felt, voices : felt) -> ():
 
-    ns_dao_storages.player_votes_available_write (
+    ns_dao_storages.player_voices_available_write (
         player_address,
-        votes
+        voices
     )
 
     return ()

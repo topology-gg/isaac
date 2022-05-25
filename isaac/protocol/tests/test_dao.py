@@ -123,11 +123,11 @@ async def test_dao (account_factory, starknet, block_info_mock):
     await contract_fsm_angel.init_owner_dao_address_once(contract_dao.contract_address).invoke()
 
     #
-    # Admin gives player_0 and player_1 10 votes each
+    # Admin gives player_0 and player_1 100 voices each
     #
-    LOGGER.info (f'> Admin gives 10 votes to each players')
-    await contract_dao.admin_write_player_votes_available(player_0['account'].contract_address, 10).invoke()
-    await contract_dao.admin_write_player_votes_available(player_1['account'].contract_address, 10).invoke()
+    LOGGER.info (f'> Admin gives 100 voices to each players')
+    await contract_dao.admin_write_player_voices_available(player_0['account'].contract_address, 100).invoke()
+    await contract_dao.admin_write_player_voices_available(player_1['account'].contract_address, 100).invoke()
     LOGGER.info ('')
 
     #
@@ -204,19 +204,19 @@ async def test_dao (account_factory, starknet, block_info_mock):
     await player_0['signer'].send_transaction(
         account = player_0['account'], to = contract_dao.contract_address,
         selector_name = 'player_vote_new_subject',
-        calldata=[2, NO]
+        calldata=[1, NO]
     )
     await player_1['signer'].send_transaction(
         account = player_1['account'], to = contract_dao.contract_address,
         selector_name = 'player_vote_new_subject',
-        calldata=[2, YES]
+        calldata=[1, YES]
     )
 
     ## vote on charter proposal, YES > NO
     await player_0['signer'].send_transaction(
         account = player_0['account'], to = contract_dao.contract_address,
         selector_name = 'player_vote_new_charter',
-        calldata=[4, YES]
+        calldata=[7, YES]
     )
     await player_1['signer'].send_transaction(
         account = player_1['account'], to = contract_dao.contract_address,
@@ -228,7 +228,7 @@ async def test_dao (account_factory, starknet, block_info_mock):
     await player_0['signer'].send_transaction(
         account = player_0['account'], to = contract_dao.contract_address,
         selector_name = 'player_vote_new_angel',
-        calldata=[4, YES]
+        calldata=[7, YES]
     )
     await player_1['signer'].send_transaction(
         account = player_1['account'], to = contract_dao.contract_address,
@@ -239,10 +239,10 @@ async def test_dao (account_factory, starknet, block_info_mock):
     #
     # Check player available votes against expected
     #
-    ret = await contract_dao.player_votes_available_read(player_0['account'].contract_address).call()
-    assert ret.result.votes == 0
-    ret = await contract_dao.player_votes_available_read(player_1['account'].contract_address).call()
-    assert ret.result.votes == 3
+    ret = await contract_dao.player_voices_available_read(player_0['account'].contract_address).call()
+    assert ret.result.voices == 100 - 1**2 - 7**2 - 7**2 # 1 voice left
+    ret = await contract_dao.player_voices_available_read(player_1['account'].contract_address).call()
+    assert ret.result.voices == 100 - 1**2 - 2**2 - 3**2 # 86 voices left
 
     #
     # Make sure can_end_vote is still false
@@ -254,12 +254,12 @@ async def test_dao (account_factory, starknet, block_info_mock):
     #
     # Cast nonexistent vote
     #
-    LOGGER.info (f'> Test 6: Player 0 attempts a vote while already running out of vote')
+    LOGGER.info (f'> Test 6: Player 0 attempts to cast more votes than she can')
     with pytest.raises(Exception) as e_info:
         await player_0['signer'].send_transaction(
             account = player_0['account'], to = contract_dao.contract_address,
             selector_name = 'player_vote_new_subject',
-            calldata=[1, NO]
+            calldata=[2, NO]
         )
 
     #
