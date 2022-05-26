@@ -3,3 +3,6 @@
 ### Diagram
 
 ...
+
+### Ticking
+yagi.fi

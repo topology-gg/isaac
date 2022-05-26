@@ -20,6 +20,6 @@ The aim of perturbation injection discounting planet's velocity is two-fold:
 2. **Dramatization**: by slowing down planet's velocity, the planet falls to the sun quicker, making it impossible for idle civilization to survive.
 
 ### Impulse cache
-net (aggregated) impulse vector in macro coordinate system, to be applied at the next forwarding tick.
+Between every consecutive ticks, net impulse (in `Vec2`, where x and y components are both fixed-point numbers) created by NDPE launches is accumulated in an impulse cache. The accumulated net impulse is applied at each tick to the planet's dynamic, while the impulse cache is cleared.
 
 ### Macro world forwarding
