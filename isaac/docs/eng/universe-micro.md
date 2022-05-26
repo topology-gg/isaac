@@ -2,7 +2,7 @@
 
 ### The micro coordinate system
 The planet is shaped like a cube of equal dimension on each side. Denoting the dimension of the cube as `D`, the surface of the cube is endowed with a **grid coordinate system** over integers by **unfolding** the cube to a 2D plane:
-<img src="/assets/images/micro_grid.png"/>
+<img src="/assets/images/grid.png"/>
 
 where:
 - Face 3 is the top face, whose surface normal points upward from the orbital plane; Face 1 surface normal points downward from the orbital plane.
@@ -15,7 +15,7 @@ Apparently, not every integer pair is a **valid grid coordinate** on the surface
 ##### Element types
 All element types are defined in the namespace `core/contracts/design/constants.cairo` :: `ns_element_types`.
 
-| Type index | Name                   |
+| Type index | Name |
 | ------------------ | ---------------------- |
 | 0                  | Raw iron               |
 | 1                  | Refined iron           |
@@ -28,8 +28,10 @@ All element types are defined in the namespace `core/contracts/design/constants.
 | 8                  | Raw plutonium-241      |
 | 9                  | Enriched plutonium-241 |
 
-##### Perlin noise for distribution
-___ TODO ___
+##### Distribution
+Every grid on the planet surface has a predefined concentration level of each raw element type, which is described by the distribution function. The distribution function utilizes the commonplace **perlin noise algorithm** to ensure somewhat smooth gradient along the distribution inexpensively.
+
+The distribution functions are regulated in `core/contracts/util/distribution.cairo` and `core/contracts/util/perlin.cairo`.
 
 ### Devices
 
@@ -114,5 +116,11 @@ A deployed and contiguous set of UTLs transports energy from its power-generatin
 The transmission mechanics is regulated in `core/contracts/util/logistics.cairo` :: `ns_logistics_utl`.
 
 ### Micro world forwarding
-- analogous to circuit simuation
+The procedure of forwarding the micro world is akin to the [simulation](https://en.wikipedia.org/wiki/Logic_simulation) of pipelined logical circuits. In particular, each device is analogous to a flip-flop register, and each contiguous set of UTB/UTL is analogous to combinational logic between a pair of flip-flop registers. Resource harvested / transformed at a given device is analogous to propagating from a register's D pin to Q pin, whereas resource/energy moving along UTB/UTL is analogous to propagating logical signals across a combinational logic from its source register to its destination register.
 
+At every tick, the micro world is forwarded by the following steps:
+1. Each deployed device updates its resource or energy. Each power-generating device updates the quantity of energy it holds based on power generation mechanics. Each harvester device updates the quantity of resource it holds based on harvesting mechanics.s Each tranformer device updates the quantities of before-transform and after-transform resources it holds based on transformation mechanics.
+2. For each deployed UTB set, resource is transported from its source device to its destination device based on the resource transportation mechanics.
+3. For each deployed UTL set, energy is transmitted from its source device to its destination device.
+
+The procedure for forwarding the micro world is regulated in the namespace `contracts/core/micro/micro_forwarding.cairo` :: `ns_micro_forwarding`.

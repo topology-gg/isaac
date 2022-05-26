@@ -8,3 +8,4 @@ All players must collaborate to build factory pipelines and power grids to trans
 
 Players must position their NDPEs and time the launch strategically, with respect to planet rotation and relative position to the suns, to either (1) change orbit strategically, or (2) escape the trisolar system by driving the planet to escape velocity along a safe escape route.
 
+The thinking of imposing a macro pace - the cadence of approaching extinction events - that shape the experience of player coordination is heavily inspired by *Scavengers* (2021), elaborated in [this essay](https://www.guiltygyoza.xyz/2021/06/scavengers-immersive-theatre).
