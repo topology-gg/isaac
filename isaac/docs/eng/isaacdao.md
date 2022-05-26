@@ -6,6 +6,9 @@
 - Explore quadratic voting dynamic.
 - Embrace full forkability.
 
+### Connection with lobby and universes
+<img src="/assets/images/isaacdao.png"/>
+
 ### Quantifying meaningful play
 The essence of IsaacDAO is the way it quantifies meaningful play in the Isaac reality. The following rules are enforced in the current IsaacDAO design:
 - when a civilization escapes before the universe max age is reached:

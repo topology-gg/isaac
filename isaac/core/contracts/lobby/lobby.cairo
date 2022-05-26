@@ -294,6 +294,12 @@ func universe_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     ) -> ():
     alloc_locals
 
+    #
+    # Caller qualification
+    #
+    # ____ TODO: check which universe; mark it idle; revert if not universe ____
+    assert 1 = 0
+
     let (dao_address) = ns_lobby_state_functions.dao_address_read ()
     IContractDAO.subject_report_play (
         dao_address,

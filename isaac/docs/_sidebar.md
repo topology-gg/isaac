@@ -7,7 +7,6 @@
 
 - Universe
 
-  - [Contract architecture](eng/universe-architecture.md)
   - [Macro simulation](eng/universe-macro.md)
   - [Micro simulation](eng/universe-micro.md)
   - [Core reality loop](eng/universe-loop.md)
@@ -16,7 +15,6 @@
 
   - [Contract architecture](eng/lobby-architecture.md)
   - [Parallel universe](eng/lobby-universes.md)
-  - [Dispatch system](eng/lobby-dispatch.md)
 
 - Governance
 
