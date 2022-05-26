@@ -1,7 +1,10 @@
 # Macro simulation
 
+### The macro coordinate system
+The entire dynamics of the constrained four-body system (three suns, and one planet with negligible mass) lie on the same 2D orbital plane, which is endowed with a 2D Cartesian coordinate system over fixed-point numbers.
+
 ### Initial condition
-For the three suns, Isaac currently uses a remarkable figure-8 stable solution for three body problem of identical masses, as discovered in 2000 by Alain Chenciner and Richard Montgomery in [this paper](https://arxiv.org/abs/math/0011268). The entire dynamics of the constrained four body system (three suns, and one planet with negligible mass) lie on the same 2D orbital plane.
+For the three suns, Isaac currently uses a remarkable figure-8 stable solution for three body problem of identical masses, as discovered in 2000 by Alain Chenciner and Richard Montgomery in [this paper](https://arxiv.org/abs/math/0011268).
 
 For the planet, Isaac initialize its starting position and velocity differently across different universes (see [Parallel universe](eng/lobby-universes.md)), making each universe a unique challenge in itself.
 
