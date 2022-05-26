@@ -1,5 +1,2 @@
 # Parallel universes
 
-### Diagram
-
-...

@@ -16,7 +16,7 @@ The Decentralized Autonomous Organization contract.
 The contract that Players play in, and which the DAO endorses and governs e.g. an onchain game / reality; Players' votes in CarseDAO are derived directly and only from Subject's report of meaningful play, such that to vote, one has to play meaningfully.
 
 ##### Charter
-The contract that specifies the various functions (such as mapping meaningful play into new `voices`, which are then mapped to `votes` at the moment of vote casting) and parameters ((such as proposal period in terms of number of L2 blocks)) involved in the governance scheme, and which CarseDAO honors when executing governance processes. By mapping play into `voice` first before mapping to `vote` allows Charter to implement plural (e.g. quadratic) voting schemes, whereby to cast `X` votes a Player needs `X^2` voices.
+The contract that specifies the various functions (such as mapping meaningful play into new `voices`, which are then mapped to `votes` at the moment of vote casting) and parameters ((such as proposal period in terms of number of L2 blocks)) involved in the governance scheme, and which CarseDAO honors when executing governance processes. By mapping play into `voice` first before mapping to `vote` allows Charter to implement plural (e.g. quadratic; see https://www.radicalxchange.org/concepts/plural-voting/) voting schemes, whereby to cast `X` votes a Player needs `X^2` voices.
 
 ##### Players
 The accounts that play in Subject and participate in CarseDAO through spending votes on proposals, either for or against them.
@@ -59,6 +59,3 @@ As the subject evolves, CarseDAO points to differernt Subjects; it may be desira
 total effective voices = 1 * voices_{n} + γ * voices_{n-1} + γ^n * voices_0  ∀ participant
 ```
 where `n` denotes Subject epoch, `n=0` denotes the genesis Subject for a given CarseDAO, and `0 < γ < 1`.
-
-##### Subject evolution deadlock
-It is possible for a Subject to be too difficult in recognizing meaningful play while needed to iterate for such difficulty, forming a deadlock. Despite player's eager participation, if no voice is granted, no proposal could pass, which prevents Subject evolution. A solution would be to let proposal pass automatically if it has 0 vote for both for and against.

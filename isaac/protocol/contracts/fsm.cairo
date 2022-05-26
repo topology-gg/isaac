@@ -147,7 +147,17 @@ func voting_end {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     let (votes_against) = ns_fsm_storages.votes_against_current_proposal_read ()
     ns_fsm_storages.votes_for_current_proposal_write (0)
     ns_fsm_storages.votes_against_current_proposal_write (0)
-    let (pass) = is_le (votes_against + 1, votes_for) # votes_against < votes_for
+
+    local pass
+    if votes_for + votes_against == 0:
+        #
+        # No player voted; proposal passes automatically (to avoid deadlock)
+        #
+        assert pass = 1
+    else:
+        let (pass_) = is_le (votes_against + 1, votes_for) # votes_against < votes_for
+        assert pass = pass_
+    end
 
     #
     # Make state transition
