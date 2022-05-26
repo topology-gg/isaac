@@ -291,7 +291,7 @@ namespace ns_device_types:
     const DEVICE_PEF = 11 # plutonium enrichment facility
     const DEVICE_UTB = 12 # universal transportation belt
     const DEVICE_UTL = 13 # universal transmission line
-    const DEVICE_OPSF = 14 # omnipotent production and storage facility
+    const DEVICE_UPSF = 14 # universal production and storage facility
     const DEVICE_NDPE = 15 # nuclear driller & propulsion engine
 
     const DEVICE_TYPE_COUNT = 16
@@ -303,7 +303,7 @@ namespace ns_device_types:
 end
 
 #
-# Constants for energy requirement per device type
+# Constants for energy requirement for device construction per device type
 # Note: resource requirement is coded in `manufacturing.cairo`
 #
 namespace ns_energy_requirements:
@@ -321,7 +321,7 @@ namespace ns_energy_requirements:
     const DEVICE_PEF     = 1 # plutonium enrichment facility
     const DEVICE_UTB     = 1 # universal transportation belt
     const DEVICE_UTL     = 1 # universal transmission line
-    const DEVICE_OPSF    = 1 # omnipotent production and storage facility
+    const DEVICE_UPSF    = 1 # universal production and storage facility
     const DEVICE_NDPE    = 1 # nuclear driller & propulsion engine
 end
 

@@ -495,9 +495,9 @@ namespace ns_micro_devices:
         assert grid_stat.deployed_device_owner = caller
 
         #
-        # Check if an OPSF is deployed at `opsf_grid`
+        # Check if an UPSF is deployed at `opsf_grid`
         #
-        assert grid_stat.deployed_device_type = ns_device_types.DEVICE_OPSF
+        assert grid_stat.deployed_device_type = ns_device_types.DEVICE_UPSF
         let opsf_device_id = grid_stat.deployed_device_id
 
         #
@@ -516,7 +516,7 @@ namespace ns_micro_devices:
         # Consume opsf energy; revert if insufficient
         #
         let (local curr_energy) = ns_micro_state_functions.device_deployed_id_to_energy_balance_read (opsf_device_id)
-        with_attr error_message ("insufficient energy; {energy_should_consume} required, {curr_energy} available at OPSF."):
+        with_attr error_message ("insufficient energy; {energy_should_consume} required, {curr_energy} available at UPSF."):
             assert_le (energy_should_consume, curr_energy)
         end
         ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
@@ -525,7 +525,7 @@ namespace ns_micro_devices:
         )
 
         #
-        # Recurse update resource balance at this OPSF; revert if any balance is insufficient
+        # Recurse update resource balance at this UPSF; revert if any balance is insufficient
         #
         recurse_consume_device_balance_at_opsf (
             opsf_device_id = opsf_device_id,
@@ -569,7 +569,7 @@ namespace ns_micro_devices:
         local quantity_should_consume = arr[idx] * device_count
 
         local element_type = idx
-        with_attr error_message ("insufficient quantity of type {element_type}; {quantity_should_consume} required, {curr_balance} available at OPSF."):
+        with_attr error_message ("insufficient quantity of type {element_type}; {quantity_should_consume} required, {curr_balance} available at UPSF."):
             assert_le (quantity_should_consume, curr_balance)
         end
 
@@ -771,58 +771,58 @@ namespace ns_micro_devices:
             end
 
             #
-            # From harvester straight to OPSF
+            # From harvester straight to UPSF
             #
-            # iron harvester => OPSF
-            if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            # iron harvester => UPSF
+            if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
                 return ()
             end
 
-            # aluminum harvester => OPSF
-            if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            # aluminum harvester => UPSF
+            if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
                 return ()
             end
 
-            # copper harvester => OPSF
-            if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            # copper harvester => UPSF
+            if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
                 return ()
             end
 
-            # silicon harvester => OPSF
-            if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            # silicon harvester => UPSF
+            if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
                 return ()
             end
 
-            # plutonium harvester => OPSF
-            if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            # plutonium harvester => UPSF
+            if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
                 return ()
             end
 
             #
-            # From refinery/enrichment facility to OPSF
+            # From refinery/enrichment facility to UPSF
             #
-            # iron refinery => OPSF
-            if (device_type0 - ns_device_types.DEVICE_FE_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            # iron refinery => UPSF
+            if (device_type0 - ns_device_types.DEVICE_FE_REFN + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
                 return ()
             end
 
-            # aluminum refinery => OPSF
-            if (device_type0 - ns_device_types.DEVICE_AL_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            # aluminum refinery => UPSF
+            if (device_type0 - ns_device_types.DEVICE_AL_REFN + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
                 return ()
             end
 
-            # copper refinery => OPSF
-            if (device_type0 - ns_device_types.DEVICE_CU_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            # copper refinery => UPSF
+            if (device_type0 - ns_device_types.DEVICE_CU_REFN + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
                 return ()
             end
 
-            # silicon refinery => OPSF
-            if (device_type0 - ns_device_types.DEVICE_SI_REFN + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            # silicon refinery => UPSF
+            if (device_type0 - ns_device_types.DEVICE_SI_REFN + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
                 return ()
             end
 
-            # plutonium enrichment facility => OPSF
-            if (device_type0 - ns_device_types.DEVICE_PEF + 1) * (device_type1 - ns_device_types.DEVICE_OPSF + 1) == 1:
+            # plutonium enrichment facility => UPSF
+            if (device_type0 - ns_device_types.DEVICE_PEF + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
                 return ()
             end
 
@@ -868,7 +868,7 @@ namespace ns_micro_devices:
     end
 
     func is_device_opsf {range_check_ptr} (type : felt) -> (bool : felt):
-        if type == ns_device_types.DEVICE_OPSF:
+        if type == ns_device_types.DEVICE_UPSF:
             return (1)
         else:
             return (0)

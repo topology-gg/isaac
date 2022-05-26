@@ -71,27 +71,27 @@ async def test_micro (account_factory):
     LOGGER.info ('')
 
     #
-    # Admin gives player OPSF
+    # Admin gives player UPSF
     #
     await admin['signer'].send_transaction(
         account = admin['account'], to = contract.contract_address,
         selector_name = 'admin_give_undeployed_device',
         calldata=[
             player['account'].contract_address,
-            14, # OPSF
+            14, # UPSF
             1
         ]
     )
 
     #
-    # Player deploys OPSF, and grab OPSF's device id
+    # Player deploys UPSF, and grab UPSF's device id
     #
     opsf_grid = {'x':50, 'y':150}
     await player['signer'].send_transaction(
         account = player['account'], to = contract.contract_address,
         selector_name = 'flat_device_deploy',
         calldata=[
-            14, # OPSF
+            14, # UPSF
             opsf_grid['x'], opsf_grid['y']
         ])
 
@@ -102,7 +102,7 @@ async def test_micro (account_factory):
     opsf_id = ret.result.grid_stat.deployed_device_id
 
     #
-    # Test SPG manufacture before giving OPSF resources & energy
+    # Test SPG manufacture before giving UPSF resources & energy
     #
     with pytest.raises(Exception) as e_info:
         await player['signer'].send_transaction(
@@ -116,7 +116,7 @@ async def test_micro (account_factory):
     LOGGER.info (f"> Player attempts to manufacture 3 x SPGs without having the resource or energy; transaction failed as expected.")
 
     #
-    # Give OPSF resources, but not energy; player attempts building again; transaction failure expected
+    # Give UPSF resources, but not energy; player attempts building again; transaction failure expected
     #
     await contract.admin_write_opsf_deployed_id_to_resource_balances (
         opsf_id,
@@ -142,7 +142,7 @@ async def test_micro (account_factory):
     LOGGER.info (f"> Player attempts to manufacture 3 x SPGs without having the energy; transaction failed as expected.")
 
     #
-    # Give OPSF energy; player attempts building again; transaction should succeed
+    # Give UPSF energy; player attempts building again; transaction should succeed
     #
     await contract.admin_write_device_deployed_id_to_energy_balance (
         opsf_id,
@@ -160,7 +160,7 @@ async def test_micro (account_factory):
     LOGGER.info (f"> Player attempts to manufacture 3 x SPGs; transaction succeeded as expected.")
 
     #
-    # Check player's undeployed device balance, and check OPSF resource & energy balance
+    # Check player's undeployed device balance, and check UPSF resource & energy balance
     #
     ret = await contract.device_undeployed_ledger_read (
         player['account'].contract_address,
@@ -186,4 +186,4 @@ async def test_micro (account_factory):
     ).call()
     assert ret.result.energy == 555
 
-    LOGGER.info (f"> OPSF has the precise amount of resource and energy left as expected.")
+    LOGGER.info (f"> UPSF has the precise amount of resource and energy left as expected.")

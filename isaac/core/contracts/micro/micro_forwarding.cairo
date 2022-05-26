@@ -257,15 +257,15 @@ namespace ns_micro_forwarding:
         end
 
         #
-        # Handle OPSF
+        # Handle UPSF
         #
         # local syscall_ptr : felt* = syscall_ptr
         # local pedersen_ptr : HashBuiltin* = pedersen_ptr
         # local range_check_ptr = range_check_ptr
         # handle_opsf:
-        # if emap_entry.type == ns_device_types.DEVICE_OPSF:
+        # if emap_entry.type == ns_device_types.DEVICE_UPSF:
         #     #
-        #     # Clear energy balance at this OPSF -- only power generator can store energy
+        #     # Clear energy balance at this UPSF -- only power generator can store energy
         #     #
         #     ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
         #         emap_entry.id,
@@ -424,7 +424,7 @@ namespace ns_micro_forwarding:
             ## Then handle destination device
 
             #
-            # Destination device is OPSF
+            # Destination device is UPSF
             #
             if bool_dst_opsf == 1:
                 #

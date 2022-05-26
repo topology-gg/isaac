@@ -17,7 +17,7 @@ from contracts.design.constants import (
 )
 
 #
-# Functions involved in recipes for device manufacturing at OPSF
+# Functions involved in recipes for device manufacturing at UPSF
 #
 namespace ns_manufacturing:
     func get_resource_energy_requirement_given_device_type {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
@@ -352,9 +352,9 @@ namespace ns_manufacturing:
         end
 
         #
-        # OPSF
+        # UPSF
         #
-        if device_type == ns_device_types.DEVICE_OPSF:
+        if device_type == ns_device_types.DEVICE_UPSF:
             let (arr) = alloc ()
             assert [arr + ns_element_types.ELEMENT_FE_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_FE_REF] = 2000
@@ -368,7 +368,7 @@ namespace ns_manufacturing:
             assert [arr + ns_element_types.ELEMENT_PU_ENR] = 0
 
             return (
-                ns_energy_requirements.DEVICE_OPSF,
+                ns_energy_requirements.DEVICE_UPSF,
                 ns_element_types.ELEMENT_COUNT,
                 arr
             )
