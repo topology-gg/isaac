@@ -27,6 +27,10 @@ func universe_addresses (idx : felt) -> (address : felt):
 end
 
 @storage_var
+func universe_address_to_index (address : felt) -> (idx : felt):
+end
+
+@storage_var
 func universe_active (idx : felt) -> (is_active : felt):
 end
 
@@ -82,6 +86,15 @@ namespace ns_lobby_state_functions:
         let (address) = universe_addresses.read (idx)
 
         return (address)
+    end
+
+    @view
+    func universe_address_to_index_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        address : felt) -> (idx : felt):
+
+        let (idx) = universe_address_to_index.read (address)
+
+        return (idx)
     end
 
     @view
@@ -141,6 +154,14 @@ namespace ns_lobby_state_functions:
         idx : felt, address : felt) -> ():
 
         universe_addresses.write (idx, address)
+
+        return ()
+    end
+
+    func universe_address_to_index_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        address : felt, idx : felt) -> ():
+
+        universe_address_to_index.write (address, idx)
 
         return ()
     end

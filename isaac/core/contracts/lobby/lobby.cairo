@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_le
+from starkware.cairo.common.math import assert_le, assert_not_zero
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
@@ -16,6 +16,7 @@ from contracts.lobby.lobby_state import (
     ns_lobby_state_functions
 )
 
+const UNIVERSE_INDEX_OFFSET = 777
 
 ##############################
 
@@ -84,7 +85,15 @@ func recurse_write_universe_addresses {syscall_ptr : felt*, pedersen_ptr : HashB
         return ()
     end
 
-    ns_lobby_state_functions.universe_addresses_write (idx, adr[idx])
+    let universe_idx = idx + UNIVERSE_INDEX_OFFSET
+    ns_lobby_state_functions.universe_addresses_write (
+        universe_idx,
+        adr[idx]
+    )
+    ns_lobby_state_functions.universe_address_to_index_write (
+        adr[idx],
+        universe_idx
+    )
 
     #
     # Tail recursion
@@ -140,9 +149,10 @@ func recurse_find_idle_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
         return (0,0)
     end
 
-    let (is_active) = ns_lobby_state_functions.universe_active_read (idx)
+    let universe_idx = idx + UNIVERSE_INDEX_OFFSET
+    let (is_active) = ns_lobby_state_functions.universe_active_read (universe_idx)
     if is_active == 0:
-        return (1, idx)
+        return (1, universe_idx)
     end
 
     let (b, i) = recurse_find_idle_universe (idx + 1)
@@ -186,6 +196,11 @@ func anyone_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : Has
     # Get universe address from idx
     #
     let (universe_address) = ns_lobby_state_functions.universe_addresses_read (idle_universe_idx)
+
+    #
+    # Mark universe as active
+    #
+    ns_lobby_state_functions.universe_active_write (idle_universe_idx, 1)
 
     #
     # Dispatch
@@ -295,11 +310,22 @@ func universe_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     alloc_locals
 
     #
-    # Caller qualification
+    # Caller qualification - must be an active universe
     #
-    # ____ TODO: check which universe; mark it idle; revert if not universe ____
-    assert 1 = 0
+    let (caller) = get_caller_address ()
+    let (universe_idx) = ns_lobby_state_functions.universe_address_to_index_read (caller)
+    assert_not_zero (universe_idx) ## zero index means invalid universe address, because every universe address is offset by UNIVERSE_INDEX_OFFSET
+    let (universe_status) = ns_lobby_state_functions.universe_active_read (universe_idx)
+    assert universe_status = 1 ## the calling universe needs to be active
 
+    #
+    # Mark universe as idle
+    #
+    ns_lobby_state_functions.universe_active_write (universe_idx, 0)
+
+    #
+    # Pass play to DAO
+    #
     let (dao_address) = ns_lobby_state_functions.dao_address_read ()
     IContractDAO.subject_report_play (
         dao_address,

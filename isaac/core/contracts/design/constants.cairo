@@ -29,6 +29,7 @@ const SCALE_FP_DIV_100 = 10**18
 const SCALE_FP_DIV_10000 = 10**16
 const SCALE_FP_DIV_100000 = 10**15
 const SCALE_FP_DIV_10000_SQ = 10**12
+const SCALE_FP_DIV_10_POW_10 = 10**10
 const SCALE_FP_SQRT = 10**10
 
 #
@@ -65,12 +66,12 @@ const PI = TWO_PI / 2
 ## Determining MULTIPLIER:
 ##   forwarding 24 * 60 / 4 = 360 times everyday; aiming for 1% degrade everyday
 ##   => we want `(1-x)^360 = 0.99`
-##   => `multiplier = _______ ~= ________ * SCALE_FP_DIV_100000`
+##   => `multiplier = 0.000027917 ~= 279170 * SCALE_FP_DIV_10_POW_10`
 ## Determining ROTATION_BOUND:
 ##   we want +- 15 degrees;
 ##   15 degrees = 0.523599 in radian ~= 5236 * SCALE_FP_DIV_10000 in fp
 namespace ns_perturb:
-    const MULTIPLIER = ________
+    const MULTIPLIER = 279170 * SCALE_FP_DIV_10_POW_10
     const ROTATION_BOUND = 5236 * SCALE_FP_DIV_10000
 end
 
