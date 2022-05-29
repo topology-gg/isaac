@@ -261,9 +261,14 @@ func anyone_ask_to_queue {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     alloc_locals
 
     #
-    # Revert if caller is already in queue (index should be zero for address not in queue)
+    # Revert is caller is 0x0 address => universe contract uses 0x0 as indicator of uninitialized
     #
     let (caller) = get_caller_address ()
+    assert_not_zero (caller)
+
+    #
+    # Revert if caller index-in-queue is not zero, indicating the caller is already in the queue
+    #
     let (caller_idx_in_queue) = ns_lobby_state_functions.queue_address_to_index_read (caller)
     with_attr error_message ("caller index in queue != 0 => caller already in queue."):
         assert caller_idx_in_queue = 0

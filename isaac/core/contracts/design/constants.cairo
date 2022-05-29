@@ -18,7 +18,7 @@ const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 2520 # 7 days * 24 hours * 60 minutes /
 # Capacity control - size of civilization per universe, and number of universes deployed
 #
 const CIV_SIZE = 3
-const UNIVERSE_COUNT = 2
+const UNIVERSE_COUNT = 3
 
 #
 # Constants for numerical precision / stability
@@ -244,6 +244,14 @@ end
 # Constants for maximum carry quantity for each harvester type
 #
 namespace ns_harvester_max_carry:
+    const ELEMENT_FE_RAW = 1000 # iron raw
+    const ELEMENT_AL_RAW = 1000 # aluminum raw
+    const ELEMENT_CU_RAW = 500 # copper raw
+    const ELEMENT_SI_RAW = 500 # silicon raw
+    const ELEMENT_PU_RAW = 200 # plutonium-241 raw
+end
+
+namespace ns_transformer_max_carry:
     const ELEMENT_FE_RAW = 1000 # iron raw
     const ELEMENT_AL_RAW = 1000 # aluminum raw
     const ELEMENT_CU_RAW = 500 # copper raw
@@ -497,6 +505,38 @@ func harvester_element_type_to_max_carry {} (element_type : felt) -> (max_carry 
     local type = element_type
 
     with_attr error_message ("not a harvestable element type; element_type = {type}"):
+        assert 1 = 0
+    end
+    return (0)
+end
+
+
+func transformer_element_type_to_max_carry {} (element_type : felt) -> (max_carry : felt):
+    alloc_locals
+
+    if element_type == ns_element_types.ELEMENT_FE_RAW:
+        return (ns_transformer_max_carry.ELEMENT_FE_RAW)
+    end
+
+    if element_type == ns_element_types.ELEMENT_AL_RAW:
+        return (ns_transformer_max_carry.ELEMENT_AL_RAW)
+    end
+
+    if element_type == ns_element_types.ELEMENT_CU_RAW:
+        return (ns_transformer_max_carry.ELEMENT_CU_RAW)
+    end
+
+    if element_type == ns_element_types.ELEMENT_SI_RAW:
+        return (ns_transformer_max_carry.ELEMENT_SI_RAW)
+    end
+
+    if element_type == ns_element_types.ELEMENT_PU_RAW:
+        return (ns_transformer_max_carry.ELEMENT_PU_RAW)
+    end
+
+    local type = element_type
+
+    with_attr error_message ("not a transformable element type; element_type = {type}"):
         assert 1 = 0
     end
     return (0)

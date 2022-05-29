@@ -1,0 +1,43 @@
+[
+    {
+        "inputs": [],
+        "name": "view_isaac_lobby_address",
+        "outputs": [
+            {
+                "name": "curr_address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "new_address",
+                "type": "felt"
+            }
+        ],
+        "name": "change_isaac_lobby_address",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "probeTask",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "executeTask",
+        "outputs": [],
+        "type": "function"
+    }
+]

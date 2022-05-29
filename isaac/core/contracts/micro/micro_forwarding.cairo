@@ -11,6 +11,7 @@ from contracts.design.constants import (
     ns_device_types, assert_device_type_is_utx,
     harvester_device_type_to_element_type,
     harvester_element_type_to_max_carry,
+    transformer_element_type_to_max_carry,
     transformer_device_type_to_element_types,
     get_device_dimension_ptr
 )
@@ -422,6 +423,9 @@ namespace ns_micro_forwarding:
             end
 
             ## Then handle destination device
+            local syscall_ptr : felt* = syscall_ptr
+            local pedersen_ptr : HashBuiltin* = pedersen_ptr
+            local range_check_ptr = range_check_ptr
 
             #
             # Destination device is UPSF
@@ -434,7 +438,7 @@ namespace ns_micro_forwarding:
                 ns_micro_state_functions.opsf_deployed_id_to_resource_balances_write (
                     emap_entry.dst_device_id,
                     element_type,
-                    dst_balance + quantity_received
+                    dst_balance + quantity_received ## no max carry limitation
                 )
 
                 tempvar syscall_ptr = syscall_ptr
@@ -448,11 +452,29 @@ namespace ns_micro_forwarding:
                 #
                 # Update destination device resource balance
                 #
+                let (element_type, _) = transformer_device_type_to_element_types (dst_type)
+                let (max_carry) = transformer_element_type_to_max_carry (element_type)
                 let (dst_balances) = ns_micro_state_functions.transformers_deployed_id_to_resource_balances_read (emap_entry.dst_device_id)
+
+                #
+                # Consider max carry
+                #
+                local new_balance_resource_before_transform
+                let candidate_balance = dst_balances.balance_resource_before_transform + quantity_received
+                let (bool_reached_max_carry) = is_le (max_carry, candidate_balance)
+                if bool_reached_max_carry == 1:
+                    assert new_balance_resource_before_transform = max_carry
+                else:
+                    assert new_balance_resource_before_transform = candidate_balance
+                end
+
+                #
+                # Update balance
+                #
                 ns_micro_state_functions.transformers_deployed_id_to_resource_balances_write (
                     emap_entry.dst_device_id,
                     TransformerResourceBalances(
-                        dst_balances.balance_resource_before_transform + quantity_received,
+                        new_balance_resource_before_transform,
                         dst_balances.balance_resource_after_transform
                 ))
 

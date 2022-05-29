@@ -4,6 +4,17 @@ The naming reflects:
 2. the sense of world genesis from its connotation with the Bible figure
 3. the subjectivity involved in describing the mechanics of an objective reality, given Isaac is a name for the human species
 
+### Deployment steps (DAO + Lobby + Universes)
+1. Deploy N Universes
+2. Deploy Lobby, with N Universe addresses as constructor calldata
+3. Invoke set_lobby_address_once() at each Universe, providing Lobby address
+4. Deploy Charter
+5. Deploy 3 FSMs, with its name (string literal) as constructor calldata
+6. Deploy DAO, with Lobby + Charter + Angel + 3 FSM addresses as constructor calldata
+7. Invoke set_dao_address_once() at Lobby, providing DAO address
+8. Invoke init_owner_dao_address_once() at each FSMs, providing DAO address
+**=> TODO: write deployment script in python using joblib's Parallel**
+
 ### Web client urls (view only)
 - Macro view (trisolar system): https://isaac-macro-view.netlify.app/
 - Micro view (planet surface): https://isaac-micro-view.netlify.app/
@@ -11,7 +22,7 @@ The naming reflects:
 ### Narrative
 A hypothetical cuboid planet is trapped in a trisolar system where the three suns of identical mass follow roughly a figure-8 trajectory (https://arxiv.org/pdf/math/0011268.pdf)* with perturbation and drifts, making the system chaotic. All players reside on the cuboid planet, forming a interdependent civilization. Every time the planet is crashed into a sun, the civilization is destroyed and reborn, and the planet is reset to full-resource initial state and randomly placed in the trisolar system for the next civilization run. The objective of the game is for players to collectively build sufficient "Nuclear Driller & Propulsion Engines" from harvesting and crafting with natural resources abundant on the planet, place and time their launch strategically to either change their planet's orbit to evade a deadly crash into a sun or produce enough thrust for their planet to escape the hostile trisolar system for good.
 
-*choosing the figure-8 periodic solution is a hack to extend system longenvity - until we have symplectic integrator. 
+*choosing the figure-8 periodic solution is a hack to extend system longenvity - until we have symplectic integrator.
 
 ### Principle
 - no upgradeability - all children contract addresses are hardcoded in public server contract; to upgrade is to redploy the entire contract set at different addresses such that deployed worlds are guaranteed immutable from everyone
@@ -49,7 +60,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - every player starts with one solar panel, one metal harvester, and one OPSF.
 
 ### Foreseeable technical challenges / todos
-- make the integrator symplectic to avoid energy drift - crucial for immutable, unstoppable game 
+- make the integrator symplectic to avoid energy drift - crucial for immutable, unstoppable game
 - need to implement collision test between sun-planet, which means game over
 - testability of the game contracts
 - the state forwarding per L2 block / evaluate the feasibility of lazy evaluation (may need to cache state to circumvent per-tx maximum step of 250k on starknet testnet); if asking the "unfortunate user" at the beginning of each block to forward both macro and micro world state (which won't make sense when fee kicks in), would tx step resource depletes? what are the alternatives: yagi; our own node calling it? not to mention if fee kicks in.
@@ -138,7 +149,7 @@ A hypothetical cuboid planet is trapped in a trisolar system where the three sun
 - (DONE) utl logic: energy update at device + energy transported across utl-set + testing
 - (DONE) hook up isaac with yagi (4/17 latest)
 - (DONE) getting ready for demo day: deploy more devices, utb-sets
-- (DONE) make slide deck and prepare for demo procedure for DEFCON 
+- (DONE) make slide deck and prepare for demo procedure for DEFCON
 
 #### future items / directions
 - layout **Isaac Protocol**: voting power is earned only through gameplay; non tradeable; non transferable; degrade over time (discounting past gameplay contribution) voting power governs the migration of the canonical Isaac contract deploy address so that the DAO can vote yes to a new address; after a rage quit period  the DAO will point to the new address as Isaac server address. Topology will retain most voting power to begin with, and dilute over time. The dilution schedule / function is not thought through yet. Vote is only for upgradeability decision of 1 contract address. "Basically the more you play the more say you have over whatever is played next ... but it decays over time to discount past participation; may need another vote for changing vote calculation & discount factor" -- this will be the first **"Republik"**

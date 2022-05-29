@@ -7,15 +7,12 @@ from Signer import Signer
 import random
 import logging
 
-##
-## Note: this test is based on the following parameters set in `design/constants.cairo`
-## - const CIV_SIZE = 3
-## - const UNIVERSE_COUNT = 2
-##
+### Note: this test is based on the following parameters set in `design/constants.cairo`
+CIV_SIZE = 3
+UNIVERSE_COUNT = 3
+###
 
 LOGGER = logging.getLogger(__name__)
-CIV_SIZE = 3
-UNIVERSE_COUNT = 2
 NUM_SIGNING_ACCOUNTS = CIV_SIZE * 2
 DUMMY_PRIVATE = 9812304879503423120395
 users = []
@@ -119,6 +116,11 @@ async def test_lobby (account_factory, starknet, block_info_mock):
     await contract_lobby.set_dao_address_once(contract_dao.contract_address).invoke()
     LOGGER.info (f'> Register dao address in lobby contract.')
     LOGGER.info('')
+
+    ## Test invoking anyone_ask_to_queue() from 0x0 address => should revert
+    LOGGER.info(f'> Test 0: asking to join queue from 0x0 address should revert.')
+    with pytest.raises(Exception) as e_info:
+        await contract_lobby.anyone_ask_to_queue().invoke()
 
     ## can-dispatch should return false
     LOGGER.info(f'> Test 1: can-dispatch should return 0 at start.')
