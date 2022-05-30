@@ -35,8 +35,8 @@ namespace ns_prng:
         # Params from GCC. (https://en.wikipedia.org/wiki/Linear_congruential_generator).
         let (old_seed) = entropy_seed.read ()
         # Snip in half to a manageable size for unsigned_div_rem.
-        let (left, right) = split_felt (old_seed)
-        let (_, new_seed_) = unsigned_div_rem (1103515245 * right + 1, 2**31)
+        let (_, low) = split_felt (old_seed)
+        let (_, new_seed_) = unsigned_div_rem (1103515245 * low + 1, 2**31)
 
         # Number has form: 10**9 (xxxxxxxxxx).
         # Should be okay to write multiple times to same variable
@@ -55,7 +55,8 @@ namespace ns_prng:
         ):
 
         let (prn) = get_prn (entropy)
-        let (_, num) = unsigned_div_rem (prn, mod)
+        let (_, prn_low) = split_felt (prn) ## split in half before modulo
+        let (_, num) = unsigned_div_rem (prn_low, mod)
 
         return (num)
     end

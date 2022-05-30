@@ -243,11 +243,19 @@ _poll_list_tx_hashes_until_all_accepted (tx_hashes, interval_in_sec=30)
 
 ## DAO addr: 0x04db73a3c6e3c8ff55cab9a4a19ea6b9a99b8df9a976cd313f75f55934afb944
 
+## Yagi router for DAO addr      : 0x04cea4776844c6b2a332e8c291c4846a32949d396649508d9a2e639ebc83bfab
+## Yagi router for Lobby addr    : 0x062a92e4635ab1a4107be8669b790608a65b8626f66a749e53795a7d6b54d1f1
+## Yagi router for Universe0 addr: 0x05822493e78d840e11bda49af5934bde2af93f47a3dea8e9e74588b0c313b733
+## Yagi router for Universe1 addr: 0x07723221aa0d8e1836792c8bac5d900e6f33979973ddc56983a7b173d280ac5e
+## Yagi router for Universe2 addr: 0x03ad196a02644d68cc063222f65da085da3f612ab82163ddd00f61a11073a385
+
+## NEW:
 ## Yagi router for DAO addr      : 0x07e8f0fd6f89a0e654b723ad08de07b1efc6ccc4acd7ea6d88ec05e17027d743
 ## Yagi router for Lobby addr    : 0x077a86cf3115699e913eecd8f9aca8e166afefb9d870fe94a32b2e0c362b63da
 ## Yagi router for Universe0 addr: 0x020fc0703cbc218a9a81d4bae17750c87d3508caf8c329a476f987aa98ec2617
 ## Yagi router for Universe1 addr: 0x024b003cf9bb949308c067d41d1b2bb8f7c8597bee0b28c33a3aa8ed4eee579f
 ## Yagi router for Universe2 addr: 0x0538ac941e5a3495548acc6aa97d5614960bf9b9befb99f7e8bf40461a31c0b3
+########
 
 ## NEXT:
 
