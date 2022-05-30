@@ -126,21 +126,21 @@ tx_hashes = []
 
 ### Notice: universe contract bytecode is so big (30MB+) that deployment fails 50% of the time due to http error
 ### deploy manually now and copy addr + tx_hash here
-# deployed_universes = [
-# 	{
-# 		'addr' : '0x075c7d53a13a30a1ce325c0b6537df20d658db8ce96a1ba3bb3d9358dae37bfd',
-# 	 	'tx_hash' : '0x6bcd38d752cd7f10ff31ff420395fbf1fc94af5e5b55cc05818276421b8c48d'
-# 	},
-# 	{
-# 		'addr' : '0x074d521b750a411430f574c9f99f1d371a74888c1316ced2f582d0d8f4f6bfc1',
-# 		'tx_hash' : '0x46f1abe58befb46f142b7ab05fd79c1fa213d2d3bbad291d09c834f7cb609f4'
-# 	},
-# 	{
-# 		'addr' : '0x01f38ab483020fdf5c0d8500d3839ebc9b6d4c6324f2f5fc0258094a173c87ff',
-# 		'tx_hash' : '0x6330df996a754fda1a4c72540e382c146336362aa14448686b47dbedb7261be'
-# 	}
-# ]
-# tx_hashes += [du['tx_hash'] for du in deployed_universes]
+deployed_universes = [
+	{
+		'addr' : '0x0685335b2e9dd0a86a62bc36967e1851879f3a54f58b2d46491796ffa52e9fc3',
+	 	'tx_hash' : '0x6c670f03d6b48ada1ee0e8b3509647d4bc84abb39059eca93f32e266295d617'
+	},
+	{
+		'addr' : '0x03bceee3ed7433f30d5f4ae875bd66bd3815f619201544fb878d0b23476c061d',
+		'tx_hash' : '0x46e83ac7f900598d30b98910c95d2996cdc7d3287bdd3d2d8adb11c352ff35e'
+	},
+	{
+		'addr' : '0x02cc448248a32ac01eada379f0a3c083073aab53c7a224db705eaa66602c1285',
+		'tx_hash' : '0x75763dd931709cd0b556dad4cdcf1443690b0d3fb34fafcc9c5fb818a923a65'
+	}
+]
+tx_hashes += [du['tx_hash'] for du in deployed_universes]
 
 
 #
@@ -229,32 +229,32 @@ _poll_list_tx_hashes_until_all_accepted (tx_hashes, interval_in_sec=30)
 
 ############################################################################
 
-## Universe 0 addr: 0x075c7d53a13a30a1ce325c0b6537df20d658db8ce96a1ba3bb3d9358dae37bfd
-## Universe 1 addr: 0x074d521b750a411430f574c9f99f1d371a74888c1316ced2f582d0d8f4f6bfc1
-## Universe 2 addr: 0x01f38ab483020fdf5c0d8500d3839ebc9b6d4c6324f2f5fc0258094a173c87ff
+## Universe 0 addr: 0x0685335b2e9dd0a86a62bc36967e1851879f3a54f58b2d46491796ffa52e9fc3
+## Universe 1 addr: 0x03bceee3ed7433f30d5f4ae875bd66bd3815f619201544fb878d0b23476c061d
+## Universe 2 addr: 0x02cc448248a32ac01eada379f0a3c083073aab53c7a224db705eaa66602c1285
 
-## Lobby addr: 0x01a30cb683558212aaa012b265c0d26a45644311014e885f6278eb72f9992291
+## Lobby addr: 0x07cd09ef24b9d466f2e76e3f842135c2941f624df59aefb485e20e1adc16d0fe
 
-## Charter addr: 0x0147ab4b254c965d36ba2924b259ede11a8963371d9f8c23c598e058765ffa64
+## Charter addr: 0x07f3a54b17ba9d625a3f7707388b51467e4964390308377b7aba0930a01e987f
 
-## FSM-Subject addr: 0x074e066f5eea98afe4188cc0a489df9d8ab2c091d406d13c6e1e4f375b5f7a51
-## FSM-Charter addr: 0x019e92195f5e9ee601e2c39e7c35997a58e8457182a552ce5b3573a29d4c4b52
-## FSM-Angel addr  : 0x04e345c5977c9af1e0b195dc144998cc4335d4498b623b67e9fe06cface01e74
+## FSM-Subject addr: 0x062d7b33c4a349c9e8fe4bd2002baa50786f2e9a61f3a2f1934e165182d1b81c
+## FSM-Charter addr: 0x0525b6c6d8e6247e28b7959d5ecf303517634c7eb41491011bf5a6d6ec485423
+## FSM-Angel addr  : 0x002575c68810b4c7697d54bda398e9301f8a7540a32c210507fdcb848eb33468
 
-## DAO addr: 0x06b02619485cf7eb34ef79056493cbbc4d480544465531c15f794890a504dcc9
+## DAO addr: 0x04db73a3c6e3c8ff55cab9a4a19ea6b9a99b8df9a976cd313f75f55934afb944
 
-## Yagi router for DAO addr      : 0x04cea4776844c6b2a332e8c291c4846a32949d396649508d9a2e639ebc83bfab
-## Yagi router for Lobby addr    : 0x062a92e4635ab1a4107be8669b790608a65b8626f66a749e53795a7d6b54d1f1
-## Yagi router for Universe0 addr: 0x05822493e78d840e11bda49af5934bde2af93f47a3dea8e9e74588b0c313b733
-## Yagi router for Universe1 addr: 0x07723221aa0d8e1836792c8bac5d900e6f33979973ddc56983a7b173d280ac5e
-## Yagi router for Universe2 addr: 0x03ad196a02644d68cc063222f65da085da3f612ab82163ddd00f61a11073a385
+## Yagi router for DAO addr      : 0x07e8f0fd6f89a0e654b723ad08de07b1efc6ccc4acd7ea6d88ec05e17027d743
+## Yagi router for Lobby addr    : 0x077a86cf3115699e913eecd8f9aca8e166afefb9d870fe94a32b2e0c362b63da
+## Yagi router for Universe0 addr: 0x020fc0703cbc218a9a81d4bae17750c87d3508caf8c329a476f987aa98ec2617
+## Yagi router for Universe1 addr: 0x024b003cf9bb949308c067d41d1b2bb8f7c8597bee0b28c33a3aa8ed4eee579f
+## Yagi router for Universe2 addr: 0x0538ac941e5a3495548acc6aa97d5614960bf9b9befb99f7e8bf40461a31c0b3
 
 ## NEXT:
 
-## - Invoke set_lobby_address_once() at each Universe, providing Lobby address
-## - Invoke set_dao_address_once() at Lobby, providing DAO address
+## - At each Universe, invoke set_lobby_address_once(), providing Lobby address
+## - At Lobby, invoke set_dao_address_once(), providing DAO address
 
-## - Invoke init_owner_dao_address_once() at each FSMs, providing DAO address
+## - At each FSM, invoke init_owner_dao_address_once(), providing DAO address
 
 ## - Hook up all yagi routers with respective addresses
 ##   (do on Voyager, because access restricted to GYOZA on argent X)

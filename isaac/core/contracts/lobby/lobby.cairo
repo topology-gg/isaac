@@ -159,6 +159,10 @@ func recurse_find_idle_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
     return (b, i)
 end
 
+@event
+func event_activating_universe (index : felt, address : felt):
+end
+
 @external
 func anyone_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> ():
@@ -201,6 +205,8 @@ func anyone_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : Has
     # Mark universe as active
     #
     ns_lobby_state_functions.universe_active_write (idle_universe_idx, 1)
+
+    event_activating_universe.emit (idle_universe_idx, universe_address)
 
     #
     # Dispatch

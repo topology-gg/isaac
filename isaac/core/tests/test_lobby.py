@@ -10,6 +10,7 @@ import logging
 ### Note: this test is based on the following parameters set in `design/constants.cairo`
 CIV_SIZE = 3
 UNIVERSE_COUNT = 3
+UNIVERSE_INDEX_OFFSET = 777
 ###
 
 LOGGER = logging.getLogger(__name__)
@@ -194,7 +195,8 @@ async def test_lobby (account_factory, starknet, block_info_mock):
 
     ## dispatch players to universe
     LOGGER.info(f"> Test 7: Invoke dispatch function once; check queue head & tail; check universe-0's civilization addresses, civ index, genesis block")
-    await contract_lobby.anyone_dispatch_player_to_universe().invoke()
+    ret_dispatch = await contract_lobby.anyone_dispatch_player_to_universe().invoke()
+    # LOGGER.info(f"-- events: {ret_dispatch.main_call_events}")
 
     ret = await contract_lobby.queue_head_index_read().call()
     head_idx = ret.result.head_idx
@@ -207,6 +209,13 @@ async def test_lobby (account_factory, starknet, block_info_mock):
 
     ret = await contract_universes[0].l2_block_at_genesis_read().call()
     assert ret.result.number == 345
+
+    ret = await contract_lobby.universe_active_read(UNIVERSE_INDEX_OFFSET + 0).call()
+    assert ret.result.is_active == 1
+    ret = await contract_lobby.universe_active_read(UNIVERSE_INDEX_OFFSET + 1).call()
+    assert ret.result.is_active == 0
+    ret = await contract_lobby.universe_active_read(UNIVERSE_INDEX_OFFSET + 2).call()
+    assert ret.result.is_active == 0
 
     for i in range(3):
         ret = await contract_universes[0].civilization_player_idx_to_address_read(i).call()
