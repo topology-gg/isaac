@@ -43,12 +43,7 @@ end
 
 @constructor
 func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        fsm_name : felt
     ):
-    #
-    # Set name
-    #
-    ns_fsm_storages.name_write (fsm_name)
 
     #
     # State initialization
@@ -56,6 +51,26 @@ func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
     ns_fsm_storages.state_write ('S_IDLE')
 
     return()
+end
+
+@external
+func set_name_once {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        fsm_name : felt
+    ):
+    #
+    # Check if name already set
+    #
+    let (curr_name) = ns_fsm_storages.name_read ()
+    with_attr error_message ("Name already set"):
+        assert curr_name = 0
+    end
+
+    #
+    # Set name
+    #
+    ns_fsm_storages.name_write (fsm_name)
+
+    return ()
 end
 
 #

@@ -61,10 +61,24 @@ end
 ##############################
 
 @constructor
-func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
+
+    return()
+end
+
+@external
+func set_universe_addresses_once {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         universe_addresses_len : felt,
         universe_addresses : felt*
     ):
+
+    #
+    # Check if the first universe address is already set
+    #
+    let (address) = ns_lobby_state_functions.universe_addresses_read (0 + UNIVERSE_INDEX_OFFSET)
+    with_attr error_message ("Universe address already set"):
+        assert address = 0
+    end
 
     recurse_write_universe_addresses (
         universe_addresses_len,

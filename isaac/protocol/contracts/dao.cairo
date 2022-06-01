@@ -118,6 +118,13 @@ end
 
 @constructor
 func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ):
+
+    return()
+end
+
+@external
+func set_votable_and_fsm_addresses_once {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         address_subject : felt,
         address_charter : felt,
         address_angel : felt,
@@ -144,7 +151,7 @@ func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
         angel = fsm_address_angel
     ))
 
-    return()
+    return (0
 end
 
 ##########################

@@ -4,10 +4,10 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 
-from contracts.design.constants import (GYOZA)
+from contracts.design.access import (assert_correct_admin_key)
 
 # ** router **
-# external function restricting GYOZA to change dao address
+# external function restricting whitelisted addresses to change dao address
 # executeTask() and probeTask() that use call_contract() to call the dao's respective functions
 
 @contract_interface
@@ -32,11 +32,14 @@ func view_isaac_dao_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
 end
 
 @external
-func change_isaac_dao_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (new_address : felt) -> ():
+func change_isaac_dao_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    admin_key : felt,
+    new_address : felt) -> ():
 
-    # GYOZA is the benevolent dictator until Isaac stabilizes
-    let (caller) = get_caller_address ()
-    assert caller = GYOZA
+    #
+    # Check admin
+    #
+    assert_correct_admin_key (admin_key)
 
     isaac_dao_address.write (new_address)
 

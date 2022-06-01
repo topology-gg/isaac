@@ -4,7 +4,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import get_caller_address
 
-from contracts.design.constants import (GYOZA)
+from contracts.design.access import (assert_correct_admin_key)
 
 # ** router **
 # external function restricting GYOZA to change universe address
@@ -32,11 +32,14 @@ func view_isaac_universe_address {syscall_ptr : felt*, pedersen_ptr : HashBuilti
 end
 
 @external
-func change_isaac_universe_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (new_address : felt) -> ():
+func change_isaac_universe_address {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    admin_key : felt,
+    new_address : felt) -> ():
 
-    # GYOZA is the benevolent dictator until Isaac stabilizes
-    let (caller) = get_caller_address ()
-    assert caller = GYOZA
+    #
+    # Check admin
+    #
+    assert_correct_admin_key (admin_key)
 
     isaac_universe_address.write (new_address)
 
