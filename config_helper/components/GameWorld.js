@@ -51,7 +51,7 @@ DEVICE_COLOR_MAP.set(8, "orange");
 DEVICE_COLOR_MAP.set(9, "orange");
 DEVICE_COLOR_MAP.set(10, "orange");
 DEVICE_COLOR_MAP.set(11, "orange");
-DEVICE_COLOR_MAP.set(12, "rgba(100,100,100,0.4)");
+DEVICE_COLOR_MAP.set(12, "rgba(100,100,100,0.3)");
 DEVICE_COLOR_MAP.set(13, "grey");
 DEVICE_COLOR_MAP.set(14, "yellow");
 DEVICE_COLOR_MAP.set(15, "blue");
@@ -144,6 +144,11 @@ export default function GameWorld() {
             console.log("useEffect() called.")
         }, []
     );
+
+    const drawWorld = canvi => {
+        drawGrid (canvi)
+        drawDevices (canvi)
+    }
 
     const drawGrid = canvi => {
 
@@ -268,8 +273,8 @@ export default function GameWorld() {
     //
     return(
     <div>
-        <button onClick={() => drawGrid(canvas)}> Grid </button>
-        <button onClick={() => drawDevices(canvas)}> Devices </button>
+        <button onClick={() => drawWorld(canvas)}> Draw </button>
+        {/* <button onClick={() => drawDevices(canvas)}> Devices </button> */}
         <canvas id="c" />
     </div>
     );
