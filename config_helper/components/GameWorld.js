@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect, useMemo } from "react";
+import React, { Component, useState, useEffect, useRef, useMemo } from "react";
 import { fabric } from 'fabric';
 
 import {
@@ -105,7 +105,8 @@ export default function GameWorld() {
 
     // Credits:
     // https://aprilescobar.medium.com/part-1-fabric-js-on-react-fabric-canvas-e4094e4d0304
-    //
+    // https://stackoverflow.com/questions/60723440/problem-in-attaching-event-to-canvas-in-useeffect
+    // https://eliaslog.pw/how-to-add-multiple-refs-to-one-useref-hook/
 
     //
     // Logic to retrieve state from Starknet
@@ -131,23 +132,39 @@ export default function GameWorld() {
     //
     // Logic to initialize a Fabric canvas
     //
-    const [canvas, setCanvas] = useState(null);
+    const [canvas, setCanvas] = useState([]);
+    const [hasDrawn, _] = useState([]);
+    const _refs = useRef([]);
+    // const _canvasRef = useRef(0);
+    // const _hasDrawnRef =
+
     useEffect (() => {
-            setCanvas(
-                new fabric.Canvas('c', {
-                    height: 700,
-                    width: 1200,
-                    backgroundColor: 'white'
-                    // backgroundColor: 'rgba(255, 73, 64, 0.6)'
-                })
-            );
-            console.log("useEffect() called.")
-        }, []
-    );
+        // console.log("useEffect(callback, []) called.")
+        _refs.current[0] = new fabric.Canvas('c', {
+            height: 700,
+            width: 1200,
+            backgroundColor: 'white'
+        })
+        _refs.current[1] = false
+    }, []);
+
+    useEffect (() => {
+        // console.log("useEffect(callback, [device_emap, utb_grids]) called.")
+        if (!_refs.current[1]) {
+            drawWorld (_refs.current[0])
+        }
+    }, [device_emap, utb_grids]
+);
 
     const drawWorld = canvi => {
-        drawGrid (canvi)
-        drawDevices (canvi)
+        if (device_emap && utb_grids) {
+            if (device_emap.emap && utb_grids.grids) {
+                drawGrid (canvi)
+                drawDevices (canvi)
+                _refs.current[1] = true
+            }
+        }
+
     }
 
     const drawGrid = canvi => {
@@ -215,66 +232,66 @@ export default function GameWorld() {
 
         // Basic geometries provided by Fabric:
         // circle, ellipse, rectangle, triangle
+        // reference: https://www.htmlgoodies.com/html5/drawing-shapes-with-the-fabric-js-canvas-library/
 
-        if (device_emap && utb_grids) {
-            if (device_emap.emap && utb_grids.grids) {
+        // if (device_emap && utb_grids) {
+            // if (device_emap.emap && utb_grids.grids) {
 
-                //
-                // Draw devices
-                //
-                for (const entry of device_emap.emap){
-                    const x = entry.grid.x.toNumber()
-                    const y = entry.grid.y.toNumber()
-                    const typ = entry.type.toNumber()
-                    console.log("> entry: ", typ, x, y)
+        //
+        // Draw devices
+        //
+        for (const entry of device_emap.emap){
+            const x = entry.grid.x.toNumber()
+            const y = entry.grid.y.toNumber()
+            const typ = entry.type.toNumber()
+            // console.log("> entry: ", typ, x, y)
 
-                    const device_dim = DEVICE_DIM_MAP.get(typ)
-                    const device_color = DEVICE_COLOR_MAP.get(typ)
+            const device_dim = DEVICE_DIM_MAP.get(typ)
+            const device_color = DEVICE_COLOR_MAP.get(typ)
 
-                    const rect = new fabric.Rect({
-                        height: device_dim*GRID,
-                        width: device_dim*GRID,
-                        left: PAD + x*GRID,
-                        top: PAD + (SIDE*3-y-device_dim)*GRID,
-                        fill: device_color
-                     });
-                     canvi.add(rect);
-                }
-
-                //
-                // Draw utbs
-                //
-                for (const grid of utb_grids.grids){
-                    console.log("> utb:",x, y)
-
-                    const x = grid.x.toNumber()
-                    const y = grid.y.toNumber()
-                    const device_dim = 1
-                    const device_color = DEVICE_COLOR_MAP.get(12)
-
-                    const rect = new fabric.Rect({
-                        height: device_dim*GRID,
-                        width: device_dim*GRID,
-                        left: PAD + x*GRID,
-                        top: PAD + (SIDE*3-y-device_dim)*GRID,
-                        fill: device_color
-                     });
-                     canvi.add(rect);
-                }
-
-            }
+            const rect = new fabric.Rect({
+                height: device_dim*GRID,
+                width: device_dim*GRID,
+                left: PAD + x*GRID,
+                top: PAD + (SIDE*3-y-device_dim)*GRID,
+                fill: device_color
+                });
+            canvi.add(rect);
         }
+
+        //
+        // Draw utbs
+        //
+        for (const grid of utb_grids.grids){
+            // console.log("> utb:",x, y)
+
+            const x = grid.x.toNumber()
+            const y = grid.y.toNumber()
+            const device_dim = 1
+            const device_color = DEVICE_COLOR_MAP.get(12)
+
+            const rect = new fabric.Rect({
+                height: device_dim*GRID,
+                width: device_dim*GRID,
+                left: PAD + x*GRID,
+                top: PAD + (SIDE*3-y-device_dim)*GRID,
+                fill: device_color
+                });
+                canvi.add(rect);
+        }
+
+            // }
+        // }
 
         canvi.renderAll();
     }
+
 
     //
     // Return component
     //
     return(
     <div>
-        <button onClick={() => drawWorld(canvas)}> Draw </button>
-        {/* <button onClick={() => drawDevices(canvas)}> Devices </button> */}
         <canvas id="c" />
     </div>
     );
