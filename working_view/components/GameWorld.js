@@ -14,6 +14,93 @@ function useUniverseContract() {
     return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
 }
 
+//
+// Constants
+//
+const GRID = 8 // grid size
+const PAD = 50 // pad size
+const SIDE = 25 // number of grids per size (planet dimension)
+const STROKE = 'rgba(200,200,200,1)' // grid stroke color
+
+const DEVICE_DIM_MAP = new Map();
+DEVICE_DIM_MAP.set(0, 1);
+DEVICE_DIM_MAP.set(1, 3);
+DEVICE_DIM_MAP.set(2, 1);
+DEVICE_DIM_MAP.set(3, 2);
+DEVICE_DIM_MAP.set(4, 1);
+DEVICE_DIM_MAP.set(5, 1);
+DEVICE_DIM_MAP.set(6, 1);
+DEVICE_DIM_MAP.set(7, 2);
+DEVICE_DIM_MAP.set(8, 2);
+DEVICE_DIM_MAP.set(9, 2);
+DEVICE_DIM_MAP.set(10, 2);
+DEVICE_DIM_MAP.set(11, 2);
+DEVICE_DIM_MAP.set(14, 5);
+DEVICE_DIM_MAP.set(15, 5);
+
+const DEVICE_COLOR_MAP = new Map();
+DEVICE_COLOR_MAP.set(0, "black");
+DEVICE_COLOR_MAP.set(1, "black");
+DEVICE_COLOR_MAP.set(2, "red");
+DEVICE_COLOR_MAP.set(3, "red");
+DEVICE_COLOR_MAP.set(4, "red");
+DEVICE_COLOR_MAP.set(5, "red");
+DEVICE_COLOR_MAP.set(6, "red");
+DEVICE_COLOR_MAP.set(7, "orange");
+DEVICE_COLOR_MAP.set(8, "orange");
+DEVICE_COLOR_MAP.set(9, "orange");
+DEVICE_COLOR_MAP.set(10, "orange");
+DEVICE_COLOR_MAP.set(11, "orange");
+DEVICE_COLOR_MAP.set(12, "rgba(100,100,100,0.4)");
+DEVICE_COLOR_MAP.set(13, "grey");
+DEVICE_COLOR_MAP.set(14, "yellow");
+DEVICE_COLOR_MAP.set(15, "blue");
+
+// Copied from Isaac's `constants.cairo`:
+// namespace ns_device_types:
+//     const DEVICE_SPG = 0 # solar power generator
+//     const DEVICE_NPG = 1 # nuclear power generator
+//     const DEVICE_FE_HARV = 2 # iron harvester
+//     const DEVICE_AL_HARV = 3 # aluminum harvester
+//     const DEVICE_CU_HARV = 4 # copper harvester
+//     const DEVICE_SI_HARV = 5 # silicon harvester
+//     const DEVICE_PU_HARV = 6 # plutoniium harvester
+//     const DEVICE_FE_REFN = 7 # iron refinery
+//     const DEVICE_AL_REFN = 8 # aluminum refinery
+//     const DEVICE_CU_REFN = 9 # copper refinery
+//     const DEVICE_SI_REFN = 10 # silicon refinery
+//     const DEVICE_PEF = 11 # plutonium enrichment facility
+//     const DEVICE_UTB = 12 # universal transportation belt
+//     const DEVICE_UTL = 13 # universal transmission line
+//     const DEVICE_UPSF = 14 # universal production and storage facility
+//     const DEVICE_NDPE = 15 # nuclear driller & propulsion engine
+
+//     const DEVICE_TYPE_COUNT = 16
+//     const DEVICE_PG_MAX = 1
+//     const DEVICE_HARVESTER_MIN = 2
+//     const DEVICE_HARVESTER_MAX = 6
+//     const DEVICE_TRANSFORMER_MIN = 7
+//     const DEVICE_TRANSFORMER_MAX = 11
+// end
+
+// Device footprint - copied from `constants.cairo`
+// dw 1 # spg
+// dw 3 # npg
+// dw 1 # fe harv
+// dw 1 # al harv
+// dw 1 # cu harv
+// dw 1 # si harv
+// dw 1 # pu harv
+// dw 2 # fe refn
+// dw 2 # al refn
+// dw 2 # cu refn
+// dw 2 # si refn
+// dw 2 # pef
+// dw 0
+// dw 0
+// dw 5 # opsf
+// dw 5 # ndpe
+
 export default function GameWorld() {
 
     // Credits:
@@ -30,7 +117,16 @@ export default function GameWorld() {
         method: 'anyone_view_device_deployed_emap',
         args: []
     })
-    console.log("device_emap:", device_emap)
+    const { data: utb_grids } = useStarknetCall({
+        contract,
+        method: 'anyone_view_all_utx_grids',
+        args: [12]
+    })
+    const { data: utl_grids } = useStarknetCall({
+        contract,
+        method: 'anyone_view_all_utx_grids',
+        args: [13]
+    })
 
     //
     // Logic to initialize a Fabric canvas
@@ -45,15 +141,11 @@ export default function GameWorld() {
                     // backgroundColor: 'rgba(255, 73, 64, 0.6)'
                 })
             );
-            console.log("useEffect!")
+            console.log("useEffect() called.")
         }, []
     );
 
-    const addGrid = canvi => {
-        const GRID = 8 // grid size
-        const PAD = 50 // pad size
-        const SIDE = 25 // number of grids per size (planet dimension)
-        const STROKE = 'rgba(200,200,200,1)' // grid stroke color
+    const drawGrid = canvi => {
 
         //
         // Grid lines parallel to Y-axis
@@ -114,83 +206,71 @@ export default function GameWorld() {
         canvi.renderAll();
     }
 
-    const addDevices = canvi => {
+    const drawDevices = canvi => {
 
-        // TODO
+        // Basic geometries provided by Fabric:
+        // circle, ellipse, rectangle, triangle
+
+        if (device_emap && utb_grids) {
+            if (device_emap.emap && utb_grids.grids) {
+
+                //
+                // Draw devices
+                //
+                for (const entry of device_emap.emap){
+                    const x = entry.grid.x.toNumber()
+                    const y = entry.grid.y.toNumber()
+                    const typ = entry.type.toNumber()
+                    console.log("> entry: ", typ, x, y)
+
+                    const device_dim = DEVICE_DIM_MAP.get(typ)
+                    const device_color = DEVICE_COLOR_MAP.get(typ)
+
+                    const rect = new fabric.Rect({
+                        height: device_dim*GRID,
+                        width: device_dim*GRID,
+                        left: PAD + x*GRID,
+                        top: PAD + (SIDE*3-y-device_dim)*GRID,
+                        fill: device_color
+                     });
+                     canvi.add(rect);
+                }
+
+                //
+                // Draw utbs
+                //
+                for (const grid of utb_grids.grids){
+                    console.log("> utb:",x, y)
+
+                    const x = grid.x.toNumber()
+                    const y = grid.y.toNumber()
+                    const device_dim = 1
+                    const device_color = DEVICE_COLOR_MAP.get(12)
+
+                    const rect = new fabric.Rect({
+                        height: device_dim*GRID,
+                        width: device_dim*GRID,
+                        left: PAD + x*GRID,
+                        top: PAD + (SIDE*3-y-device_dim)*GRID,
+                        fill: device_color
+                     });
+                     canvi.add(rect);
+                }
+
+            }
+        }
 
         canvi.renderAll();
     }
-
-    // const canvas = new fabric.Canvas(
-    //     'c', {
-    //         height: 600,
-    //         width: 600,
-    //         backgroundColor: 'rgba(255, 73, 64, 0.6)'
-    //     }
-    // )
-
-    //
-    // Logic to draw on the Fabric canvas
-    //
-    // var grid = 600 / 25;
-    // for (var i = 0; i < (600 / grid); i++) {
-    //     canvas.add(new fabric.Line([ i * grid, 0, i * grid, 600], { stroke: '#ccc', selectable: false }));
-    //     canvas.add(new fabric.Line([ 0, i * grid, 600, i * grid], { stroke: '#ccc', selectable: false }))
-    // }
 
     //
     // Return component
     //
     return(
     <div>
-        <button onClick={() => addGrid(canvas)}> Grid </button>
-        <button onClick={() => addDevices(canvas)}> Devices </button>
+        <button onClick={() => drawGrid(canvas)}> Grid </button>
+        <button onClick={() => drawDevices(canvas)}> Devices </button>
         <canvas id="c" />
     </div>
     );
 }
-
-// export default class GameWorld extends Component {
-//     componentDidMount() {
-
-//         //
-//         // Logic to retrieve state from Starknet
-//         //
-//         const { contract } = useUniverseContract()
-//         const { account } = useStarknet()
-//         const { data: device_emap } = useStarknetCall({
-//             contract,
-//             method: 'anyone_view_device_deployed_emap',
-//             args: []
-//         })
-//         console.log("device_emap:", device_emap)
-
-//         //
-//         // Logic to initialize a Fabric canvas
-//         //
-//         const canvas = new fabric.Canvas(
-//             'c', {
-//                 height: 600,
-//                 width: 600,
-//                 backgroundColor: 'rgba(255, 73, 64, 0.6)'
-//             }
-//         )
-
-//         //
-//         // Logic to draw on the Fabric canvas
-//         //
-//         var grid = 600 / 50;
-//         for (var i = 0; i < (600 / grid); i++) {
-//             canvas.add(new fabric.Line([ i * grid, 0, i * grid, 600], { stroke: '#ccc', selectable: false }));
-//             canvas.add(new fabric.Line([ 0, i * grid, 600, i * grid], { stroke: '#ccc', selectable: false }))
-//         }
-//     }
-
-//     render() {
-//         return (
-//             <div>
-//                 <canvas id="c" />
-//             </div>
-//         )
-//     }
-// }
