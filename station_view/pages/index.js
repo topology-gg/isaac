@@ -14,9 +14,10 @@ function Home() {
 
   return (
     <StarknetProvider>
-      <div className={styles.gamecontainer}>
+      <GameWorld />
+      {/* <div className={styles.gamecontainer}>
         <GameWorld />
-      </div>
+      </div> */}
     </StarknetProvider>
   )
 }
