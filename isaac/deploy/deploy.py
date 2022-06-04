@@ -11,19 +11,30 @@ def subprocess_run (cmd):
 	result = result.stdout.decode('utf-8')[:-1] # remove trailing newline
 	return result
 
-def _deploy_contract (name, calldata = ''):
-	if len(calldata) != 0:
-		cmd = f'starknet deploy --contract artifacts/{name}_compiled.json --network alpha-goerli --inputs {calldata}'
-	else:
-		cmd = f'starknet deploy --contract artifacts/{name}_compiled.json --network alpha-goerli'
-	print(f"> CMD = {cmd}")
+## Reference on try-except-else variable scoping: https://stackoverflow.com/questions/25666853/how-to-make-a-variable-inside-a-try-except-block-public
+def _deploy_contract (name, subfolder):
+	return _deploy_contract_bounded (name, subfolder, 0)
 
+def _deploy_contract_bounded (name, subfolder, iteration):
+	if iteration == 20:
+		print (f"> something's wrong! terminating.")
+		raise
+
+	cmd = f'starknet deploy --contract artifacts/{subfolder}/{name}_compiled.json --network alpha-goerli'
 	cmd = cmd.split(' ')
-	deploy_ret = subprocess_run(cmd)
-	deploy_ret = deploy_ret.split(': ')
-	addr = deploy_ret[1].split('\n')[0]
-	tx_hash = deploy_ret[-1]
-	return {'addr':addr, 'tx_hash':tx_hash}
+
+	try:
+		deploy_ret = subprocess_run(cmd)
+		print(f"... deploy_ret = {deploy_ret}")
+		deploy_ret = deploy_ret.split(': ')
+		addr = deploy_ret[1].split('\n')[0]
+		tx_hash = deploy_ret[-1]
+		return {'cmd' : cmd, 'addr' : addr, 'tx_hash' : tx_hash}
+	except:
+		print(f"  ... iteration {iteration} failed. Trying again")
+		return _deploy_contract_bounded (name, subfolder, iteration+1) ## recursive call
+
+
 
 ## polling list of hashes over given time interval until all accepted on StarkNet
 ## cached accepted tx_hash to avoid unnecessary polling of accepted tx
@@ -70,19 +81,6 @@ PRIME_HALF = PRIME//2
 
 # ###################################################
 
-# ### Deployment steps (DAO + Lobby + Universes)
-# 1. Deploy N Universes
-# 2. Deploy Lobby, with N Universe addresses as constructor calldata
-# 3. Invoke set_lobby_address_once() at each Universe, providing Lobby address
-# 4. Deploy Charter
-# 5. Deploy 3 FSMs, with its name (string literal) as constructor calldata
-# 6. Deploy DAO, with Lobby + Charter + Angel + 3 FSM addresses as constructor calldata
-# 7. Invoke set_dao_address_once() at Lobby, providing DAO address
-# 8. Invoke init_owner_dao_address_once() at each FSMs, providing DAO address
-# 9. Deploy all yagi routers
-# 10. Hook up all yagi routers with respective addresses
-
-
 #
 # Prep
 #
@@ -92,198 +90,151 @@ GYOZA = '0x077d04506374b4920d6c35ecaded1ed7d26dd283ee64f284481e2574e77852c6'
 tx_hashes = []
 
 #
-# Deploy all universes
+# Deploy N Universes
 #
-# print (f"> Deploying {UNIVERSE_COUNT} universe(s)")
-# deployed_universes = []
-# for i in range(UNIVERSE_COUNT):
-# 	deployed_universe = _deploy_contract (name='universe')
-# 	deployed_universes.append (deployed_universe)
-# 	print (f"  ... universe {i}: address = {deployed_universe['addr']}; hash = {deployed_universe['tx_hash']}")
+deployed_universes = []
+for i in range(UNIVERSE_COUNT):
+	deployed_universe = _deploy_contract (name = 'universe', subfolder = 'isaac')
+	print(f"> Deployed universe #{i+1}/{UNIVERSE_COUNT}.")
+	deployed_universes.append (deployed_universe)
+tx_hashes += [ du['tx_hash'] for du in deployed_universes ]
 
-### Notice: universe contract bytecode is so big (30MB+) that deployment fails 50% of the time due to http error
-### deploy manually now and copy addr + tx_hash here
-deployed_universes = [
-	{
-		'addr' : '0x06a737b674b0748964888d16b0766869bc9ff2cb50a52c3a624505e097bcd70c',
-	 	'tx_hash' : '0x1ea66071262e2de1e1b4363183e9096f60d83a6de96b3f5c33612f8837b2c2d'
-	},
-	{
-		'addr' : '0x0469186b874cc838fd751b2e5a56f484ea44a42eebd8720338dae23aec98b35c',
-		'tx_hash' : '0x8d584bf159599031fabd91c74716d190f02164d3a30eaccb2ad5292f6b856d'
-	},
-	{
-		'addr' : '0x06c14d4bd34e0ebf9d52bedd650a7d30d97682a4928b3a1d4184e57bb499bffc',
-		'tx_hash' : '0x4a047cfe3616aa986658d86ae83292e0ce86f33caf92810a6fa2ee1349b7e8b'
-	}
+#
+# Deploy Lobby
+#
+deployed_lobby = _deploy_contract (name = 'lobby', subfolder = 'isaac')
+print(f"> Deployed Lobby")
+tx_hashes.append ( deployed_lobby['tx_hash'] )
+
+#
+# Deploy Charter
+#
+deployed_charter = _deploy_contract (name = 'charter', subfolder = 'isaac')
+print(f"> Deployed Charter.")
+tx_hashes.append ( deployed_charter['tx_hash'] )
+
+#
+# Deploy 3 FSMs
+#
+deployed_fsm_subject = _deploy_contract (name = 'fsm', subfolder = 'isaac')
+deployed_fsm_charter = _deploy_contract (name = 'fsm', subfolder = 'isaac')
+deployed_fsm_angel   = _deploy_contract (name = 'fsm', subfolder = 'isaac')
+print(f"> Deployed 3 FSMs.")
+tx_hashes += [
+	deployed_fsm_subject ['tx_hash'],
+	deployed_fsm_charter ['tx_hash'],
+	deployed_fsm_angel   ['tx_hash']
 ]
-# tx_hashes += [du['tx_hash'] for du in deployed_universes]
 
-# #
-# # Deploy lobby
-# #
-# print (f"> Deploying lobby")
-# calldata_array = [str(UNIVERSE_COUNT)] + [du['addr'] for du in deployed_universes]
-# calldat_string = ' '.join (calldata_array)
-# deployed_lobby = _deploy_contract (name='lobby', calldata=calldat_string)
-# print (f"  ... address = {deployed_lobby['addr']}; hash = {deployed_lobby['tx_hash']}")
-# print()
+#
+# Deploy DAO
+#
+deployed_dao = _deploy_contract (name = 'dao', subfolder = 'isaac')
+print(f"> Deployed DAO.")
+tx_hashes.append ( deployed_dao['tx_hash'] )
 
-# tx_hashes.append (deployed_lobby['tx_hash'])
+#
+# Waiting for all transactions to complete
+#
+print (f"> Waiting for all deployment transactions to complete")
+_poll_list_tx_hashes_until_all_accepted (tx_hashes, interval_in_sec=30)
+print (f"  => All deployment transactions completed.")
 
-# #
-# # Deploy charter
-# #
-# print (f"> Deploying charter")
-# deployed_charter = _deploy_contract (name='charter')
-# print (f"  ... address = {deployed_charter['addr']}; hash = {deployed_charter['tx_hash']}")
-# print()
-
-# tx_hashes.append (deployed_charter['tx_hash'])
-
-# #
-# # Deploy fsm x 3
-# #
-# print (f"> Deploying 3 FSMs")
-# deployed_fsm_subject = _deploy_contract (name='fsm', calldata='111')
-# deployed_fsm_charter = _deploy_contract (name='fsm', calldata='222')
-# deployed_fsm_angel   = _deploy_contract (name='fsm', calldata='333')
-# print (f"  ... fsm for subject: address = {deployed_fsm_subject['addr']}; hash = {deployed_fsm_subject['tx_hash']}")
-# print (f"  ... fsm for charter: address = {deployed_fsm_charter['addr']}; hash = {deployed_fsm_charter['tx_hash']}")
-# print (f"  ... fsm for angel  : address = {deployed_fsm_angel['addr']}; hash = {deployed_fsm_angel['tx_hash']}")
-# print()
-
-# tx_hashes += [
-# 	deployed_fsm_subject['tx_hash'],
-# 	deployed_fsm_charter['tx_hash'],
-# 	deployed_fsm_angel  ['tx_hash']
-# ]
-
-# #
-# # Deploy DAO
-# #
-# print (f"Deploying DAO")
-# calldata_array = [
-# 	deployed_lobby   ['addr'],
-# 	deployed_charter ['addr'],
-# 	GYOZA,
-# 	deployed_fsm_subject ['addr'],
-# 	deployed_fsm_charter ['addr'],
-# 	deployed_fsm_angel   ['addr']
-# ]
-# calldat_string = ' '.join (calldata_array)
-# deployed_dao   = _deploy_contract (name='dao', calldata=calldat_string)
-# print (f"  ... address = {deployed_dao['addr']}; hash = {deployed_dao['tx_hash']}")
-# print()
-
-# tx_hashes.append (deployed_dao['tx_hash'])
-
-# #
-# # Deploy yagi routers
-# #
-# print (f"> Deploying 3 yagi routers")
-# deployed_yagi_dao      = _deploy_contract (name='yagi_router_dao')
-# deployed_yagi_lobby    = _deploy_contract (name='yagi_router_lobby')
-# print (f"  ... yagi router for dao: address = {deployed_yagi_dao['addr']}; hash = {deployed_yagi_dao['tx_hash']}")
-# print (f"  ... yagi router for lobby: address = {deployed_yagi_lobby['addr']}; hash = {deployed_yagi_lobby['tx_hash']}")
-
-# deployed_yagi_router_universes = []
-# for i in range(UNIVERSE_COUNT):
-# 	deployed_yagi_universe = _deploy_contract (name='yagi_router_universe')
-# 	deployed_yagi_router_universes.append (deployed_yagi_universe)
-# 	print (f"  ... yagi router for universe {i}: address = {deployed_yagi_universe['addr']}; hash = {deployed_yagi_universe['tx_hash']}")
-# print()
-
-# tx_hashes += [
-# 	deployed_yagi_dao      ['tx_hash'],
-# 	deployed_yagi_lobby    ['tx_hash']
-# ]
-# tx_hashes += [dyru['tx_hash'] for dyru in deployed_yagi_router_universes]
-
-# #
-# # Waiting for all transactions to complete
-# #
-# print (f"> Waiting for all deployment transactions to complete")
-# _poll_list_tx_hashes_until_all_accepted (tx_hashes, interval_in_sec=30)
+#
+# Export deployment info to JSON
+#
+data = {
+	'universes' : deployed_universes,
+	'lobby' : deployed_lobby,
+	'charter' : deployed_charter,
+	'fsm_subject' : deployed_fsm_subject,
+	'fsm_charter' : deployed_fsm_charter,
+	'fsm_angel'   : deployed_fsm_angel,
+	'dao'	      : deployed_dao
+}
+json_string = json.dumps(data)
+with open('deployed_isaac.json', 'w') as f:
+    json.dump (json_string, f)
+print(f"> Exported to `deployed_isaac.json`: {json_string}")
 
 ############################################################################
 
-deployed_lobby = {
-	'addr' : '0x0640fc654522c2776ef31371b93807f8f298653aeb336e6a594f17cda55a1551'
-}
+# deployed_lobby = {
+# 	'addr' : '0x0640fc654522c2776ef31371b93807f8f298653aeb336e6a594f17cda55a1551'
+# }
 
-deployed_charter = {
-	'addr' : '0x07cb551ba0cbf108ad175a2a93ec9e8d6b9182dba8a5719ed5c4b25d043cc222'
-}
+# deployed_charter = {
+# 	'addr' : '0x07cb551ba0cbf108ad175a2a93ec9e8d6b9182dba8a5719ed5c4b25d043cc222'
+# }
 
-deployed_fsm_subject = {
-	'addr' : '0x079b5a80bdc14eadd3131140c208ef2e5d62aabea9e8be9c744825dff9bc9f06'
-}
+# deployed_fsm_subject = {
+# 	'addr' : '0x079b5a80bdc14eadd3131140c208ef2e5d62aabea9e8be9c744825dff9bc9f06'
+# }
 
-deployed_fsm_charter = {
-	'addr' : '0x0592de35f408792ea418d5992aa11c13eb233929d0875c5a3ba1f07d935afa98'
-}
+# deployed_fsm_charter = {
+# 	'addr' : '0x0592de35f408792ea418d5992aa11c13eb233929d0875c5a3ba1f07d935afa98'
+# }
 
-deployed_fsm_angel = {
-	'addr' : '0x012b53bb5f4a2649bcd319e17f5a9a05aae50103d3815e606b047ad0c76dd6b1'
-}
+# deployed_fsm_angel = {
+# 	'addr' : '0x012b53bb5f4a2649bcd319e17f5a9a05aae50103d3815e606b047ad0c76dd6b1'
+# }
 
-deployed_dao = {
-	'addr' : '0x05015a27a4ba18905d0512dfa54a43251d670edd933c1b54a0a497e8fbdc54cf'
-}
+# deployed_dao = {
+# 	'addr' : '0x05015a27a4ba18905d0512dfa54a43251d670edd933c1b54a0a497e8fbdc54cf'
+# }
 
-deployed_yagi_router_dao = {
-	'addr' : '0x060932d8932fca503fc88121eacdc417e2ed76a330129329bd5c759cf3b8082b'
-}
-deployed_yagi_router_lobby = {
-	'addr' : '0x052b97db8e6403a151432bf9fa40a4d9f7fe6b5d42c0d417c36eeb0da9f71ed0'
-}
-deployed_yagi_router_universe0 = {
-	'addr' : '0x052e81a8576350fcb9924b55640ee6f6ce4fb09915543e756f6c4982a72d37ba'
-}
-deployed_yagi_router_universe1 = {
-	'addr' : '0x0241df7a2a5dae9cbffecd8c763ddf01122a1448850b4b27d1824cd5483d2b96'
-}
-deployed_yagi_router_universe2 = {
-	'addr' : '0x0398c9981f1362a9570c31ab1c3b0fe5f9c20bd4288e9d0e5535a1a5f8576c2f'
-}
+# deployed_yagi_router_dao = {
+# 	'addr' : '0x060932d8932fca503fc88121eacdc417e2ed76a330129329bd5c759cf3b8082b'
+# }
+# deployed_yagi_router_lobby = {
+# 	'addr' : '0x052b97db8e6403a151432bf9fa40a4d9f7fe6b5d42c0d417c36eeb0da9f71ed0'
+# }
+# deployed_yagi_router_universe0 = {
+# 	'addr' : '0x052e81a8576350fcb9924b55640ee6f6ce4fb09915543e756f6c4982a72d37ba'
+# }
+# deployed_yagi_router_universe1 = {
+# 	'addr' : '0x0241df7a2a5dae9cbffecd8c763ddf01122a1448850b4b27d1824cd5483d2b96'
+# }
+# deployed_yagi_router_universe2 = {
+# 	'addr' : '0x0398c9981f1362a9570c31ab1c3b0fe5f9c20bd4288e9d0e5535a1a5f8576c2f'
+# }
 
-tx_hashes = []
+# tx_hashes = []
 
-#
-# - At each Universe, invoke set_lobby_address_once(), providing Lobby address
-#
-for i in [0,1,2]:
-	tx_hash = invoke (f"starknet invoke --network alpha-goerli --address {deployed_universes[i]['addr']} --abi artifacts/universe_abi.json --function set_lobby_address_once --inputs {deployed_lobby['addr']}")
-	tx_hashes.append (tx_hash)
+# #
+# # - At each Universe, invoke set_lobby_address_once(), providing Lobby address
+# #
+# for i in [0,1,2]:
+# 	tx_hash = invoke (f"starknet invoke --network alpha-goerli --address {deployed_universes[i]['addr']} --abi artifacts/universe_abi.json --function set_lobby_address_once --inputs {deployed_lobby['addr']}")
+# 	tx_hashes.append (tx_hash)
 
-## - At Lobby, invoke set_dao_address_once(), providing DAO address
-tx_hash = invoke (f"starknet invoke --network alpha-goerli --address {deployed_lobby['addr']} --abi artifacts/lobby_abi.json --function set_dao_address_once --inputs {deployed_dao['addr']}")
-tx_hashes.append (tx_hash)
-
-## - At each FSM, invoke init_owner_dao_address_once(), providing DAO address
-tx_hash = invoke (f"starknet invoke --network alpha-goerli --address {deployed_fsm_subject['addr']} --abi artifacts/fsm_abi.json --function init_owner_dao_address_once --inputs {deployed_dao['addr']}")
-tx_hashes.append (tx_hash)
-tx_hash = invoke (f"starknet invoke --network alpha-goerli --address {deployed_fsm_charter['addr']} --abi artifacts/fsm_abi.json --function init_owner_dao_address_once --inputs {deployed_dao['addr']}")
-tx_hashes.append (tx_hash)
-tx_hash = invoke (f"starknet invoke --network alpha-goerli --address {deployed_fsm_angel['addr']} --abi artifacts/fsm_abi.json --function init_owner_dao_address_once --inputs {deployed_dao['addr']}")
-tx_hashes.append (tx_hash)
-
-## - Hook up all yagi routers with respective addresses
-# tx_hash = invoke (f"starknet invoke --network alpha-goerli --account guilty_cli_0 --address {deployed_yagi_router_dao['addr']} --abi artifacts/yagi_router_dao_abi.json --function change_isaac_dao_address --inputs {deployed_dao['addr']}")
-# tx_hashes.append (tx_hash)
-# tx_hash = invoke (f"starknet invoke --network alpha-goerli --account guilty_cli_0 --address {deployed_yagi_router_lobby['addr']} --abi artifacts/yagi_router_lobby_abi.json --function change_isaac_lobby_address --inputs {deployed_lobby['addr']}")
-# tx_hashes.append (tx_hash)
-# tx_hash = invoke (f"starknet invoke --network alpha-goerli --account guilty_cli_0 --address {deployed_yagi_router_universe0['addr']} --abi artifacts/yagi_router_universe_abi.json --function change_isaac_universe_address --inputs {deployed_universes[0]['addr']}")
-# tx_hashes.append (tx_hash)
-# tx_hash = invoke (f"starknet invoke --network alpha-goerli --account guilty_cli_0 --address {deployed_yagi_router_universe1['addr']} --abi artifacts/yagi_router_universe_abi.json --function change_isaac_universe_address --inputs {deployed_universes[1]['addr']}")
-# tx_hashes.append (tx_hash)
-# tx_hash = invoke (f"starknet invoke --network alpha-goerli --account guilty_cli_0 --address {deployed_yagi_router_universe2['addr']} --abi artifacts/yagi_router_universe_abi.json --function change_isaac_universe_address --inputs {deployed_universes[2]['addr']}")
+# ## - At Lobby, invoke set_dao_address_once(), providing DAO address
+# tx_hash = invoke (f"starknet invoke --network alpha-goerli --address {deployed_lobby['addr']} --abi artifacts/lobby_abi.json --function set_dao_address_once --inputs {deployed_dao['addr']}")
 # tx_hashes.append (tx_hash)
 
-## wait for tx to complete
-print (f"> Waiting for all deployment transactions to complete")
-_poll_list_tx_hashes_until_all_accepted (tx_hashes, interval_in_sec=30)
+# ## - At each FSM, invoke init_owner_dao_address_once(), providing DAO address
+# tx_hash = invoke (f"starknet invoke --network alpha-goerli --address {deployed_fsm_subject['addr']} --abi artifacts/fsm_abi.json --function init_owner_dao_address_once --inputs {deployed_dao['addr']}")
+# tx_hashes.append (tx_hash)
+# tx_hash = invoke (f"starknet invoke --network alpha-goerli --address {deployed_fsm_charter['addr']} --abi artifacts/fsm_abi.json --function init_owner_dao_address_once --inputs {deployed_dao['addr']}")
+# tx_hashes.append (tx_hash)
+# tx_hash = invoke (f"starknet invoke --network alpha-goerli --address {deployed_fsm_angel['addr']} --abi artifacts/fsm_abi.json --function init_owner_dao_address_once --inputs {deployed_dao['addr']}")
+# tx_hashes.append (tx_hash)
+
+# ## - Hook up all yagi routers with respective addresses
+# # tx_hash = invoke (f"starknet invoke --network alpha-goerli --account guilty_cli_0 --address {deployed_yagi_router_dao['addr']} --abi artifacts/yagi_router_dao_abi.json --function change_isaac_dao_address --inputs {deployed_dao['addr']}")
+# # tx_hashes.append (tx_hash)
+# # tx_hash = invoke (f"starknet invoke --network alpha-goerli --account guilty_cli_0 --address {deployed_yagi_router_lobby['addr']} --abi artifacts/yagi_router_lobby_abi.json --function change_isaac_lobby_address --inputs {deployed_lobby['addr']}")
+# # tx_hashes.append (tx_hash)
+# # tx_hash = invoke (f"starknet invoke --network alpha-goerli --account guilty_cli_0 --address {deployed_yagi_router_universe0['addr']} --abi artifacts/yagi_router_universe_abi.json --function change_isaac_universe_address --inputs {deployed_universes[0]['addr']}")
+# # tx_hashes.append (tx_hash)
+# # tx_hash = invoke (f"starknet invoke --network alpha-goerli --account guilty_cli_0 --address {deployed_yagi_router_universe1['addr']} --abi artifacts/yagi_router_universe_abi.json --function change_isaac_universe_address --inputs {deployed_universes[1]['addr']}")
+# # tx_hashes.append (tx_hash)
+# # tx_hash = invoke (f"starknet invoke --network alpha-goerli --account guilty_cli_0 --address {deployed_yagi_router_universe2['addr']} --abi artifacts/yagi_router_universe_abi.json --function change_isaac_universe_address --inputs {deployed_universes[2]['addr']}")
+# # tx_hashes.append (tx_hash)
+
+# ## wait for tx to complete
+# print (f"> Waiting for all deployment transactions to complete")
+# _poll_list_tx_hashes_until_all_accepted (tx_hashes, interval_in_sec=30)
 
 
 ############################################################################

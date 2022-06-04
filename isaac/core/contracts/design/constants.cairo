@@ -102,7 +102,7 @@ end
 #
 # Constants for planet configuration
 #
-const PLANET_DIM = 100
+const PLANET_DIM = 25
 # TODO: params to control resource distribution via e.g. perlin noise
 
 #
@@ -395,6 +395,7 @@ func get_device_dimension_ptr () -> (ptr : felt*):
     dw 0
     dw 0
     dw 5 # opsf
+    dw 5 # ndpe
 end
 
 

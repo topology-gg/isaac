@@ -131,7 +131,7 @@ func set_votable_and_fsm_addresses_once {syscall_ptr : felt*, pedersen_ptr : Has
         fsm_address_subject : felt,
         fsm_address_charter : felt,
         fsm_address_angel : felt,
-    ):
+    ) -> ():
 
     #
     # Initialize votable addresses
@@ -151,7 +151,7 @@ func set_votable_and_fsm_addresses_once {syscall_ptr : felt*, pedersen_ptr : Has
         angel = fsm_address_angel
     ))
 
-    return (0
+    return ()
 end
 
 ##########################

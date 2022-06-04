@@ -38,24 +38,24 @@ The distribution functions are regulated in `core/contracts/util/distribution.ca
 ##### Device types
 All device types are defined in the namespace `core/contracts/design/constants.cairo` :: `ns_device_types`.
 
-| Type index  | Name                                             | Description                                                              |
-| ------------------ | ------------------------------------------------ | ------------------------------------------------------------------------ |
-| 0                  | Solar power generator (SPG)            | A power generation device that generates power from exposure to solar radiation    |
-| 1                  | Nuclear power generator (NPG)          | A power generation device that generates power from nuclear fission        |
-| 2                  | Iron harvester                         | A harvester device that harvests iron from the planet surface underneath |
-| 3                  | Aluminum harvester                     | A harvester device that harvests aluminum from the planet surface underneath |
-| 4                  | Copper harvester                       | A harvester device that harvests copper from the planet surface underneath |
-| 5                  | Silicon harvester                      | A harvester device that harvests silicon from the planet surface underneath |
-| 6                  | Plutonium-241 harvester                | A harvester device that harvests plutonium-241 from the planet surface underneath |
-| 7                  | Iron refinery                                    | A transformer device that refines iron that is transported in via UTB    |
-| 8                  | Aluminum refinery                                | A transformer device that refines aluminum that is transported in via UTB|
-| 9                  | Copper refinery                                  | A transformer device that refines copper that is transported in via UTB  |
-| 10                 | Silicon refinery                                 | A transformer device that refines silicon that is transported in via UTB |
-| 11                 | Plutonium Enrichment Facility (PEF)      | A transformer device that enriches plutonium-241 that is transported in via UTB |
-| 12                 | Universal Transporation Belt (UTB)           | A logistical device able to transport any element via contiguous placement |
-| 13                 | Universal Transmission Line (UTL)            | A logistical device able to transport energy via contiguous placement      |
-| 14                 | Universal Production & Storage Factility (UPSF)  | Production & storage device for constructing any device including itself |
-| 15                 | Nuclear Driller & Propulsion Engine (NDPE)       | A device that is planted on the surface of the planet, drills the planet matter underneath, and propels the matter upward with energy generated from nuclear fission to exert reverse impulse to the planet |
+| Type index  | Name  | Footprint | Description                                                              |
+| ----------- | -------------------|----------------------------- | ------------------------------------------------------------------------ |
+| 0           | Solar power generator (SPG)   | 1x1 | A power generation device that generates power from exposure to solar radiation    |
+| 1           | Nuclear power generator (NPG) | 3x3 | A power generation device that generates power from nuclear fission        |
+| 2           | Iron harvester                | 1x1 | A harvester device that harvests iron from the planet surface underneath |
+| 3           | Aluminum harvester           | 1x1   | A harvester device that harvests aluminum from the planet surface underneath |
+| 4           | Copper harvester             | 1x1   | A harvester device that harvests copper from the planet surface underneath |
+| 5           | Silicon harvester            | 1x1   | A harvester device that harvests silicon from the planet surface underneath |
+| 6           | Plutonium-241 harvester      | 1x1   | A harvester device that harvests plutonium-241 from the planet surface underneath |
+| 7           | Iron refinery                | 2x2           | A transformer device that refines iron that is transported in via UTB    |
+| 8           | Aluminum refinery            | 2x2           | A transformer device that refines aluminum that is transported in via UTB|
+| 9           | Copper refinery              | 2x2           | A transformer device that refines copper that is transported in via UTB  |
+| 10          | Silicon refinery             | 2x2           | A transformer device that refines silicon that is transported in via UTB |
+| 11          | Plutonium Enrichment Facility (PEF) | 2x2    | A transformer device that enriches plutonium-241 that is transported in via UTB |
+| 12          | Universal Transporation Belt (UTB)  | 1x1    | A logistical device able to transport any element via contiguous placement |
+| 13          | Universal Transmission Line (UTL)   | 1x1    | A logistical device able to transport energy via contiguous placement      |
+| 14          | Universal Production & Storage Factility (UPSF) | 5x5 | Production & storage device for constructing any device including itself |
+| 15          | Nuclear Driller & Propulsion Engine (NDPE)  | 5x5 | A device that is planted on the surface of the planet, drills the planet matter underneath, and propels the matter upward with energy generated from nuclear fission to exert reverse impulse to the planet |
 
 ##### Construction
 There are resource and energy requirement for constructing devices.
