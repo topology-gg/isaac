@@ -13,10 +13,10 @@ CarseDAO strives to be the standard for play-to-vote (P2V), which Topology belie
 The Decentralized Autonomous Organization contract.
 
 ##### Subject
-The **immutable** contract that Players play in, and which the DAO endorses and governs e.g. an onchain game / reality; Players' votes in CarseDAO are derived directly and only from Subject's report of meaningful play, such that to vote, one has to play meaningfully. **Notice the immutability of Subject - Subject contract should never be upgradeable e.g. via proxy pattern. CarseDAO should never endorse Subject that is upgradeable.**
+The **immutable** contract that Players play in, and which the DAO endorses and governs e.g. an onchain game / reality; Players' votes in CarseDAO are derived directly and only from Subject's report of meaningful play, such that to vote, one has to play meaningfully. **Notice the immutability of Subject - Subject contract should never be upgradeable e.g. via proxy pattern. CarseDAO should never endorse a Subject contract that is upgradeable.**
 
 ##### Charter
-The contract that specifies the various functions (such as mapping meaningful play into new `voices`, which are then mapped to `votes` at the moment of vote casting) and parameters ((such as proposal period in terms of number of L2 blocks)) involved in the governance scheme, and which CarseDAO honors when executing governance processes. By mapping play into `voice` first before mapping to `vote` allows Charter to implement plural (e.g. quadratic; see https://www.radicalxchange.org/concepts/plural-voting/) voting schemes, whereby to cast `X` votes a Player needs `X^2` voices.
+The **immutable** contract that specifies the various functions (such as mapping meaningful play into new `voices`, which are then mapped to `votes` at the moment of vote casting) and parameters ((such as proposal period in terms of number of L2 blocks)) involved in the governance scheme, and which CarseDAO honors when executing governance processes. By mapping play into `voice` first before mapping to `vote` allows Charter to implement plural (e.g. quadratic; see https://www.radicalxchange.org/concepts/plural-voting/) voting schemes, whereby to cast `X` votes a Player needs `X^2` voices. **Again, notice the immutability of Charter. CarseDAO should never endorse a Charter contract that is upgradeable.**
 
 ##### Players
 The accounts that play in Subject and participate in CarseDAO through spending votes on proposals, either for or against them.
