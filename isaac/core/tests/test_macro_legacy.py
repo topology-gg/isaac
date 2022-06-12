@@ -30,139 +30,96 @@ async def test_macro ():
         source = 'contracts/mocks/mock_macro.cairo',
         constructor_calldata = []
     )
-    contract_fourbody = await starknet.deploy (
-        source = 'contracts/macro/fourbody.cairo',
-        constructor_calldata = []
-    )
 
-    #
-    # Construct initial dynamics
-    #
-    s_init, constants = prepare ()
+    # Test strategy
+    # 1. from initial dynamics, forward by a random number of steps to obtain the testing dynamics
+    # 2. generate a random radian value in FP representation
+    # 3. feed testing dynamics + random radian to contract to obtain contract-1dt (1-step-forward) dynamics + radian
+    # 4. forward the testing dynamics + radian by 1dt to obtain test-1dt dynamics + radian
+    # 5. compare contract-1dt dynamics against test-1dt dynamics
+    # 6. compare contract-1dt radian against test-1dt radian
 
-    sf_init = convert_array_to_fp_felt (s_init)
-    state_init = contract.Dynamics (
-        sun0 = contract.Dynamic (q = contract.Vec2(sf_init[0], sf_init[2]), qd = contract.Vec2(sf_init[1], sf_init[3])),
-        sun1 = contract.Dynamic (q = contract.Vec2(sf_init[4], sf_init[6]), qd = contract.Vec2(sf_init[5], sf_init[7])),
-        sun2 = contract.Dynamic (q = contract.Vec2(sf_init[8], sf_init[10]), qd = contract.Vec2(sf_init[9], sf_init[11])),
-        plnt = contract.Dynamic (q = contract.Vec2(sf_init[12], sf_init[14]), qd = contract.Vec2(sf_init[13], sf_init[15])),
-    )
-    state_fourbody_init = contract_fourbody.Dynamics (
-        q1  = sf_init [0],
-        q1d = sf_init [1],
-        q2  = sf_init [2],
-        q2d = sf_init [3],
-        q3  = sf_init [4],
-        q3d = sf_init [5],
-        q4  = sf_init [6],
-        q4d = sf_init [7],
-        q5  = sf_init [8],
-        q5d = sf_init [9],
-        q6  = sf_init [10],
-        q6d = sf_init [11],
-        q7  = sf_init [12],
-        q7d = sf_init [13],
-        q8  = sf_init [14],
-        q8d = sf_init [15]
-    )
+    for i in range(N_TEST):
+        #
+        # 1. from initial dynamics, forward by a random number of steps to obtain the testing dynamics
+        #
+        s_init, constants = prepare ()
 
-    #
-    # Forward contract and contract_fourbody one dt each
-    #
-    dt = 0.005
-    dt_fp = int (dt * SCALE_FP)
+        sf_init = convert_array_to_fp_felt (s_init)
+        state_init = contract.Dynamics (
+            sun0 = contract.Dynamic (q = contract.Vec2(sf_init[0], sf_init[2]), qd = contract.Vec2(sf_init[1], sf_init[3])),
+            sun1 = contract.Dynamic (q = contract.Vec2(sf_init[4], sf_init[6]), qd = contract.Vec2(sf_init[5], sf_init[7])),
+            sun2 = contract.Dynamic (q = contract.Vec2(sf_init[8], sf_init[10]), qd = contract.Vec2(sf_init[9], sf_init[11])),
+            plnt = contract.Dynamic (q = contract.Vec2(sf_init[12], sf_init[14]), qd = contract.Vec2(sf_init[13], sf_init[15])),
+        )
+        LOGGER.info (f"> initial macro state: {s_init}")
+        LOGGER.info (f"> initial macro state in felts: {state_init}")
 
-    # ret_contract = await contract.mock_rk4 (
-    #     dt_fp,
-    #     state_init
-    # ).call ()
+        n_rand = random.randint (0, 500)
+        dt = 0.005
+        dt_fp = int (dt * SCALE_FP)
+        s_test = forward (state=s_init, constants=constants, N=n_rand, dt=dt)
 
-    # ret_contract_fourbody = await contract_fourbody.rk4 (
-    #     dt_fp,
-    #     state_fourbody_init
-    # ).call ()
+        #
+        # 2. generate a random radian value in FP representation
+        #
+        phi = round(random.uniform(0,1) * math.pi * 2, 20) # 20 deciimal places allowed in contract
+        phi_fp = int(phi * SCALE_FP)
 
-    ret_contract = await contract.mock_differentiate (
-        state_init
-    ).call ()
+        #
+        # 3. feed testing dynamics + random radian to contract to obtain contract-1dt (1-step-forward) dynamics + radian
+        #
+        sf = convert_array_to_fp_felt (s_test)
+        state = contract.Dynamics (
+            sun0 = contract.Dynamic (q = contract.Vec2(sf[0], sf[2]), qd = contract.Vec2(sf[1], sf[3])),
+            sun1 = contract.Dynamic (q = contract.Vec2(sf[4], sf[6]), qd = contract.Vec2(sf[5], sf[7])),
+            sun2 = contract.Dynamic (q = contract.Vec2(sf[8], sf[10]), qd = contract.Vec2(sf[9], sf[11])),
+            plnt = contract.Dynamic (q = contract.Vec2(sf[12], sf[14]), qd = contract.Vec2(sf[13], sf[15])),
+        )
+        # LOGGER.info (f"> state to test = {state}")
+        ret = await contract.mock_rk4(
+            dt_fp,
+            state
+        ).call()
+        sn = ret.result.state_nxt
 
-    ret_contract_fourbody = await contract_fourbody.eval (
-        state_fourbody_init
-    ).call ()
+        ret = await contract.mock_forward_planet_spin (
+            phi_fp
+        ).call()
+        phi_nxt = ret.result.phi_fp_nxt
 
-    state_contract_ = ret_contract.result.state_diff
-    state_contract = [
-        state_contract_.sun0.q.x,
-        state_contract_.sun0.qd.x,
-        state_contract_.sun0.q.y,
-        state_contract_.sun0.qd.y,
+        sn_list = [
+            sn.sun0.q.x, sn.sun0.qd.x, sn.sun0.q.y, sn.sun0.qd.y,
+            sn.sun1.q.x, sn.sun1.qd.x, sn.sun1.q.y, sn.sun1.qd.y,
+            sn.sun2.q.x, sn.sun2.qd.x, sn.sun2.q.y, sn.sun2.qd.y,
+            sn.plnt.q.x, sn.plnt.qd.x, sn.plnt.q.y, sn.plnt.qd.y
+        ]
+        s_contract_1dt = convert_array_from_fp_felt (sn_list)
+        phi_contract_1dt = convert_from_fp_felt (phi_nxt)
 
-        state_contract_.sun1.q.x,
-        state_contract_.sun1.qd.x,
-        state_contract_.sun1.q.y,
-        state_contract_.sun1.qd.y,
+        #
+        # 4. forward the testing dynamics + radian by 1dt to obtain test-1dt dynamics + radian
+        #
+        s_test_1dt = forward (state=s_test, constants=constants, N=1, dt=dt)
 
-        state_contract_.sun2.q.x,
-        state_contract_.sun2.qd.x,
-        state_contract_.sun2.q.y,
-        state_contract_.sun2.qd.y,
+        omega_dt = 624 / 100 * 6 / 100
+        two_pi_approx = 6283185 / 1000000
+        phi_test_1dt = (phi + omega_dt) % two_pi_approx
 
-        state_contract_.plnt.q.x,
-        state_contract_.plnt.qd.x,
-        state_contract_.plnt.q.y,
-        state_contract_.plnt.qd.y
-    ]
-    state_fourbody = ret_contract_fourbody.result.state_diff
+        #
+        # 5. compare contract-1dt dynamics against test-1dt dynamics
+        #
+        for t,c in zip(s_test_1dt, s_contract_1dt):
+            abs_err = abs(t-c)
+            assert abs_err <= ABS_ERR_TOL
 
-    state_contract = [convert_from_fp_felt(x) for x in state_contract]
-    state_fourbody = [convert_from_fp_felt(x) for x in state_fourbody]
+        #
+        # 6. compare contract-1dt radian against test-1dt radian
+        #
+        abs_err = abs(phi_contract_1dt - phi_test_1dt)
+        assert abs_err <= ABS_ERR_TOL
 
-    for e1, e2 in zip (state_contract, state_fourbody):
-        print (f"error {100*(e1-e2)/(e2)}% / isaac {e1} / fourbody {e2}")
-
-    # print (f"contract ret: {ret_contract.result}\n")
-    # print (f"contract_fourbody ret: {ret_contract_fourbody.result}")
-
-
-    # #
-    # # contract :: Forward initial state via rk4 by N times
-    # #
-    # N = 30
-    # dt = 0.005
-    # dt_fp = int (dt * SCALE_FP)
-    # state_history = [state_init]
-    # for i in range(N):
-    #     ret = await contract.mock_rk4(
-    #         dt_fp,
-    #         state_history [-1]
-    #     ).call()
-    #     state_history.append (ret.result.state_nxt)
-
-    # #
-    # # contract :: Extract and print last state
-    # #
-    # sn = state_history[-1]
-    # sn_list = [
-    #     sn.sun0.q.x, sn.sun0.qd.x, sn.sun0.q.y, sn.sun0.qd.y,
-    #     sn.sun1.q.x, sn.sun1.qd.x, sn.sun1.q.y, sn.sun1.qd.y,
-    #     sn.sun2.q.x, sn.sun2.qd.x, sn.sun2.q.y, sn.sun2.qd.y,
-    #     sn.plnt.q.x, sn.plnt.qd.x, sn.plnt.q.y, sn.plnt.qd.y
-    # ]
-    # s_contract_Ndt = convert_array_from_fp_felt (sn_list)
-
-
-
-    # #
-    # # Produce simulation result for forwarding N x dt
-    # #
-    # s_test_Ndt = forward (state=s_init, constants=constants, N=N, dt=dt)
-
-    # #
-    # # Print side by side
-    # #
-    # assert len(s_contract_Ndt) == len(s_test_Ndt)
-    # for e1, e2 in zip (s_contract_Ndt, s_test_Ndt):
-    #     print (f"> got {e1} / expected {e2}")
+        LOGGER.info (f"> test {i+1}/{N_TEST} passed.\n")
 
 #######
 

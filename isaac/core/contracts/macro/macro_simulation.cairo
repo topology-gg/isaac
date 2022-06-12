@@ -16,7 +16,7 @@ from contracts.design.constants import (
 from contracts.util.structs import (Vec2, Dynamic, Dynamics)
 from contracts.util.numerics import (mul_fp, div_fp, div_fp_ul, sqrt_fp)
 from contracts.util.dynamics_ops import (dynamics_add, dynamics_mul_scalar_fp, dynamics_mul_scalar, dynamics_div_scalar)
-from contracts.util.vector_ops import (distance_sq, distance_cube, vec2_add2, vec2_add3, compute_vector_rotate)
+from contracts.util.vector_ops import (distance_2, distance_3, vec2_add2, vec2_add3, compute_vector_rotate)
 from contracts.util.pseudorandom import (ns_prng)
 from contracts.macro.macro_state import (ns_macro_state_functions)
 
@@ -80,12 +80,12 @@ func differentiate {syscall_ptr : felt*, range_check_ptr} (
 
     # TODO: refactor the following code for better readability without doing redundant computation
 
-    let (r01_cube) = distance_cube (state.sun0.q, state.sun1.q)
-    let (r02_cube) = distance_cube (state.sun0.q, state.sun2.q)
-    let (r12_cube) = distance_cube (state.sun1.q, state.sun2.q)
-    let (r03_cube) = distance_cube (state.sun0.q, state.plnt.q)
-    let (r13_cube) = distance_cube (state.sun1.q, state.plnt.q)
-    let (r23_cube) = distance_cube (state.sun2.q, state.plnt.q)
+    let (r01_cube) = distance_3 (state.sun0.q, state.sun1.q)
+    let (r02_cube) = distance_3 (state.sun0.q, state.sun2.q)
+    let (r12_cube) = distance_3 (state.sun1.q, state.sun2.q)
+    let (r03_cube) = distance_3 (state.sun0.q, state.plnt.q)
+    let (r13_cube) = distance_3 (state.sun1.q, state.plnt.q)
+    let (r23_cube) = distance_3 (state.sun2.q, state.plnt.q)
 
     let (G_r01_cube) = div_fp (G, r01_cube)
     let (G_r02_cube) = div_fp (G, r02_cube)
@@ -328,9 +328,9 @@ func is_world_macro_escape_condition_met {syscall_ptr : felt*, pedersen_ptr : Ha
     #    compare this against v_planet^2
     let (state_curr : Dynamics) = ns_macro_state_functions.macro_state_curr_read ()
 
-    let (d_sun0_plnt_sq) = distance_sq (state_curr.sun0.q, state_curr.plnt.q)
-    let (d_sun1_plnt_sq) = distance_sq (state_curr.sun1.q, state_curr.plnt.q)
-    let (d_sun2_plnt_sq) = distance_sq (state_curr.sun2.q, state_curr.plnt.q)
+    let (d_sun0_plnt_sq) = distance_2 (state_curr.sun0.q, state_curr.plnt.q)
+    let (d_sun1_plnt_sq) = distance_2 (state_curr.sun1.q, state_curr.plnt.q)
+    let (d_sun2_plnt_sq) = distance_2 (state_curr.sun2.q, state_curr.plnt.q)
 
     let (d_sun0_plnt) = sqrt_fp (d_sun0_plnt_sq)
     let (d_sun1_plnt) = sqrt_fp (d_sun1_plnt_sq)
@@ -363,15 +363,15 @@ func is_world_macro_escape_condition_met {syscall_ptr : felt*, pedersen_ptr : Ha
     #
     # 2-2. Compute distances (in square terms) between suns and `center_suns`
     #
-    let (d_sun0_center_sq) = distance_sq (center_suns, state_curr.sun0.q)
-    let (d_sun1_center_sq) = distance_sq (center_suns, state_curr.sun1.q)
-    let (d_sun2_center_sq) = distance_sq (center_suns, state_curr.sun2.q)
+    let (d_sun0_center_sq) = distance_2 (center_suns, state_curr.sun0.q)
+    let (d_sun1_center_sq) = distance_2 (center_suns, state_curr.sun1.q)
+    let (d_sun2_center_sq) = distance_2 (center_suns, state_curr.sun2.q)
 
     #
     # 2-3. Compute distance (in square term) between planet and `center_suns`, check its square >= 2 * d_sunx_center_sq for all x
     #      i.e. ~1.414x in distance terms
     #
-    let (d_plnt_center_sq) = distance_sq (center_suns, state_curr.plnt.q)
+    let (d_plnt_center_sq) = distance_2 (center_suns, state_curr.plnt.q)
     let (bool_0) = is_le (d_sun0_center_sq * 2, d_sun0_center_sq)
     let (bool_1) = is_le (d_sun1_center_sq * 2, d_sun0_center_sq)
     let (bool_2) = is_le (d_sun2_center_sq * 2, d_sun0_center_sq)
@@ -397,19 +397,19 @@ func is_world_macro_destructed {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
     #
     # Check if planet coordinate lies in each sun's radius (in square terms)
     #
-    let (dist_plnt_sun0_sq) = distance_sq (state_curr.plnt.q, state_curr.sun0.q)
+    let (dist_plnt_sun0_sq) = distance_2 (state_curr.plnt.q, state_curr.sun0.q)
     let (bool_sun0_collide) = is_le (dist_plnt_sun0_sq, RADIUS_SUN0_SQ)
     if bool_sun0_collide == 1:
         return (1)
     end
 
-    let (dist_plnt_sun1_sq) = distance_sq (state_curr.plnt.q, state_curr.sun1.q)
+    let (dist_plnt_sun1_sq) = distance_2 (state_curr.plnt.q, state_curr.sun1.q)
     let (bool_sun1_collide) = is_le (dist_plnt_sun1_sq, RADIUS_SUN1_SQ)
     if bool_sun1_collide == 1:
         return (1)
     end
 
-    let (dist_plnt_sun2_sq) = distance_sq (state_curr.plnt.q, state_curr.sun2.q)
+    let (dist_plnt_sun2_sq) = distance_2 (state_curr.plnt.q, state_curr.sun2.q)
     let (bool_sun2_collide) = is_le (dist_plnt_sun2_sq, RADIUS_SUN2_SQ)
     if bool_sun2_collide == 1:
         return (1)

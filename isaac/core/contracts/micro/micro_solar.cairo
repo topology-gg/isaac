@@ -13,7 +13,7 @@ from contracts.design.constants import (
 )
 from contracts.util.structs import (Vec2, Dynamics)
 from contracts.util.numerics import (mul_fp, div_fp, div_fp_ul, sqrt_fp, sine_7th)
-from contracts.util.vector_ops import (distance_sq, dot_fp, magnitude_fp, compute_vector_rotate, compute_vector_rotate_90)
+from contracts.util.vector_ops import (distance_2, dot_fp, magnitude_fp, compute_vector_rotate, compute_vector_rotate_90)
 from contracts.util.grid import (locate_face_and_edge_given_valid_grid)
 
 ##############################
@@ -50,9 +50,9 @@ namespace ns_micro_solar:
         ) -> (
             macro_distance_squares : MacroDistanceSquares
         ):
-        let (distance_sq_to_sun0) = distance_sq (macro_state.sun0.q, macro_state.plnt.q)
-        let (distance_sq_to_sun1) = distance_sq (macro_state.sun1.q, macro_state.plnt.q)
-        let (distance_sq_to_sun2) = distance_sq (macro_state.sun2.q, macro_state.plnt.q)
+        let (distance_sq_to_sun0) = distance_2 (macro_state.sun0.q, macro_state.plnt.q)
+        let (distance_sq_to_sun1) = distance_2 (macro_state.sun1.q, macro_state.plnt.q)
+        let (distance_sq_to_sun2) = distance_2 (macro_state.sun2.q, macro_state.plnt.q)
 
         return (MacroDistanceSquares (
             distance_sq_to_sun0,

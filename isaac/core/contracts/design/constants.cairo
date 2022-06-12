@@ -26,6 +26,7 @@ const UNIVERSE_COUNT = 3
 const RANGE_CHECK_BOUND = 2 ** 120
 const SCALE_FP = 10**20
 const SCALE_FP_DIV_100 = 10**18
+const SCALE_FP_DIV_1000 = 10**17
 const SCALE_FP_DIV_10000 = 10**16
 const SCALE_FP_DIV_100000 = 10**15
 const SCALE_FP_DIV_10000_SQ = 10**12
@@ -36,11 +37,11 @@ const SCALE_FP_SQRT = 10**10
 # Constants for macro physics simulation
 #
 ## Orbital
-const DT = 5 / 1000 * SCALE_FP
-const G         = 1 * SCALE_FP
-const MASS_SUN0 = 1 * SCALE_FP
-const MASS_SUN1 = 1 * SCALE_FP
-const MASS_SUN2 = 1 * SCALE_FP
+const DT = 5 * SCALE_FP_DIV_1000
+const G         = 256 * SCALE_FP_DIV_100 # 2.56
+const MASS_SUN0 = 256 * SCALE_FP_DIV_100
+const MASS_SUN1 = 256 * SCALE_FP_DIV_100
+const MASS_SUN2 = 256 * SCALE_FP_DIV_100
 const MASS_PLNT = 1 * SCALE_FP_DIV_10000
 const G_MASS_SUN0 = 1 * SCALE_FP
 const G_MASS_SUN1 = 1 * SCALE_FP

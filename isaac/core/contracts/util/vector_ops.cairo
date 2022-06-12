@@ -11,7 +11,7 @@ from contracts.design.constants import (
 #
 # Function for calculating squared distance between two Vec2
 #
-func distance_sq {range_check_ptr} (
+func distance_2 {range_check_ptr} (
         pos0 : Vec2, pos1 : Vec2
     ) -> (res : felt):
     alloc_locals
@@ -30,12 +30,12 @@ end
 #
 # Function for calculating cubed distance between two Vec2
 #
-func distance_cube {range_check_ptr} (
+func distance_3 {range_check_ptr} (
         pos0 : Vec2, pos1 : Vec2
     ) -> (res : felt):
     alloc_locals
 
-    let (diff_sq) = distance_sq (pos0, pos1)
+    let (diff_sq) = distance_2 (pos0, pos1)
     let (diff) = sqrt_fp (diff_sq)
     let (res) = mul_fp (diff_sq, diff)
 
