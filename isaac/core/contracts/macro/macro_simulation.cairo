@@ -271,9 +271,10 @@ func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     #
     # Apply perturbation to planet dynamic
     #
-    let (plnt_dynamic_post_perturbation) = forward_planet_dynamic_applying_perturbation (
-        plnt_dynamic_post_impulse
-    )
+    # let (plnt_dynamic_post_perturbation) = forward_planet_dynamic_applying_perturbation (
+    #     plnt_dynamic_post_impulse
+    # )
+    let plnt_dynamic_post_perturbation = plnt_dynamic_post_impulse
 
     #
     # Assemble current state with perturbed planet dynamic;
