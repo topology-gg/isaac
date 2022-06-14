@@ -50,14 +50,15 @@ export default function GameWorld() {
     //
     const [canvas, setCanvas] = useState([]);
     const [hasDrawn, _] = useState([]);
+    const [windowDimensions, setWindowDimensions] = useState (getWindowDimensions());
     const _refs = useRef([]);
     // const _canvasRef = useRef(0);
     // const _hasDrawnRef =
 
     useEffect (() => {
         _refs.current[0] = new fabric.Canvas('c', {
-            height: 700,
-            width: 1200,
+            height: 1500,
+            width: 1500,
             backgroundColor: 'white'
         })
         _refs.current[1] = false
@@ -67,14 +68,24 @@ export default function GameWorld() {
         if (!_refs.current[1]) {
             drawWorld (_refs.current[0])
         }
-    }, [macro_state, phi]
-    );
+    }, [macro_state, phi]);
+
+    useEffect(() => {
+        function handleResize() {
+            setWindowDimensions (getWindowDimensions());
+        }
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
 
     const drawWorld = canvi => {
+        // console.log ("drawWorld")
         if (macro_state && phi) {
             if (macro_state.macro_state && phi.phi) {
-                console.log (macro_state.macro_state)
-                console.log (phi.phi)
+                console.log ("macro_state:", macro_state.macro_state)
+                console.log ("phi", phi.phi)
 
                 drawSpace (canvi)
             //     drawGrid (canvi)
@@ -96,12 +107,14 @@ export default function GameWorld() {
         const sun1_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun1.q.y))
         const sun2_x = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun2.q.x))
         const sun2_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun2.q.y))
-        // console.log ("sun0_x", sun0_x.toString(10))
+
+        const window_dim = windowDimensions
+        console.log ("window_dim", window_dim)
 
         const SUN_RADIUS = 0.383 // from contract
         const PLNT_RADIUS = 0.05 // arbitrary
-        const ORIGIN_X = 600
-        const ORIGIN_Y = 350
+        const ORIGIN_X = window_dim.width / 2
+        const ORIGIN_Y = window_dim.height / 2
         const DISPLAY_SCALE = 50
 
         const sun0_circle = new fabric.Circle ({
@@ -131,6 +144,17 @@ export default function GameWorld() {
             fill: ''
         });
 
+        const plnt_rect = new fabric.Rect({
+            left: ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
+            top:  ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
+            height: PLNT_RADIUS * 2 * DISPLAY_SCALE,
+            width: PLNT_RADIUS * 2 * DISPLAY_SCALE,
+            angel: 60,
+            stroke: 'black',
+            strokeWidth: 2,
+            fill: ''
+        });
+
         const plnt_circle = new fabric.Circle ({
             left: ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
             top:  ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
@@ -144,17 +168,18 @@ export default function GameWorld() {
         canvi.add (sun1_circle)
         canvi.add (sun2_circle)
         canvi.add (plnt_circle)
+        console.log ("planet rect angle:", plnt_rect.angle)
 
         const line_vertical = new fabric.Line(
-            [ORIGIN_X, 0, ORIGIN_X, ORIGIN_Y*2],
+            [ORIGIN_X, 0, ORIGIN_X, window_dim.height],
             {
-                stroke: 'green'
+                stroke: 'grey'
             }
         );
         const line_horizontal = new fabric.Line(
-            [0, ORIGIN_Y, ORIGIN_X*2, ORIGIN_Y],
+            [0, ORIGIN_Y, window_dim.width, ORIGIN_Y],
             {
-                stroke: 'green'
+                stroke: 'grey'
             }
         );
         canvi.add (line_vertical)
@@ -328,4 +353,31 @@ function fp_felt_to_string(felt) {
     const felt_descaled = fp_felt_to_num (felt)
 
     return felt_descaled.toString(10)
-  }
+}
+
+
+// function useWindowDimensions() {
+//     const [windowDimensions, setWindowDimensions] = useState(getWindowDimensions());
+
+//     useEffect(() => {
+//         function handleResize() {
+//             setWindowDimensions (getWindowDimensions());
+//         }
+
+//         window.addEventListener('resize', handleResize);
+//         return () => window.removeEventListener('resize', handleResize);
+//     }, []);
+
+//     return windowDimensions;
+// }
+
+function getWindowDimensions() {
+    if (typeof window !== 'undefined') {
+        const { innerWidth: width, innerHeight: height } = window;
+        // console.log("window is defined!")
+        return { width, height };
+    } else {
+        // console.log('You are on the server')
+        return { width : 700, height : 815 }
+    }
+}
