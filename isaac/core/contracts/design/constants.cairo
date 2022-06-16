@@ -17,7 +17,7 @@ const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 2520 # 7 days * 24 hours * 60 minutes /
 #
 # Capacity control - size of civilization per universe, and number of universes deployed
 #
-const CIV_SIZE = 3
+const CIV_SIZE = 1
 const UNIVERSE_COUNT = 3
 
 #
