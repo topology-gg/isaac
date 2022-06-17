@@ -67,7 +67,7 @@ def _poll_list_tx_hashes_until_all_accepted(list_of_tx_hashes, interval_in_sec):
 
 ## invoking admin_store_addresses of contract
 def invoke (addr, abi, func, inputs):
-	cmd = f"starknet invoke --network alpha-goerli --address {addr} --abi {abi} --function {func} --inputs {inputs}"
+	cmd = f"starknet invoke --network alpha-goerli --address {addr} --abi {abi} --function {func} --inputs {inputs} --max_fee 1"
 	cmd_arr = cmd.split(' ')
 	ret = subprocess_run(cmd_arr)
 	ret = ret.split(': ')

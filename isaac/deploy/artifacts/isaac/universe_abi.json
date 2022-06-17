@@ -294,6 +294,21 @@
         "type": "function"
     },
     {
+        "data": [
+            {
+                "name": "macro_state",
+                "type": "Dynamics"
+            },
+            {
+                "name": "phi",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "forward_world_macro_occurred",
+        "type": "event"
+    },
+    {
         "inputs": [
             {
                 "name": "civ_idx",

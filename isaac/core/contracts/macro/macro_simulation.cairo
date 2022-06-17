@@ -20,6 +20,17 @@ from contracts.util.vector_ops import (distance_2, distance_3, vec2_add2, vec2_a
 from contracts.util.pseudorandom import (ns_prng)
 from contracts.macro.macro_state import (ns_macro_state_functions)
 
+########################
+
+#
+# Event emission for Apibara
+#
+@event
+func forward_world_macro_occurred (macro_state : Dynamics, phi : felt):
+end
+
+########################
+
 #
 # Runge-Kutta 4th-order method
 #
@@ -297,6 +308,11 @@ func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     let (phi_nxt) = forward_planet_spin (
         phi = phi_curr
     )
+
+    #
+    # Event emission
+    #
+    forward_world_macro_occurred.emit (macro_state = state_nxt, phi = phi_nxt)
 
     #
     # Update macro states and clear impulse cache
