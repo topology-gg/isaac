@@ -9,7 +9,7 @@ import {
 } from '@starknet-react/core'
 
 import UniverseAbi from '../abi/universe_abi.json'
-const UNIVERSE_ADDR = '0x07db41ca1eee8f4458f8d3a3afed1367b9018edaee84a463b578bddf07771321' // universe #0
+const UNIVERSE_ADDR = '0x0758e8e3153a61474376838aeae42084dae0ef55e0206b19b2a85e039d1ef180' // universe #0
 function useUniverseContract() {
     return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
 }
