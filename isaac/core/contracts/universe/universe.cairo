@@ -293,6 +293,7 @@ func recurse_populate_civilization_player_states {syscall_ptr : felt*, pedersen_
         arr_player_adr : felt*,
         idx : felt
     ) -> ():
+    alloc_locals
 
     if idx == CIV_SIZE:
         return ()
@@ -301,8 +302,19 @@ func recurse_populate_civilization_player_states {syscall_ptr : felt*, pedersen_
     #
     # Activate civilization record for player address
     #
-    ns_universe_state_functions.civilization_player_idx_to_address_write (idx, arr_player_adr[idx])
-    ns_universe_state_functions.civilization_player_address_to_bool_write (arr_player_adr[idx], 1)
+    let player_adr = arr_player_adr[idx]
+    ns_universe_state_functions.civilization_player_idx_to_address_write (idx, player_adr)
+    ns_universe_state_functions.civilization_player_address_to_bool_write (player_adr, 1)
+
+    #
+    # Give player the starting loadout
+    #
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SPG,     amount = 1)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_FE_HARV, amount = 1)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTB,     amount = 20)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTL,     amount = 20)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UPSF,    amount = 1)
+
 
     #
     # Tail recursion
@@ -832,8 +844,8 @@ end
 # Admin functions for testing purposes
 ######################################
 
-@external
-func admin_give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+# @external
+func _give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     to : felt, type : felt, amount : felt):
 
     #
@@ -852,39 +864,39 @@ func admin_give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuilt
     return ()
 end
 
-@external
-func admin_write_opsf_deployed_id_to_resource_balances {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    id : felt, element_type : felt, balance : felt):
+# @external
+# func admin_write_opsf_deployed_id_to_resource_balances {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+#     id : felt, element_type : felt, balance : felt):
 
-    #
-    # Confirm admin identity
-    #
-    # let (caller) = get_caller_address ()
-    # with_attr error_message ("Only admin can invoke this function."):
-    #     assert caller = GYOZA
-    # end
+#     #
+#     # Confirm admin identity
+#     #
+#     # let (caller) = get_caller_address ()
+#     # with_attr error_message ("Only admin can invoke this function."):
+#     #     assert caller = GYOZA
+#     # end
 
-    ns_micro_state_functions.opsf_deployed_id_to_resource_balances_write (id, element_type, balance)
+#     ns_micro_state_functions.opsf_deployed_id_to_resource_balances_write (id, element_type, balance)
 
-    return ()
-end
+#     return ()
+# end
 
-@external
-func admin_write_device_deployed_id_to_energy_balance {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    id : felt, energy : felt):
+# @external
+# func admin_write_device_deployed_id_to_energy_balance {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+#     id : felt, energy : felt):
 
-    #
-    # Confirm admin identity
-    #
-    # let (caller) = get_caller_address ()
-    # with_attr error_message ("Only admin can invoke this function."):
-    #     assert caller = GYOZA
-    # end
+#     #
+#     # Confirm admin identity
+#     #
+#     # let (caller) = get_caller_address ()
+#     # with_attr error_message ("Only admin can invoke this function."):
+#     #     assert caller = GYOZA
+#     # end
 
-    ns_micro_state_functions.device_deployed_id_to_energy_balance_write (id, energy)
+#     ns_micro_state_functions.device_deployed_id_to_energy_balance_write (id, energy)
 
-    return ()
-end
+#     return ()
+# end
 
 
 

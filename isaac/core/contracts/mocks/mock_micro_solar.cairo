@@ -8,6 +8,7 @@ from contracts.micro.micro_solar import (
 from contracts.util.structs import (
     Vec2, Dynamics
 )
+from contracts.util.numerics import (sine_7th)
 
 @view
 func mock_get_solar_exposure_fp {range_check_ptr} (
@@ -44,7 +45,7 @@ end
 func mock_sine_7th {range_check_ptr} (
     theta : felt) -> (value : felt):
 
-    let (value) = ns_micro_solar.sine_7th (theta)
+    let (value) = sine_7th (theta)
 
     return (value)
 end

@@ -60,13 +60,13 @@ namespace ns_manufacturing:
             assert [arr + ns_element_types.ELEMENT_FE_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_FE_REF] = 1000
             assert [arr + ns_element_types.ELEMENT_AL_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_AL_REF] = 0
+            assert [arr + ns_element_types.ELEMENT_AL_REF] = 1000
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_CU_REF] = 1000
             assert [arr + ns_element_types.ELEMENT_SI_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_SI_REF] = 500
             assert [arr + ns_element_types.ELEMENT_PU_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_PU_ENR] = 2000
+            assert [arr + ns_element_types.ELEMENT_PU_ENR] = 250
 
             return (
                 ns_energy_requirements.DEVICE_NPG,
@@ -86,7 +86,7 @@ namespace ns_manufacturing:
             assert [arr + ns_element_types.ELEMENT_AL_REF] = 0
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_CU_REF] = 0
-            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 0
+            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 50
             assert [arr + ns_element_types.ELEMENT_SI_REF] = 0
             assert [arr + ns_element_types.ELEMENT_PU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_PU_ENR] = 0
@@ -103,13 +103,13 @@ namespace ns_manufacturing:
         #
         if device_type == ns_device_types.DEVICE_AL_HARV:
             let (arr) = alloc ()
-            assert [arr + ns_element_types.ELEMENT_FE_RAW] = 500
-            assert [arr + ns_element_types.ELEMENT_FE_REF] = 1000
-            assert [arr + ns_element_types.ELEMENT_AL_RAW] = 0
+            assert [arr + ns_element_types.ELEMENT_FE_RAW] = 300
+            assert [arr + ns_element_types.ELEMENT_FE_REF] = 0
+            assert [arr + ns_element_types.ELEMENT_AL_RAW] = 1000
             assert [arr + ns_element_types.ELEMENT_AL_REF] = 0
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_CU_REF] = 0
-            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 100
+            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 50
             assert [arr + ns_element_types.ELEMENT_SI_REF] = 0
             assert [arr + ns_element_types.ELEMENT_PU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_PU_ENR] = 0
@@ -132,7 +132,7 @@ namespace ns_manufacturing:
             assert [arr + ns_element_types.ELEMENT_AL_REF] = 0
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_CU_REF] = 0
-            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 100
+            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 50
             assert [arr + ns_element_types.ELEMENT_SI_REF] = 0
             assert [arr + ns_element_types.ELEMENT_PU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_PU_ENR] = 0
@@ -155,7 +155,7 @@ namespace ns_manufacturing:
             assert [arr + ns_element_types.ELEMENT_AL_REF] = 200
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_CU_REF] = 0
-            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 100
+            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 50
             assert [arr + ns_element_types.ELEMENT_SI_REF] = 0
             assert [arr + ns_element_types.ELEMENT_PU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_PU_ENR] = 0
@@ -177,8 +177,8 @@ namespace ns_manufacturing:
             assert [arr + ns_element_types.ELEMENT_AL_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_AL_REF] = 200
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_CU_REF] = 0
-            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 100
+            assert [arr + ns_element_types.ELEMENT_CU_REF] = 200
+            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 50
             assert [arr + ns_element_types.ELEMENT_SI_REF] = 0
             assert [arr + ns_element_types.ELEMENT_PU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_PU_ENR] = 0
@@ -195,10 +195,10 @@ namespace ns_manufacturing:
         #
         if device_type == ns_device_types.DEVICE_FE_REFN:
             let (arr) = alloc ()
-            assert [arr + ns_element_types.ELEMENT_FE_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_FE_REF] = 1000
-            assert [arr + ns_element_types.ELEMENT_AL_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_AL_REF] = 200
+            assert [arr + ns_element_types.ELEMENT_FE_RAW] = 2000
+            assert [arr + ns_element_types.ELEMENT_FE_REF] = 0
+            assert [arr + ns_element_types.ELEMENT_AL_RAW] = 1000
+            assert [arr + ns_element_types.ELEMENT_AL_REF] = 0
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_CU_REF] = 0
             assert [arr + ns_element_types.ELEMENT_SI_RAW] = 100
@@ -220,8 +220,8 @@ namespace ns_manufacturing:
             let (arr) = alloc ()
             assert [arr + ns_element_types.ELEMENT_FE_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_FE_REF] = 1000
-            assert [arr + ns_element_types.ELEMENT_AL_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_AL_REF] = 200
+            assert [arr + ns_element_types.ELEMENT_AL_RAW] = 1000
+            assert [arr + ns_element_types.ELEMENT_AL_REF] = 0
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_CU_REF] = 0
             assert [arr + ns_element_types.ELEMENT_SI_RAW] = 100
@@ -244,7 +244,7 @@ namespace ns_manufacturing:
             assert [arr + ns_element_types.ELEMENT_FE_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_FE_REF] = 1000
             assert [arr + ns_element_types.ELEMENT_AL_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_AL_REF] = 200
+            assert [arr + ns_element_types.ELEMENT_AL_REF] = 1000
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_CU_REF] = 0
             assert [arr + ns_element_types.ELEMENT_SI_RAW] = 100
@@ -267,9 +267,9 @@ namespace ns_manufacturing:
             assert [arr + ns_element_types.ELEMENT_FE_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_FE_REF] = 1000
             assert [arr + ns_element_types.ELEMENT_AL_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_AL_REF] = 200
+            assert [arr + ns_element_types.ELEMENT_AL_REF] = 1000
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_CU_REF] = 0
+            assert [arr + ns_element_types.ELEMENT_CU_REF] = 1000
             assert [arr + ns_element_types.ELEMENT_SI_RAW] = 100
             assert [arr + ns_element_types.ELEMENT_SI_REF] = 0
             assert [arr + ns_element_types.ELEMENT_PU_RAW] = 0
@@ -311,13 +311,13 @@ namespace ns_manufacturing:
         if device_type == ns_device_types.DEVICE_UTB:
             let (arr) = alloc ()
             assert [arr + ns_element_types.ELEMENT_FE_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_FE_REF] = 25
+            assert [arr + ns_element_types.ELEMENT_FE_REF] = 0
             assert [arr + ns_element_types.ELEMENT_AL_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_AL_REF] = 50
+            assert [arr + ns_element_types.ELEMENT_AL_REF] = 25
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_CU_REF] = 25
-            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_SI_REF] = 10
+            assert [arr + ns_element_types.ELEMENT_CU_REF] = 5
+            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 5
+            assert [arr + ns_element_types.ELEMENT_SI_REF] = 0
             assert [arr + ns_element_types.ELEMENT_PU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_PU_ENR] = 0
 
@@ -334,13 +334,13 @@ namespace ns_manufacturing:
         if device_type == ns_device_types.DEVICE_UTL:
             let (arr) = alloc ()
             assert [arr + ns_element_types.ELEMENT_FE_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_FE_REF] = 25
+            assert [arr + ns_element_types.ELEMENT_FE_REF] = 0
             assert [arr + ns_element_types.ELEMENT_AL_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_AL_REF] = 25
+            assert [arr + ns_element_types.ELEMENT_AL_REF] = 5
             assert [arr + ns_element_types.ELEMENT_CU_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_CU_REF] = 50
-            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 0
-            assert [arr + ns_element_types.ELEMENT_SI_REF] = 10
+            assert [arr + ns_element_types.ELEMENT_CU_REF] = 25
+            assert [arr + ns_element_types.ELEMENT_SI_RAW] = 5
+            assert [arr + ns_element_types.ELEMENT_SI_REF] = 0
             assert [arr + ns_element_types.ELEMENT_PU_RAW] = 0
             assert [arr + ns_element_types.ELEMENT_PU_ENR] = 0
 

@@ -318,22 +318,22 @@ end
 # Note: resource requirement is coded in `manufacturing.cairo`
 #
 namespace ns_energy_requirements:
-    const DEVICE_SPG     = 1 # solar power generator
-    const DEVICE_NPG     = 1 # nuclear power generator
-    const DEVICE_FE_HARV = 1 # iron harvester
-    const DEVICE_AL_HARV = 1 # aluminum harvester
-    const DEVICE_CU_HARV = 1 # copper harvester
-    const DEVICE_SI_HARV = 1 # silicon harvester
-    const DEVICE_PU_HARV = 1 # plutoniium harvester
-    const DEVICE_FE_REFN = 1 # iron refinery
-    const DEVICE_AL_REFN = 1 # aluminum refinery
-    const DEVICE_CU_REFN = 1 # copper refinery
-    const DEVICE_SI_REFN = 1 # silicon refinery
-    const DEVICE_PEF     = 1 # plutonium enrichment facility
-    const DEVICE_UTB     = 1 # universal transportation belt
-    const DEVICE_UTL     = 1 # universal transmission line
-    const DEVICE_UPSF    = 1 # universal production and storage facility
-    const DEVICE_NDPE    = 1 # nuclear driller & propulsion engine
+    const DEVICE_SPG     = 2  # solar power generator
+    const DEVICE_NPG     = 10 # nuclear power generator
+    const DEVICE_FE_HARV = 2  # iron harvester
+    const DEVICE_AL_HARV = 4  # aluminum harvester
+    const DEVICE_CU_HARV = 6  # copper harvester
+    const DEVICE_SI_HARV = 8  # silicon harvester
+    const DEVICE_PU_HARV = 10 # plutoniium harvester
+    const DEVICE_FE_REFN = 2  # iron refinery
+    const DEVICE_AL_REFN = 4  # aluminum refinery
+    const DEVICE_CU_REFN = 6  # copper refinery
+    const DEVICE_SI_REFN = 8  # silicon refinery
+    const DEVICE_PEF     = 10 # plutonium enrichment facility
+    const DEVICE_UTB     = 1  # universal transportation belt
+    const DEVICE_UTL     = 1  # universal transmission line
+    const DEVICE_UPSF    = 50 # universal production and storage facility
+    const DEVICE_NDPE    = 50 # nuclear driller & propulsion engine
 end
 
 #
