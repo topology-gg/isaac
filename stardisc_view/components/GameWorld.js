@@ -9,7 +9,7 @@ import {
 } from '@starknet-react/core'
 
 import UniverseAbi from '../abi/universe_abi.json'
-const UNIVERSE_ADDR = '0x022a9f674dc96f8faeff7498b61fab9ecccd6aa3d42953d398e570fca54ef3b3' // universe #0
+const UNIVERSE_ADDR = '0x0758e8e3153a61474376838aeae42084dae0ef55e0206b19b2a85e039d1ef180' // universe #0
 function useUniverseContract() {
     return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
 }
@@ -17,7 +17,7 @@ function useUniverseContract() {
 //
 // Constants
 //
-const GRID = 8 // grid size
+const GRID = 7 // grid size
 const PAD = 50 // pad size
 const SIDE = 25 // number of grids per size (planet dimension)
 const STROKE = 'rgba(200,200,200,1)' // grid stroke color
@@ -153,8 +153,7 @@ export default function GameWorld() {
         if (!_refs.current[1]) {
             drawWorld (_refs.current[0])
         }
-    }, [device_emap, utb_grids]
-);
+    }, [device_emap, utb_grids]);
 
     const drawWorld = canvi => {
         if (device_emap && utb_grids) {
@@ -164,7 +163,6 @@ export default function GameWorld() {
                 _refs.current[1] = true
             }
         }
-
     }
 
     const drawGrid = canvi => {
@@ -254,8 +252,10 @@ export default function GameWorld() {
                 width: device_dim*GRID,
                 left: PAD + x*GRID,
                 top: PAD + (SIDE*3-y-device_dim)*GRID,
-                fill: device_color
-                });
+                fill: device_color,
+                selectable: true,
+                hoverCursor: 'pointer'
+            });
             canvi.add(rect);
         }
 
@@ -286,13 +286,12 @@ export default function GameWorld() {
         canvi.renderAll();
     }
 
-
     //
     // Return component
     //
     return(
-    <div>
-        <canvas id="c" />
-    </div>
+        <div>
+            <canvas id="c" />
+        </div>
     );
 }
