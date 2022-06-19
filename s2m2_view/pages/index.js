@@ -1,4 +1,5 @@
 import GameWorld from "../components/GameWorld";
+import GameStats from "../components/GameStats"
 import styles from '../styles/Home.module.css'
 import { ConnectWallet } from "../components/ConnectWallet.js"
 
@@ -14,10 +15,12 @@ function Home() {
 
   return (
     <StarknetProvider>
+      <h3>Argent X Wallet</h3>
+      <ConnectWallet />
+
+      <GameStats />
       <GameWorld />
-      {/* <div className={styles.gamecontainer}>
-        <GameWorld />
-      </div> */}
+
     </StarknetProvider>
   )
 }
