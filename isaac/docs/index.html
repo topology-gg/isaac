@@ -7,6 +7,12 @@
   <meta name="description" content="Description">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/buble.css">
+  <style>
+    /* solution for turning off the mask opacity effect: https://github.com/docsifyjs/docsify/issues/414 */
+    section.cover.has-mask .mask {
+      opacity: 0.0
+    }
+  </style>
 </head>
 <body>
   <div id="app"></div>
@@ -17,7 +23,8 @@
       loadSidebar: true,
       maxLevel: 4,
       subMaxLevel: 2,
-      coverpage: true,
+      // coverpage: true,
+      coverpage: '_coverpage.html',
       onlyCover: false,
       homepage: 'eng/narrative.md',
       search: 'auto'

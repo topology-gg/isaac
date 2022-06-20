@@ -16,7 +16,6 @@
 <!-- ![](_media/isaac-cover-art-draft.png) -->
 <img src="_media/isaac-cover-art-draft-min.png" alt="cover-art" width="100%"/>
 
-
 <!-- background color -->
 
 ![color](#f0f0f0)
