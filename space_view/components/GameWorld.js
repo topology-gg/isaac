@@ -59,7 +59,8 @@ export default function GameWorld() {
         _refs.current[0] = new fabric.Canvas('c', {
             height: 1500,
             width: 1500,
-            backgroundColor: '#00202C'
+            backgroundColor: '#00202C',
+            selection: false
         })
         _refs.current[1] = false
     }, []);
