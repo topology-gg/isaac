@@ -39,22 +39,22 @@ DEVICE_DIM_MAP.set(14, 5);
 DEVICE_DIM_MAP.set(15, 5);
 
 const DEVICE_COLOR_MAP = new Map();
-DEVICE_COLOR_MAP.set(0, "black");
-DEVICE_COLOR_MAP.set(1, "black");
-DEVICE_COLOR_MAP.set(2, "red");
-DEVICE_COLOR_MAP.set(3, "red");
-DEVICE_COLOR_MAP.set(4, "red");
-DEVICE_COLOR_MAP.set(5, "red");
-DEVICE_COLOR_MAP.set(6, "red");
-DEVICE_COLOR_MAP.set(7, "orange");
-DEVICE_COLOR_MAP.set(8, "orange");
-DEVICE_COLOR_MAP.set(9, "orange");
-DEVICE_COLOR_MAP.set(10, "orange");
-DEVICE_COLOR_MAP.set(11, "orange");
-DEVICE_COLOR_MAP.set(12, "rgba(100,100,100,0.3)");
-DEVICE_COLOR_MAP.set(13, "grey");
-DEVICE_COLOR_MAP.set(14, "yellow");
-DEVICE_COLOR_MAP.set(15, "blue");
+DEVICE_COLOR_MAP.set(0,  "#8DAAF7"); // SPG
+DEVICE_COLOR_MAP.set(1,  "#A87AF7"); // NPG
+DEVICE_COLOR_MAP.set(2,  "#211E3A"); // FE HARV
+DEVICE_COLOR_MAP.set(3,  "#445868"); // FE REFN
+DEVICE_COLOR_MAP.set(4,  "#893439"); // AL HARV
+DEVICE_COLOR_MAP.set(5,  "#D96767"); // AL REFN
+DEVICE_COLOR_MAP.set(6,  "#F18C62"); // CU HARV
+DEVICE_COLOR_MAP.set(7,  "#FFB57E"); // CU REFN
+DEVICE_COLOR_MAP.set(8,  "#75ABCF"); // SI HARV
+DEVICE_COLOR_MAP.set(9,  "#ADC2D3"); // SI REFN
+DEVICE_COLOR_MAP.set(10, "#E4A2AB"); // PU HARV
+DEVICE_COLOR_MAP.set(11, "#EDCEDB"); // PEF
+DEVICE_COLOR_MAP.set(12, "#9FACA3"); // UTB
+DEVICE_COLOR_MAP.set(13, "#88D4CA"); // UTL
+DEVICE_COLOR_MAP.set(14, "#FFDD8D"); // UPSF
+DEVICE_COLOR_MAP.set(15, "#51499E"); // NDPE
 
 // Copied from Isaac's `constants.cairo`:
 // namespace ns_device_types:
