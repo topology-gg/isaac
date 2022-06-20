@@ -23,6 +23,8 @@ const STROKE = 'rgba(200,200,200,1)' // grid stroke color
 
 export default function GameWorld() {
 
+    fabric.Object.prototype.selectable = false;
+
     // Credits:
     // https://aprilescobar.medium.com/part-1-fabric-js-on-react-fabric-canvas-e4094e4d0304
     // https://stackoverflow.com/questions/60723440/problem-in-attaching-event-to-canvas-in-useeffect
@@ -108,13 +110,15 @@ export default function GameWorld() {
         const line_vertical = new fabric.Line(
             [ORIGIN_X, 0, ORIGIN_X, window_dim.height],
             {
-                stroke: 'grey'
-            }
+                stroke: 'grey',
+                selectable: false
+            },
         );
         const line_horizontal = new fabric.Line(
             [0, ORIGIN_Y, window_dim.width, ORIGIN_Y],
             {
-                stroke: 'grey'
+                stroke: 'grey',
+                selectable: false
             }
         );
         canvi.add (line_vertical)
@@ -141,7 +145,9 @@ export default function GameWorld() {
             radius: SUN_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
             strokeWidth: 1,
-            fill: '#6289AF'
+            fill: '#6289AF',
+            selectable: false,
+            hoverCursor: "pointer"
         });
 
         const sun1_circle = new fabric.Circle ({
@@ -150,7 +156,9 @@ export default function GameWorld() {
             radius: SUN_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
             strokeWidth: 1,
-            fill: '#FF8B58'
+            fill: '#FF8B58',
+            selectable: false,
+            hoverCursor: "pointer"
         });
 
         const sun2_circle = new fabric.Circle ({
@@ -159,7 +167,9 @@ export default function GameWorld() {
             radius: SUN_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
             strokeWidth: 1,
-            fill: '#A05760'
+            fill: '#A05760',
+            selectable: false,
+            hoverCursor: "pointer"
         });
 
         const plnt_rect = new fabric.Rect({
@@ -170,7 +180,9 @@ export default function GameWorld() {
             angel: 60,
             stroke: 'black',
             strokeWidth: 2,
-            fill: ''
+            fill: '',
+            selectable: false,
+            hoverCursor: "pointer"
         });
 
         const plnt_circle = new fabric.Circle ({
@@ -179,7 +191,9 @@ export default function GameWorld() {
             radius: PLNT_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
             strokeWidth: 0.5,
-            fill: '#8E8E8E'
+            fill: '#8E8E8E',
+            selectable: false,
+            hoverCursor: "pointer"
         });
 
         canvi.add (sun0_circle)
