@@ -24,7 +24,7 @@ from contracts.util.logistics import (
     ns_logistics_harvester, ns_logistics_transformer,
     ns_logistics_xpg, ns_logistics_utb, ns_logistics_utl
 )
-from contracts.util.manufacturing import (ns_manufacturing)
+from contracts.design.manufacturing import (ns_manufacturing)
 from contracts.micro.micro_state import (
     ns_micro_state_functions,
     GridStat, DeviceDeployedEmapEntry, TransformerResourceBalances, UtxSetDeployedEmapEntry

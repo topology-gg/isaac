@@ -10,7 +10,7 @@ from starkware.starknet.common.syscalls import (get_block_number, get_caller_add
 # Import constants and structs
 #
 from contracts.design.constants import (
-    GYOZA,
+    GYOZA, ns_device_types,
     MIN_L2_BLOCK_NUM_BETWEEN_FORWARD,
     UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM,
     CIV_SIZE,
