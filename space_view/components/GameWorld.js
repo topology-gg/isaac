@@ -59,7 +59,7 @@ export default function GameWorld() {
         _refs.current[0] = new fabric.Canvas('c', {
             height: 1500,
             width: 1500,
-            backgroundColor: 'white'
+            backgroundColor: '#00202C'
         })
         _refs.current[1] = false
     }, []);
@@ -98,6 +98,26 @@ export default function GameWorld() {
     }
 
     const drawSpace = canvi => {
+        const window_dim = windowDimensions
+        console.log ("window_dim", window_dim)
+
+        //
+        // Draw grid lines first
+        //
+        const line_vertical = new fabric.Line(
+            [ORIGIN_X, 0, ORIGIN_X, window_dim.height],
+            {
+                stroke: 'grey'
+            }
+        );
+        const line_horizontal = new fabric.Line(
+            [0, ORIGIN_Y, window_dim.width, ORIGIN_Y],
+            {
+                stroke: 'grey'
+            }
+        );
+        canvi.add (line_vertical)
+        canvi.add (line_horizontal)
 
         const plnt_x = fp_felt_to_num(new BigNumber(macro_state.macro_state.plnt.q.x))
         const plnt_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.plnt.q.y))
@@ -107,9 +127,6 @@ export default function GameWorld() {
         const sun1_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun1.q.y))
         const sun2_x = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun2.q.x))
         const sun2_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun2.q.y))
-
-        const window_dim = windowDimensions
-        console.log ("window_dim", window_dim)
 
         const SUN_RADIUS = 0.383 // from contract
         const PLNT_RADIUS = 0.05 // arbitrary
@@ -122,8 +139,8 @@ export default function GameWorld() {
             top:  ORIGIN_Y + sun0_y.toString(10) *DISPLAY_SCALE,
             radius: SUN_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
-            strokeWidth: 3,
-            fill: ''
+            strokeWidth: 1,
+            fill: '#6289AF'
         });
 
         const sun1_circle = new fabric.Circle ({
@@ -131,8 +148,8 @@ export default function GameWorld() {
             top:  ORIGIN_Y + sun1_y.toString(10) *DISPLAY_SCALE,
             radius: SUN_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
-            strokeWidth: 3,
-            fill: ''
+            strokeWidth: 1,
+            fill: '#FF8B58'
         });
 
         const sun2_circle = new fabric.Circle ({
@@ -140,8 +157,8 @@ export default function GameWorld() {
             top:  ORIGIN_Y + sun2_y.toString(10) *DISPLAY_SCALE,
             radius: SUN_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
-            strokeWidth: 3,
-            fill: ''
+            strokeWidth: 1,
+            fill: '#A05760'
         });
 
         const plnt_rect = new fabric.Rect({
@@ -160,8 +177,8 @@ export default function GameWorld() {
             top:  ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
             radius: PLNT_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
-            strokeWidth: 2,
-            fill: ''
+            strokeWidth: 0.5,
+            fill: '#8E8E8E'
         });
 
         canvi.add (sun0_circle)
@@ -169,21 +186,6 @@ export default function GameWorld() {
         canvi.add (sun2_circle)
         canvi.add (plnt_circle)
         console.log ("planet rect angle:", plnt_rect.angle)
-
-        const line_vertical = new fabric.Line(
-            [ORIGIN_X, 0, ORIGIN_X, window_dim.height],
-            {
-                stroke: 'grey'
-            }
-        );
-        const line_horizontal = new fabric.Line(
-            [0, ORIGIN_Y, window_dim.width, ORIGIN_Y],
-            {
-                stroke: 'grey'
-            }
-        );
-        canvi.add (line_vertical)
-        canvi.add (line_horizontal)
 
         // for (const entry of device_emap.emap){
         //     const x = entry.grid.x.toNumber()
