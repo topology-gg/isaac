@@ -1,28 +1,60 @@
-* {
+/* * {
     box-sizing: border-box;
-}
+} */
 
 html,
 body,
 #root {
-width: 100%;
-height: 100%;
-margin: 0;
-padding: 0;
-background-color: #ffffff;
--webkit-touch-callout: none;
--webkit-user-select: none;
--khtml-user-select: none;
--moz-user-select: none;
--ms-user-select: none;
-user-select: none;
-overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #E3EDFF;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    overflow: hidden;
 }
 
 body {
-position: fixed;
-overflow: hidden;
-overscroll-behavior-y: none;
-font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
-color: #2e76c8;
+    position: fixed;
+    overflow: hidden;
+    overscroll-behavior-y: none;
+    font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+    /* color: #2e76c8; */
+    color: #555555
+}
+
+.mother-container {
+    display: flex;
+}
+
+.left-child-container {
+    display: flex;
+    order: 0;
+}
+
+.right-child-container {
+    display: flex;
+    flex-direction: column;
+    order: 1;
+}
+
+p {
+    font-size: 1em;
+}
+
+table, th, td {
+    border: 1px solid;
+    border-collapse: collapse;
+    padding: 0.3em 1.5em 0.3em 1.5em;
+    text-align: center;
+    font-size: 0.95em
+}
+
+span {
+    color: transparent;
 }
