@@ -105,25 +105,24 @@ export default function GameWorld() {
         console.log ("window_dim", window_dim)
 
         //
-        // Draw grid lines first
+        // Constants
         //
-        const line_vertical = new fabric.Line(
-            [ORIGIN_X, 0, ORIGIN_X, window_dim.height],
-            {
-                stroke: 'grey',
-                selectable: false
-            },
-        );
-        const line_horizontal = new fabric.Line(
-            [0, ORIGIN_Y, window_dim.width, ORIGIN_Y],
-            {
-                stroke: 'grey',
-                selectable: false
-            }
-        );
-        canvi.add (line_vertical)
-        canvi.add (line_horizontal)
+        const SUN0_RADIUS = 1.495 // from contract
+        const SUN1_RADIUS = 0.862 // from contract
+        const SUN2_RADIUS = 0.383 // from contract
+        const PLNT_RADIUS = 0.05 // arbitrary
+        const ORIGIN_X = window_dim.width / 2
+        const ORIGIN_Y = window_dim.height / 2
+        const DISPLAY_SCALE = 60
+        const GRID_STYLE = {
+            stroke: '#CCCCCC',
+            strokeWidth: 0.2,
+            selectable: false
+        }
 
+        //
+        // Compute coordinates of celestial bodies
+        //
         const plnt_x = fp_felt_to_num(new BigNumber(macro_state.macro_state.plnt.q.x))
         const plnt_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.plnt.q.y))
         const sun0_x = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun0.q.x))
@@ -133,16 +132,70 @@ export default function GameWorld() {
         const sun2_x = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun2.q.x))
         const sun2_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun2.q.y))
 
-        const SUN_RADIUS = 0.383 // from contract
-        const PLNT_RADIUS = 0.05 // arbitrary
-        const ORIGIN_X = window_dim.width / 2
-        const ORIGIN_Y = window_dim.height / 2
-        const DISPLAY_SCALE = 50
+        const sun0_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
+        const sun0_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
+        const sun0_left_center = ORIGIN_X + sun0_x.toString(10) *DISPLAY_SCALE
+        const sun0_top_center  = ORIGIN_Y + sun0_y.toString(10) *DISPLAY_SCALE
+
+        const sun1_left = ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
+        const sun1_top  = ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
+        const sun1_left_center = ORIGIN_X + sun1_x.toString(10) *DISPLAY_SCALE
+        const sun1_top_center  = ORIGIN_Y + sun1_y.toString(10) *DISPLAY_SCALE
+
+        const sun2_left = ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
+        const sun2_top  = ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
+        const sun2_left_center = ORIGIN_X + sun2_x.toString(10) *DISPLAY_SCALE
+        const sun2_top_center  = ORIGIN_Y + sun2_y.toString(10) *DISPLAY_SCALE
+
+        //
+        // Draw grid lines first
+        //
+        const line0_vertical = new fabric.Line(
+            [sun0_left_center, 0, sun0_left_center, sun0_top_center], GRID_STYLE);
+        const line0_horizontal = new fabric.Line(
+            [0, sun0_top_center, sun0_left_center, sun0_top_center], GRID_STYLE);
+
+        const line1_vertical = new fabric.Line(
+            [sun1_left_center, 0, sun1_left_center, sun1_top_center], GRID_STYLE);
+        const line1_horizontal = new fabric.Line(
+            [0, sun1_top_center, sun1_left_center, sun1_top_center], GRID_STYLE);
+
+        const line2_vertical = new fabric.Line(
+            [sun2_left_center, 0, sun2_left_center, sun2_top_center], GRID_STYLE);
+        const line2_horizontal = new fabric.Line(
+            [0, sun2_top_center, sun2_left_center, sun2_top_center], GRID_STYLE);
+
+        canvi.add (line0_vertical)
+        canvi.add (line0_horizontal)
+        canvi.add (line1_vertical)
+        canvi.add (line1_horizontal)
+        canvi.add (line2_vertical)
+        canvi.add (line2_horizontal)
+
+        //
+        // Draw cocentric circles
+        //
+        const GRID_CIRCLE_RADIUS = 50
+        for (let i = 0; i < 20; i++) {
+            let radius = GRID_CIRCLE_RADIUS*i
+            let circle = new fabric.Circle ({
+                left: ORIGIN_X - radius,
+                top:  ORIGIN_Y - radius,
+                radius: radius,
+                stroke: '#CCCCCC',
+                strokeWidth: 0.2,
+                strokeDashArray: [5, 5],
+                fill: '',
+                selectable: false,
+                hoverCursor: "default"
+            });
+            canvi.add (circle)
+        }
 
         const sun0_circle = new fabric.Circle ({
-            left: ORIGIN_X + sun0_x.toString(10) *DISPLAY_SCALE,
-            top:  ORIGIN_Y + sun0_y.toString(10) *DISPLAY_SCALE,
-            radius: SUN_RADIUS * DISPLAY_SCALE,
+            left: sun0_left,
+            top:  sun0_top,
+            radius: SUN0_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
             strokeWidth: 1,
             fill: '#6289AF',
@@ -151,9 +204,9 @@ export default function GameWorld() {
         });
 
         const sun1_circle = new fabric.Circle ({
-            left: ORIGIN_X + sun1_x.toString(10) *DISPLAY_SCALE,
-            top:  ORIGIN_Y + sun1_y.toString(10) *DISPLAY_SCALE,
-            radius: SUN_RADIUS * DISPLAY_SCALE,
+            left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
+            top:  ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
+            radius: SUN1_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
             strokeWidth: 1,
             fill: '#FF8B58',
@@ -162,9 +215,9 @@ export default function GameWorld() {
         });
 
         const sun2_circle = new fabric.Circle ({
-            left: ORIGIN_X + sun2_x.toString(10) *DISPLAY_SCALE,
-            top:  ORIGIN_Y + sun2_y.toString(10) *DISPLAY_SCALE,
-            radius: SUN_RADIUS * DISPLAY_SCALE,
+            left: ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
+            top:  ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
+            radius: SUN2_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
             strokeWidth: 1,
             fill: '#A05760',
@@ -186,8 +239,8 @@ export default function GameWorld() {
         });
 
         const plnt_circle = new fabric.Circle ({
-            left: ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
-            top:  ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
+            left: ORIGIN_X + (plnt_x.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
+            top:  ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
             radius: PLNT_RADIUS * DISPLAY_SCALE,
             stroke: 'black',
             strokeWidth: 0.5,
@@ -202,24 +255,6 @@ export default function GameWorld() {
         canvi.add (plnt_circle)
         console.log ("planet rect angle:", plnt_rect.angle)
 
-        // for (const entry of device_emap.emap){
-        //     const x = entry.grid.x.toNumber()
-        //     const y = entry.grid.y.toNumber()
-        //     const typ = entry.type.toNumber()
-        //     // console.log("> entry: ", typ, x, y)
-
-        //     const device_dim = DEVICE_DIM_MAP.get(typ)
-        //     const device_color = DEVICE_COLOR_MAP.get(typ)
-
-        //     const rect = new fabric.Rect({
-        //         height: device_dim*GRID,
-        //         width: device_dim*GRID,
-        //         left: PAD + x*GRID,
-        //         top: PAD + (SIDE*3-y-device_dim)*GRID,
-        //         fill: device_color
-        //         });
-        //     canvi.add(rect);
-        // }
     }
 
     const drawGrid = canvi => {
