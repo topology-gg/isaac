@@ -9,7 +9,10 @@ import {
 } from '@starknet-react/core'
 
 import UniverseAbi from '../abi/universe_abi.json'
+import { useMacroStates } from '../lib/api'
+
 const UNIVERSE_ADDR = '0x0758e8e3153a61474376838aeae42084dae0ef55e0206b19b2a85e039d1ef180' // universe #0
+
 function useUniverseContract() {
     return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
 }
@@ -36,16 +39,7 @@ export default function GameWorld() {
     const { contract } = useUniverseContract()
     const { account } = useStarknet()
 
-    const { data: macro_state } = useStarknetCall({
-        contract,
-        method: 'macro_state_curr_read',
-        args: []
-    })
-    const { data: phi } = useStarknetCall({
-        contract,
-        method: 'phi_curr_read',
-        args: []
-    })
+    const { data: macro_states } = useMacroStates()
 
     //
     // Logic to initialize a Fabric canvas
@@ -71,7 +65,7 @@ export default function GameWorld() {
         if (!_refs.current[1]) {
             drawWorld (_refs.current[0])
         }
-    }, [macro_state, phi]);
+    }, [macro_states]);
 
     useEffect(() => {
         function handleResize() {
@@ -85,23 +79,27 @@ export default function GameWorld() {
 
     const drawWorld = canvi => {
         // console.log ("drawWorld")
-        if (macro_state && phi) {
-            if (macro_state.macro_state && phi.phi) {
-                console.log ("macro_state:", macro_state.macro_state)
-                console.log ("phi", phi.phi)
+        if (macro_states && macro_states.macro_states.length > 0) {
+            const macro_state = macro_states.macro_states[0]
+            // decode base64 to bytes, then bytes to BigNumber
+            const phi = new BigNumber(Buffer.from(macro_state.phi, 'base64').toString('hex'), 16)
 
-                drawSpace (canvi)
+            console.log ("dynamics:", macro_state.dynamics)
+            console.log ("phi", phi.toString())
+
+            drawSpace (canvi)
             //     drawGrid (canvi)
             //     drawDevices (canvi)
-                _refs.current[1] = true
-            // }
-            }
+            _refs.current[1] = true
         }
 
     }
 
     const drawSpace = canvi => {
         const window_dim = windowDimensions
+        const macro_state = macro_states.macro_states[0]
+        const dynamics = macro_state.dynamics
+
         console.log ("window_dim", window_dim)
 
         //
@@ -123,14 +121,14 @@ export default function GameWorld() {
         //
         // Compute coordinates of celestial bodies
         //
-        const plnt_x = fp_felt_to_num(new BigNumber(macro_state.macro_state.plnt.q.x))
-        const plnt_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.plnt.q.y))
-        const sun0_x = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun0.q.x))
-        const sun0_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun0.q.y))
-        const sun1_x = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun1.q.x))
-        const sun1_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun1.q.y))
-        const sun2_x = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun2.q.x))
-        const sun2_y = fp_felt_to_num(new BigNumber(macro_state.macro_state.sun2.q.y))
+        const plnt_x = dynamics.planet.q.x
+        const plnt_y = dynamics.planet.q.y
+        const sun0_x = dynamics.sun0.q.x
+        const sun0_y = dynamics.sun0.q.y
+        const sun1_x = dynamics.sun1.q.x
+        const sun1_y = dynamics.sun1.q.y
+        const sun2_x = dynamics.sun2.q.x
+        const sun2_y = dynamics.sun2.q.y
 
         const sun0_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
         const sun0_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
