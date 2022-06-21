@@ -63,7 +63,15 @@ message BlockHeader {
   google.protobuf.Timestamp timestamp = 4;
 }
 
+message TopicValue {
+  bytes value = 1;
+}
+
 message Event {
+  bytes address = 1;
+  uint64 block_index = 2;
+  repeated TopicValue topics = 3;
+  repeated TopicValue data = 4;
 }
 
 message ConnectApplication {

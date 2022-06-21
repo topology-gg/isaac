@@ -17,7 +17,7 @@ from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__
 
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(
-    b'\n-apibara/application/application_service.proto\x12\x1c\x61pibara.application.v1alpha1\x1a\x1fgoogle/protobuf/timestamp.proto"g\n\x0b\x41pplication\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1d\n\x10indexed_to_block\x18\x02 \x01(\x04H\x00\x88\x01\x01\x12\x18\n\x10index_from_block\x18\x03 \x01(\x04\x42\x13\n\x11_indexed_to_block"@\n\x18\x43reateApplicationRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x18\n\x10index_from_block\x18\x02 \x01(\x04"[\n\x19\x43reateApplicationResponse\x12>\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.Application"#\n\x15GetApplicationRequest\x12\n\n\x02id\x18\x01 \x01(\t"X\n\x16GetApplicationResponse\x12>\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.Application"\x18\n\x16ListApplicationRequest"Z\n\x17ListApplicationResponse\x12?\n\x0c\x61pplications\x18\x01 \x03(\x0b\x32).apibara.application.v1alpha1.Application"&\n\x18\x44\x65leteApplicationRequest\x12\n\n\x02id\x18\x01 \x01(\t"[\n\x19\x44\x65leteApplicationResponse\x12>\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.Application"\x84\x01\n\x0b\x42lockHeader\x12\x0c\n\x04hash\x18\x01 \x01(\x0c\x12\x18\n\x0bparent_hash\x18\x02 \x01(\x0cH\x00\x88\x01\x01\x12\x0e\n\x06number\x18\x03 \x01(\x04\x12-\n\ttimestamp\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x0e\n\x0c_parent_hash"\x07\n\x05\x45vent" \n\x12\x43onnectApplication\x12\n\n\x02id\x18\x01 \x01(\t"V\n\x14\x41pplicationConnected\x12>\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.Application"\x18\n\x08\x41\x63kBlock\x12\x0c\n\x04hash\x18\x01 \x01(\x0c"\x9e\x01\n\x15\x43onnectIndexerRequest\x12\x43\n\x07\x63onnect\x18\x01 \x01(\x0b\x32\x30.apibara.application.v1alpha1.ConnectApplicationH\x00\x12\x35\n\x03\x61\x63k\x18\x03 \x01(\x0b\x32&.apibara.application.v1alpha1.AckBlockH\x00\x42\t\n\x07message"G\n\x08NewBlock\x12;\n\x08new_head\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.BlockHeader"D\n\x05Reorg\x12;\n\x08new_head\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.BlockHeader"j\n\tNewEvents\x12\x12\n\nblock_hash\x18\x01 \x01(\x0c\x12\x14\n\x0c\x62lock_number\x18\x02 \x01(\x04\x12\x33\n\x06\x65vents\x18\x03 \x03(\x0b\x32#.apibara.application.v1alpha1.Event"\x9e\x02\n\x16\x43onnectIndexerResponse\x12G\n\tconnected\x18\x01 \x01(\x0b\x32\x32.apibara.application.v1alpha1.ApplicationConnectedH\x00\x12;\n\tnew_block\x18\x02 \x01(\x0b\x32&.apibara.application.v1alpha1.NewBlockH\x00\x12\x34\n\x05reorg\x18\x03 \x01(\x0b\x32#.apibara.application.v1alpha1.ReorgH\x00\x12=\n\nnew_events\x18\x04 \x01(\x0b\x32\'.apibara.application.v1alpha1.NewEventsH\x00\x42\t\n\x07message2\xa0\x05\n\x12\x41pplicationManager\x12\x84\x01\n\x11\x43reateApplication\x12\x36.apibara.application.v1alpha1.CreateApplicationRequest\x1a\x37.apibara.application.v1alpha1.CreateApplicationResponse\x12{\n\x0eGetApplication\x12\x33.apibara.application.v1alpha1.GetApplicationRequest\x1a\x34.apibara.application.v1alpha1.GetApplicationResponse\x12~\n\x0fListApplication\x12\x34.apibara.application.v1alpha1.ListApplicationRequest\x1a\x35.apibara.application.v1alpha1.ListApplicationResponse\x12\x84\x01\n\x11\x44\x65leteApplication\x12\x36.apibara.application.v1alpha1.DeleteApplicationRequest\x1a\x37.apibara.application.v1alpha1.DeleteApplicationResponse\x12\x7f\n\x0e\x43onnectIndexer\x12\x33.apibara.application.v1alpha1.ConnectIndexerRequest\x1a\x34.apibara.application.v1alpha1.ConnectIndexerResponse(\x01\x30\x01\x62\x06proto3'
+    b'\n-apibara/application/application_service.proto\x12\x1c\x61pibara.application.v1alpha1\x1a\x1fgoogle/protobuf/timestamp.proto"g\n\x0b\x41pplication\x12\n\n\x02id\x18\x01 \x01(\t\x12\x1d\n\x10indexed_to_block\x18\x02 \x01(\x04H\x00\x88\x01\x01\x12\x18\n\x10index_from_block\x18\x03 \x01(\x04\x42\x13\n\x11_indexed_to_block"@\n\x18\x43reateApplicationRequest\x12\n\n\x02id\x18\x01 \x01(\t\x12\x18\n\x10index_from_block\x18\x02 \x01(\x04"[\n\x19\x43reateApplicationResponse\x12>\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.Application"#\n\x15GetApplicationRequest\x12\n\n\x02id\x18\x01 \x01(\t"X\n\x16GetApplicationResponse\x12>\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.Application"\x18\n\x16ListApplicationRequest"Z\n\x17ListApplicationResponse\x12?\n\x0c\x61pplications\x18\x01 \x03(\x0b\x32).apibara.application.v1alpha1.Application"&\n\x18\x44\x65leteApplicationRequest\x12\n\n\x02id\x18\x01 \x01(\t"[\n\x19\x44\x65leteApplicationResponse\x12>\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.Application"\x84\x01\n\x0b\x42lockHeader\x12\x0c\n\x04hash\x18\x01 \x01(\x0c\x12\x18\n\x0bparent_hash\x18\x02 \x01(\x0cH\x00\x88\x01\x01\x12\x0e\n\x06number\x18\x03 \x01(\x04\x12-\n\ttimestamp\x18\x04 \x01(\x0b\x32\x1a.google.protobuf.TimestampB\x0e\n\x0c_parent_hash"\x1b\n\nTopicValue\x12\r\n\x05value\x18\x01 \x01(\x0c"\x9f\x01\n\x05\x45vent\x12\x0f\n\x07\x61\x64\x64ress\x18\x01 \x01(\x0c\x12\x13\n\x0b\x62lock_index\x18\x02 \x01(\x04\x12\x38\n\x06topics\x18\x03 \x03(\x0b\x32(.apibara.application.v1alpha1.TopicValue\x12\x36\n\x04\x64\x61ta\x18\x04 \x03(\x0b\x32(.apibara.application.v1alpha1.TopicValue" \n\x12\x43onnectApplication\x12\n\n\x02id\x18\x01 \x01(\t"V\n\x14\x41pplicationConnected\x12>\n\x0b\x61pplication\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.Application"\x18\n\x08\x41\x63kBlock\x12\x0c\n\x04hash\x18\x01 \x01(\x0c"\x9e\x01\n\x15\x43onnectIndexerRequest\x12\x43\n\x07\x63onnect\x18\x01 \x01(\x0b\x32\x30.apibara.application.v1alpha1.ConnectApplicationH\x00\x12\x35\n\x03\x61\x63k\x18\x03 \x01(\x0b\x32&.apibara.application.v1alpha1.AckBlockH\x00\x42\t\n\x07message"G\n\x08NewBlock\x12;\n\x08new_head\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.BlockHeader"D\n\x05Reorg\x12;\n\x08new_head\x18\x01 \x01(\x0b\x32).apibara.application.v1alpha1.BlockHeader"j\n\tNewEvents\x12\x12\n\nblock_hash\x18\x01 \x01(\x0c\x12\x14\n\x0c\x62lock_number\x18\x02 \x01(\x04\x12\x33\n\x06\x65vents\x18\x03 \x03(\x0b\x32#.apibara.application.v1alpha1.Event"\x9e\x02\n\x16\x43onnectIndexerResponse\x12G\n\tconnected\x18\x01 \x01(\x0b\x32\x32.apibara.application.v1alpha1.ApplicationConnectedH\x00\x12;\n\tnew_block\x18\x02 \x01(\x0b\x32&.apibara.application.v1alpha1.NewBlockH\x00\x12\x34\n\x05reorg\x18\x03 \x01(\x0b\x32#.apibara.application.v1alpha1.ReorgH\x00\x12=\n\nnew_events\x18\x04 \x01(\x0b\x32\'.apibara.application.v1alpha1.NewEventsH\x00\x42\t\n\x07message2\xa0\x05\n\x12\x41pplicationManager\x12\x84\x01\n\x11\x43reateApplication\x12\x36.apibara.application.v1alpha1.CreateApplicationRequest\x1a\x37.apibara.application.v1alpha1.CreateApplicationResponse\x12{\n\x0eGetApplication\x12\x33.apibara.application.v1alpha1.GetApplicationRequest\x1a\x34.apibara.application.v1alpha1.GetApplicationResponse\x12~\n\x0fListApplication\x12\x34.apibara.application.v1alpha1.ListApplicationRequest\x1a\x35.apibara.application.v1alpha1.ListApplicationResponse\x12\x84\x01\n\x11\x44\x65leteApplication\x12\x36.apibara.application.v1alpha1.DeleteApplicationRequest\x1a\x37.apibara.application.v1alpha1.DeleteApplicationResponse\x12\x7f\n\x0e\x43onnectIndexer\x12\x33.apibara.application.v1alpha1.ConnectIndexerRequest\x1a\x34.apibara.application.v1alpha1.ConnectIndexerResponse(\x01\x30\x01\x62\x06proto3'
 )
 
 
@@ -35,6 +35,7 @@ _DELETEAPPLICATIONRESPONSE = DESCRIPTOR.message_types_by_name[
     "DeleteApplicationResponse"
 ]
 _BLOCKHEADER = DESCRIPTOR.message_types_by_name["BlockHeader"]
+_TOPICVALUE = DESCRIPTOR.message_types_by_name["TopicValue"]
 _EVENT = DESCRIPTOR.message_types_by_name["Event"]
 _CONNECTAPPLICATION = DESCRIPTOR.message_types_by_name["ConnectApplication"]
 _APPLICATIONCONNECTED = DESCRIPTOR.message_types_by_name["ApplicationConnected"]
@@ -153,6 +154,17 @@ BlockHeader = _reflection.GeneratedProtocolMessageType(
     },
 )
 _sym_db.RegisterMessage(BlockHeader)
+
+TopicValue = _reflection.GeneratedProtocolMessageType(
+    "TopicValue",
+    (_message.Message,),
+    {
+        "DESCRIPTOR": _TOPICVALUE,
+        "__module__": "apibara.application.application_service_pb2"
+        # @@protoc_insertion_point(class_scope:apibara.application.v1alpha1.TopicValue)
+    },
+)
+_sym_db.RegisterMessage(TopicValue)
 
 Event = _reflection.GeneratedProtocolMessageType(
     "Event",
@@ -277,24 +289,26 @@ if _descriptor._USE_C_DESCRIPTORS == False:
     _DELETEAPPLICATIONRESPONSE._serialized_end = 752
     _BLOCKHEADER._serialized_start = 755
     _BLOCKHEADER._serialized_end = 887
-    _EVENT._serialized_start = 889
-    _EVENT._serialized_end = 896
-    _CONNECTAPPLICATION._serialized_start = 898
-    _CONNECTAPPLICATION._serialized_end = 930
-    _APPLICATIONCONNECTED._serialized_start = 932
-    _APPLICATIONCONNECTED._serialized_end = 1018
-    _ACKBLOCK._serialized_start = 1020
-    _ACKBLOCK._serialized_end = 1044
-    _CONNECTINDEXERREQUEST._serialized_start = 1047
-    _CONNECTINDEXERREQUEST._serialized_end = 1205
-    _NEWBLOCK._serialized_start = 1207
-    _NEWBLOCK._serialized_end = 1278
-    _REORG._serialized_start = 1280
-    _REORG._serialized_end = 1348
-    _NEWEVENTS._serialized_start = 1350
-    _NEWEVENTS._serialized_end = 1456
-    _CONNECTINDEXERRESPONSE._serialized_start = 1459
-    _CONNECTINDEXERRESPONSE._serialized_end = 1745
-    _APPLICATIONMANAGER._serialized_start = 1748
-    _APPLICATIONMANAGER._serialized_end = 2420
+    _TOPICVALUE._serialized_start = 889
+    _TOPICVALUE._serialized_end = 916
+    _EVENT._serialized_start = 919
+    _EVENT._serialized_end = 1078
+    _CONNECTAPPLICATION._serialized_start = 1080
+    _CONNECTAPPLICATION._serialized_end = 1112
+    _APPLICATIONCONNECTED._serialized_start = 1114
+    _APPLICATIONCONNECTED._serialized_end = 1200
+    _ACKBLOCK._serialized_start = 1202
+    _ACKBLOCK._serialized_end = 1226
+    _CONNECTINDEXERREQUEST._serialized_start = 1229
+    _CONNECTINDEXERREQUEST._serialized_end = 1387
+    _NEWBLOCK._serialized_start = 1389
+    _NEWBLOCK._serialized_end = 1460
+    _REORG._serialized_start = 1462
+    _REORG._serialized_end = 1530
+    _NEWEVENTS._serialized_start = 1532
+    _NEWEVENTS._serialized_end = 1638
+    _CONNECTINDEXERRESPONSE._serialized_start = 1641
+    _CONNECTINDEXERRESPONSE._serialized_end = 1927
+    _APPLICATIONMANAGER._serialized_start = 1930
+    _APPLICATIONMANAGER._serialized_end = 2602
 # @@protoc_insertion_point(module_scope)

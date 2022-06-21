@@ -5,7 +5,8 @@ from functools import wraps
 
 import click
 
-from isaac_api.apibara import ApplicationManager
+from isaac_api.apibara import ApplicationManager, Event, NewBlock, NewEvents, Reorg
+from isaac_api.contract import decode_forward_world_event
 
 
 def coro(f):
@@ -58,4 +59,31 @@ async def start(application_id):
     """Start indexing the given application"""
     async with ApplicationManager.insecure_channel("localhost:7171") as app_manager:
         app = await app_manager.get_application(application_id)
-        print(app)
+        if app is None:
+            print(f'Application with id "{application_id}" does not exist')
+            return
+
+        response_iter, client = await app_manager.connect_indexer()
+
+        await client.connect_application(application_id)
+
+        isaac_address = bytes.fromhex(
+            "0758e8e3153a61474376838aeae42084dae0ef55e0206b19b2a85e039d1ef180"
+        )
+
+        async for response in response_iter:
+            if isinstance(response, NewBlock):
+                print(f"New Block: {response.new_head.number}")
+            elif isinstance(response, Reorg):
+                print(f"Reorg    : {response.new_head.number}")
+            elif isinstance(response, NewEvents):
+                print(f"New Event: {response.block_number}")
+                assert len(response.events) == 1
+                event = response.events[0]
+                assert event.address == isaac_address
+                macro_state, phi = decode_forward_world_event(event)
+                print("Sun 0  = ", macro_state.sun0.q.x, macro_state.sun0.q.y)
+                print("Sun 1  = ", macro_state.sun1.q.x, macro_state.sun1.q.y)
+                print("Sun 2  = ", macro_state.sun2.q.x, macro_state.sun2.q.y)
+                print("Planet = ", macro_state.planet.q.x, macro_state.planet.q.y)
+                print("phi    = ", phi)
