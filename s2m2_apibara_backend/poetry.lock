@@ -1,4 +1,12 @@
 [[package]]
+name = "aiochannel"
+version = "1.1.1"
+description = "asyncio Channels (closable queues) inspired by golang"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "atomicwrites"
 version = "1.4.0"
 description = "Atomic file writes."
@@ -229,9 +237,12 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "ee3ccc2feaf9d293b0ec1691c8800b4a26f7bde0f1e26204a3850423d5cf8394"
+content-hash = "86a0bcd49c4f8adb988546862c1a01c3a4a74009237183130fa992a8f064ceb8"
 
 [metadata.files]
+aiochannel = [
+    {file = "aiochannel-1.1.1.tar.gz", hash = "sha256:2e6adf5bc5aad39eb9a3cd72e3198a96c81e4367f3330ab935f8c8759a278cf7"},
+]
 atomicwrites = [
     {file = "atomicwrites-1.4.0-py2.py3-none-any.whl", hash = "sha256:6d1784dea7c0c8d4a5172b6c620f40b6e4cbfdf96d783691f2e1302a7b88e197"},
     {file = "atomicwrites-1.4.0.tar.gz", hash = "sha256:ae70396ad1a434f9c7046fd2dd196fc04b12f9e91ffb859164193be8b6168a7a"},
