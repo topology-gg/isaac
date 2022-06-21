@@ -80,6 +80,7 @@ export default function GameWorld() {
     const drawWorld = canvi => {
         // console.log ("drawWorld")
         if (macro_states && macro_states.macro_states.length > 0) {
+            console.log ("fetched", macro_states.macro_states.length, "macro_states in total.")
             const macro_state = macro_states.macro_states[0]
             // decode base64 to bytes, then bytes to BigNumber
             const phi = new BigNumber(Buffer.from(macro_state.phi, 'base64').toString('hex'), 16)
@@ -114,7 +115,7 @@ export default function GameWorld() {
         const DISPLAY_SCALE = 60
         const GRID_STYLE = {
             stroke: '#CCCCCC',
-            strokeWidth: 0.2,
+            strokeWidth: 0.5,
             selectable: false
         }
 
@@ -145,30 +146,107 @@ export default function GameWorld() {
         const sun2_left_center = ORIGIN_X + sun2_x.toString(10) *DISPLAY_SCALE
         const sun2_top_center  = ORIGIN_Y + sun2_y.toString(10) *DISPLAY_SCALE
 
+        const plnt_left_center = ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE
+        const plnt_top_center  = ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE
+
         //
         // Draw grid lines first
         //
         const line0_vertical = new fabric.Line(
             [sun0_left_center, 0, sun0_left_center, sun0_top_center], GRID_STYLE);
-        const line0_horizontal = new fabric.Line(
-            [0, sun0_top_center, sun0_left_center, sun0_top_center], GRID_STYLE);
+        // const line0_horizontal = new fabric.Line(
+        //     [0, sun0_top_center, sun0_left_center, sun0_top_center], GRID_STYLE);
 
-        const line1_vertical = new fabric.Line(
-            [sun1_left_center, 0, sun1_left_center, sun1_top_center], GRID_STYLE);
+        // const line1_vertical = new fabric.Line(
+        //     [sun1_left_center, 0, sun1_left_center, sun1_top_center], GRID_STYLE);
         const line1_horizontal = new fabric.Line(
             [0, sun1_top_center, sun1_left_center, sun1_top_center], GRID_STYLE);
 
-        const line2_vertical = new fabric.Line(
-            [sun2_left_center, 0, sun2_left_center, sun2_top_center], GRID_STYLE);
+        // const line2_vertical = new fabric.Line(
+        //     [sun2_left_center, 0, sun2_left_center, sun2_top_center], GRID_STYLE);
         const line2_horizontal = new fabric.Line(
-            [0, sun2_top_center, sun2_left_center, sun2_top_center], GRID_STYLE);
+            [sun2_left_center, sun2_top_center, window_dim.width, sun2_top_center], GRID_STYLE);
+
+        const line_plnt_vertical = new fabric.Line(
+            [plnt_left_center, plnt_top_center, plnt_left_center, window_dim.height], GRID_STYLE);
 
         canvi.add (line0_vertical)
-        canvi.add (line0_horizontal)
-        canvi.add (line1_vertical)
+        // canvi.add (line0_horizontal)
+        // canvi.add (line1_vertical)
         canvi.add (line1_horizontal)
-        canvi.add (line2_vertical)
+        // canvi.add (line2_vertical)
         canvi.add (line2_horizontal)
+        canvi.add (line_plnt_vertical)
+
+
+        //
+        // Draw textboxes
+        //
+        const tbox_plnt_bg = new fabric.Rect({
+            fill: '#CCCCCC', scaleY: 0.5,
+            originX: 'center', originY: 'center',
+            rx: 5, ry: 5,
+            width:  90, height: 80
+        });
+        const tbox_plnt_text = new fabric.Text(
+            'Ev', {
+            fontSize: 18, originX: 'center', originY: 'center', fill: '#333333'
+        });
+        const tbox_plnt_group = new fabric.Group([ tbox_plnt_bg, tbox_plnt_text ], {
+            left: plnt_left_center - 45,
+            top: window_dim.height - 40
+        });
+
+        const tbox_sun0_bg = new fabric.Rect({
+            fill: '#CCCCCC', scaleY: 0.5,
+            originX: 'center', originY: 'center',
+            rx: 5, ry: 5,
+            width: 90, height: 80
+        });
+        const tbox_sun0_text = new fabric.Text(
+            'Böyük', {
+            fontSize: 18, originX: 'center', originY: 'center', fill: '#333333'
+        });
+        const tbox_sun0_group = new fabric.Group([ tbox_sun0_bg, tbox_sun0_text ], {
+            left: sun0_left_center - 45,
+            top: 0
+        });
+
+        const tbox_sun1_bg = new fabric.Rect({
+            fill: '#CCCCCC', scaleY: 0.5,
+            originX: 'center', originY: 'center',
+            rx: 5, ry: 5,
+            width: 90, height: 80
+        });
+        const tbox_sun1_text = new fabric.Text(
+            'Orta', {
+            fontSize: 18, originX: 'center', originY: 'center', fill: '#333333'
+        });
+        const tbox_sun1_group = new fabric.Group([ tbox_sun1_bg, tbox_sun1_text ], {
+            left: 0,
+            top: sun1_top_center - 40/2
+        });
+
+        const tbox_sun2_bg = new fabric.Rect({
+            fill: '#CCCCCC', scaleY: 0.5,
+            originX: 'center', originY: 'center',
+            rx: 5, ry: 5,
+            width: 90, height: 80
+        });
+        const tbox_sun2_text = new fabric.Text(
+            'Balaca', {
+            fontSize: 18, originX: 'center', originY: 'center', fill: '#333333'
+        });
+        const tbox_sun2_group = new fabric.Group([ tbox_sun2_bg, tbox_sun2_text ], {
+            left: window_dim.width-90,
+            top: sun2_top_center - 40/2
+        });
+
+        canvi.add (tbox_plnt_group)
+        canvi.add (tbox_sun0_group)
+        canvi.add (tbox_sun1_group)
+        canvi.add (tbox_sun2_group)
+
 
         //
         // Draw cocentric circles
@@ -190,11 +268,95 @@ export default function GameWorld() {
             canvi.add (circle)
         }
 
+        //
+        // Draw the trajectories using historical states
+        //
+        if (macro_states.macro_states.length > 1){
+            const history_len = macro_states.macro_states.length
+            console.log("history_len", history_len)
+            for (var i = 1; i < history_len; i++){
+                const historical_state = macro_states.macro_states[i]
+                const historical_dynamics = historical_state.dynamics
+                const plnt_x = historical_dynamics.planet.q.x
+                const plnt_y = historical_dynamics.planet.q.y
+                const sun0_x = historical_dynamics.sun0.q.x
+                const sun0_y = historical_dynamics.sun0.q.y
+                const sun1_x = historical_dynamics.sun1.q.x
+                const sun1_y = historical_dynamics.sun1.q.y
+                const sun2_x = historical_dynamics.sun2.q.x
+                const sun2_y = historical_dynamics.sun2.q.y
+
+                const sun0_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
+                const sun0_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
+
+                const sun1_left = ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
+                const sun1_top  = ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
+
+                const sun2_left = ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
+                const sun2_top  = ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
+
+                const plnt_left = ORIGIN_X + (plnt_x.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE
+                const plnt_top  = ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE
+
+                const historical_sun0_circle = new fabric.Circle ({
+                    left: sun0_left,
+                    top:  sun0_top,
+                    radius: SUN0_RADIUS * DISPLAY_SCALE,
+                    stroke: '',
+                    strokeWidth: 0.1,
+                    fill: '#6289AF10',
+                    selectable: false,
+                    hoverCursor: "pointer"
+                });
+
+                const historical_sun1_circle = new fabric.Circle ({
+                    left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
+                    top:  ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
+                    radius: SUN1_RADIUS * DISPLAY_SCALE,
+                    stroke: '',
+                    strokeWidth: 0.1,
+                    fill: '#FF8B5810',
+                    selectable: false,
+                    hoverCursor: "pointer"
+                });
+
+                const historical_sun2_circle = new fabric.Circle ({
+                    left: ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
+                    top:  ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
+                    radius: SUN2_RADIUS * DISPLAY_SCALE,
+                    stroke: '',
+                    strokeWidth: 0.1,
+                    fill: '#A0576010',
+                    selectable: false,
+                    hoverCursor: "pointer"
+                });
+
+                const historical_plnt_circle = new fabric.Circle ({
+                    left: plnt_left,
+                    top:  plnt_top,
+                    radius: PLNT_RADIUS * DISPLAY_SCALE,
+                    stroke: '',
+                    strokeWidth: 0.1,
+                    fill: '#8E8E8E10',
+                    selectable: false,
+                    hoverCursor: "pointer"
+                });
+
+                canvi.add (historical_sun0_circle)
+                canvi.add (historical_sun1_circle)
+                canvi.add (historical_sun2_circle)
+                canvi.add (historical_plnt_circle)
+            }
+        }
+
+        //
+        // Draw the suns
+        //
         const sun0_circle = new fabric.Circle ({
             left: sun0_left,
             top:  sun0_top,
             radius: SUN0_RADIUS * DISPLAY_SCALE,
-            stroke: 'black',
+            stroke: '#CCCCCC',
             strokeWidth: 1,
             fill: '#6289AF',
             selectable: false,
@@ -205,7 +367,7 @@ export default function GameWorld() {
             left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
             top:  ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
             radius: SUN1_RADIUS * DISPLAY_SCALE,
-            stroke: 'black',
+            stroke: '#CCCCCC',
             strokeWidth: 1,
             fill: '#FF8B58',
             selectable: false,
@@ -216,31 +378,31 @@ export default function GameWorld() {
             left: ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
             top:  ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
             radius: SUN2_RADIUS * DISPLAY_SCALE,
-            stroke: 'black',
+            stroke: '#CCCCCC',
             strokeWidth: 1,
             fill: '#A05760',
             selectable: false,
             hoverCursor: "pointer"
         });
 
-        const plnt_rect = new fabric.Rect({
-            left: ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
-            top:  ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
-            height: PLNT_RADIUS * 2 * DISPLAY_SCALE,
-            width: PLNT_RADIUS * 2 * DISPLAY_SCALE,
-            angel: 60,
-            stroke: 'black',
-            strokeWidth: 2,
-            fill: '',
-            selectable: false,
-            hoverCursor: "pointer"
-        });
+        // const plnt_rect = new fabric.Rect({
+        //     left: ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
+        //     top:  ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
+        //     height: PLNT_RADIUS * 2 * DISPLAY_SCALE,
+        //     width: PLNT_RADIUS * 2 * DISPLAY_SCALE,
+        //     angel: 60,
+        //     stroke: 'black',
+        //     strokeWidth: 2,
+        //     fill: '',
+        //     selectable: false,
+        //     hoverCursor: "pointer"
+        // });
 
         const plnt_circle = new fabric.Circle ({
             left: ORIGIN_X + (plnt_x.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
             top:  ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
             radius: PLNT_RADIUS * DISPLAY_SCALE,
-            stroke: 'black',
+            stroke: '#CCCCCC',
             strokeWidth: 0.5,
             fill: '#8E8E8E',
             selectable: false,
@@ -251,7 +413,7 @@ export default function GameWorld() {
         canvi.add (sun1_circle)
         canvi.add (sun2_circle)
         canvi.add (plnt_circle)
-        console.log ("planet rect angle:", plnt_rect.angle)
+        // console.log ("planet rect angle:", plnt_rect.angle)
 
     }
 
@@ -315,65 +477,6 @@ export default function GameWorld() {
 
         canvi.renderAll();
     }
-
-    const drawDevices = canvi => {
-
-        // Basic geometries provided by Fabric:
-        // circle, ellipse, rectangle, triangle
-        // reference: https://www.htmlgoodies.com/html5/drawing-shapes-with-the-fabric-js-canvas-library/
-
-        // if (device_emap && utb_grids) {
-            // if (device_emap.emap && utb_grids.grids) {
-
-        //
-        // Draw devices
-        //
-        for (const entry of device_emap.emap){
-            const x = entry.grid.x.toNumber()
-            const y = entry.grid.y.toNumber()
-            const typ = entry.type.toNumber()
-            // console.log("> entry: ", typ, x, y)
-
-            const device_dim = DEVICE_DIM_MAP.get(typ)
-            const device_color = DEVICE_COLOR_MAP.get(typ)
-
-            const rect = new fabric.Rect({
-                height: device_dim*GRID,
-                width: device_dim*GRID,
-                left: PAD + x*GRID,
-                top: PAD + (SIDE*3-y-device_dim)*GRID,
-                fill: device_color
-                });
-            canvi.add(rect);
-        }
-
-        //
-        // Draw utbs
-        //
-        for (const grid of utb_grids.grids){
-            // console.log("> utb:",x, y)
-
-            const x = grid.x.toNumber()
-            const y = grid.y.toNumber()
-            const device_dim = 1
-            const device_color = DEVICE_COLOR_MAP.get(12)
-
-            const rect = new fabric.Rect({
-                height: device_dim*GRID,
-                width: device_dim*GRID,
-                left: PAD + x*GRID,
-                top: PAD + (SIDE*3-y-device_dim)*GRID,
-                fill: device_color
-                });
-                canvi.add(rect);
-        }
-
-            // }
-        // }
-
-        canvi.renderAll();
-    }
-
 
     //
     // Return component

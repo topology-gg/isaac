@@ -13,7 +13,7 @@ export default async function handler(req, res) {
         .find()
         .project({ 'phi': 1, 'dynamics': 1, 'block_number': 1 })
         .sort({ 'block_number': -1 })
-        .limit(3)
+        .limit(100)
         .toArray()
 
     res.status(200).json({ 'macro_states': macro_states })
