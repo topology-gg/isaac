@@ -125,7 +125,8 @@ function createTriangle(x, y, rotation)
         strokeWidth: 1,
         left: pos.x,
         top: pos.y,
-        angle: rotation
+        angle: rotation,
+        hoverCursor: 'default'
     });
 }
 
@@ -171,7 +172,8 @@ export default function GameWorld() {
         _refs.current[0] = new fabric.Canvas('c', {
             height: CANVAS_H,
             width: CANVAS_W,
-            backgroundColor: '#E3EDFF'
+            backgroundColor: '#E3EDFF',
+            selection: false
         })
         _refs.current[1] = false
     }, []);
@@ -204,13 +206,13 @@ export default function GameWorld() {
             PAD + 0 - GRID*AXIS_EXTEND_GRID_MULTIPLE,
             PAD + 0,
             PAD + SIDE*GRID*3
-        ], { stroke: STROKE, selectable: false }));
+        ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
         canvi.add(new fabric.Line([
             PAD + 0,
             PAD + SIDE*GRID*3,
             PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE,
             PAD + SIDE*GRID*3
-        ], { stroke: STROKE, selectable: false }));
+        ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
 
         const triangle_y_axis = createTriangle (
             PAD-(TRIANGLE_W/2),
@@ -235,7 +237,8 @@ export default function GameWorld() {
                 left: PAD + 0 - GRID*2,
                 fontSize: 16,
                 textAlign: 'left',
-                fill: STROKE_EDGE
+                fill: STROKE_EDGE,
+                hoverCursor: 'default'
             });
 
         const text_y_d = '(0,' + SIDE.toString() + ')'
@@ -246,7 +249,8 @@ export default function GameWorld() {
                 left: PAD + 0 - GRID*6,
                 fontSize: 16,
                 textAlign: 'left',
-                fill: STROKE_EDGE
+                fill: STROKE_EDGE,
+                hoverCursor: 'default'
             });
 
         const text_y_2d = '(0,' + (2*SIDE).toString() + ')'
@@ -257,7 +261,8 @@ export default function GameWorld() {
                 left: PAD + 0 - GRID*6,
                 fontSize: 16,
                 textAlign: 'left',
-                fill: STROKE_EDGE
+                fill: STROKE_EDGE,
+                hoverCursor: 'default'
             });
 
         const text_y_3d = '(0,' + (3*SIDE).toString() + ')'
@@ -268,7 +273,8 @@ export default function GameWorld() {
                 left: PAD + 0 - GRID*6,
                 fontSize: 16,
                 textAlign: 'left',
-                fill: STROKE_EDGE
+                fill: STROKE_EDGE,
+                hoverCursor: 'default'
             });
 
         const text_x_d = '(' + SIDE.toString() + ',0)'
@@ -279,7 +285,8 @@ export default function GameWorld() {
                 left: PAD + SIDE*GRID*1 - GRID*2,
                 fontSize: 16,
                 textAlign: 'left',
-                fill: STROKE_EDGE
+                fill: STROKE_EDGE,
+                hoverCursor: 'default'
             });
 
         const text_x_2d = '(' + (2*SIDE).toString() + ',0)'
@@ -290,7 +297,8 @@ export default function GameWorld() {
                 left: PAD + SIDE*GRID*2 - GRID*2,
                 fontSize: 16,
                 textAlign: 'left',
-                fill: STROKE_EDGE
+                fill: STROKE_EDGE,
+                hoverCursor: 'default'
             });
 
         const text_x_3d = '(' + (3*SIDE).toString() + ',0)'
@@ -301,7 +309,8 @@ export default function GameWorld() {
                 left: PAD + SIDE*GRID*3 - GRID*2,
                 fontSize: 16,
                 textAlign: 'left',
-                fill: STROKE_EDGE
+                fill: STROKE_EDGE,
+                hoverCursor: 'default'
             });
 
         const text_x_4d = '(' + (4*SIDE).toString() + ',0)'
@@ -312,7 +321,8 @@ export default function GameWorld() {
                 left: PAD + SIDE*GRID*4 - GRID*2,
                 fontSize: 16,
                 textAlign: 'left',
-                fill: STROKE_EDGE
+                fill: STROKE_EDGE,
+                hoverCursor: 'default'
             });
 
         canvi.add (tbox_origin)
@@ -333,7 +343,7 @@ export default function GameWorld() {
                 PAD + SIDE*GRID,
                 PAD + xi*GRID,
                 PAD + SIDE*GRID*2
-            ], { stroke: STROKE, selectable: false }));
+            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
         }
         for (var xi = SIDE; xi < SIDE*2+1; xi++){
             canvi.add(new fabric.Line([
@@ -341,7 +351,7 @@ export default function GameWorld() {
                 PAD + 0,
                 PAD + xi*GRID,
                 PAD + SIDE*GRID*3
-            ], { stroke: STROKE, selectable: false }));
+            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
         }
         for (var xi = 2*SIDE+1; xi < SIDE*4+1; xi++){
             canvi.add(new fabric.Line([
@@ -349,7 +359,7 @@ export default function GameWorld() {
                 PAD + SIDE*GRID,
                 PAD + xi*GRID,
                 PAD + SIDE*GRID*2
-            ], { stroke: STROKE, selectable: false }));
+            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
         }
 
         //
@@ -361,7 +371,7 @@ export default function GameWorld() {
                 PAD + yi*GRID,
                 PAD + SIDE*GRID*2,
                 PAD + yi*GRID
-            ], { stroke: STROKE, selectable: false }));
+            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
         }
         for (var yi = SIDE; yi < 2*SIDE+1; yi++){
             canvi.add(new fabric.Line([
@@ -369,7 +379,7 @@ export default function GameWorld() {
                 PAD + yi*GRID,
                 PAD + SIDE*GRID*4,
                 PAD + yi*GRID
-            ], { stroke: STROKE, selectable: false }));
+            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
         }
         for (var yi = 2*SIDE+1; yi < 3*SIDE+1; yi++){
             canvi.add(new fabric.Line([
@@ -377,7 +387,7 @@ export default function GameWorld() {
                 PAD + yi*GRID,
                 PAD + SIDE*GRID*2,
                 PAD + yi*GRID
-            ], { stroke: STROKE, selectable: false }));
+            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
         }
 
         canvi.renderAll();
@@ -410,7 +420,7 @@ export default function GameWorld() {
                 left: PAD + x*GRID,
                 top: PAD + (SIDE*3-y-device_dim)*GRID,
                 fill: device_color,
-                selectable: true,
+                selectable: false,
                 hoverCursor: 'pointer'
             });
             canvi.add(rect);
@@ -428,11 +438,13 @@ export default function GameWorld() {
             const device_color = DEVICE_COLOR_MAP.get(12)
 
             const rect = new fabric.Rect({
-                height: device_dim*GRID,
-                width: device_dim*GRID,
-                left: PAD + x*GRID,
-                top: PAD + (SIDE*3-y-device_dim)*GRID,
-                fill: device_color
+                    height: device_dim*GRID,
+                    width: device_dim*GRID,
+                    left: PAD + x*GRID,
+                    top: PAD + (SIDE*3-y-device_dim)*GRID,
+                    fill: device_color,
+                    selectable: false,
+                    hoverCursor: 'pointer'
                 });
                 canvi.add(rect);
         }
