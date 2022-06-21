@@ -17,10 +17,15 @@ function useUniverseContract() {
 //
 // Constants
 //
-const GRID = 7 // grid size
-const PAD = 50 // pad size
+const GRID = 8 // grid size
+const PAD = 100 // pad size
 const SIDE = 25 // number of grids per size (planet dimension)
-const STROKE = 'rgba(200,200,200,1)' // grid stroke color
+const STROKE = '#BBBBBB' // grid stroke color
+const STROKE_EDGE = '#333333' // grid stroke color
+const CANVAS_W = 1050
+const CANVAS_H = 900
+const TRIANGLE_W = 10
+const TRIANGLE_H = 15
 
 const DEVICE_DIM_MAP = new Map();
 DEVICE_DIM_MAP.set(0, 1);
@@ -101,6 +106,29 @@ DEVICE_COLOR_MAP.set(15, "#51499E"); // NDPE
 // dw 5 # opsf
 // dw 5 # ndpe
 
+function createTriangle(x, y, rotation)
+{
+    var width  = TRIANGLE_W;
+    var height = TRIANGLE_H;
+    var pos = fabric.util.rotatePoint(
+        new fabric.Point(x, y),
+        new fabric.Point(x + width / 2, y + height / 3 * 2),
+        fabric.util.degreesToRadians(rotation)
+    );
+    return new fabric.Triangle(
+    {
+        width: width,
+        height: height,
+        selectable: false,
+        fill: STROKE,
+        stroke: STROKE,
+        strokeWidth: 1,
+        left: pos.x,
+        top: pos.y,
+        angle: rotation
+    });
+}
+
 export default function GameWorld() {
 
     // Credits:
@@ -141,8 +169,8 @@ export default function GameWorld() {
     useEffect (() => {
         // console.log("useEffect(callback, []) called.")
         _refs.current[0] = new fabric.Canvas('c', {
-            height: 700,
-            width: 1200,
+            height: CANVAS_H,
+            width: CANVAS_W,
             backgroundColor: '#E3EDFF'
         })
         _refs.current[1] = false
@@ -166,6 +194,135 @@ export default function GameWorld() {
     }
 
     const drawGrid = canvi => {
+
+        //
+        // Axes for coordinate system
+        //
+        const AXIS_EXTEND_GRID_MULTIPLE = 7
+        canvi.add(new fabric.Line([
+            PAD + 0,
+            PAD + 0 - GRID*AXIS_EXTEND_GRID_MULTIPLE,
+            PAD + 0,
+            PAD + SIDE*GRID*3
+        ], { stroke: STROKE, selectable: false }));
+        canvi.add(new fabric.Line([
+            PAD + 0,
+            PAD + SIDE*GRID*3,
+            PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE,
+            PAD + SIDE*GRID*3
+        ], { stroke: STROKE, selectable: false }));
+
+        const triangle_y_axis = createTriangle (
+            PAD-(TRIANGLE_W/2),
+            PAD - GRID*AXIS_EXTEND_GRID_MULTIPLE - TRIANGLE_H,
+            0
+        )
+        const triangle_x_axis = createTriangle (
+            PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE,
+            PAD + SIDE*GRID*3 - TRIANGLE_W,
+            90
+        )
+        canvi.add (triangle_y_axis);
+        canvi.add (triangle_x_axis);
+
+        //
+        // Axis ticks
+        //
+        const tbox_origin = new fabric.Textbox(
+            '(0,0)', {
+                width: 100,
+                top:  PAD + SIDE*GRID*3 + GRID,
+                left: PAD + 0 - GRID*2,
+                fontSize: 16,
+                textAlign: 'left',
+                fill: STROKE_EDGE
+            });
+
+        const text_y_d = '(0,' + SIDE.toString() + ')'
+        const tbox_y_d = new fabric.Textbox(
+            text_y_d, {
+                width: 100,
+                top:  PAD + SIDE*GRID*2 - GRID*2,
+                left: PAD + 0 - GRID*6,
+                fontSize: 16,
+                textAlign: 'left',
+                fill: STROKE_EDGE
+            });
+
+        const text_y_2d = '(0,' + (2*SIDE).toString() + ')'
+        const tbox_y_2d = new fabric.Textbox(
+            text_y_2d, {
+                width: 100,
+                top:  PAD + SIDE*GRID*1 - GRID*2,
+                left: PAD + 0 - GRID*6,
+                fontSize: 16,
+                textAlign: 'left',
+                fill: STROKE_EDGE
+            });
+
+        const text_y_3d = '(0,' + (3*SIDE).toString() + ')'
+        const tbox_y_3d = new fabric.Textbox(
+            text_y_3d, {
+                width: 100,
+                top:  PAD + SIDE*GRID*0 - GRID*2,
+                left: PAD + 0 - GRID*6,
+                fontSize: 16,
+                textAlign: 'left',
+                fill: STROKE_EDGE
+            });
+
+        const text_x_d = '(' + SIDE.toString() + ',0)'
+        const tbox_x_d = new fabric.Textbox(
+            text_x_d, {
+                width: 100,
+                top:  PAD + SIDE*GRID*3 + GRID,
+                left: PAD + SIDE*GRID*1 - GRID*2,
+                fontSize: 16,
+                textAlign: 'left',
+                fill: STROKE_EDGE
+            });
+
+        const text_x_2d = '(' + (2*SIDE).toString() + ',0)'
+        const tbox_x_2d = new fabric.Textbox(
+            text_x_2d, {
+                width: 100,
+                top:  PAD + SIDE*GRID*3 + GRID,
+                left: PAD + SIDE*GRID*2 - GRID*2,
+                fontSize: 16,
+                textAlign: 'left',
+                fill: STROKE_EDGE
+            });
+
+        const text_x_3d = '(' + (3*SIDE).toString() + ',0)'
+        const tbox_x_3d = new fabric.Textbox(
+            text_x_3d, {
+                width: 100,
+                top:  PAD + SIDE*GRID*3 + GRID,
+                left: PAD + SIDE*GRID*3 - GRID*2,
+                fontSize: 16,
+                textAlign: 'left',
+                fill: STROKE_EDGE
+            });
+
+        const text_x_4d = '(' + (4*SIDE).toString() + ',0)'
+        const tbox_x_4d = new fabric.Textbox(
+            text_x_4d, {
+                width: 100,
+                top:  PAD + SIDE*GRID*3 + GRID,
+                left: PAD + SIDE*GRID*4 - GRID*2,
+                fontSize: 16,
+                textAlign: 'left',
+                fill: STROKE_EDGE
+            });
+
+        canvi.add (tbox_origin)
+        canvi.add (tbox_y_d)
+        canvi.add (tbox_y_2d)
+        canvi.add (tbox_y_3d)
+        canvi.add (tbox_x_d)
+        canvi.add (tbox_x_2d)
+        canvi.add (tbox_x_3d)
+        canvi.add (tbox_x_4d)
 
         //
         // Grid lines parallel to Y-axis
