@@ -15,11 +15,33 @@ function Home() {
 
   return (
     <StarknetProvider>
-      <h3>Argent X Wallet</h3>
-      <ConnectWallet />
+      <div className="mother-container">
 
-      <GameStats />
-      <GameWorld />
+          <div className="left-child-container">
+            <GameWorld />
+          </div>
+
+          <div className="right-child-container">
+
+            <div className="right-child-top">
+              <span>.</span>
+
+              <h2>Isaac / Working View</h2>
+
+              <span>.</span>
+
+              <h3>Argent X Wallet</h3>
+              <ConnectWallet />
+            </div>
+
+            <div className="right-child-bottom">
+              <span>.</span>
+              <GameStats />
+            </div>
+
+          </div>
+
+      </div>
 
     </StarknetProvider>
   )

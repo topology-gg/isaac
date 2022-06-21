@@ -34,7 +34,7 @@ export function ConnectWallet() {
   const { account, connect } = useStarknet()
 
   if (account) {
-    return <p>Account: {account}</p>
+    return <p>Account: {String(account).slice(0,5)}...{String(account).slice(-4)}</p>
   }
 
   return <button onClick={() => connect(new InjectedConnector())}>Connect Argent X Wallet</button>
