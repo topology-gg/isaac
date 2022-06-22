@@ -12,7 +12,7 @@ const GYOZA = 0x077d04506374b4920d6c35ecaded1ed7d26dd283ee64f284481e2574e77852c6
 # --> towards multi-scale simulation
 #
 const MIN_L2_BLOCK_NUM_BETWEEN_FORWARD = 2
-const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 2520 # 7 days * 24 hours * 60 minutes / 4 minutes (2x l2 block time) = 2520
+const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 2160 # 6 days * 24 hours * 60 minutes / 4 minutes (2x L2 block time) = 2160
 
 #
 # Capacity control - size of civilization per universe, and number of universes deployed

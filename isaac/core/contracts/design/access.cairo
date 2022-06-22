@@ -4,6 +4,9 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash import hash2
 
+#
+# Temporary solution until wallet infrastructure stabilizes to Cairo 0.9
+#
 func assert_correct_admin_key {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         admin_key : felt
     ) -> ():
