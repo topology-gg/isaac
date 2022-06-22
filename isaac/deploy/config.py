@@ -174,6 +174,7 @@ tx_hashes.append (tx_hash)
 
 #
 # Hook up all yagi routers with respective addresses, using the correct password
+# TODO: use caller address instead of password once wallet infrastructure is stabilzed
 #
 print (f"> Hook up all yagi routers - 1 for dao, 1 for lobby, and 1 for each universe")
 PASSWORD = sys.argv[1]
@@ -209,23 +210,3 @@ for i in range(UNIVERSE_COUNT):
 print (f"> Waiting for all deployment transactions to complete")
 _poll_list_tx_hashes_until_all_accepted (tx_hashes, interval_in_sec=30)
 print (f"  => All deployment transactions completed.")
-
-############################################################################
-
-## Yagi router for DAO addr      : 0x04cea4776844c6b2a332e8c291c4846a32949d396649508d9a2e639ebc83bfab
-## Yagi router for Lobby addr    : 0x062a92e4635ab1a4107be8669b790608a65b8626f66a749e53795a7d6b54d1f1
-## Yagi router for Universe0 addr: 0x05822493e78d840e11bda49af5934bde2af93f47a3dea8e9e74588b0c313b733
-## Yagi router for Universe1 addr: 0x07723221aa0d8e1836792c8bac5d900e6f33979973ddc56983a7b173d280ac5e
-## Yagi router for Universe2 addr: 0x03ad196a02644d68cc063222f65da085da3f612ab82163ddd00f61a11073a385
-
-########
-
-## NEXT:
-
-## - At each Universe, invoke set_lobby_address_once(), providing Lobby address
-## - At Lobby, invoke set_dao_address_once(), providing DAO address
-
-## - At each FSM, invoke init_owner_dao_address_once(), providing DAO address
-
-## - Hook up all yagi routers with respective addresses
-##   (do on Voyager, because access restricted to GYOZA on argent X)

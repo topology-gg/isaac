@@ -80,7 +80,7 @@ There are resource and energy requirement for constructing devices, tabulated as
 | NDPE             | 50     | 0      | 1000       | 0      | 1000       | 0      | 1000       | 0      | 1000       | 0      | 1000        |
 
 For definitions in code:
-- Resource requirement is defined in the namespace `core/contracts/util/manufacturing.cairo` :: `ns_manufacturing`.
+- Resource requirement is defined in the namespace `core/contracts/design/manufacturing.cairo` :: `ns_manufacturing`.
 - For energy requirement is defined in the namespace `core/contracts/design/constants.cairo` :: `ns_energy_requirements`.
 
 ##### Placement
