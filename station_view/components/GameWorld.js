@@ -1,5 +1,6 @@
 import React, { Component, useState, useEffect, useRef, useMemo } from "react";
 import { fabric } from 'fabric';
+import { toBN } from 'starknet/dist/utils/number'
 
 import {
     useStarknet,
@@ -157,6 +158,11 @@ export default function GameWorld() {
         method: 'anyone_view_all_utx_grids',
         args: [13]
     })
+    const { data: civ_player_address_0 } = useStarknetCall({
+        contract,
+        method: 'civilization_player_idx_to_address_read',
+        args: [0]
+    })
 
     //
     // Logic to initialize a Fabric canvas
@@ -186,6 +192,19 @@ export default function GameWorld() {
     }, [device_emap, utb_grids]);
 
     const drawWorld = canvi => {
+
+        if (civ_player_address_0) {
+            if (civ_player_address_0.address) {
+                const player_0_addr = toBN (civ_player_address_0.address).toString()
+                console.log ("civ_player_address_0.address", player_0_addr)
+                if (player_0_addr === "0") {
+                    console.log ("The address of player 0 is 0x0 => this universe is not active!")
+                    drawIdleMessage (canvi)
+                    return
+                }
+            }
+        }
+
         if (device_emap && utb_grids) {
             if (device_emap.emap && utb_grids.grids) {
                 drawGrid (canvi)
@@ -193,6 +212,20 @@ export default function GameWorld() {
                 _refs.current[1] = true
             }
         }
+    }
+
+    const drawIdleMessage = canvi => {
+        const tbox_idle_message = new fabric.Textbox(
+            'This universe is not active.', {
+                width: 200,
+                top:  CANVAS_H/2 - 100,
+                left: CANVAS_W/2 - 100,
+                fontSize: 20,
+                textAlign: 'left',
+                fill: "#333333",
+                hoverCursor: 'default'
+            });
+        canvi.add (tbox_idle_message)
     }
 
     const drawGrid = canvi => {
