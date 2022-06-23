@@ -24,6 +24,31 @@ const STARK_PRIME = new BigNumber('361850278866613121369732278309507010562310721
 const STARK_PRIME_HALF = new BigNumber('1809251394333065606848661391547535052811553607665798349986546028067936010240')
 const STROKE = 'rgba(200,200,200,1)' // grid stroke color
 
+
+function createTriangle(x, y, w, h, rotation)
+{
+    var width  = w;
+    var height = h;
+    var pos = fabric.util.rotatePoint(
+        new fabric.Point(x, y),
+        new fabric.Point(x + width / 2, y + height / 3 * 2),
+        fabric.util.degreesToRadians(rotation)
+    );
+    return new fabric.Triangle(
+    {
+        width: width,
+        height: height,
+        selectable: false,
+        fill: STROKE,
+        stroke: STROKE,
+        strokeWidth: 1,
+        left: pos.x,
+        top: pos.y,
+        angle: rotation,
+        hoverCursor: 'default'
+    });
+}
+
 export default function GameWorld() {
 
     fabric.Object.prototype.selectable = false;
@@ -182,6 +207,14 @@ export default function GameWorld() {
         //
         // Draw textboxes
         //
+        const FONT_SIZE_NAME = 15
+        const FONT_SIZE_COORD = 12
+        const COORD_SLICE = 6
+        const sun0_coord_text = '(' + sun0_x.toString().slice(0,COORD_SLICE) + ', ' + sun0_y.toString().slice(0,COORD_SLICE) + ')'
+        const sun1_coord_text = '(' + sun1_x.toString().slice(0,COORD_SLICE) + ', ' + sun1_y.toString().slice(0,COORD_SLICE) + ')'
+        const sun2_coord_text = '(' + sun2_x.toString().slice(0,COORD_SLICE) + ', ' + sun2_y.toString().slice(0,COORD_SLICE) + ')'
+        const plnt_coord_text = '(' + plnt_x.toString().slice(0,COORD_SLICE) + ', ' + plnt_y.toString().slice(0,COORD_SLICE) + ')'
+
         const tbox_plnt_bg = new fabric.Rect({
             fill: '#CCCCCC', scaleY: 0.5,
             originX: 'center', originY: 'center',
@@ -189,10 +222,15 @@ export default function GameWorld() {
             width:  90, height: 80
         });
         const tbox_plnt_text = new fabric.Text(
-            'Ev', {
-            fontSize: 18, originX: 'center', originY: 'center', fill: '#333333'
+            'EV', {
+            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333'
         });
-        const tbox_plnt_group = new fabric.Group([ tbox_plnt_bg, tbox_plnt_text ], {
+        const tbox_plnt_coord_text = new fabric.Text(
+            plnt_coord_text, {
+            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333'
+        });
+        const tbox_plnt_group = new fabric.Group(
+            [ tbox_plnt_bg, tbox_plnt_text, tbox_plnt_coord_text], {
             left: plnt_left_center - 45,
             top: window_dim.height - 40
         });
@@ -204,10 +242,15 @@ export default function GameWorld() {
             width: 90, height: 80
         });
         const tbox_sun0_text = new fabric.Text(
-            'Böyük', {
-            fontSize: 18, originX: 'center', originY: 'center', fill: '#333333'
+            'BÖYÜK', {
+            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333'
         });
-        const tbox_sun0_group = new fabric.Group([ tbox_sun0_bg, tbox_sun0_text ], {
+        const tbox_sun0_coord_text = new fabric.Text(
+            sun0_coord_text, {
+            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333'
+        });
+        const tbox_sun0_group = new fabric.Group(
+            [ tbox_sun0_bg, tbox_sun0_text, tbox_sun0_coord_text ], {
             left: sun0_left_center - 45,
             top: 0
         });
@@ -219,10 +262,15 @@ export default function GameWorld() {
             width: 90, height: 80
         });
         const tbox_sun1_text = new fabric.Text(
-            'Orta', {
-            fontSize: 18, originX: 'center', originY: 'center', fill: '#333333'
+            'ORTA', {
+            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333'
         });
-        const tbox_sun1_group = new fabric.Group([ tbox_sun1_bg, tbox_sun1_text ], {
+        const tbox_sun1_coord_text = new fabric.Text(
+            sun1_coord_text, {
+            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333'
+        });
+        const tbox_sun1_group = new fabric.Group(
+            [ tbox_sun1_bg, tbox_sun1_text, tbox_sun1_coord_text ], {
             left: 0,
             top: sun1_top_center - 40/2
         });
@@ -234,10 +282,15 @@ export default function GameWorld() {
             width: 90, height: 80
         });
         const tbox_sun2_text = new fabric.Text(
-            'Balaca', {
-            fontSize: 18, originX: 'center', originY: 'center', fill: '#333333'
+            'BALACA', {
+            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333'
         });
-        const tbox_sun2_group = new fabric.Group([ tbox_sun2_bg, tbox_sun2_text ], {
+        const tbox_sun2_coord_text = new fabric.Text(
+            sun2_coord_text, {
+            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333'
+        });
+        const tbox_sun2_group = new fabric.Group(
+            [ tbox_sun2_bg, tbox_sun2_text, tbox_sun2_coord_text ], {
             left: window_dim.width-90,
             top: sun2_top_center - 40/2
         });
@@ -415,6 +468,50 @@ export default function GameWorld() {
         canvi.add (plnt_circle)
         // console.log ("planet rect angle:", plnt_rect.angle)
 
+
+        //
+        // Draw axis directionalities
+        //
+        const AXIS_LEN = 50
+        const AXIS_TRI_W = 6
+        const AXIS_TRI_H = 8
+        const AXIS_ORI_X = 50
+        const AXIS_ORI_Y = 50
+        const axis_line_x = new fabric.Line(
+            [AXIS_ORI_X, AXIS_ORI_Y, AXIS_ORI_X+AXIS_LEN, AXIS_ORI_Y], GRID_STYLE);
+        const axis_line_y = new fabric.Line(
+            [AXIS_ORI_X, AXIS_ORI_Y, AXIS_ORI_X, AXIS_ORI_Y+AXIS_LEN], GRID_STYLE);
+        const axis_tri_x = createTriangle (
+            AXIS_ORI_X+AXIS_LEN, AXIS_ORI_Y-AXIS_TRI_W,
+            AXIS_TRI_W, AXIS_TRI_H,
+            90
+        )
+        const axis_tri_y = createTriangle (
+            AXIS_ORI_X-AXIS_TRI_W/2+1, AXIS_ORI_Y+AXIS_LEN-2,
+            AXIS_TRI_W, AXIS_TRI_H,
+            180
+        )
+        const tbox_axis_x = new fabric.Text(
+            'x', {
+            left: AXIS_ORI_X + AXIS_LEN + AXIS_TRI_H + 5,
+            top: AXIS_ORI_Y - 10,
+            fontSize: 16,
+            fill: '#CCCCCC'
+        });
+        const tbox_axis_y = new fabric.Text(
+            'y', {
+            left: AXIS_ORI_X - 5,
+            top: AXIS_ORI_Y + AXIS_LEN + AXIS_TRI_H,
+            fontSize: 16,
+            fill: '#CCCCCC'
+        });
+
+        canvi.add (axis_line_x)
+        canvi.add (axis_line_y)
+        canvi.add (axis_tri_x)
+        canvi.add (axis_tri_y)
+        canvi.add (tbox_axis_x)
+        canvi.add (tbox_axis_y)
     }
 
     const drawGrid = canvi => {
