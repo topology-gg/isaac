@@ -41,6 +41,12 @@ body {
     display: flex;
     flex-direction: column;
     order: 1;
+    width: 20em;
+}
+
+.right-child-bottom {
+    overflow-y: auto;
+    height: 30em;
 }
 
 p {
