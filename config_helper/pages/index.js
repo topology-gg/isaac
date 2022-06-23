@@ -1,5 +1,7 @@
 import GameWorld from "../components/GameWorld";
-import GameStats from "../components/GameStats"
+import GameStatsDevices from "../components/GameStatsDevices"
+import GameStatsPlayers from "../components/GameStatsPlayers"
+
 import styles from '../styles/Home.module.css'
 import { ConnectWallet } from "../components/ConnectWallet.js"
 
@@ -34,9 +36,14 @@ function Home() {
               <ConnectWallet />
             </div>
 
-            <div className="right-child-bottom">
+            <div className="right-child-middle">
               <span>.</span>
-              <GameStats />
+              <h3>Universe Stats</h3>
+            </div>
+
+            <div className="right-child-bottom">
+              <GameStatsPlayers />
+              <GameStatsDevices />
             </div>
 
           </div>
