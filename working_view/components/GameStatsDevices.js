@@ -43,7 +43,7 @@ function useUniverseContract() {
 //     const DEVICE_TRANSFORMER_MAX = 11
 // end
 
-export default function GameStats() {
+export default function GameStatsDevices() {
     const { contract } = useUniverseContract()
     const { account } = useStarknet()
 
@@ -260,7 +260,7 @@ export default function GameStats() {
     //
     return(
         <div>
-            <h3>Amount of undeployed devices</h3>
+            <h4>Amount of undeployed devices</h4>
 
             <table>
                 <thead>
