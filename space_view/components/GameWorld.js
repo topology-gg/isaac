@@ -24,6 +24,28 @@ const STARK_PRIME = new BigNumber('361850278866613121369732278309507010562310721
 const STARK_PRIME_HALF = new BigNumber('1809251394333065606848661391547535052811553607665798349986546028067936010240')
 const STROKE = 'rgba(200,200,200,1)' // grid stroke color
 
+function createSquare (x, y, d, rotation, fill, stroke, stroke_w, cursor)
+{
+    var pos = fabric.util.rotatePoint(
+        new fabric.Point(x, y),
+        new fabric.Point(x + d/2, y + d/2),
+        fabric.util.degreesToRadians(rotation)
+    );
+
+    return new fabric.Rect(
+    {
+        width: d,
+        height: d,
+        selectable: false,
+        fill: fill,
+        stroke: stroke,
+        strokeWidth: stroke_w,
+        left: pos.x,
+        top: pos.y,
+        angle: rotation,
+        hoverCursor: cursor
+    });
+}
 
 function createTriangle(x, y, w, h, rotation)
 {
@@ -47,6 +69,14 @@ function createTriangle(x, y, w, h, rotation)
         angle: rotation,
         hoverCursor: 'default'
     });
+}
+
+function parse_phi_to_degree (phi)
+{
+    const phi_bn = new BigNumber(Buffer.from(phi, 'base64').toString('hex'), 16)
+    const phi_degree = (phi_bn / 10**20) / (Math.PI * 2) * 360
+
+    return phi_degree
 }
 
 export default function GameWorld() {
@@ -101,30 +131,63 @@ export default function GameWorld() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    const { data: civ_player_address_0 } = useStarknetCall({
+        contract,
+        method: 'civilization_player_idx_to_address_read',
+        args: [0]
+    })
 
     const drawWorld = canvi => {
-        // console.log ("drawWorld")
+
+        if (civ_player_address_0) {
+            console.log("HI")
+            if (civ_player_address_0.address) {
+                const player_0_addr = new BigNumber(civ_player_address_0.address).toString()
+                console.log ("civ_player_address_0.address", player_0_addr)
+
+                if (player_0_addr === "0") {
+                    console.log ("The address of player 0 is 0x0 => this universe is not active!")
+                    drawIdleMessage (canvi)
+                    return
+                }
+            }
+        }
+
         if (macro_states && macro_states.macro_states.length > 0) {
             console.log ("fetched", macro_states.macro_states.length, "macro_states in total.")
             const macro_state = macro_states.macro_states[0]
-            // decode base64 to bytes, then bytes to BigNumber
-            const phi = new BigNumber(Buffer.from(macro_state.phi, 'base64').toString('hex'), 16)
+            const dynamics = macro_state.dynamics
+            const phi = macro_state.phi
+
+            //
+            // Phi: decode base64 to bytes, then bytes to BigNumber
+            //
+            // const phi = new BigNumber(Buffer.from(macro_state.phi, 'base64').toString('hex'), 16)
+            // const phi_degree = (phi / 10**20) / (Math.PI * 2) * 360
+            const phi_degree = parse_phi_to_degree (phi)
 
             console.log ("dynamics:", macro_state.dynamics)
-            console.log ("phi", phi.toString())
+            console.log ("phi_degree", phi_degree.toString())
 
-            drawSpace (canvi)
-            //     drawGrid (canvi)
-            //     drawDevices (canvi)
+            drawSpace (canvi, dynamics, phi_degree)
             _refs.current[1] = true
         }
 
     }
 
-    const drawSpace = canvi => {
+    const drawIdleMessage = canvi => {
+        const tbox_idle_message = new fabric.Text(
+            'This universe is not active.', {
+            fontSize: 16, originX: 'center', originY: 'bottom', fill: '#CCCCCC'
+        });
+
+        canvi.add (tbox_idle_message)
+    }
+
+    const drawSpace = (canvi, dynamics, phi_degree) => {
         const window_dim = windowDimensions
-        const macro_state = macro_states.macro_states[0]
-        const dynamics = macro_state.dynamics
+        // const macro_state = macro_states.macro_states[0]
+        // const dynamics = macro_state.dynamics
 
         console.log ("window_dim", window_dim)
 
@@ -330,6 +393,9 @@ export default function GameWorld() {
             for (var i = 1; i < history_len; i++){
                 const historical_state = macro_states.macro_states[i]
                 const historical_dynamics = historical_state.dynamics
+                const historical_phi = historical_state.phi
+                const historical_phi_degree = parse_phi_to_degree (historical_phi)
+
                 const plnt_x = historical_dynamics.planet.q.x
                 const plnt_y = historical_dynamics.planet.q.y
                 const sun0_x = historical_dynamics.sun0.q.x
@@ -384,34 +450,50 @@ export default function GameWorld() {
                     hoverCursor: "pointer"
                 });
 
-                const historical_plnt_circle = new fabric.Circle ({
-                    left: plnt_left,
-                    top:  plnt_top,
-                    radius: PLNT_RADIUS * DISPLAY_SCALE,
-                    stroke: '',
-                    strokeWidth: 0.1,
-                    fill: '#8E8E8E10',
-                    selectable: false,
-                    hoverCursor: "pointer"
-                });
+                // const historical_plnt_circle = new fabric.Circle ({
+                //     left: plnt_left,
+                //     top:  plnt_top,
+                //     radius: PLNT_RADIUS * DISPLAY_SCALE,
+                //     stroke: '',
+                //     strokeWidth: 0.1,
+                //     fill: '#8E8E8E10',
+                //     selectable: false,
+                //     hoverCursor: "pointer"
+                // });
+
+                const historical_plnt_square = createSquare (
+                    plnt_left,
+                    plnt_top,
+                    PLNT_RADIUS * 2 * DISPLAY_SCALE,
+                    historical_phi_degree,
+                    '#8E8E8E10',
+                    '',
+                    0.1,
+                    'default'
+                )
 
                 canvi.add (historical_sun0_circle)
                 canvi.add (historical_sun1_circle)
                 canvi.add (historical_sun2_circle)
-                canvi.add (historical_plnt_circle)
+                canvi.add (historical_plnt_square)
             }
         }
 
         //
         // Draw the suns
         //
+        const SUN0_FILL = '#6289AF'
+        const SUN1_FILL = '#FF8B58'
+        const SUN2_FILL = '#A05760'
+        const PLNT_FILL = '#8E8E8E'
+
         const sun0_circle = new fabric.Circle ({
             left: sun0_left,
             top:  sun0_top,
             radius: SUN0_RADIUS * DISPLAY_SCALE,
             stroke: '#CCCCCC',
             strokeWidth: 1,
-            fill: '#6289AF',
+            fill: SUN0_FILL,
             selectable: false,
             hoverCursor: "pointer"
         });
@@ -422,7 +504,7 @@ export default function GameWorld() {
             radius: SUN1_RADIUS * DISPLAY_SCALE,
             stroke: '#CCCCCC',
             strokeWidth: 1,
-            fill: '#FF8B58',
+            fill: SUN1_FILL,
             selectable: false,
             hoverCursor: "pointer"
         });
@@ -433,41 +515,27 @@ export default function GameWorld() {
             radius: SUN2_RADIUS * DISPLAY_SCALE,
             stroke: '#CCCCCC',
             strokeWidth: 1,
-            fill: '#A05760',
+            fill: SUN2_FILL,
             selectable: false,
             hoverCursor: "pointer"
         });
 
-        // const plnt_rect = new fabric.Rect({
-        //     left: ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
-        //     top:  ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
-        //     height: PLNT_RADIUS * 2 * DISPLAY_SCALE,
-        //     width: PLNT_RADIUS * 2 * DISPLAY_SCALE,
-        //     angel: 60,
-        //     stroke: 'black',
-        //     strokeWidth: 2,
-        //     fill: '',
-        //     selectable: false,
-        //     hoverCursor: "pointer"
-        // });
-
-        const plnt_circle = new fabric.Circle ({
-            left: ORIGIN_X + (plnt_x.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
-            top:  ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
-            radius: PLNT_RADIUS * DISPLAY_SCALE,
-            stroke: '#CCCCCC',
-            strokeWidth: 0.5,
-            fill: '#8E8E8E',
-            selectable: false,
-            hoverCursor: "pointer"
-        });
+        const plnt_square = createSquare (
+            ORIGIN_X + (plnt_x.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
+            ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
+            PLNT_RADIUS * 2 * DISPLAY_SCALE,
+            phi_degree,
+            PLNT_FILL,
+            '#CCCCCC',
+            1,
+            "pointer"
+        )
 
         canvi.add (sun0_circle)
         canvi.add (sun1_circle)
         canvi.add (sun2_circle)
-        canvi.add (plnt_circle)
-        // console.log ("planet rect angle:", plnt_rect.angle)
-
+        canvi.add (plnt_square)
+        // canvi.add (plnt_circle)
 
         //
         // Draw axis directionalities
