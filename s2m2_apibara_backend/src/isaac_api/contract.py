@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterator, Tuple
+from typing import Any, Iterator, Tuple
 
 from isaac_api.apibara import Event
 
@@ -24,14 +24,17 @@ def _felt_from_iter(it: Iterator[bytes], scale=True):
 
 @dataclass
 class Vec2:
-    x: int
-    y: int
+    x: float
+    y: float
 
     @staticmethod
     def from_iter(it: Iterator[bytes]):
         x = _felt_from_iter(it)
         y = _felt_from_iter(it)
         return Vec2(x, y)
+
+    def to_json(self) -> Any:
+        return {"x": self.x, "y": self.y}
 
 
 @dataclass
@@ -44,6 +47,12 @@ class Dynamic:
         q = Vec2.from_iter(it)
         qd = Vec2.from_iter(it)
         return Dynamic(q, qd)
+
+    def to_json(self) -> Any:
+        return {
+            "q": self.q.to_json(),
+            "qd": self.qd.to_json(),
+        }
 
 
 @dataclass
@@ -60,6 +69,14 @@ class Dynamics:
         sun2 = Dynamic.from_iter(it)
         planet = Dynamic.from_iter(it)
         return Dynamics(sun0, sun1, sun2, planet)
+
+    def to_json(self) -> Any:
+        return {
+            "sun0": self.sun0.to_json(),
+            "sun1": self.sun1.to_json(),
+            "sun2": self.sun2.to_json(),
+            "planet": self.planet.to_json(),
+        }
 
 
 def decode_forward_world_event(event: Event) -> Tuple[Dynamic, int]:
