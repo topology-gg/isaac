@@ -170,6 +170,11 @@ class ConnectIndexerClient:
         request = application_service_pb2.ConnectIndexerRequest(connect=connect)
         await self._chan.put(request)
 
+    async def ack_block(self, block_hash):
+        ack = application_service_pb2.AckBlock(hash=block_hash)
+        request = application_service_pb2.ConnectIndexerRequest(ack=ack)
+        await self._chan.put(request)
+
 
 class ConnectIndexerStream:
     def __init__(self, iter) -> None:
