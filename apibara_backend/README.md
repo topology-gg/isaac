@@ -1,4 +1,4 @@
-# Isaac GraphQL API
+# Isaac Backend
 
 ## Getting Started
 
