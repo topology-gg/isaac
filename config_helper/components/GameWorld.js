@@ -168,12 +168,36 @@ export default function GameWorld() {
     // Logic to initialize a Fabric canvas
     //
     const [canvas, setCanvas] = useState([]);
+    const [coordTextBox, setCoordTextBox] = useState();
     const [hasDrawn, _] = useState([]);
     const _refs = useRef([]);
     // const _canvasRef = useRef(0);
     // const _hasDrawnRef =
 
+    var textOptions = {
+        fontSize:16,
+        left: PAD + 3*GRID*SIDE,
+        top: PAD,
+        radius:10,
+        borderRadius: '25px',
+        hasRotatingPoint: true
+    };
+
+    var textObject = new fabric.IText('(-,-)', textOptions);
+
+    var cursorGridRect = new fabric.Rect({
+        height: GRID,
+        width: GRID,
+        left: PAD,
+        top: PAD,
+        fill: "#AAAAAA",
+        selectable: false,
+        hoverCursor: 'default',
+        visible: false
+    });
+
     useEffect (() => {
+
         // console.log("useEffect(callback, []) called.")
         _refs.current[0] = new fabric.Canvas('c', {
             height: CANVAS_H,
@@ -181,6 +205,8 @@ export default function GameWorld() {
             backgroundColor: '#E3EDFF',
             selection: false
         })
+        setCanvas (_refs.current[0]);
+
         _refs.current[1] = false
     }, []);
 
@@ -229,6 +255,16 @@ export default function GameWorld() {
     }
 
     const drawGrid = canvi => {
+
+        //
+        // Draw textObject for showing user mouse coordinate
+        //
+        canvi.add(textObject)
+        // setCoordTextBox (textObject);
+        _refs.current[2] = textObject
+
+        canvi.add (cursorGridRect)
+        _refs.current[3] = cursorGridRect
 
         //
         // Axes for coordinate system
@@ -488,11 +524,117 @@ export default function GameWorld() {
         canvi.renderAll();
     }
 
+    const [MousePosition, setMousePosition] = useState({
+        left: 0,
+        top: 0
+    })
+    const [MousePositionNorm, setMousePositionNorm] = useState({
+        x: 0,
+        y: 0
+    })
+
+    function is_valid_coord (x, y) {
+        const x0 = x >= 0 && x <= 24
+        const x1 = x >= 25 && x <= 49
+        const x2 = x >= 50 && x <= 74
+        const x3 = x >= 75 && x <= 99
+
+        const y0 = y >= 0 && y <= 24
+        const y1 = y >= 25 && y <= 49
+        const y2 = y >= 50 && y <= 74
+
+        // face 0
+        if (x0 && y1) {
+            return true
+        }
+
+        // face 1
+        if (x1 && y0) {
+            return true
+        }
+
+        // face 2
+        if (x1 && y1) {
+            return true
+        }
+
+        // face 3
+        if (x1 && y2) {
+            return true
+        }
+
+        // face 4
+        if (x2 && y1) {
+            return true
+        }
+
+        // face 5
+        if (x3 && y1) {
+            return true
+        }
+
+        return false
+    }
+
+    function handleMouseMove(ev) {
+        setMousePosition ({
+            left: ev.pageX,
+            top: ev.pageY
+        });
+
+        const x_norm = Math.floor( (ev.pageX - PAD) / GRID )
+        const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD) / GRID )
+
+        const bool = is_valid_coord (x_norm, y_norm)
+
+        if (bool) {
+            setMousePositionNorm ({
+                x: x_norm,
+                y: y_norm
+            })
+            console.log ("Yep")
+        }
+        else {
+            setMousePositionNorm ({
+                x: '-',
+                y: '-'
+            })
+            console.log ("Nope")
+        }
+    }
+
+    function drawMouseCoordTextObject (canvi, mPosNorm) {
+        if (_refs.current[2]) {
+            _refs.current[2].text = '(' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
+            _refs.current[2].dirty  = true
+            // console.log ("drawMouseCoordTextObject:", _refs.current[2].text, mPosNorm)
+
+            if (mPosNorm.x.toString() === '-') {
+                _refs.current[3].visible = false
+            }
+            else {
+                _refs.current[3].left = PAD + mPosNorm.x*GRID
+                _refs.current[3].top  = PAD + (SIDE*3 - mPosNorm.y - 1)*GRID
+                _refs.current[3].visible = true
+            }
+            _refs.current[3].dirty  = true
+
+            canvi.renderAll();
+        }
+    }
+
+    useEffect (() => {
+        // console.log("useEffect(callback, [MousePositionNorm]) called.")
+        drawMouseCoordTextObject (_refs.current[0], MousePositionNorm)
+    }, [MousePositionNorm]);
+
     //
     // Return component
     //
     return(
-        <div>
+        <div
+            onMouseMove={(ev)=> handleMouseMove(ev)}
+        >
             <canvas id="c" />
         </div>
     );
