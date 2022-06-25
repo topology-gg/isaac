@@ -21,6 +21,29 @@ const UNIVERSE_INDEX_OFFSET = 777
 ##############################
 
 #
+# Event emission for Apibara
+#
+@event
+func universe_activation_occurred (
+    universe_index     : felt,
+    universe_address   : felt,
+    arr_player_adr_len : felt,
+    arr_player_adr     : felt*
+):
+end
+
+@event
+func universe_deactivation_occurred (
+    universe_index     : felt,
+    universe_address   : felt,
+    arr_player_adr_len : felt,
+    arr_player_adr     : felt*
+):
+end
+
+##############################
+
+#
 # Interfacing with deployed `universe.cairo` and `dao.cairo`
 #
 
@@ -231,6 +254,16 @@ func anyone_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : Has
         arr_player_adr = arr_player_adr
     )
 
+    #
+    # Apibara event emission
+    #
+    universe_activation_occurred.emit (
+        idle_universe_idx,
+        universe_address,
+        CIV_SIZE,
+        arr_player_adr
+    )
+
     return ()
 end
 
@@ -349,6 +382,19 @@ func universe_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     ns_lobby_state_functions.universe_active_write (universe_idx, 0)
 
     #
+    # Apibara event emission
+    # (need to prepare `arr_player_adr`)
+    #
+    let (arr_player_adr : felt*) = alloc ()
+    recurse_prepare_arr_player_adr_from_report_play (0, arr_player_adr, arr_play)
+    universe_deactivation_occurred.emit (
+        universe_idx,
+        caller,
+        CIV_SIZE,
+        arr_player_adr
+    )
+
+    #
     # Pass play to DAO
     #
     let (dao_address) = ns_lobby_state_functions.dao_address_read ()
@@ -358,5 +404,26 @@ func universe_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
         arr_play
     )
 
+    return ()
+end
+
+func recurse_prepare_arr_player_adr_from_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        idx : felt,
+        arr_player_adr : felt*,
+        arr_play : Play*
+    ) -> ():
+    alloc_locals
+
+    if idx == CIV_SIZE:
+        return ()
+    end
+
+    assert arr_player_adr[idx] = arr_play[idx].player_address
+
+    recurse_prepare_arr_player_adr_from_report_play (
+        idx + 1,
+        arr_player_adr,
+        arr_play
+    )
     return ()
 end
