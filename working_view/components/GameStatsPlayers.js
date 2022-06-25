@@ -29,7 +29,7 @@ export default function GameStatsPlayers() {
         if (result_0 && result_0.length > 0) {
             const value = toBN(result_0[0])
             const value_string = value.toString(16)
-            return "0x" + value_string.slice(0,3) + "..." + value_string.slice(-4)
+            return "0x" + value_string.slice(0,5) + "..." + value_string.slice(-4)
         }
     }, [result_0])
 
@@ -44,7 +44,7 @@ export default function GameStatsPlayers() {
                 <thead>
                     <tr>
                         <th>Player index</th>
-                        <th>Player account</th>
+                        <th>Player address</th>
                     </tr>
                 </thead>
                 <tbody>
