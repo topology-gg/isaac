@@ -260,7 +260,7 @@ export default function GameStatsDevices() {
     //
     return(
         <div>
-            <h4>Amount of undeployed devices</h4>
+            <h4>Amount of your undeployed devices</h4>
 
             <table>
                 <thead>

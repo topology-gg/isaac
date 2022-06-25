@@ -202,14 +202,14 @@ export default function GameWorld() {
                     drawIdleMessage (canvi)
                     return
                 }
-            }
-        }
 
-        if (device_emap && utb_grids) {
-            if (device_emap.emap && utb_grids.grids) {
-                drawGrid (canvi)
-                drawDevices (canvi)
-                _refs.current[1] = true
+                if (device_emap && utb_grids) {
+                    if (device_emap.emap && utb_grids.grids) {
+                        drawGrid (canvi)
+                        drawDevices (canvi)
+                        _refs.current[1] = true
+                    }
+                }
             }
         }
     }
