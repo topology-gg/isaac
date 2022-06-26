@@ -2,6 +2,7 @@ import React, { Component, useState, useEffect, useRef, useMemo } from "react";
 import { fabric } from 'fabric';
 import { toBN } from 'starknet/dist/utils/number'
 
+import Modal from "./Modal";
 import {
     useStarknet,
     useContract,
@@ -524,7 +525,11 @@ export default function GameWorld() {
         canvi.renderAll();
     }
 
-    const [MousePosition, setMousePosition] = useState({
+    //
+    // Grid assists and popup window
+    //
+
+    const [ClickPositionNorm, setClickPositionNorm] = useState({
         left: 0,
         top: 0
     })
@@ -532,6 +537,8 @@ export default function GameWorld() {
         x: 0,
         y: 0
     })
+    const [modalVisibility, setModalVisibility] = useState(false)
+    const [modalInfo, setModalInfo] = useState({})
 
     function is_valid_coord (x, y) {
         const x0 = x >= 0 && x <= 24
@@ -577,17 +584,11 @@ export default function GameWorld() {
     }
 
     function handleMouseMove(ev) {
-        setMousePosition ({
-            left: ev.pageX,
-            top: ev.pageY
-        });
-
         const x_norm = Math.floor( (ev.pageX - PAD) / GRID )
         const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD) / GRID )
-
         const bool = is_valid_coord (x_norm, y_norm)
 
-        if (bool) {
+        if (bool && !modalVisibility) {
             setMousePositionNorm ({
                 x: x_norm,
                 y: y_norm
@@ -628,13 +629,48 @@ export default function GameWorld() {
         drawMouseCoordTextObject (_refs.current[0], MousePositionNorm)
     }, [MousePositionNorm]);
 
+
+    function handleClick(ev) {
+        const x_norm = Math.floor( (ev.pageX - PAD) / GRID )
+        const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD) / GRID )
+        const bool = is_valid_coord (x_norm, y_norm)
+
+        if (bool && !modalVisibility) {
+            setClickPositionNorm ({
+                x: x_norm,
+                y: y_norm
+            })
+            setModalInfo ({
+                grid_x: x_norm,
+                grid_y: y_norm
+            })
+            setModalVisibility (true);
+            console.log ("Good click.")
+        }
+        else {
+            // setMousePositionNorm ({
+            //     x: '-',
+            //     y: '-'
+            // })
+            console.log ("Bad click.")
+        }
+    }
+
     //
     // Return component
     //
     return(
         <div
             onMouseMove={(ev)=> handleMouseMove(ev)}
+            onClick={(ev)=> handleClick(ev)}
         >
+            <Modal
+                show   = {modalVisibility}
+                onHide = {() => setModalVisibility (false)}
+                // name   = {"Grid (x,y)"}
+                info = {modalInfo}
+            />
+
             <canvas id="c" />
         </div>
     );
