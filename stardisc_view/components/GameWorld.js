@@ -197,6 +197,20 @@ export default function GameWorld() {
         visible: false
     });
 
+    var cursorFaceRect = new fabric.Rect({
+        height: GRID*SIDE,
+        width: GRID*SIDE,
+        left: PAD,
+        top: PAD,
+        fill: "",
+        stroke: "#999999",
+        strokeWidth: 1.5,
+        selectable: false,
+        hoverCursor: 'default',
+        visible: false
+    });
+
+
     useEffect (() => {
 
         // console.log("useEffect(callback, []) called.")
@@ -234,6 +248,7 @@ export default function GameWorld() {
                     if (device_emap.emap && utb_grids.grids) {
                         drawGrid (canvi)
                         drawDevices (canvi)
+                        drawAssist (canvi) // draw assistance objects the last to be on top
                         _refs.current[1] = true
                     }
                 }
@@ -256,17 +271,6 @@ export default function GameWorld() {
     }
 
     const drawGrid = canvi => {
-
-        //
-        // Draw textObject for showing user mouse coordinate
-        //
-        canvi.add(textObject)
-        // setCoordTextBox (textObject);
-        _refs.current[2] = textObject
-
-        canvi.add (cursorGridRect)
-        _refs.current[3] = cursorGridRect
-
         //
         // Axes for coordinate system
         //
@@ -463,6 +467,22 @@ export default function GameWorld() {
         canvi.renderAll();
     }
 
+    const drawAssist = canvi => {
+        //
+        // Draw textObject for showing user mouse coordinate
+        //
+        canvi.add(textObject)
+        _refs.current[2] = textObject
+
+        canvi.add (cursorGridRect)
+        _refs.current[3] = cursorGridRect
+
+        canvi.add (cursorFaceRect)
+        _refs.current[4] = cursorFaceRect
+
+        canvi.renderAll();
+    }
+
     const drawDevices = canvi => {
 
         // Basic geometries provided by Fabric:
@@ -540,7 +560,7 @@ export default function GameWorld() {
     const [modalVisibility, setModalVisibility] = useState(false)
     const [modalInfo, setModalInfo] = useState({})
 
-    function is_valid_coord (x, y) {
+    function find_face_given_coord (x, y) {
         const x0 = x >= 0 && x <= 24
         const x1 = x >= 25 && x <= 49
         const x2 = x >= 50 && x <= 74
@@ -552,35 +572,93 @@ export default function GameWorld() {
 
         // face 0
         if (x0 && y1) {
-            return true
+            return 0
         }
 
         // face 1
         if (x1 && y0) {
-            return true
+            return 1
         }
 
         // face 2
         if (x1 && y1) {
-            return true
+            return 2
         }
 
         // face 3
         if (x1 && y2) {
-            return true
+            return 3
         }
 
         // face 4
         if (x2 && y1) {
-            return true
+            return 4
         }
 
         // face 5
         if (x3 && y1) {
-            return true
+            return 5
         }
 
-        return false
+        return -1
+    }
+
+    function x_transform_normalized_to_canvas (x) {
+        return PAD + x*GRID
+    }
+    function y_transform_normalized_to_canvas (y) {
+        return PAD + (SIDE*3 - y - 1)*GRID
+    }
+
+    function map_face_to_left_top (face) {
+        if (face === 0){
+            return ({
+                left : x_transform_normalized_to_canvas (0),
+                top  : y_transform_normalized_to_canvas (50-1)
+            })
+        }
+        if (face === 1){
+            return ({
+                left : x_transform_normalized_to_canvas (25),
+                top  : y_transform_normalized_to_canvas (25-1)
+            })
+        }
+        if (face === 2){
+            return ({
+                left : x_transform_normalized_to_canvas (25),
+                top  : y_transform_normalized_to_canvas (50-1)
+            })
+        }
+        if (face === 3){
+            return ({
+                left : x_transform_normalized_to_canvas (25),
+                top  : y_transform_normalized_to_canvas (75-1)
+            })
+        }
+        if (face === 4){
+            return ({
+                left : x_transform_normalized_to_canvas (50),
+                top  : y_transform_normalized_to_canvas (50-1)
+            })
+        }
+        else { // face === 5
+            return ({
+                left : x_transform_normalized_to_canvas (75),
+                top  : y_transform_normalized_to_canvas (50-1)
+            })
+        }
+
+    }
+
+    function is_valid_coord (x, y) {
+        const face = find_face_given_coord (x, y)
+
+        if (face >= 0) {
+            return true
+        }
+        else{
+            return false
+        }
     }
 
     function handleMouseMove(ev) {
@@ -604,19 +682,48 @@ export default function GameWorld() {
         }
     }
 
-    function drawMouseCoordTextObject (canvi, mPosNorm) {
+    function drawAssistObject (canvi, mPosNorm) {
         if (_refs.current[2]) {
-            _refs.current[2].text = '(' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
-            _refs.current[2].dirty  = true
-            // console.log ("drawMouseCoordTextObject:", _refs.current[2].text, mPosNorm)
-
             if (mPosNorm.x.toString() === '-') {
+                //
+                // Face & coordinate textbox
+                //
+                _refs.current[2].text = 'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
+                _refs.current[2].dirty  = true
+
+                //
+                // Hide grid assist square
+                //
                 _refs.current[3].visible = false
+
+                //
+                // Hide face assist square
+                //
+                _refs.current[4].visible = false
             }
             else {
+                const face = find_face_given_coord (mPosNorm.x, mPosNorm.y)
+                const ori  = map_face_to_left_top (face)
+
+                //
+                // Face & coordinate textbox
+                //
+                _refs.current[2].text = 'Face ' + face.toString() + ' / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
+                _refs.current[2].dirty  = true
+
+                //
+                // Hide grid assist square
+                //
                 _refs.current[3].left = PAD + mPosNorm.x*GRID
                 _refs.current[3].top  = PAD + (SIDE*3 - mPosNorm.y - 1)*GRID
                 _refs.current[3].visible = true
+
+                //
+                // Hide face assist square
+                //
+                _refs.current[4].left = ori.left
+                _refs.current[4].top  = ori.top
+                _refs.current[4].visible = true
             }
             _refs.current[3].dirty  = true
 
@@ -626,7 +733,7 @@ export default function GameWorld() {
 
     useEffect (() => {
         // console.log("useEffect(callback, [MousePositionNorm]) called.")
-        drawMouseCoordTextObject (_refs.current[0], MousePositionNorm)
+        drawAssistObject (_refs.current[0], MousePositionNorm)
     }, [MousePositionNorm]);
 
 
@@ -645,14 +752,6 @@ export default function GameWorld() {
                 grid_y: y_norm
             })
             setModalVisibility (true);
-            console.log ("Good click.")
-        }
-        else {
-            // setMousePositionNorm ({
-            //     x: '-',
-            //     y: '-'
-            // })
-            console.log ("Bad click.")
         }
     }
 
