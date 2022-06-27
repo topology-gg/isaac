@@ -158,7 +158,8 @@ export default function GameWorld() {
         radius:10,
         fill: GRID_ASSIST_TBOX,
         borderRadius: '25px',
-        hasRotatingPoint: true
+        hasRotatingPoint: true,
+        selectable: false
     });
 
     var cursorGridRect = new fabric.Rect({
@@ -291,7 +292,8 @@ export default function GameWorld() {
                     textAlign: 'left',
                     fill: STROKE,
                     hoverCursor: 'default',
-                    fontFamily: TBOX_FONT_FAMILY
+                    fontFamily: TBOX_FONT_FAMILY,
+                    selectable: false
                 });
             const tbox_y = new fabric.Textbox(
                 'y', {
@@ -302,7 +304,8 @@ export default function GameWorld() {
                     textAlign: 'left',
                     fill: STROKE,
                     hoverCursor: 'default',
-                    fontFamily: TBOX_FONT_FAMILY
+                    fontFamily: TBOX_FONT_FAMILY,
+                    selectable: false
                 });
 
             const tbox_origin = new fabric.Textbox(
@@ -314,7 +317,8 @@ export default function GameWorld() {
                     textAlign: 'left',
                     fill: STROKE,
                     hoverCursor: 'default',
-                    fontFamily: TBOX_FONT_FAMILY
+                    fontFamily: TBOX_FONT_FAMILY,
+                    selectable: false
                 });
 
             const text_y_d = '(0,' + SIDE.toString() + ')'
@@ -326,7 +330,8 @@ export default function GameWorld() {
                     fontSize: 16,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default'
+                    hoverCursor: 'default',
+                    selectable: false
                 });
 
             const text_y_2d = '(0,' + (2*SIDE).toString() + ')'
@@ -338,7 +343,8 @@ export default function GameWorld() {
                     fontSize: 16,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default'
+                    hoverCursor: 'default',
+                    selectable: false
                 });
 
             const text_y_3d = '(0,' + (3*SIDE).toString() + ')'
@@ -350,7 +356,8 @@ export default function GameWorld() {
                     fontSize: 16,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default'
+                    hoverCursor: 'default',
+                    selectable: false
                 });
 
             const text_x_d = '(' + SIDE.toString() + ',0)'
@@ -362,7 +369,8 @@ export default function GameWorld() {
                     fontSize: 16,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default'
+                    hoverCursor: 'default',
+                    selectable: false
                 });
 
             const text_x_2d = '(' + (2*SIDE).toString() + ',0)'
@@ -374,7 +382,8 @@ export default function GameWorld() {
                     fontSize: 16,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default'
+                    hoverCursor: 'default',
+                    selectable: false
                 });
 
             const text_x_3d = '(' + (3*SIDE).toString() + ',0)'
@@ -386,7 +395,8 @@ export default function GameWorld() {
                     fontSize: 16,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default'
+                    hoverCursor: 'default',
+                    selectable: false
                 });
 
             const text_x_4d = '(' + (4*SIDE).toString() + ',0)'
@@ -398,7 +408,8 @@ export default function GameWorld() {
                     fontSize: 16,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default'
+                    hoverCursor: 'default',
+                    selectable: false
                 });
 
             canvi.add (tbox_x)
