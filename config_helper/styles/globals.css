@@ -9,7 +9,7 @@ body,
     height: 100%;
     margin: 0;
     padding: 0;
-    background-color: #E3EDFF;
+    background-color: #282828;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -30,6 +30,7 @@ body {
 
 .mother-container {
     display: flex;
+    background-color: #E3EDFF;
 }
 
 .left-child-container {
@@ -42,6 +43,7 @@ body {
     flex-direction: column;
     order: 1;
     width: 20em;
+    padding-left: 2.5em;
 }
 
 .right-child-bottom {
