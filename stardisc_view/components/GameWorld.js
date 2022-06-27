@@ -17,17 +17,15 @@ function useUniverseContract() {
 }
 
 //
-// Constants
+// Dimensions
 //
 const GRID = 8 // grid size
 const PAD = 100 // pad size
 const SIDE = 25 // number of grids per size (planet dimension)
-const STROKE = '#BBBBBB' // grid stroke color
-const STROKE_EDGE = '#333333' // grid stroke color
 const CANVAS_W = 1050
 const CANVAS_H = 900
-const TRIANGLE_W = 10
-const TRIANGLE_H = 15
+const TRIANGLE_W = 6
+const TRIANGLE_H = 10
 
 const DEVICE_DIM_MAP = new Map();
 DEVICE_DIM_MAP.set(0, 1);
@@ -45,6 +43,25 @@ DEVICE_DIM_MAP.set(11, 2);
 DEVICE_DIM_MAP.set(14, 5);
 DEVICE_DIM_MAP.set(15, 5);
 
+//
+// Sizes
+//
+const STROKE_WIDTH_CURSOR_FACE = 2
+const STROKE_WIDTH_AXIS = 0.4
+const STROKE_WIDTH_GRID = 0.1
+const STROKE_WIDTH_GRID_FACE = 0.4
+
+//
+// Styles
+//
+const TBOX_FONT_FAMILY = 'Lato'
+const PALETTE = 'DARK'
+const STROKE             = PALETTE === 'DARK' ? '#DDDDDD' : '#BBBBBB' // grid stroke color
+const CANVAS_BG          = PALETTE === 'DARK' ? '#282828' : '#E3EDFF'
+const FILL_CURSOR_GRID   = PALETTE === 'DARK' ? '#CCCCCC' : '#AAAAAA'
+const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#DDDDDD' : '#999999'
+const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
+const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const DEVICE_COLOR_MAP = new Map();
 DEVICE_COLOR_MAP.set(0,  "#8DAAF7"); // SPG
 DEVICE_COLOR_MAP.set(1,  "#A87AF7"); // NPG
@@ -63,51 +80,9 @@ DEVICE_COLOR_MAP.set(13, "#88D4CA"); // UTL
 DEVICE_COLOR_MAP.set(14, "#FFDD8D"); // UPSF
 DEVICE_COLOR_MAP.set(15, "#51499E"); // NDPE
 
-// Copied from Isaac's `constants.cairo`:
-// namespace ns_device_types:
-//     const DEVICE_SPG = 0 # solar power generator
-//     const DEVICE_NPG = 1 # nuclear power generator
-//     const DEVICE_FE_HARV = 2 # iron harvester
-//     const DEVICE_AL_HARV = 3 # aluminum harvester
-//     const DEVICE_CU_HARV = 4 # copper harvester
-//     const DEVICE_SI_HARV = 5 # silicon harvester
-//     const DEVICE_PU_HARV = 6 # plutoniium harvester
-//     const DEVICE_FE_REFN = 7 # iron refinery
-//     const DEVICE_AL_REFN = 8 # aluminum refinery
-//     const DEVICE_CU_REFN = 9 # copper refinery
-//     const DEVICE_SI_REFN = 10 # silicon refinery
-//     const DEVICE_PEF = 11 # plutonium enrichment facility
-//     const DEVICE_UTB = 12 # universal transportation belt
-//     const DEVICE_UTL = 13 # universal transmission line
-//     const DEVICE_UPSF = 14 # universal production and storage facility
-//     const DEVICE_NDPE = 15 # nuclear driller & propulsion engine
-
-//     const DEVICE_TYPE_COUNT = 16
-//     const DEVICE_PG_MAX = 1
-//     const DEVICE_HARVESTER_MIN = 2
-//     const DEVICE_HARVESTER_MAX = 6
-//     const DEVICE_TRANSFORMER_MIN = 7
-//     const DEVICE_TRANSFORMER_MAX = 11
-// end
-
-// Device footprint - copied from `constants.cairo`
-// dw 1 # spg
-// dw 3 # npg
-// dw 1 # fe harv
-// dw 1 # al harv
-// dw 1 # cu harv
-// dw 1 # si harv
-// dw 1 # pu harv
-// dw 2 # fe refn
-// dw 2 # al refn
-// dw 2 # cu refn
-// dw 2 # si refn
-// dw 2 # pef
-// dw 0
-// dw 0
-// dw 5 # opsf
-// dw 5 # ndpe
-
+//
+// Helper function for creating the triangles at the tips of axes
+//
 function createTriangle(x, y, rotation)
 {
     var width  = TRIANGLE_W;
@@ -175,23 +150,23 @@ export default function GameWorld() {
     // const _canvasRef = useRef(0);
     // const _hasDrawnRef =
 
-    var textOptions = {
+    var textObject = new fabric.IText(
+        '(-,-)', {
         fontSize:16,
-        left: PAD + 3*GRID*SIDE,
+        left: PAD + 3.2*GRID*SIDE,
         top: PAD,
         radius:10,
+        fill: GRID_ASSIST_TBOX,
         borderRadius: '25px',
         hasRotatingPoint: true
-    };
-
-    var textObject = new fabric.IText('(-,-)', textOptions);
+    });
 
     var cursorGridRect = new fabric.Rect({
         height: GRID,
         width: GRID,
         left: PAD,
         top: PAD,
-        fill: "#AAAAAA",
+        fill: FILL_CURSOR_GRID,
         selectable: false,
         hoverCursor: 'default',
         visible: false
@@ -203,8 +178,8 @@ export default function GameWorld() {
         left: PAD,
         top: PAD,
         fill: "",
-        stroke: "#999999",
-        strokeWidth: 1.5,
+        stroke: STROKE_CURSOR_FACE,
+        strokeWidth: STROKE_WIDTH_CURSOR_FACE,
         selectable: false,
         hoverCursor: 'default',
         visible: false
@@ -217,7 +192,7 @@ export default function GameWorld() {
         _refs.current[0] = new fabric.Canvas('c', {
             height: CANVAS_H,
             width: CANVAS_W,
-            backgroundColor: '#E3EDFF',
+            backgroundColor: CANVAS_BG,
             selection: false
         })
         setCanvas (_refs.current[0]);
@@ -274,27 +249,28 @@ export default function GameWorld() {
         //
         // Axes for coordinate system
         //
-        const AXIS_EXTEND_GRID_MULTIPLE = 7
+        const AXIS_EXTEND_GRID_MULTIPLE_X = 7
+        const AXIS_EXTEND_GRID_MULTIPLE_Y = 6
         canvi.add(new fabric.Line([
             PAD + 0,
-            PAD + 0 - GRID*AXIS_EXTEND_GRID_MULTIPLE,
+            PAD + 0 - GRID*AXIS_EXTEND_GRID_MULTIPLE_Y,
             PAD + 0,
             PAD + SIDE*GRID*3
-        ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
+        ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_AXIS, selectable: false, hoverCursor: 'default' }));
         canvi.add(new fabric.Line([
             PAD + 0,
             PAD + SIDE*GRID*3,
-            PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE,
+            PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X,
             PAD + SIDE*GRID*3
-        ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
+        ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_AXIS, selectable: false, hoverCursor: 'default' }));
 
         const triangle_y_axis = createTriangle (
             PAD-(TRIANGLE_W/2),
-            PAD - GRID*AXIS_EXTEND_GRID_MULTIPLE - TRIANGLE_H,
+            PAD - GRID*AXIS_EXTEND_GRID_MULTIPLE_Y - TRIANGLE_H,
             0
         )
         const triangle_x_axis = createTriangle (
-            PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE,
+            PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X,
             PAD + SIDE*GRID*3 - TRIANGLE_W,
             90
         )
@@ -302,166 +278,291 @@ export default function GameWorld() {
         canvi.add (triangle_x_axis);
 
         //
-        // Axis ticks
+        // Axis ticks and labels
         //
-        const tbox_origin = new fabric.Textbox(
-            '(0,0)', {
-                width: 100,
-                top:  PAD + SIDE*GRID*3 + GRID,
-                left: PAD + 0 - GRID*2,
-                fontSize: 16,
-                textAlign: 'left',
-                fill: STROKE_EDGE,
-                hoverCursor: 'default'
-            });
+        const DRAW_AXIS_TICKS_AND_LABELS = true
+        if (DRAW_AXIS_TICKS_AND_LABELS) {
+            const tbox_x = new fabric.Textbox(
+                'x', {
+                    width: 100,
+                    top:  PAD + SIDE*GRID*2.9 + 1.3*GRID,
+                    left: PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X + GRID*2.5,
+                    fontSize: 16,
+                    textAlign: 'left',
+                    fill: STROKE,
+                    hoverCursor: 'default',
+                    fontFamily: TBOX_FONT_FAMILY
+                });
+            const tbox_y = new fabric.Textbox(
+                'y', {
+                    width: 100,
+                    top:  GRID*1.3,
+                    left: PAD-0.4*GRID,
+                    fontSize: 16,
+                    textAlign: 'left',
+                    fill: STROKE,
+                    hoverCursor: 'default',
+                    fontFamily: TBOX_FONT_FAMILY
+                });
 
-        const text_y_d = '(0,' + SIDE.toString() + ')'
-        const tbox_y_d = new fabric.Textbox(
-            text_y_d, {
-                width: 100,
-                top:  PAD + SIDE*GRID*2 - GRID*2,
-                left: PAD + 0 - GRID*6,
-                fontSize: 16,
-                textAlign: 'left',
-                fill: STROKE_EDGE,
-                hoverCursor: 'default'
-            });
+            const tbox_origin = new fabric.Textbox(
+                '(0,0)', {
+                    width: 100,
+                    top:  PAD + SIDE*GRID*3 + GRID,
+                    left: PAD + 0 - GRID*2,
+                    fontSize: 16,
+                    textAlign: 'left',
+                    fill: STROKE,
+                    hoverCursor: 'default',
+                    fontFamily: TBOX_FONT_FAMILY
+                });
 
-        const text_y_2d = '(0,' + (2*SIDE).toString() + ')'
-        const tbox_y_2d = new fabric.Textbox(
-            text_y_2d, {
-                width: 100,
-                top:  PAD + SIDE*GRID*1 - GRID*2,
-                left: PAD + 0 - GRID*6,
-                fontSize: 16,
-                textAlign: 'left',
-                fill: STROKE_EDGE,
-                hoverCursor: 'default'
-            });
+            const text_y_d = '(0,' + SIDE.toString() + ')'
+            const tbox_y_d = new fabric.Textbox(
+                text_y_d, {
+                    width: 100,
+                    top:  PAD + SIDE*GRID*2 - GRID*2,
+                    left: PAD + 0 - GRID*6,
+                    fontSize: 16,
+                    textAlign: 'left',
+                    fill: STROKE,
+                    hoverCursor: 'default'
+                });
 
-        const text_y_3d = '(0,' + (3*SIDE).toString() + ')'
-        const tbox_y_3d = new fabric.Textbox(
-            text_y_3d, {
-                width: 100,
-                top:  PAD + SIDE*GRID*0 - GRID*2,
-                left: PAD + 0 - GRID*6,
-                fontSize: 16,
-                textAlign: 'left',
-                fill: STROKE_EDGE,
-                hoverCursor: 'default'
-            });
+            const text_y_2d = '(0,' + (2*SIDE).toString() + ')'
+            const tbox_y_2d = new fabric.Textbox(
+                text_y_2d, {
+                    width: 100,
+                    top:  PAD + SIDE*GRID*1 - GRID*2,
+                    left: PAD + 0 - GRID*6,
+                    fontSize: 16,
+                    textAlign: 'left',
+                    fill: STROKE,
+                    hoverCursor: 'default'
+                });
 
-        const text_x_d = '(' + SIDE.toString() + ',0)'
-        const tbox_x_d = new fabric.Textbox(
-            text_x_d, {
-                width: 100,
-                top:  PAD + SIDE*GRID*3 + GRID,
-                left: PAD + SIDE*GRID*1 - GRID*2,
-                fontSize: 16,
-                textAlign: 'left',
-                fill: STROKE_EDGE,
-                hoverCursor: 'default'
-            });
+            const text_y_3d = '(0,' + (3*SIDE).toString() + ')'
+            const tbox_y_3d = new fabric.Textbox(
+                text_y_3d, {
+                    width: 100,
+                    top:  PAD + SIDE*GRID*0 - GRID*2,
+                    left: PAD + 0 - GRID*6,
+                    fontSize: 16,
+                    textAlign: 'left',
+                    fill: STROKE,
+                    hoverCursor: 'default'
+                });
 
-        const text_x_2d = '(' + (2*SIDE).toString() + ',0)'
-        const tbox_x_2d = new fabric.Textbox(
-            text_x_2d, {
-                width: 100,
-                top:  PAD + SIDE*GRID*3 + GRID,
-                left: PAD + SIDE*GRID*2 - GRID*2,
-                fontSize: 16,
-                textAlign: 'left',
-                fill: STROKE_EDGE,
-                hoverCursor: 'default'
-            });
+            const text_x_d = '(' + SIDE.toString() + ',0)'
+            const tbox_x_d = new fabric.Textbox(
+                text_x_d, {
+                    width: 100,
+                    top:  PAD + SIDE*GRID*3 + GRID,
+                    left: PAD + SIDE*GRID*1 - GRID*2,
+                    fontSize: 16,
+                    textAlign: 'left',
+                    fill: STROKE,
+                    hoverCursor: 'default'
+                });
 
-        const text_x_3d = '(' + (3*SIDE).toString() + ',0)'
-        const tbox_x_3d = new fabric.Textbox(
-            text_x_3d, {
-                width: 100,
-                top:  PAD + SIDE*GRID*3 + GRID,
-                left: PAD + SIDE*GRID*3 - GRID*2,
-                fontSize: 16,
-                textAlign: 'left',
-                fill: STROKE_EDGE,
-                hoverCursor: 'default'
-            });
+            const text_x_2d = '(' + (2*SIDE).toString() + ',0)'
+            const tbox_x_2d = new fabric.Textbox(
+                text_x_2d, {
+                    width: 100,
+                    top:  PAD + SIDE*GRID*3 + GRID,
+                    left: PAD + SIDE*GRID*2 - GRID*2,
+                    fontSize: 16,
+                    textAlign: 'left',
+                    fill: STROKE,
+                    hoverCursor: 'default'
+                });
 
-        const text_x_4d = '(' + (4*SIDE).toString() + ',0)'
-        const tbox_x_4d = new fabric.Textbox(
-            text_x_4d, {
-                width: 100,
-                top:  PAD + SIDE*GRID*3 + GRID,
-                left: PAD + SIDE*GRID*4 - GRID*2,
-                fontSize: 16,
-                textAlign: 'left',
-                fill: STROKE_EDGE,
-                hoverCursor: 'default'
-            });
+            const text_x_3d = '(' + (3*SIDE).toString() + ',0)'
+            const tbox_x_3d = new fabric.Textbox(
+                text_x_3d, {
+                    width: 100,
+                    top:  PAD + SIDE*GRID*3 + GRID,
+                    left: PAD + SIDE*GRID*3 - GRID*2,
+                    fontSize: 16,
+                    textAlign: 'left',
+                    fill: STROKE,
+                    hoverCursor: 'default'
+                });
 
-        canvi.add (tbox_origin)
-        canvi.add (tbox_y_d)
-        canvi.add (tbox_y_2d)
-        canvi.add (tbox_y_3d)
-        canvi.add (tbox_x_d)
-        canvi.add (tbox_x_2d)
-        canvi.add (tbox_x_3d)
-        canvi.add (tbox_x_4d)
+            const text_x_4d = '(' + (4*SIDE).toString() + ',0)'
+            const tbox_x_4d = new fabric.Textbox(
+                text_x_4d, {
+                    width: 100,
+                    top:  PAD + SIDE*GRID*3 + GRID,
+                    left: PAD + SIDE*GRID*4 - GRID*2,
+                    fontSize: 16,
+                    textAlign: 'left',
+                    fill: STROKE,
+                    hoverCursor: 'default'
+                });
+
+            canvi.add (tbox_x)
+            canvi.add (tbox_y)
+            canvi.add (tbox_origin)
+            canvi.add (tbox_y_d)
+            canvi.add (tbox_y_2d)
+            canvi.add (tbox_y_3d)
+            canvi.add (tbox_x_d)
+            canvi.add (tbox_x_2d)
+            canvi.add (tbox_x_3d)
+            canvi.add (tbox_x_4d)
+        }
 
         //
-        // Grid lines parallel to Y-axis
+        // Grid lines
         //
-        for (var xi = 0; xi < SIDE; xi++){
-            canvi.add(new fabric.Line([
-                PAD + xi*GRID,
-                PAD + SIDE*GRID,
-                PAD + xi*GRID,
-                PAD + SIDE*GRID*2
-            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
-        }
-        for (var xi = SIDE; xi < SIDE*2+1; xi++){
-            canvi.add(new fabric.Line([
-                PAD + xi*GRID,
-                PAD + 0,
-                PAD + xi*GRID,
-                PAD + SIDE*GRID*3
-            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
-        }
-        for (var xi = 2*SIDE+1; xi < SIDE*4+1; xi++){
-            canvi.add(new fabric.Line([
-                PAD + xi*GRID,
-                PAD + SIDE*GRID,
-                PAD + xi*GRID,
-                PAD + SIDE*GRID*2
-            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
+        const DRAW_GRID_LINES = true
+        if (DRAW_GRID_LINES) {
+            //
+            // Grid lines parallel to Y-axis
+            //
+            for (var xi = 0; xi < SIDE; xi++){
+                canvi.add(new fabric.Line([
+                    PAD + xi*GRID,
+                    PAD + SIDE*GRID,
+                    PAD + xi*GRID,
+                    PAD + SIDE*GRID*2
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+            }
+            for (var xi = SIDE; xi < SIDE*2+1; xi++){
+                canvi.add(new fabric.Line([
+                    PAD + xi*GRID,
+                    PAD + 0,
+                    PAD + xi*GRID,
+                    PAD + SIDE*GRID*3
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+            }
+            for (var xi = 2*SIDE+1; xi < SIDE*4+1; xi++){
+                canvi.add(new fabric.Line([
+                    PAD + xi*GRID,
+                    PAD + SIDE*GRID,
+                    PAD + xi*GRID,
+                    PAD + SIDE*GRID*2
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+            }
+
+            //
+            // Grid lines parallel to X-axis
+            //
+            for (var yi = 0; yi < SIDE; yi++){
+                canvi.add(new fabric.Line([
+                    PAD + SIDE*GRID,
+                    PAD + yi*GRID,
+                    PAD + SIDE*GRID*2,
+                    PAD + yi*GRID
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+            }
+            for (var yi = SIDE; yi < 2*SIDE+1; yi++){
+                canvi.add(new fabric.Line([
+                    PAD + 0,
+                    PAD + yi*GRID,
+                    PAD + SIDE*GRID*4,
+                    PAD + yi*GRID
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+            }
+            for (var yi = 2*SIDE+1; yi < 3*SIDE+1; yi++){
+                canvi.add(new fabric.Line([
+                    PAD + SIDE*GRID,
+                    PAD + yi*GRID,
+                    PAD + SIDE*GRID*2,
+                    PAD + yi*GRID
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+            }
         }
 
         //
-        // Grid lines parallel to X-axis
+        // Grid lines for faces
         //
-        for (var yi = 0; yi < SIDE; yi++){
+        const DRAW_GRID_FACE = true
+        if (DRAW_GRID_FACE) {
+            //
+            // Lines parallel to x-axis
+            //
             canvi.add(new fabric.Line([
-                PAD + SIDE*GRID,
-                PAD + yi*GRID,
-                PAD + SIDE*GRID*2,
-                PAD + yi*GRID
-            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
-        }
-        for (var yi = SIDE; yi < 2*SIDE+1; yi++){
+                PAD + 0*GRID, PAD + SIDE*GRID,
+                PAD + SIDE*GRID, PAD + SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 0,
-                PAD + yi*GRID,
-                PAD + SIDE*GRID*4,
-                PAD + yi*GRID
-            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
-        }
-        for (var yi = 2*SIDE+1; yi < 3*SIDE+1; yi++){
+                PAD + 0*GRID, PAD + 2*SIDE*GRID,
+                PAD + SIDE*GRID, PAD + 2*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + SIDE*GRID,
-                PAD + yi*GRID,
-                PAD + SIDE*GRID*2,
-                PAD + yi*GRID
-            ], { stroke: STROKE, selectable: false, hoverCursor: 'default' }));
+                PAD + SIDE*GRID, PAD + 0*GRID,
+                PAD + 2*SIDE*GRID, PAD + 0*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + SIDE*GRID, PAD + 3*SIDE*GRID,
+                PAD + 2*SIDE*GRID, PAD + 3*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 2*SIDE*GRID, PAD + SIDE*GRID,
+                PAD + 3*SIDE*GRID, PAD + SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 2*SIDE*GRID, PAD + 2*SIDE*GRID,
+                PAD + 3*SIDE*GRID, PAD + 2*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 3*SIDE*GRID, PAD + SIDE*GRID,
+                PAD + 4*SIDE*GRID, PAD + SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 3*SIDE*GRID, PAD + 2*SIDE*GRID,
+                PAD + 4*SIDE*GRID, PAD + 2*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 1*SIDE*GRID, PAD + 1*SIDE*GRID,
+                PAD + 2*SIDE*GRID, PAD + 1*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 1*SIDE*GRID, PAD + 2*SIDE*GRID,
+                PAD + 2*SIDE*GRID, PAD + 2*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+
+            //
+            // Lines parallel to y-axis
+            //
+            canvi.add(new fabric.Line([
+                PAD + SIDE*GRID, PAD + 2*SIDE*GRID,
+                PAD + SIDE*GRID, PAD + 3*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 2*SIDE*GRID, PAD + 2*SIDE*GRID,
+                PAD + 2*SIDE*GRID, PAD + 3*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 0*GRID, PAD + SIDE*GRID,
+                PAD + 0*GRID, PAD + 2*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 4*SIDE*GRID, PAD + SIDE*GRID,
+                PAD + 4*SIDE*GRID, PAD + 2*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + SIDE*GRID, PAD + 0*SIDE*GRID,
+                PAD + SIDE*GRID, PAD + 1*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 2*SIDE*GRID, PAD + 0*SIDE*GRID,
+                PAD + 2*SIDE*GRID, PAD + 1*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 1*SIDE*GRID, PAD + 1*SIDE*GRID,
+                PAD + 1*SIDE*GRID, PAD + 2*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 2*SIDE*GRID, PAD + 1*SIDE*GRID,
+                PAD + 2*SIDE*GRID, PAD + 2*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD + 3*SIDE*GRID, PAD + 1*SIDE*GRID,
+                PAD + 3*SIDE*GRID, PAD + 2*SIDE*GRID
+            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
         }
 
         canvi.renderAll();
@@ -759,6 +860,7 @@ export default function GameWorld() {
     //     console.log("useEffect for [modalVisibility]) called, modalVisibility is", modalVisibility)
     // }, [modalVisibility]);
 
+    // ref: https://stackoverflow.com/questions/37440408/how-to-detect-esc-key-press-in-react-and-how-to-handle-it
     const escFunction = useCallback((event) => {
         if (event.key === "Escape") {
             if (modalVisibilityRef.current) {
