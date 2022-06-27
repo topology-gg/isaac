@@ -139,19 +139,19 @@ export default function GameWorld() {
 
     const drawWorld = canvi => {
 
-        if (civ_player_address_0) {
-            console.log("HI")
-            if (civ_player_address_0.address) {
-                const player_0_addr = new BigNumber(civ_player_address_0.address).toString()
-                console.log ("civ_player_address_0.address", player_0_addr)
+        // if (civ_player_address_0) {
+        //     console.log("HI")
+        //     if (civ_player_address_0.address) {
+        //         const player_0_addr = new BigNumber(civ_player_address_0.address).toString()
+        //         console.log ("civ_player_address_0.address", player_0_addr)
 
-                if (player_0_addr === "0") {
-                    console.log ("The address of player 0 is 0x0 => this universe is not active!")
-                    drawIdleMessage (canvi)
-                    return
-                }
-            }
-        }
+        //         if (player_0_addr === "0") {
+        //             console.log ("The address of player 0 is 0x0 => this universe is not active!")
+        //             drawIdleMessage (canvi)
+        //             return
+        //         }
+        //     }
+        // }
 
         if (macro_states && macro_states.macro_states.length > 0) {
             console.log ("fetched", macro_states.macro_states.length, "macro_states in total.")
