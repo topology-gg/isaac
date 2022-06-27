@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect, useRef, useMemo } from "react";
+import React, { Component, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { fabric } from 'fabric';
 import { toBN } from 'starknet/dist/utils/number'
 
@@ -559,6 +559,7 @@ export default function GameWorld() {
     })
     const [modalVisibility, setModalVisibility] = useState(false)
     const [modalInfo, setModalInfo] = useState({})
+    const modalVisibilityRef = useRef(false)
 
     function find_face_given_coord (x, y) {
         const x0 = x >= 0 && x <= 24
@@ -671,14 +672,12 @@ export default function GameWorld() {
                 x: x_norm,
                 y: y_norm
             })
-            console.log ("Yep")
         }
         else {
             setMousePositionNorm ({
                 x: '-',
                 y: '-'
             })
-            console.log ("Nope")
         }
     }
 
@@ -752,8 +751,30 @@ export default function GameWorld() {
                 grid_y: y_norm
             })
             setModalVisibility (true);
+            modalVisibilityRef.current = true
         }
     }
+
+    // useEffect (() => {
+    //     console.log("useEffect for [modalVisibility]) called, modalVisibility is", modalVisibility)
+    // }, [modalVisibility]);
+
+    const escFunction = useCallback((event) => {
+        if (event.key === "Escape") {
+            if (modalVisibilityRef.current) {
+                setModalVisibility (false);
+                modalVisibilityRef.current = false
+            }
+        }
+      }, [modalVisibility]);
+
+    useEffect(() => {
+        document.addEventListener("keydown", escFunction, false);
+
+        return () => {
+            document.removeEventListener("keydown", escFunction, false);
+        };
+    }, []);
 
     //
     // Return component
@@ -769,7 +790,6 @@ export default function GameWorld() {
                 // name   = {"Grid (x,y)"}
                 info = {modalInfo}
             />
-
             <canvas id="c" />
         </div>
     );
