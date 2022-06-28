@@ -10,7 +10,7 @@ from timeit import default_timer as timer
 # Prep
 #
 CIV_SIZE = 3
-UNIVERSE_COUNT = 3
+UNIVERSE_COUNT = 1
 
 #
 # Load deployed address from json

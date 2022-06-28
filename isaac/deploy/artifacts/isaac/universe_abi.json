@@ -984,58 +984,5 @@
         ],
         "stateMutability": "view",
         "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "to",
-                "type": "felt"
-            },
-            {
-                "name": "type",
-                "type": "felt"
-            },
-            {
-                "name": "amount",
-                "type": "felt"
-            }
-        ],
-        "name": "admin_give_undeployed_device",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "id",
-                "type": "felt"
-            },
-            {
-                "name": "element_type",
-                "type": "felt"
-            },
-            {
-                "name": "balance",
-                "type": "felt"
-            }
-        ],
-        "name": "admin_write_opsf_deployed_id_to_resource_balances",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "id",
-                "type": "felt"
-            },
-            {
-                "name": "energy",
-                "type": "felt"
-            }
-        ],
-        "name": "admin_write_device_deployed_id_to_energy_balance",
-        "outputs": [],
-        "type": "function"
     }
 ]

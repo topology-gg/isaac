@@ -1175,12 +1175,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 17,
-                        "end_line": 10,
+                        "end_line": 13,
                         "input_file": {
                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                         },
                         "start_col": 5,
-                        "start_line": 10
+                        "start_line": 13
                     }
                 },
                 "46": {
@@ -1192,24 +1192,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 80,
-                        "end_line": 7,
+                        "end_line": 10,
                         "input_file": {
                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 48,
-                                "end_line": 12,
+                                "end_line": 15,
                                 "input_file": {
                                     "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                 },
                                 "start_col": 36,
-                                "start_line": 12
+                                "start_line": 15
                             },
                             "While expanding the reference 'pedersen_ptr' in:"
                         ],
                         "start_col": 53,
-                        "start_line": 7
+                        "start_line": 10
                     }
                 },
                 "47": {
@@ -1221,24 +1221,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 25,
-                        "end_line": 8,
+                        "end_line": 11,
                         "input_file": {
                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 60,
-                                "end_line": 12,
+                                "end_line": 15,
                                 "input_file": {
                                     "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                 },
                                 "start_col": 51,
-                                "start_line": 12
+                                "start_line": 15
                             },
                             "While expanding the reference 'admin_key' in:"
                         ],
                         "start_col": 9,
-                        "start_line": 8
+                        "start_line": 11
                     }
                 },
                 "48": {
@@ -1250,12 +1250,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 70,
-                        "end_line": 12,
+                        "end_line": 15,
                         "input_file": {
                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                         },
                         "start_col": 62,
-                        "start_line": 12
+                        "start_line": 15
                     }
                 },
                 "50": {
@@ -1267,12 +1267,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 71,
-                        "end_line": 12,
+                        "end_line": 15,
                         "input_file": {
                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                         },
                         "start_col": 18,
-                        "start_line": 12
+                        "start_line": 15
                     }
                 },
                 "52": {
@@ -1284,12 +1284,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 99,
-                        "end_line": 15,
+                        "end_line": 18,
                         "input_file": {
                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                         },
                         "start_col": 9,
-                        "start_line": 15
+                        "start_line": 18
                     }
                 },
                 "54": {
@@ -1301,36 +1301,36 @@
                     "hints": [],
                     "inst": {
                         "end_col": 51,
-                        "end_line": 7,
+                        "end_line": 10,
                         "input_file": {
                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 51,
-                                "end_line": 7,
+                                "end_line": 10,
                                 "input_file": {
                                     "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 14,
-                                        "end_line": 18,
+                                        "end_line": 21,
                                         "input_file": {
                                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                         },
                                         "start_col": 5,
-                                        "start_line": 18
+                                        "start_line": 21
                                     },
                                     "While trying to retrieve the implicit argument 'syscall_ptr' in:"
                                 ],
                                 "start_col": 32,
-                                "start_line": 7
+                                "start_line": 10
                             },
                             "While expanding the reference 'syscall_ptr' in:"
                         ],
                         "start_col": 32,
-                        "start_line": 7
+                        "start_line": 10
                     }
                 },
                 "55": {
@@ -1342,36 +1342,36 @@
                     "hints": [],
                     "inst": {
                         "end_col": 48,
-                        "end_line": 12,
+                        "end_line": 15,
                         "input_file": {
                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 80,
-                                "end_line": 7,
+                                "end_line": 10,
                                 "input_file": {
                                     "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 14,
-                                        "end_line": 18,
+                                        "end_line": 21,
                                         "input_file": {
                                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                         },
                                         "start_col": 5,
-                                        "start_line": 18
+                                        "start_line": 21
                                     },
                                     "While trying to retrieve the implicit argument 'pedersen_ptr' in:"
                                 ],
                                 "start_col": 53,
-                                "start_line": 7
+                                "start_line": 10
                             },
                             "While expanding the reference 'pedersen_ptr' in:"
                         ],
                         "start_col": 36,
-                        "start_line": 12
+                        "start_line": 15
                     }
                 },
                 "56": {
@@ -1383,36 +1383,36 @@
                     "hints": [],
                     "inst": {
                         "end_col": 97,
-                        "end_line": 7,
+                        "end_line": 10,
                         "input_file": {
                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 97,
-                                "end_line": 7,
+                                "end_line": 10,
                                 "input_file": {
                                     "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 14,
-                                        "end_line": 18,
+                                        "end_line": 21,
                                         "input_file": {
                                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                         },
                                         "start_col": 5,
-                                        "start_line": 18
+                                        "start_line": 21
                                     },
                                     "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                 ],
                                 "start_col": 82,
-                                "start_line": 7
+                                "start_line": 10
                             },
                             "While expanding the reference 'range_check_ptr' in:"
                         ],
                         "start_col": 82,
-                        "start_line": 7
+                        "start_line": 10
                     }
                 },
                 "57": {
@@ -1424,12 +1424,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 14,
-                        "end_line": 18,
+                        "end_line": 21,
                         "input_file": {
                             "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                         },
                         "start_col": 5,
-                        "start_line": 18
+                        "start_line": 21
                     }
                 },
                 "58": {
@@ -4662,7 +4662,7 @@
                         "parent_location": [
                             {
                                 "end_col": 51,
-                                "end_line": 7,
+                                "end_line": 10,
                                 "input_file": {
                                     "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                 },
@@ -4679,7 +4679,7 @@
                                     "While trying to retrieve the implicit argument 'syscall_ptr' in:"
                                 ],
                                 "start_col": 32,
-                                "start_line": 7
+                                "start_line": 10
                             },
                             "While expanding the reference 'syscall_ptr' in:"
                         ],
@@ -4704,7 +4704,7 @@
                         "parent_location": [
                             {
                                 "end_col": 80,
-                                "end_line": 7,
+                                "end_line": 10,
                                 "input_file": {
                                     "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                 },
@@ -4721,7 +4721,7 @@
                                     "While trying to retrieve the implicit argument 'pedersen_ptr' in:"
                                 ],
                                 "start_col": 53,
-                                "start_line": 7
+                                "start_line": 10
                             },
                             "While expanding the reference 'pedersen_ptr' in:"
                         ],
@@ -4746,7 +4746,7 @@
                         "parent_location": [
                             {
                                 "end_col": 97,
-                                "end_line": 7,
+                                "end_line": 10,
                                 "input_file": {
                                     "filename": "/Users/guiltygyoza/dev/isaac/core/contracts/design/access.cairo"
                                 },
@@ -4763,7 +4763,7 @@
                                     "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                 ],
                                 "start_col": 82,
-                                "start_line": 7
+                                "start_line": 10
                             },
                             "While expanding the reference 'range_check_ptr' in:"
                         ],

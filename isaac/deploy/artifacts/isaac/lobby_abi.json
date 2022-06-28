@@ -138,6 +138,52 @@
         "type": "function"
     },
     {
+        "data": [
+            {
+                "name": "universe_index",
+                "type": "felt"
+            },
+            {
+                "name": "universe_address",
+                "type": "felt"
+            },
+            {
+                "name": "arr_player_adr_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_player_adr",
+                "type": "felt*"
+            }
+        ],
+        "keys": [],
+        "name": "universe_activation_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "universe_index",
+                "type": "felt"
+            },
+            {
+                "name": "universe_address",
+                "type": "felt"
+            },
+            {
+                "name": "arr_player_adr_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_player_adr",
+                "type": "felt*"
+            }
+        ],
+        "keys": [],
+        "name": "universe_deactivation_occurred",
+        "type": "event"
+    },
+    {
         "inputs": [],
         "name": "probe_can_dispatch_to_universe",
         "outputs": [
