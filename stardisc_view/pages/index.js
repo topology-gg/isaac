@@ -28,21 +28,18 @@ function Home() {
             <div className="right-child-top">
               <span>.</span>
 
-              <h2>Isaac / Working View</h2>
-
-              <span>.</span>
-
-              <h3>Argent X Wallet</h3>
+              <h3>ISAAC: Working View</h3>
               <ConnectWallet />
             </div>
 
             <div className="right-child-middle">
               <span>.</span>
-              <h3>Universe Stats</h3>
+              <h4>Universe Stats</h4>
             </div>
 
             <div className="right-child-bottom">
               <GameStatsPlayers />
+              <span>.</span>
               <GameStatsDevices />
             </div>
 
