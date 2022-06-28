@@ -38,13 +38,13 @@ export default function GameStatsPlayers() {
     //
     return(
         <div>
-            <h4>Player accounts in this universe</h4>
+            <h5>Player accounts in this universe</h5>
 
             <table>
                 <thead>
                     <tr>
-                        <th>Player index</th>
-                        <th>Player address</th>
+                        <th>Index</th>
+                        <th>Address</th>
                     </tr>
                 </thead>
                 <tbody>
