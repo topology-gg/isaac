@@ -58,9 +58,15 @@ p {
 table, th, td {
     border: 1px solid;
     border-collapse: collapse;
-    padding: 0.3em 1.5em 0.3em 1.5em;
+    padding-left:   0.6em;
+    padding-right:  0.6em;
     text-align: center;
-    font-size: 0.95em
+    font-size: 0.9em
+}
+
+tr.player_account td {
+    padding-top:    0.5em;
+    padding-bottom: 0.5em;
 }
 
 span {
