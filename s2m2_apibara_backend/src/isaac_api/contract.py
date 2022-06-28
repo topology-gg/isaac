@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Iterator, Tuple
 
-from isaac_api.apibara import Event
+from apibara.model import Event
 
 
 STARK_PRIME = (

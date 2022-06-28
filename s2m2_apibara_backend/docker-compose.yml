@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  mongo:
+    image: mongo:latest
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: isaac
+      MONGO_INITDB_ROOT_PASSWORD: isaac
+    ports:
+    - 27017:27017
+    volumes:
+    - ./_docker/apibara_mongodb:/data/db
+
+  apibara:
+    image: apibara/apibara:0.1.1
+    restart: always
+    command: start --config /usr/etc/apibara/configuration.toml
+    environment:
+      RUST_LOG: "apibara=info"
+    ports:
+    - 7171:7171
+    volumes:
+    - ./apibara:/usr/etc/apibara
+    links:
+    - mongo

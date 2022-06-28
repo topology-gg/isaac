@@ -1,0 +1,3 @@
+[admin.storage]
+# Connect to the production mongo instance
+connection_string = "mongodb://isaac:isaac@mongo:27017"

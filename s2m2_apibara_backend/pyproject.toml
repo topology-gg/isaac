@@ -5,7 +5,7 @@ description = ""
 authors = ["Francesco Ceccon <francesco@ceccon.me>"]
 
 [tool.poetry.scripts]
-isaac-api = "isaac_api.cli:cli"
+isaac-api = "isaac_api.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.9"
@@ -14,6 +14,8 @@ grpcio = "^1.46.3"
 aiochannel = "^1.1.1"
 pymongo = {extras = ["srv"], version = "^4.1.1"}
 python-dotenv = "^0.20.0"
+setuptools = "^62.6.0"
+apibara = "^0.1.1"
 
 [tool.poetry.dev-dependencies]
 grpcio-tools = "^1.46.3"
