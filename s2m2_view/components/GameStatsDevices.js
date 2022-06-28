@@ -253,7 +253,8 @@ export default function GameStatsDevices() {
     for (var row_idx = 0; row_idx < 16; row_idx ++){
         var cell = []
         const device_color = DEVICE_COLOR_MAP.get(row_idx)
-        cell.push (<td> <p style={{ color: device_color, fontSize:'1.6em'}}>■</p> </td>)
+        // cell.push (<td> <p style={{ color: device_color, fontSize:'1.6em'}}>■</p> </td>)
+        cell.push (<td><div style={{height:"1em",width:"1em",backgroundColor:device_color,margin:"auto"}}></div></td>)
         cell.push (<td>{arr_types[row_idx]}</td>)
         cell.push (<td>{arr_footprints[row_idx]}</td>)
         cell.push (<td>{arr_values[row_idx]}</td>)
@@ -266,7 +267,7 @@ export default function GameStatsDevices() {
     //
     return(
         <div>
-            <h4>Amount of your undeployed devices</h4>
+            <h5>Amount of your undeployed devices</h5>
 
             <table>
                 <thead>
