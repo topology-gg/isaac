@@ -2,6 +2,11 @@
     box-sizing: border-box;
 } */
 
+@font-face{
+    font-family: "Poppins-Light";
+    src: url("../styles/fonts/Poppins/Poppins-Light.ttf") format("truetype");
+}
+
 html,
 body,
 #root {
@@ -23,9 +28,14 @@ body {
     position: fixed;
     overflow: hidden;
     overscroll-behavior-y: none;
-    font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif;
+    font-family: Poppins-Light;
+    /* , -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif; */
     /* color: #2e76c8; */
     color: #555555
+}
+
+button {
+    font-family: Poppins-Light;
 }
 
 .mother-container {
