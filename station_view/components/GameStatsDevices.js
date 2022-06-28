@@ -1,6 +1,8 @@
 import React, { Component, useState, useEffect, useRef, useMemo, Table } from "react";
 import { fabric } from 'fabric';
 
+import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
+
 import {
     useStarknet,
     useContract,
@@ -15,33 +17,6 @@ function useUniverseContract() {
     return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
 }
 
-
-// Copied from Isaac's `constants.cairo`:
-// namespace ns_device_types:
-//     const DEVICE_SPG = 0 # solar power generator
-//     const DEVICE_NPG = 1 # nuclear power generator
-//     const DEVICE_FE_HARV = 2 # iron harvester
-//     const DEVICE_AL_HARV = 3 # aluminum harvester
-//     const DEVICE_CU_HARV = 4 # copper harvester
-//     const DEVICE_SI_HARV = 5 # silicon harvester
-//     const DEVICE_PU_HARV = 6 # plutoniium harvester
-//     const DEVICE_FE_REFN = 7 # iron refinery
-//     const DEVICE_AL_REFN = 8 # aluminum refinery
-//     const DEVICE_CU_REFN = 9 # copper refinery
-//     const DEVICE_SI_REFN = 10 # silicon refinery
-//     const DEVICE_PEF = 11 # plutonium enrichment facility
-//     const DEVICE_UTB = 12 # universal transportation belt
-//     const DEVICE_UTL = 13 # universal transmission line
-//     const DEVICE_UPSF = 14 # universal production and storage facility
-//     const DEVICE_NDPE = 15 # nuclear driller & propulsion engine
-
-//     const DEVICE_TYPE_COUNT = 16
-//     const DEVICE_PG_MAX = 1
-//     const DEVICE_HARVESTER_MIN = 2
-//     const DEVICE_HARVESTER_MAX = 6
-//     const DEVICE_TRANSFORMER_MIN = 7
-//     const DEVICE_TRANSFORMER_MAX = 11
-// end
 
 export default function GameStatsDevices() {
     const { contract } = useUniverseContract()
@@ -255,6 +230,37 @@ export default function GameStatsDevices() {
         }
     }, [result_15])
 
+    const arr_values = [
+        value_0, value_1, value_2, value_3, value_4,
+        value_5, value_6, value_7, value_8, value_9,
+        value_10, value_11, value_12, value_13, value_14, value_15
+    ]
+    const arr_types = [
+        "SPG", "NPG",
+        "FE HARV", "AL HARV", "CU HARV", "SI HARV", "PU HARV",
+        "FE REFN", "AL REFN", "CU REFN", "SI REFN", "PEF",
+        "UTB", "UTL", "UPSF", "NDPE"
+    ]
+    const arr_footprints = [
+        "1 x 1", "3 x 3",
+        "1 x 1", "1 x 1", "1 x 1", "1 x 1", "1 x 1",
+        "2 x 2", "2 x 2", "2 x 2", "2 x 2", "2 x 2",
+        "1 x 1", "1 x 1",
+        "5 x 5", "5 x 5"
+    ]
+
+    var rows = [];
+    for (var row_idx = 0; row_idx < 16; row_idx ++){
+        var cell = []
+        const device_color = DEVICE_COLOR_MAP.get(row_idx)
+        cell.push (<td> <p style={{ color: device_color, fontSize:'1.6em'}}>■</p> </td>)
+        cell.push (<td>{arr_types[row_idx]}</td>)
+        cell.push (<td>{arr_footprints[row_idx]}</td>)
+        cell.push (<td>{arr_values[row_idx]}</td>)
+
+        rows.push(<tr>{cell}</tr>)
+    }
+
     //
     // Return component
     //
@@ -265,14 +271,16 @@ export default function GameStatsDevices() {
             <table>
                 <thead>
                     <tr>
-                        <th>Id</th>
+                        <th>Legend</th>
                         <th>Type</th>
+                        <th>Footprint</th>
                         <th>Amount</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>0</td>
+                    {rows}
+                    {/* <tr>
+                        <td>■</td>
                         <td>SPG</td>
                         <td>{value_0}</td>
                     </tr>
@@ -365,7 +373,7 @@ export default function GameStatsDevices() {
                         <td>15</td>
                         <td>NDPE</td>
                         <td>{value_15}</td>
-                    </tr>
+                    </tr> */}
 
                 </tbody>
             </table>

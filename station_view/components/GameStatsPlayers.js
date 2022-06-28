@@ -48,7 +48,7 @@ export default function GameStatsPlayers() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
+                    <tr className="player_account">
                         <td>0</td>
                         <td>{value_0}</td>
                     </tr>
