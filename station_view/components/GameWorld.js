@@ -22,9 +22,9 @@ function useUniverseContract() {
 // Dimensions
 //
 const GRID = 8 // grid size
-const PAD = 100 // pad size
+const PAD = 120 // pad size
 const SIDE = 25 // number of grids per size (planet dimension)
-const CANVAS_W = 1050
+const CANVAS_W = 1122
 const CANVAS_H = 900
 const TRIANGLE_W = 6
 const TRIANGLE_H = 10

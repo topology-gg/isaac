@@ -31,7 +31,7 @@ body {
     font-family: Poppins-Light;
     /* , -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif; */
     /* color: #2e76c8; */
-    color: #555555
+    color: #DDDDDD
 }
 
 button {
@@ -40,7 +40,7 @@ button {
 
 .mother-container {
     display: flex;
-    background-color: #E3EDFF;
+    background-color: #444444;
 }
 
 .left-child-container {
@@ -58,20 +58,22 @@ button {
 
 .right-child-bottom {
     overflow-y: auto;
-    height: 30em;
+    height: 35em;
+    margin: 0;
 }
 
 p {
-    font-size: 1em;
+    font-size: 0.9em;
 }
 
 table, th, td {
-    border: 1px solid;
+    /* border: 1px solid; */
     border-collapse: collapse;
     padding-left:   0.6em;
     padding-right:  0.6em;
     text-align: center;
-    font-size: 0.9em
+    font-size: 0.85em;
+    height: 1.7em;
 }
 
 tr.player_account td {
@@ -81,4 +83,15 @@ tr.player_account td {
 
 span {
     color: transparent;
+}
+
+h4 {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+h5 {
+    margin-top: 0em;
+    margin-bottom: 0.5em;
+    text-decoration: underline;
 }
