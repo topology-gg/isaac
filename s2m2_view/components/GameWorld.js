@@ -2,6 +2,8 @@ import React, { Component, useState, useEffect, useRef, useCallback, useMemo } f
 import { fabric } from 'fabric';
 import { toBN } from 'starknet/dist/utils/number'
 
+import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
+
 import Modal from "./Modal";
 import {
     useStarknet,
@@ -62,23 +64,23 @@ const FILL_CURSOR_GRID   = PALETTE === 'DARK' ? '#CCCCCC' : '#AAAAAA'
 const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#DDDDDD' : '#999999'
 const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
-const DEVICE_COLOR_MAP = new Map();
-DEVICE_COLOR_MAP.set(0,  "#8DAAF7"); // SPG
-DEVICE_COLOR_MAP.set(1,  "#A87AF7"); // NPG
-DEVICE_COLOR_MAP.set(2,  "#211E3A"); // FE HARV
-DEVICE_COLOR_MAP.set(3,  "#445868"); // FE REFN
-DEVICE_COLOR_MAP.set(4,  "#893439"); // AL HARV
-DEVICE_COLOR_MAP.set(5,  "#D96767"); // AL REFN
-DEVICE_COLOR_MAP.set(6,  "#F18C62"); // CU HARV
-DEVICE_COLOR_MAP.set(7,  "#FFB57E"); // CU REFN
-DEVICE_COLOR_MAP.set(8,  "#75ABCF"); // SI HARV
-DEVICE_COLOR_MAP.set(9,  "#ADC2D3"); // SI REFN
-DEVICE_COLOR_MAP.set(10, "#E4A2AB"); // PU HARV
-DEVICE_COLOR_MAP.set(11, "#EDCEDB"); // PEF
-DEVICE_COLOR_MAP.set(12, "#9FACA3"); // UTB
-DEVICE_COLOR_MAP.set(13, "#88D4CA"); // UTL
-DEVICE_COLOR_MAP.set(14, "#FFDD8D"); // UPSF
-DEVICE_COLOR_MAP.set(15, "#51499E"); // NDPE
+// const DEVICE_COLOR_MAP = new Map();
+// DEVICE_COLOR_MAP.set(0,  "#8DAAF7"); // SPG
+// DEVICE_COLOR_MAP.set(1,  "#A87AF7"); // NPG
+// DEVICE_COLOR_MAP.set(2,  "#211E3A"); // FE HARV
+// DEVICE_COLOR_MAP.set(3,  "#445868"); // FE REFN
+// DEVICE_COLOR_MAP.set(4,  "#893439"); // AL HARV
+// DEVICE_COLOR_MAP.set(5,  "#D96767"); // AL REFN
+// DEVICE_COLOR_MAP.set(6,  "#F18C62"); // CU HARV
+// DEVICE_COLOR_MAP.set(7,  "#FFB57E"); // CU REFN
+// DEVICE_COLOR_MAP.set(8,  "#75ABCF"); // SI HARV
+// DEVICE_COLOR_MAP.set(9,  "#ADC2D3"); // SI REFN
+// DEVICE_COLOR_MAP.set(10, "#E4A2AB"); // PU HARV
+// DEVICE_COLOR_MAP.set(11, "#EDCEDB"); // PEF
+// DEVICE_COLOR_MAP.set(12, "#9FACA3"); // UTB
+// DEVICE_COLOR_MAP.set(13, "#88D4CA"); // UTL
+// DEVICE_COLOR_MAP.set(14, "#FFDD8D"); // UPSF
+// DEVICE_COLOR_MAP.set(15, "#51499E"); // NDPE
 
 //
 // Helper function for creating the triangles at the tips of axes
