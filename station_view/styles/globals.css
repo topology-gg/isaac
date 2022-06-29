@@ -38,6 +38,29 @@ button {
     font-family: Poppins-Light;
 }
 
+button {
+  background-color: "#AAAAAA";
+  border-radius: 8px;
+  border-width: 0;
+  color: #333333;
+  cursor: pointer;
+  display: inline-block;
+  font-family: "Poppins-Light";
+  font-size: 0.8em;
+  font-weight: 500;
+  line-height: 20px;
+  list-style: none;
+  margin: 0;
+  padding: 0.5em 1.5em;
+  text-align: center;
+  transition: all 200ms;
+  vertical-align: baseline;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
 .mother-container {
     display: flex;
     background-color: #444444;
@@ -54,6 +77,11 @@ button {
     order: 1;
     width: 20em;
     padding-left: 2.5em;
+}
+
+.right-child-top {
+    height: 8em;
+    margin: 0;
 }
 
 .right-child-bottom {
@@ -94,4 +122,9 @@ h5 {
     margin-top: 0em;
     margin-bottom: 0.5em;
     text-decoration: underline;
+}
+
+.connected_account {
+    font-size: 0.8em;
+    padding-top: 0.6em;
 }

@@ -22,7 +22,8 @@ function useUniverseContract() {
 // Dimensions
 //
 const GRID = 8 // grid size
-const PAD = 120 // pad size
+const PAD_X = 160 // pad size
+const PAD_Y = 120 // pad size
 const SIDE = 25 // number of grids per size (planet dimension)
 const CANVAS_W = 1122
 const CANVAS_H = 900
@@ -154,8 +155,8 @@ export default function GameWorld() {
     var textObject = new fabric.IText(
         '(-,-)', {
         fontSize:16,
-        left: PAD + 3.2*GRID*SIDE,
-        top: PAD,
+        left: PAD_X + 3.2*GRID*SIDE,
+        top: PAD_Y,
         radius:10,
         fill: GRID_ASSIST_TBOX,
         borderRadius: '25px',
@@ -167,8 +168,8 @@ export default function GameWorld() {
     var cursorGridRect = new fabric.Rect({
         height: GRID,
         width: GRID,
-        left: PAD,
-        top: PAD,
+        left: PAD_X,
+        top: PAD_Y,
         fill: FILL_CURSOR_GRID,
         selectable: false,
         hoverCursor: 'default',
@@ -178,8 +179,8 @@ export default function GameWorld() {
     var cursorFaceRect = new fabric.Rect({
         height: GRID*SIDE,
         width: GRID*SIDE,
-        left: PAD,
-        top: PAD,
+        left: PAD_X,
+        top: PAD_Y,
         fill: "",
         stroke: STROKE_CURSOR_FACE,
         strokeWidth: STROKE_WIDTH_CURSOR_FACE,
@@ -261,26 +262,26 @@ export default function GameWorld() {
         const AXIS_EXTEND_GRID_MULTIPLE_X = 7
         const AXIS_EXTEND_GRID_MULTIPLE_Y = 6
         canvi.add(new fabric.Line([
-            PAD + 0,
-            PAD + 0 - GRID*AXIS_EXTEND_GRID_MULTIPLE_Y,
-            PAD + 0,
-            PAD + SIDE*GRID*3
+            PAD_X + 0,
+            PAD_Y + 0 - GRID*AXIS_EXTEND_GRID_MULTIPLE_Y,
+            PAD_X + 0,
+            PAD_Y + SIDE*GRID*3
         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_AXIS, selectable: false, hoverCursor: 'default' }));
         canvi.add(new fabric.Line([
-            PAD + 0,
-            PAD + SIDE*GRID*3,
-            PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X,
-            PAD + SIDE*GRID*3
+            PAD_X + 0,
+            PAD_Y + SIDE*GRID*3,
+            PAD_X + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X,
+            PAD_Y + SIDE*GRID*3
         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_AXIS, selectable: false, hoverCursor: 'default' }));
 
         const triangle_y_axis = createTriangle (
-            PAD-(TRIANGLE_W/2),
-            PAD - GRID*AXIS_EXTEND_GRID_MULTIPLE_Y - TRIANGLE_H,
+            PAD_X -(TRIANGLE_W/2),
+            PAD_Y - GRID*AXIS_EXTEND_GRID_MULTIPLE_Y - TRIANGLE_H,
             0
         )
         const triangle_x_axis = createTriangle (
-            PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X,
-            PAD + SIDE*GRID*3 - TRIANGLE_W,
+            PAD_X + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X,
+            PAD_Y + SIDE*GRID*3 - TRIANGLE_W,
             90
         )
         canvi.add (triangle_y_axis);
@@ -294,8 +295,8 @@ export default function GameWorld() {
             const tbox_x = new fabric.Textbox(
                 'x', {
                     width: 100,
-                    top:  PAD + SIDE*GRID*2.9 + 1.3*GRID,
-                    left: PAD + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X + GRID*2.5,
+                    left: PAD_X + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X + GRID*2.5,
+                    top:  PAD_Y + SIDE*GRID*2.9 + 1.3*GRID,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -306,8 +307,8 @@ export default function GameWorld() {
             const tbox_y = new fabric.Textbox(
                 'y', {
                     width: 100,
-                    top:  GRID*1.3,
-                    left: PAD-0.4*GRID,
+                    left: PAD_X - 0.4*GRID,
+                    top:  PAD_Y - 11*GRID,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -319,8 +320,8 @@ export default function GameWorld() {
             const tbox_origin = new fabric.Textbox(
                 '(0,0)', {
                     width: 100,
-                    top:  PAD + SIDE*GRID*3 + GRID*1.3,
-                    left: PAD + 0 - GRID*2,
+                    left: PAD_X + 0 - GRID*2,
+                    top:  PAD_Y + SIDE*GRID*3 + GRID*1.3,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -333,8 +334,8 @@ export default function GameWorld() {
             const tbox_y_d = new fabric.Textbox(
                 text_y_d, {
                     width: 100,
-                    top:  PAD + SIDE*GRID*2 - GRID*1.5,
-                    left: PAD + 0 - GRID*6,
+                    left: PAD_X + 0 - GRID*6,
+                    top:  PAD_Y + SIDE*GRID*2 - GRID*1.5,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -347,8 +348,8 @@ export default function GameWorld() {
             const tbox_y_2d = new fabric.Textbox(
                 text_y_2d, {
                     width: 100,
-                    top:  PAD + SIDE*GRID*1 - GRID*1.5,
-                    left: PAD + 0 - GRID*6,
+                    left: PAD_X + 0 - GRID*6,
+                    top:  PAD_Y + SIDE*GRID*1 - GRID*1.5,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -361,8 +362,8 @@ export default function GameWorld() {
             const tbox_y_3d = new fabric.Textbox(
                 text_y_3d, {
                     width: 100,
-                    top:  PAD + SIDE*GRID*0 - GRID*1.5,
-                    left: PAD + 0 - GRID*6,
+                    left: PAD_X + 0 - GRID*6,
+                    top:  PAD_Y + SIDE*GRID*0 - GRID*1.5,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -375,8 +376,8 @@ export default function GameWorld() {
             const tbox_x_d = new fabric.Textbox(
                 text_x_d, {
                     width: 100,
-                    top:  PAD + SIDE*GRID*3 + GRID*1.3,
-                    left: PAD + SIDE*GRID*1 - GRID*2.5,
+                    left: PAD_X + SIDE*GRID*1 - GRID*2.5,
+                    top:  PAD_Y + SIDE*GRID*3 + GRID*1.3,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -389,8 +390,8 @@ export default function GameWorld() {
             const tbox_x_2d = new fabric.Textbox(
                 text_x_2d, {
                     width: 100,
-                    top:  PAD + SIDE*GRID*3 + GRID*1.3,
-                    left: PAD + SIDE*GRID*2 - GRID*2.5,
+                    left: PAD_X + SIDE*GRID*2 - GRID*2.5,
+                    top:  PAD_Y + SIDE*GRID*3 + GRID*1.3,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -403,8 +404,8 @@ export default function GameWorld() {
             const tbox_x_3d = new fabric.Textbox(
                 text_x_3d, {
                     width: 100,
-                    top:  PAD + SIDE*GRID*3 + GRID*1.3,
-                    left: PAD + SIDE*GRID*3 - GRID*2.5,
+                    left: PAD_X + SIDE*GRID*3 - GRID*2.5,
+                    top:  PAD_Y + SIDE*GRID*3 + GRID*1.3,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -417,8 +418,8 @@ export default function GameWorld() {
             const tbox_x_4d = new fabric.Textbox(
                 text_x_4d, {
                     width: 100,
-                    top:  PAD + SIDE*GRID*3 + GRID*1.3,
-                    left: PAD + SIDE*GRID*4 - GRID*2.5,
+                    left: PAD_X + SIDE*GRID*4 - GRID*2.5,
+                    top:  PAD_Y + SIDE*GRID*3 + GRID*1.3,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -449,26 +450,26 @@ export default function GameWorld() {
             //
             for (var xi = 0; xi < SIDE; xi++){
                 canvi.add(new fabric.Line([
-                    PAD + xi*GRID,
-                    PAD + SIDE*GRID,
-                    PAD + xi*GRID,
-                    PAD + SIDE*GRID*2
+                    PAD_X + xi*GRID,
+                    PAD_Y + SIDE*GRID,
+                    PAD_X + xi*GRID,
+                    PAD_Y + SIDE*GRID*2
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
             }
             for (var xi = SIDE; xi < SIDE*2+1; xi++){
                 canvi.add(new fabric.Line([
-                    PAD + xi*GRID,
-                    PAD + 0,
-                    PAD + xi*GRID,
-                    PAD + SIDE*GRID*3
+                    PAD_X + xi*GRID,
+                    PAD_Y + 0,
+                    PAD_X + xi*GRID,
+                    PAD_Y + SIDE*GRID*3
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
             }
             for (var xi = 2*SIDE+1; xi < SIDE*4+1; xi++){
                 canvi.add(new fabric.Line([
-                    PAD + xi*GRID,
-                    PAD + SIDE*GRID,
-                    PAD + xi*GRID,
-                    PAD + SIDE*GRID*2
+                    PAD_X + xi*GRID,
+                    PAD_Y + SIDE*GRID,
+                    PAD_X + xi*GRID,
+                    PAD_Y + SIDE*GRID*2
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
             }
 
@@ -477,26 +478,26 @@ export default function GameWorld() {
             //
             for (var yi = 0; yi < SIDE; yi++){
                 canvi.add(new fabric.Line([
-                    PAD + SIDE*GRID,
-                    PAD + yi*GRID,
-                    PAD + SIDE*GRID*2,
-                    PAD + yi*GRID
+                    PAD_X + SIDE*GRID,
+                    PAD_Y + yi*GRID,
+                    PAD_X + SIDE*GRID*2,
+                    PAD_Y + yi*GRID
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
             }
             for (var yi = SIDE; yi < 2*SIDE+1; yi++){
                 canvi.add(new fabric.Line([
-                    PAD + 0,
-                    PAD + yi*GRID,
-                    PAD + SIDE*GRID*4,
-                    PAD + yi*GRID
+                    PAD_X + 0,
+                    PAD_Y + yi*GRID,
+                    PAD_X + SIDE*GRID*4,
+                    PAD_Y + yi*GRID
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
             }
             for (var yi = 2*SIDE+1; yi < 3*SIDE+1; yi++){
                 canvi.add(new fabric.Line([
-                    PAD + SIDE*GRID,
-                    PAD + yi*GRID,
-                    PAD + SIDE*GRID*2,
-                    PAD + yi*GRID
+                    PAD_X + SIDE*GRID,
+                    PAD_Y + yi*GRID,
+                    PAD_X + SIDE*GRID*2,
+                    PAD_Y + yi*GRID
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
             }
         }
@@ -510,84 +511,84 @@ export default function GameWorld() {
             // Lines parallel to x-axis
             //
             canvi.add(new fabric.Line([
-                PAD + 0*GRID, PAD + SIDE*GRID,
-                PAD + SIDE*GRID, PAD + SIDE*GRID
+                PAD_X + 0*GRID,    PAD_Y + SIDE*GRID,
+                PAD_X + SIDE*GRID, PAD_Y + SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 0*GRID, PAD + 2*SIDE*GRID,
-                PAD + SIDE*GRID, PAD + 2*SIDE*GRID
+                PAD_X + 0*GRID,    PAD_Y + 2*SIDE*GRID,
+                PAD_X + SIDE*GRID, PAD_Y + 2*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + SIDE*GRID, PAD + 0*GRID,
-                PAD + 2*SIDE*GRID, PAD + 0*GRID
+                PAD_X + SIDE*GRID,   PAD_Y + 0*GRID,
+                PAD_X + 2*SIDE*GRID, PAD_Y + 0*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + SIDE*GRID, PAD + 3*SIDE*GRID,
-                PAD + 2*SIDE*GRID, PAD + 3*SIDE*GRID
+                PAD_X + SIDE*GRID,   PAD_Y + 3*SIDE*GRID,
+                PAD_X + 2*SIDE*GRID, PAD_Y + 3*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 2*SIDE*GRID, PAD + SIDE*GRID,
-                PAD + 3*SIDE*GRID, PAD + SIDE*GRID
+                PAD_X + 2*SIDE*GRID, PAD_Y + SIDE*GRID,
+                PAD_X + 3*SIDE*GRID, PAD_Y + SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 2*SIDE*GRID, PAD + 2*SIDE*GRID,
-                PAD + 3*SIDE*GRID, PAD + 2*SIDE*GRID
+                PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
+                PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 3*SIDE*GRID, PAD + SIDE*GRID,
-                PAD + 4*SIDE*GRID, PAD + SIDE*GRID
+                PAD_X + 3*SIDE*GRID, PAD_Y + SIDE*GRID,
+                PAD_X + 4*SIDE*GRID, PAD_Y + SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 3*SIDE*GRID, PAD + 2*SIDE*GRID,
-                PAD + 4*SIDE*GRID, PAD + 2*SIDE*GRID
+                PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
+                PAD_X + 4*SIDE*GRID, PAD_Y + 2*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 1*SIDE*GRID, PAD + 1*SIDE*GRID,
-                PAD + 2*SIDE*GRID, PAD + 1*SIDE*GRID
+                PAD_X + 1*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
+                PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 1*SIDE*GRID, PAD + 2*SIDE*GRID,
-                PAD + 2*SIDE*GRID, PAD + 2*SIDE*GRID
+                PAD_X + 1*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
+                PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
 
             //
             // Lines parallel to y-axis
             //
             canvi.add(new fabric.Line([
-                PAD + SIDE*GRID, PAD + 2*SIDE*GRID,
-                PAD + SIDE*GRID, PAD + 3*SIDE*GRID
+                PAD_X + SIDE*GRID, PAD_Y + 2*SIDE*GRID,
+                PAD_X + SIDE*GRID, PAD_Y + 3*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 2*SIDE*GRID, PAD + 2*SIDE*GRID,
-                PAD + 2*SIDE*GRID, PAD + 3*SIDE*GRID
+                PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
+                PAD_X + 2*SIDE*GRID, PAD_Y + 3*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 0*GRID, PAD + SIDE*GRID,
-                PAD + 0*GRID, PAD + 2*SIDE*GRID
+                PAD_X + 0*GRID, PAD_Y + SIDE*GRID,
+                PAD_X + 0*GRID, PAD_Y + 2*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 4*SIDE*GRID, PAD + SIDE*GRID,
-                PAD + 4*SIDE*GRID, PAD + 2*SIDE*GRID
+                PAD_X + 4*SIDE*GRID, PAD_Y + SIDE*GRID,
+                PAD_X + 4*SIDE*GRID, PAD_Y + 2*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + SIDE*GRID, PAD + 0*SIDE*GRID,
-                PAD + SIDE*GRID, PAD + 1*SIDE*GRID
+                PAD_X + SIDE*GRID, PAD_Y + 0*SIDE*GRID,
+                PAD_X + SIDE*GRID, PAD_Y + 1*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 2*SIDE*GRID, PAD + 0*SIDE*GRID,
-                PAD + 2*SIDE*GRID, PAD + 1*SIDE*GRID
+                PAD_X + 2*SIDE*GRID, PAD_Y + 0*SIDE*GRID,
+                PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 1*SIDE*GRID, PAD + 1*SIDE*GRID,
-                PAD + 1*SIDE*GRID, PAD + 2*SIDE*GRID
+                PAD_X + 1*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
+                PAD_X + 1*SIDE*GRID, PAD_Y + 2*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 2*SIDE*GRID, PAD + 1*SIDE*GRID,
-                PAD + 2*SIDE*GRID, PAD + 2*SIDE*GRID
+                PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
+                PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
             canvi.add(new fabric.Line([
-                PAD + 3*SIDE*GRID, PAD + 1*SIDE*GRID,
-                PAD + 3*SIDE*GRID, PAD + 2*SIDE*GRID
+                PAD_X + 3*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
+                PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
         }
 
@@ -634,8 +635,8 @@ export default function GameWorld() {
             const rect = new fabric.Rect({
                 height: device_dim*GRID,
                 width: device_dim*GRID,
-                left: PAD + x*GRID,
-                top: PAD + (SIDE*3-y-device_dim)*GRID,
+                left: PAD_X + x*GRID,
+                top:  PAD_Y + (SIDE*3-y-device_dim)*GRID,
                 fill: device_color,
                 selectable: false,
                 hoverCursor: 'pointer'
@@ -657,8 +658,8 @@ export default function GameWorld() {
             const rect = new fabric.Rect({
                     height: device_dim*GRID,
                     width: device_dim*GRID,
-                    left: PAD + x*GRID,
-                    top: PAD + (SIDE*3-y-device_dim)*GRID,
+                    left: PAD_X + x*GRID,
+                    top:  PAD_Y + (SIDE*3-y-device_dim)*GRID,
                     fill: device_color,
                     selectable: false,
                     hoverCursor: 'pointer'
@@ -732,10 +733,10 @@ export default function GameWorld() {
     }
 
     function x_transform_normalized_to_canvas (x) {
-        return PAD + x*GRID
+        return PAD_X + x*GRID
     }
     function y_transform_normalized_to_canvas (y) {
-        return PAD + (SIDE*3 - y - 1)*GRID
+        return PAD_Y + (SIDE*3 - y - 1)*GRID
     }
 
     function map_face_to_left_top (face) {
@@ -790,8 +791,8 @@ export default function GameWorld() {
     }
 
     function handleMouseMove(ev) {
-        const x_norm = Math.floor( (ev.pageX - PAD) / GRID )
-        const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD) / GRID )
+        const x_norm = Math.floor( (ev.pageX - PAD_X) / GRID )
+        const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD_Y) / GRID )
         const bool = is_valid_coord (x_norm, y_norm)
 
         if (bool && !modalVisibility) {
@@ -840,8 +841,8 @@ export default function GameWorld() {
                 //
                 // Hide grid assist square
                 //
-                _refs.current[3].left = PAD + mPosNorm.x*GRID
-                _refs.current[3].top  = PAD + (SIDE*3 - mPosNorm.y - 1)*GRID
+                _refs.current[3].left = PAD_X + mPosNorm.x*GRID
+                _refs.current[3].top  = PAD_Y + (SIDE*3 - mPosNorm.y - 1)*GRID
                 _refs.current[3].visible = true
 
                 //
@@ -864,8 +865,8 @@ export default function GameWorld() {
 
 
     function handleClick(ev) {
-        const x_norm = Math.floor( (ev.pageX - PAD) / GRID )
-        const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD) / GRID )
+        const x_norm = Math.floor( (ev.pageX - PAD_X) / GRID )
+        const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD_Y) / GRID )
         const bool = is_valid_coord (x_norm, y_norm)
 
         if (bool && !modalVisibility) {
