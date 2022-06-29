@@ -1,6 +1,8 @@
 import GameWorld from "../components/GameWorld";
 import GameStatsDevices from "../components/GameStatsDevices"
 import GameStatsPlayers from "../components/GameStatsPlayers"
+import CoverArt from "../components/CoverArt"
+import CoverArtBack from "../components/CoverArtBack"
 
 import styles from '../styles/Home.module.css'
 import { ConnectWallet } from "../components/ConnectWallet.js"
@@ -16,7 +18,11 @@ import {
 function Home() {
 
   return (
+
     <StarknetProvider>
+      <CoverArtBack />
+      <CoverArt />
+
       <div className="mother-container">
 
           <div className="left-child-container">
