@@ -162,7 +162,7 @@ https://stackoverflow.com/questions/8200204/fit-background-image-to-div */
 .hide {
     -webkit-animation: fadeinout 1s linear forwards;
     animation: fadeinout 1s linear forwards;
-    transition: all 1s;
+    /* transition: all 1s; */
 }
 
 @-webkit-keyframes fadeinout {
@@ -178,8 +178,8 @@ https://stackoverflow.com/questions/8200204/fit-background-image-to-div */
 }
 
 .show {
-    -webkit-animation: display .1s linear forwards;
-    animation: display .1s linear forwards;
+    -webkit-animation: display .3s linear forwards;
+    animation: display .3s linear forwards;
 }
 
 @-webkit-keyframes display {

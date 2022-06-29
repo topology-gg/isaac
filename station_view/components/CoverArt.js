@@ -6,20 +6,17 @@ import React, { Component, useState, useEffect, useRef} from "react";
 // https://stackoverflow.com/questions/68016644/hiding-div-after-a-few-seconds-reactjs
 
 export default function CoverArt () {
-    const [isShowingAlert, setShowingAlert] = React.useState(false);
 
     const [showElement,setShowElement] = React.useState(true)
     useEffect(()=>{
         setTimeout(function() {
             setShowElement(false)
-                }, 3 * 1000);
+                }, 5 * 1000);
             },
     [])
 
     return (
         <div className={ showElement ? "show cover_art" : "hide cover_art"}>
-          {/* <img src={coverArtImage} /> */}
-          {/* <img src={require('./cover-art.png').default} /> */}
         </div>
       );
   }
