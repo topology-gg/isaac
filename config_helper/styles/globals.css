@@ -130,7 +130,7 @@ h5 {
 }
 
 .cover_art_back {
-    z-index: 999;
+    z-index: 1;
 	position: absolute;
     margin: 0;
     top: 0px;
@@ -159,9 +159,15 @@ https://stackoverflow.com/questions/8200204/fit-background-image-to-div */
     background-size: contain;
 }
 
-.hide {
+.hide_slow {
     -webkit-animation: fadeinout 1s linear forwards;
     animation: fadeinout 1s linear forwards;
+    /* transition: all 1s; */
+}
+
+.hide_fast {
+    -webkit-animation: fadeinout 0.2s linear forwards;
+    animation: fadeinout 0.2s linear forwards;
     /* transition: all 1s; */
 }
 
