@@ -34,12 +34,14 @@ async def start(argv):
     mongo, isaac_db = _create_mongo_client_and_db()
     macro_states = isaac_db.macro_states
 
+    isaac_contract_address = bytes.fromhex("0758e8e3153a61474376838aeae42084dae0ef55e0206b19b2a85e039d1ef180")
     # Connect to Apibara server
     async with IndexerManagerClient.insecure_channel("localhost:7171") as app_manager:
-        filter = contract_event_filter(
-            'forward_world_macro_occurred',
-            address=bytes.fromhex("0758e8e3153a61474376838aeae42084dae0ef55e0206b19b2a85e039d1ef180")
-        )
+        filters = [
+            contract_event_filter('forward_world_macro_occurred', address=isaac_contract_address),
+            contract_event_filter('universe_activation_occurred', address=isaac_contract_address),
+            contract_event_filter('universe_deactivation_occurred', address=isaac_contract_address),
+        ]
 
         # Check if the given indexer exists
         app = await app_manager.get_indexer(indexer_id)
@@ -48,10 +50,10 @@ async def start(argv):
             if args.reset:
                 print(f'Reset flag specified. Deleting and restarting.')
                 await app_manager.delete_indexer(indexer_id)
-                app = await app_manager.create_indexer(indexer_id, 200_000, filter)
+                app = await app_manager.create_indexer(indexer_id, 200_000, filters)
         else:
             print(f'Creating indexer with id "{indexer_id}".')
-            app = await app_manager.create_indexer(indexer_id, 200_000, filter)
+            app = await app_manager.create_indexer(indexer_id, 200_000, filters)
 
         # Connect as indexer. Apibara will start sending historical events at first,
         # then live block events.
