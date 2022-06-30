@@ -11,12 +11,12 @@ export default function CoverArt () {
     useEffect(()=>{
         setTimeout(function() {
             setShowElement(false)
-                }, 5 * 1000);
+                }, 3 * 1000);
             },
     [])
 
     return (
-        <div className={ showElement ? "show cover_art" : "hide cover_art"}>
+        <div className={ showElement ? "show cover_art" : "hide_slow cover_art"}>
         </div>
       );
   }
