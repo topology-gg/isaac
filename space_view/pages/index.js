@@ -1,6 +1,8 @@
 import GameWorld from "../components/GameWorld";
 import styles from '../styles/Home.module.css'
 import { ConnectWallet } from "../components/ConnectWallet.js"
+import CoverArt from "../components/CoverArt"
+import CoverArtBack from "../components/CoverArtBack"
 
 import {
   useStarknet,
@@ -14,6 +16,9 @@ function Home() {
 
   return (
     <StarknetProvider>
+      <CoverArtBack />
+      <CoverArt />
+
       <GameWorld />
       {/* <div className={styles.gamecontainer}>
         <GameWorld />

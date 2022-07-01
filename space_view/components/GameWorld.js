@@ -11,7 +11,7 @@ import {
 import UniverseAbi from '../abi/universe_abi.json'
 import { useMacroStates } from '../lib/api'
 
-const UNIVERSE_ADDR = '0x0758e8e3153a61474376838aeae42084dae0ef55e0206b19b2a85e039d1ef180' // universe #0
+const UNIVERSE_ADDR = '0x00a3b8dee21daab96058098a65c5cd9974fc5088d9f3d1f2bfcbe1a872a70dee' // universe #0
 
 function useUniverseContract() {
     return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
