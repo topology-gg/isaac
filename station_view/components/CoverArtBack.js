@@ -11,7 +11,7 @@ export default function CoverArtBack () {
     useEffect(()=>{
         setTimeout(function() {
             setShowElement(false)
-                }, 4.3 * 1000);
+                }, 2.4 * 1000);
             },
     [])
 
