@@ -16,7 +16,7 @@ class Modal extends Component {
         { this.props.show ?
           <div className={styles.modal}>
             <h1> Grid ({this.props.info.grid_x}, {this.props.info.grid_y})</h1>
-            <button onClick={this.props.onHide}>Close Modal</button>
+            <button onClick={this.props.onHide}>Esc</button>
           </div>
           : null }
       </div>
