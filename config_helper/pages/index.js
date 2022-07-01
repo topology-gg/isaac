@@ -18,7 +18,6 @@ import {
 function Home() {
 
   return (
-
     <StarknetProvider>
       <CoverArtBack />
       <CoverArt />
@@ -31,7 +30,7 @@ function Home() {
 
           <div className="right-child-container">
 
-            <div className="right-child-top">
+            <div className="right-child-title">
               <span>.</span>
 
               <h3>ISAAC: Working View</h3>
@@ -39,6 +38,11 @@ function Home() {
             </div>
 
             <div className="right-child-middle">
+              <span>.</span>
+              <h4>Control</h4>
+              <p>Key press 1~6: choose display mode</p>
+              <p>Mouse click: select grid</p>
+              <p>Mouse drag: select grids</p>
               <span>.</span>
               <h4>Universe Stats</h4>
             </div>
