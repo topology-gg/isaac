@@ -740,7 +740,8 @@ export default function GameWorld() {
 
         var perlin_rect_face0_group = new fabric.Group(
             perlin_rects, {
-                visible: false
+                visible: false,
+                selectable: false
             });
         canvi.add(perlin_rect_face0_group)
         _feDisplayRef.current = perlin_rect_face0_group
@@ -808,7 +809,8 @@ export default function GameWorld() {
 
         var device_rect_face0_group = new fabric.Group(
             device_rects, {
-                visible: true
+                visible: true,
+                selectable: false
             });
         canvi.add(device_rect_face0_group)
         _deviceDisplayRef.current = device_rect_face0_group
