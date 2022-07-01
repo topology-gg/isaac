@@ -19,12 +19,17 @@ function useUniverseContract() {
 }
 
 //
+// Import pre-generated perlin values
+//
+const PERLIN_VALUES = require('../public/perlin_planet_dim_25.json');
+
+//
 // Dimensions
 //
+const SIDE = 25 // number of grids per size (planet dimension)
 const GRID = 8 // grid size
 const PAD_X = 160 // pad size
 const PAD_Y = 120 // pad size
-const SIDE = 25 // number of grids per size (planet dimension)
 const CANVAS_W = 1122
 const CANVAS_H = 900
 const TRIANGLE_W = 6
@@ -126,18 +131,33 @@ export default function GameWorld() {
     })
 
     //
-    // Logic to initialize a Fabric canvas
+    // React References
     //
-    const [canvas, setCanvas] = useState([]);
-    const [coordTextBox, setCoordTextBox] = useState();
-    const [hasDrawn, _] = useState([]);
-    const _refs = useRef([]);
-    // const _canvasRef = useRef(0);
-    // const _hasDrawnRef =
+    const _canvasRef = useRef();
+    const _hasDrawnRef = useRef();
+    const _coordTextRef = useRef();
+    const _cursorGridRectRef = useRef();
+    const _cursorFaceRectRef = useRef();
+    const modalVisibilityRef = useRef(false)
+    const _displayModeTextRef = useRef();
 
-    var textObject = new fabric.IText(
-        '(-,-)', {
-        fontSize:16,
+    const _deviceDisplayRef = useRef();
+    const _feDisplayRef = useRef();
+
+    //
+    // React States
+    //
+    const [displayMode, setDisplayMode] = useState('Devices')
+    const [ClickPositionNorm, setClickPositionNorm] = useState({left: 0, top: 0})
+    const [MousePositionNorm, setMousePositionNorm] = useState({x: 0, y: 0})
+    const [modalVisibility, setModalVisibility] = useState(false)
+    const [modalInfo, setModalInfo] = useState({})
+
+    //
+    // Grid / face assistance
+    //
+    var coordText = new fabric.IText( '(-,-)', {
+        fontSize:14,
         left: PAD_X + 3.2*GRID*SIDE,
         top: PAD_Y,
         radius:10,
@@ -172,27 +192,53 @@ export default function GameWorld() {
         visible: false
     });
 
+    //
+    // text box showing current display mode
+    //
+    var displayModeText = new fabric.Text(
+        'Display: devices', {
+        fontSize: 14, fill: '#CCCCCC',
+        left: PAD_X + 3.2*GRID*SIDE,
+        top: PAD_Y +  5*GRID,
+        width: "150px",
+        selectable: false,
+        fontFamily: "Poppins-Light"
+    });
 
     useEffect (() => {
 
-        // console.log("useEffect(callback, []) called.")
-        _refs.current[0] = new fabric.Canvas('c', {
+        _canvasRef.current = new fabric.Canvas('c', {
             height: CANVAS_H,
             width: CANVAS_W,
             backgroundColor: CANVAS_BG,
             selection: false
         })
-        setCanvas (_refs.current[0]);
+        // _canvasRef.current.on("mouse:move" ,function(e){
+        //     _canvasRef.current.selection = false
+        // })
+        _canvasRef.current.on("mouse:down" ,function(e){
+            console.log("DOWN")
+        })
+        _canvasRef.current.on("mouse:up" ,function(e){
+            console.log("UP")
+        })
 
-        _refs.current[1] = false
+        _hasDrawnRef.current = false
+
+        // setDrawMode ('devices')
+
     }, []);
 
     useEffect (() => {
-        // console.log("useEffect(callback, [device_emap, utb_grids]) called.")
-        if (!_refs.current[1]) {
-            drawWorld (_refs.current[0])
+        if (!_hasDrawnRef.current) {
+            drawWorld (_canvasRef.current)
         }
     }, [device_emap, utb_grids]);
+
+    // useEffect (() => {
+    //     console.log('displayMode changed to', displayMode)
+    //     updateMode (_canvasRef.current)
+    // }, [displayMode]);
 
     const drawWorld = canvi => {
 
@@ -211,7 +257,12 @@ export default function GameWorld() {
                         drawGrid (canvi)
                         drawDevices (canvi)
                         drawAssist (canvi) // draw assistance objects the last to be on top
-                        _refs.current[1] = true
+                        drawMode (canvi)
+                        drawPerlin (canvi)
+
+                        _hasDrawnRef.current = true
+
+                        document.getElementById('canvas_wrap').focus();
                     }
                 }
             }
@@ -578,21 +629,125 @@ export default function GameWorld() {
         canvi.renderAll();
     }
 
+    const drawMode = canvi => {
+        canvi.add (displayModeText)
+        _displayModeTextRef.current = displayModeText
+
+        canvi.renderAll();
+    }
+
+    const updateMode = (canvi, mode) => {
+        console.log ('updateMode()')
+        _displayModeTextRef.current.text = 'Display: ' + mode
+        _displayModeTextRef.current.dirty = true
+
+        canvi.renderAll();
+    }
+
     const drawAssist = canvi => {
         //
         // Draw textObject for showing user mouse coordinate
         //
-        canvi.add(textObject)
-        _refs.current[2] = textObject
+        canvi.add(coordText)
+        _coordTextRef.current = coordText
 
         canvi.add (cursorGridRect)
-        _refs.current[3] = cursorGridRect
+        _cursorGridRectRef.current = cursorGridRect
 
         canvi.add (cursorFaceRect)
-        _refs.current[4] = cursorFaceRect
+        _cursorFaceRectRef.current = cursorFaceRect
 
         canvi.renderAll();
     }
+
+    function lerp (start, end, ratio){
+        return start + (end-start) * ratio
+    }
+
+    // PERLIN_VALUES
+    const drawPerlin = canvi => {
+
+        const perlin_rects = []
+        console.log ("max perline value:", PERLIN_VALUES['max'])
+        console.log ("min perline value:", PERLIN_VALUES['min'])
+
+        for (var face=0; face<6; face++) {
+
+            var face_ori
+            if (face === 0) {
+                face_ori = [0, SIDE]
+            }
+            else if (face === 1) {
+                face_ori = [SIDE, 0]
+            }
+            else if (face === 2) {
+                face_ori = [SIDE, SIDE]
+            }
+            else if (face === 3) {
+                face_ori = [SIDE, 2*SIDE]
+            }
+            else if (face === 4) {
+                face_ori = [2*SIDE, SIDE]
+            }
+            else if (face === 5) {
+                face_ori = [3*SIDE, SIDE]
+            }
+
+            for (var row=0; row<SIDE; row++) {
+                for (var col=0; col<SIDE; col++) {
+                    const perlin_value = PERLIN_VALUES[face][row][col]
+                    const perlin_value_normalized = (perlin_value - PERLIN_VALUES['min']) / (PERLIN_VALUES['max'] - PERLIN_VALUES['min'])
+                    console.log("perlin_value_normalized:", perlin_value_normalized)
+
+                    const HI = [176, 196, 222]
+                    const LO = [0, 45, 98]
+
+                    const R = lerp (LO[0], HI[0], perlin_value_normalized)
+                    const G = lerp (LO[1], HI[1], perlin_value_normalized)
+                    const B = lerp (LO[2], HI[2], perlin_value_normalized)
+                    const rect_color = `rgb(${R}, ${G}, ${B})`
+                    // const rect_color = `rgb(${perlin_value_norm},${perlin_value_norm},${perlin_value_norm})`
+                    console.log(`rect_color: ${rect_color}`)
+
+                    const rect = new fabric.Rect({
+                        height: GRID,
+                        width: GRID,
+                        left: PAD_X + (col + face_ori[0]) * GRID,
+                        top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
+                        fill: rect_color,
+                        selectable: false
+                    });
+                    var text = new fabric.Text(
+                        perlin_value.toString(), {
+                        fontSize: 4, fill: '#CCCCCC',
+                        left: PAD_X + (col + face_ori[0]) * GRID,
+                        top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
+                        width: GRID,
+                        selectable: false,
+                        fontFamily: "Poppins-Light"
+                    });
+
+                    perlin_rects.push (
+                        rect
+                    )
+                    perlin_rects.push (
+                        text
+                    )
+                }
+            }
+            // break
+        }
+
+        var perlin_rect_face0_group = new fabric.Group(
+            perlin_rects, {
+                visible: false
+            });
+        canvi.add(perlin_rect_face0_group)
+        _feDisplayRef.current = perlin_rect_face0_group
+
+        canvi.renderAll();
+    }
+
 
     const drawDevices = canvi => {
 
@@ -606,6 +761,7 @@ export default function GameWorld() {
         //
         // Draw devices
         //
+        const device_rects = []
         for (const entry of device_emap.emap){
             const x = entry.grid.x.toNumber()
             const y = entry.grid.y.toNumber()
@@ -624,7 +780,7 @@ export default function GameWorld() {
                 selectable: false,
                 hoverCursor: 'pointer'
             });
-            canvi.add(rect);
+            device_rects.push (rect)
         }
 
         //
@@ -647,11 +803,15 @@ export default function GameWorld() {
                     selectable: false,
                     hoverCursor: 'pointer'
                 });
-                canvi.add(rect);
+                device_rects.push (rect);
         }
 
-            // }
-        // }
+        var device_rect_face0_group = new fabric.Group(
+            device_rects, {
+                visible: true
+            });
+        canvi.add(device_rect_face0_group)
+        _deviceDisplayRef.current = device_rect_face0_group
 
         canvi.renderAll();
     }
@@ -659,19 +819,6 @@ export default function GameWorld() {
     //
     // Grid assists and popup window
     //
-
-    const [ClickPositionNorm, setClickPositionNorm] = useState({
-        left: 0,
-        top: 0
-    })
-    const [MousePositionNorm, setMousePositionNorm] = useState({
-        x: 0,
-        y: 0
-    })
-    const [modalVisibility, setModalVisibility] = useState(false)
-    const [modalInfo, setModalInfo] = useState({})
-    const modalVisibilityRef = useRef(false)
-
     function find_face_given_coord (x, y) {
         const x0 = x >= 0 && x <= 24
         const x1 = x >= 25 && x <= 49
@@ -726,31 +873,31 @@ export default function GameWorld() {
         if (face === 0){
             return ({
                 left : x_transform_normalized_to_canvas (0),
-                top  : y_transform_normalized_to_canvas (50-1)
+                top  : y_transform_normalized_to_canvas (2*SIDE-1)
             })
         }
         if (face === 1){
             return ({
-                left : x_transform_normalized_to_canvas (25),
-                top  : y_transform_normalized_to_canvas (25-1)
+                left : x_transform_normalized_to_canvas (SIDE),
+                top  : y_transform_normalized_to_canvas (SIDE-1)
             })
         }
         if (face === 2){
             return ({
-                left : x_transform_normalized_to_canvas (25),
-                top  : y_transform_normalized_to_canvas (50-1)
+                left : x_transform_normalized_to_canvas (SIDE),
+                top  : y_transform_normalized_to_canvas (2*SIDE-1)
             })
         }
         if (face === 3){
             return ({
-                left : x_transform_normalized_to_canvas (25),
-                top  : y_transform_normalized_to_canvas (75-1)
+                left : x_transform_normalized_to_canvas (SIDE),
+                top  : y_transform_normalized_to_canvas (3*SIDE-1)
             })
         }
         if (face === 4){
             return ({
-                left : x_transform_normalized_to_canvas (50),
-                top  : y_transform_normalized_to_canvas (50-1)
+                left : x_transform_normalized_to_canvas (2*SIDE),
+                top  : y_transform_normalized_to_canvas (2*SIDE-1)
             })
         }
         else { // face === 5
@@ -793,23 +940,24 @@ export default function GameWorld() {
     }
 
     function drawAssistObject (canvi, mPosNorm) {
-        if (_refs.current[2]) {
+
+        if (_coordTextRef.current) {
             if (mPosNorm.x.toString() === '-') {
                 //
                 // Face & coordinate textbox
                 //
-                _refs.current[2].text = 'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
-                _refs.current[2].dirty  = true
+                _coordTextRef.current.text = 'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
+                _coordTextRef.current.dirty  = true
 
                 //
                 // Hide grid assist square
                 //
-                _refs.current[3].visible = false
+                _cursorGridRectRef.current.visible = false
 
                 //
                 // Hide face assist square
                 //
-                _refs.current[4].visible = false
+                _cursorFaceRectRef.current.visible = false
             }
             else {
                 const face = find_face_given_coord (mPosNorm.x, mPosNorm.y)
@@ -818,32 +966,32 @@ export default function GameWorld() {
                 //
                 // Face & coordinate textbox
                 //
-                _refs.current[2].text = 'Face ' + face.toString() + ' / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
-                _refs.current[2].dirty  = true
+                _coordTextRef.current.text = 'Face ' + face.toString() + ' / Grid (' + mPosNorm.x.toString() + ', ' + mPosNorm.y.toString() + ')'
+                _coordTextRef.current.dirty  = true
 
                 //
                 // Hide grid assist square
                 //
-                _refs.current[3].left = PAD_X + mPosNorm.x*GRID
-                _refs.current[3].top  = PAD_Y + (SIDE*3 - mPosNorm.y - 1)*GRID
-                _refs.current[3].visible = true
+                _cursorGridRectRef.current.left = PAD_X + mPosNorm.x*GRID
+                _cursorGridRectRef.current.top  = PAD_Y + (SIDE*3 - mPosNorm.y - 1)*GRID
+                _cursorGridRectRef.current.visible = true
 
                 //
                 // Hide face assist square
                 //
-                _refs.current[4].left = ori.left
-                _refs.current[4].top  = ori.top
-                _refs.current[4].visible = true
+                _cursorFaceRectRef.current.left = ori.left
+                _cursorFaceRectRef.current.top  = ori.top
+                _cursorFaceRectRef.current.visible = true
             }
-            _refs.current[3].dirty  = true
+            _cursorGridRectRef.current.dirty = true
+            _cursorFaceRectRef.current.dirty = true
 
             canvi.renderAll();
         }
     }
 
     useEffect (() => {
-        // console.log("useEffect(callback, [MousePositionNorm]) called.")
-        drawAssistObject (_refs.current[0], MousePositionNorm)
+        drawAssistObject (_canvasRef.current, MousePositionNorm)
     }, [MousePositionNorm]);
 
 
@@ -871,35 +1019,99 @@ export default function GameWorld() {
     // }, [modalVisibility]);
 
     // ref: https://stackoverflow.com/questions/37440408/how-to-detect-esc-key-press-in-react-and-how-to-handle-it
-    const escFunction = useCallback((event) => {
-        if (event.key === "Escape") {
+    const keydownHandle = useCallback((ev) => {
+
+        if (ev.key === "Escape") {
             if (modalVisibilityRef.current) {
                 setModalVisibility (false);
                 modalVisibilityRef.current = false
             }
         }
+        else if(ev.key === '1'){
+            console.log('1')
+            _deviceDisplayRef.current.visible = true
+            _feDisplayRef.current.visible = false
+            updateMode (_canvasRef.current, 'devices')
+        }
+        else if(ev.key === '2'){
+            console.log('2')
+            _deviceDisplayRef.current.visible = false
+            _feDisplayRef.current.visible = true
+            updateMode (_canvasRef.current, 'FE distribution')
+        }
+        else if(ev.key === '3'){
+            console.log('3')
+            updateMode (_canvasRef.current, 'AL distribution')
+        }
+        else if(ev.key === '4'){
+            console.log('4')
+            updateMode (_canvasRef.current, 'CU distribution')
+        }
+        else if(ev.key === '5'){
+            console.log('5')
+            updateMode (_canvasRef.current, 'SI distribution')
+        }
+        else if(ev.key === '6'){
+            console.log('6')
+            updateMode (_canvasRef.current, 'PU distribution')
+        }
+
       }, [modalVisibility]);
 
     useEffect(() => {
-        document.addEventListener("keydown", escFunction, false);
+        document.addEventListener("keydown", keydownHandle, false);
 
         return () => {
-            document.removeEventListener("keydown", escFunction, false);
+            document.removeEventListener("keydown", keydownHandle, false);
         };
     }, []);
 
+    // function handleKeyDown (ev) {
+    //     if(ev.key === '1'){
+    //         console.log('1')
+    //         updateMode (_canvasRef.current, 'devices')
+    //     }
+    //     else if(ev.key === '2'){
+    //         console.log('2')
+    //         updateMode (_canvasRef.current, 'FE distribution')
+    //     }
+    //     else if(ev.key === '3'){
+    //         console.log('3')
+    //         updateMode (_canvasRef.current, 'AL distribution')
+    //     }
+    //     else if(ev.key === '4'){
+    //         console.log('4')
+    //         updateMode (_canvasRef.current, 'CU distribution')
+    //     }
+    //     else if(ev.key === '5'){
+    //         console.log('5')
+    //         updateMode (_canvasRef.current, 'SI distribution')
+    //     }
+    //     else if(ev.key === '6'){
+    //         console.log('6')
+    //         updateMode (_canvasRef.current, 'PU distribution')
+    //     }
+    // }
+
     //
     // Return component
+    // Reference:
+    // keydown event - https://stackoverflow.com/questions/43503964/onkeydown-event-not-working-on-divs-in-react
+    // script focusing div - https://stackoverflow.com/questions/53868070/need-to-put-focus-on-div-in-react
     //
+
     return(
         <div
             onMouseMove={(ev)=> handleMouseMove(ev)}
             onClick={(ev)=> handleClick(ev)}
+            id="canvas_wrap"
+
+            // onKeyDown={(ev)=> handleKeyDown(ev)}
+            tabIndex="-1"
         >
             <Modal
                 show   = {modalVisibility}
                 onHide = {() => setModalVisibility (false)}
-                // name   = {"Grid (x,y)"}
                 info = {modalInfo}
             />
             <canvas id="c" />
