@@ -11,7 +11,7 @@ export default function CoverArt () {
     useEffect(()=>{
         setTimeout(function() {
             setShowElement(false)
-                }, 3 * 1000);
+                }, 1.5 * 1000);
             },
     [])
 
