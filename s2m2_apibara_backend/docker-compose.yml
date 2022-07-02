@@ -13,7 +13,7 @@ services:
     - ./_docker/apibara_mongodb:/data/db
 
   apibara:
-    image: apibara/apibara:0.1.1
+    image: apibara/apibara:0.1.2
     restart: always
     command: start --config /usr/etc/apibara/configuration.toml
     environment:
