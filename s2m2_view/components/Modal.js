@@ -15,7 +15,13 @@ class Modal extends Component {
       <div>
         { this.props.show ?
           <div className={styles.modal}>
-            <h1> Grid ({this.props.info.grid_x}, {this.props.info.grid_y})</h1>
+            {/* <h1> Grid ({this.props.info.grid_x}, {this.props.info.grid_y})</h1> */}
+            <h3>Selected grid(s):</h3>
+            <p style={{fontSize:"0.9em"}}>{this.props.info}</p>
+
+            <h3>Options:</h3>
+            <p style={{fontSize:"0.9em"}}>player doing something at these grids</p>
+
             <button onClick={this.props.onHide}>Esc</button>
           </div>
           : null }
