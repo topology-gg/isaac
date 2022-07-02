@@ -140,7 +140,8 @@ export default function GameWorld() {
     const _cursorGridRectRef = useRef();
     const _cursorFaceRectRef = useRef();
     const modalVisibilityRef = useRef(false)
-    const _displayModeTextRef = useRef();
+    const _displayModeRef = useRef('devices')
+    const _displayModeTextRef = useRef('');
 
     const _deviceDisplayRef = useRef();
     const _feDisplayRef = useRef();
@@ -155,7 +156,6 @@ export default function GameWorld() {
     //
     // React States
     //
-    const [displayMode, setDisplayMode] = useState('Devices')
     const [ClickPositionNorm, setClickPositionNorm] = useState({left: 0, top: 0})
     const [MousePositionNorm, setMousePositionNorm] = useState({x: 0, y: 0})
     const [modalVisibility, setModalVisibility] = useState(false)
@@ -181,6 +181,9 @@ export default function GameWorld() {
 
     function handleMouseDown (x, y) {
         _mouseStateRef.current = 'down'
+        if (_displayModeRef.current !== 'devices') {
+            return
+        }
 
         const x_grid = convert_screen_to_grid_x (x)
         const y_grid = convert_screen_to_grid_y (y)
@@ -200,6 +203,10 @@ export default function GameWorld() {
     }
 
     function handleMouseDrag (x, y) { // selectState in 'select' confirmed already
+        if (_displayModeRef.current !== 'devices') {
+            return
+        }
+
         const bool_mouse_down = (_mouseStateRef.current === 'down')
 
         const x_grid = convert_screen_to_grid_x (x)
@@ -224,6 +231,9 @@ export default function GameWorld() {
 
     function handleMouseUp (x, y) {
         _mouseStateRef.current = 'up'
+        if (_displayModeRef.current !== 'devices') {
+            return
+        }
 
         const x_grid = convert_screen_to_grid_x (x)
         const y_grid = convert_screen_to_grid_y (y)
@@ -261,6 +271,10 @@ export default function GameWorld() {
     // ref: https://stackoverflow.com/questions/37440408/how-to-detect-esc-key-press-in-react-and-how-to-handle-it
     const handleKeyDown = useCallback((ev) => {
 
+        if (!_hasDrawnRef.current) {
+            return
+        }
+
         if (ev.key === "Escape") {
             if (modalVisibilityRef.current) {
                 hidePopup ()
@@ -268,30 +282,36 @@ export default function GameWorld() {
         }
         else if(ev.key === '1'){
             console.log('1')
+            _displayModeRef.current = 'devices'
             _deviceDisplayRef.current.visible = true
             _feDisplayRef.current.visible = false
             updateMode (_canvasRef.current, 'devices')
         }
         else if(ev.key === '2'){
             console.log('2')
+            _displayModeRef.current = 'fe'
             _deviceDisplayRef.current.visible = false
             _feDisplayRef.current.visible = true
             updateMode (_canvasRef.current, 'FE distribution')
         }
         else if(ev.key === '3'){
             console.log('3')
+            _displayModeRef.current = 'al'
             updateMode (_canvasRef.current, 'AL distribution')
         }
         else if(ev.key === '4'){
             console.log('4')
+            _displayModeRef.current = 'cu'
             updateMode (_canvasRef.current, 'CU distribution')
         }
         else if(ev.key === '5'){
             console.log('5')
+            _displayModeRef.current = 'si'
             updateMode (_canvasRef.current, 'SI distribution')
         }
         else if(ev.key === '6'){
             console.log('6')
+            _displayModeRef.current = 'pu'
             updateMode (_canvasRef.current, 'PU distribution')
         }
 
@@ -303,7 +323,7 @@ export default function GameWorld() {
     var coordText = new fabric.IText( '(-,-)', {
         fontSize:14,
         left: PAD_X + 3.2*GRID*SIDE,
-        top: PAD_Y,
+        top: PAD_Y - 3*GRID,
         radius:10,
         fill: GRID_ASSIST_TBOX,
         borderRadius: '25px',
@@ -343,7 +363,7 @@ export default function GameWorld() {
     {
         fontSize: 14, fill: '#CCCCCC',
         left: PAD_X + 3.2*GRID*SIDE,
-        top: PAD_Y +  5*GRID,
+        top: PAD_Y,
         width: "150px",
         selectable: false,
         fontFamily: "Poppins-Light"
@@ -416,7 +436,8 @@ export default function GameWorld() {
         const group = new fabric.Group(
             gridAssistRects, {
                 visible: false,
-                selectable: false
+                selectable: false,
+                hoverCursor: 'default'
         });
         _gridAssistRectsGroupRef.current = group
         canvi.add (group)
@@ -440,9 +461,9 @@ export default function GameWorld() {
                     if (device_emap.emap && utb_grids.grids) {
                         drawGrid (canvi)
                         drawDevices (canvi)
+                        drawPerlin (canvi)
                         drawAssist (canvi) // draw assistance objects the last to be on top
                         drawMode (canvi)
-                        drawPerlin (canvi)
                         initializeGridAssistRectsRef (canvi)
 
                         _hasDrawnRef.current = true
@@ -873,7 +894,7 @@ export default function GameWorld() {
     // PERLIN_VALUES
     const drawPerlin = canvi => {
 
-        const perlin_rects = []
+        const perlin_cells = []
         console.log ("max perline value:", PERLIN_VALUES['max'])
         console.log ("min perline value:", PERLIN_VALUES['min'])
 
@@ -899,34 +920,42 @@ export default function GameWorld() {
                     const rect = new fabric.Rect({
                         height: GRID,
                         width: GRID,
-                        left: PAD_X + (col + face_ori[0]) * GRID,
-                        top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
+                        // left: PAD_X + (col + face_ori[0]) * GRID,
+                        // top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
+                        originX: 'center', originY: 'center',
                         fill: rect_color,
                         selectable: false
                     });
                     var text = new fabric.Text(
                         perlin_value.toString(), {
-                        fontSize: 4, fill: '#CCCCCC',
-                        left: PAD_X + (col + face_ori[0]) * GRID,
-                        top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
-                        width: GRID,
+                        fontSize: 4.1, fill: '#CCCCCC',
+                        // left: PAD_X + (col + face_ori[0]) * GRID,
+                        // top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
+                        // width: GRID,
+                        originX: 'center', originY: 'center',
                         selectable: false,
                         fontFamily: "Poppins-Light"
                     });
 
-                    perlin_rects.push (
-                        rect
-                    )
-                    perlin_rects.push (
-                        text
-                    )
+                    const cell = new fabric.Group(
+                        [ rect, text ], {
+                        left: PAD_X + (col + face_ori[0]) * GRID,
+                        top: PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
+                    });
+                    perlin_cells.push (cell)
+                    // perlin_rects.push (
+                    //     rect
+                    // )
+                    // perlin_rects.push (
+                    //     text
+                    // )
                 }
             }
             // break
         }
 
         var perlin_rect_face0_group = new fabric.Group(
-            perlin_rects, {
+            perlin_cells, {
                 visible: false,
                 selectable: false
             });
@@ -1161,6 +1190,7 @@ export default function GameWorld() {
     }
 
     useEffect (() => {
+        console.log ('yo')
         drawAssistObject (_canvasRef.current, MousePositionNorm)
     }, [MousePositionNorm]);
 
