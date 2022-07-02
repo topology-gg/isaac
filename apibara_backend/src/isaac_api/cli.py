@@ -71,6 +71,13 @@ async def start(argv):
             elif isinstance(response, NewEvents):
                 # Inform Apibara server that we processed the block.
                 print(f"New Event: {response.block_number}")
+
+                # Block can contain more than one event
+                for event in response.events:
+                    event.topics[0] # contains the hash of the event name.
+                    event.data # contains the parameters of the event
+
+                # Old indexer code. Use as reference.
                 # Decode raw event data into Isaac-specific data.
                 assert len(response.events) == 1
                 event = response.events[0]
