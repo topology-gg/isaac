@@ -6,7 +6,7 @@ from starkware.cairo.common.math_cmp import (is_le, is_not_zero, is_nn_le, is_nn
 from starkware.cairo.common.alloc import alloc
 
 from contracts.design.constants import (
-    PLANET_DIM, SCALE_FP, SCALE_FP_DIV_100, RANGE_CHECK_BOUND,
+    PLANET_DIM, SCALE_FP, SCALE_FP_DIV_100, RANGE_CHECK_BOUND, SCALE_FP_DIV_PLANET_DIM,
     ns_perlin
 )
 from contracts.util.structs import (Vec2)
@@ -162,22 +162,22 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     alloc_locals
 
     #
-    # Normalize grid[0] and grid[1] into range [0,99] by subtracting values from corner grid
+    # Normalize grid[0] and grid[1] into range [0,PLANET_DIM) by subtracting values from corner grid
     #
     let (pos : Vec2) = normalize_grid (face, grid)
 
     #
     # Compute four positional vectors - from corners to pos - in fixed-point range
     #
-    let pv_bottom_left = Vec2 (pos.x * SCALE_FP_DIV_100, pos.y * SCALE_FP_DIV_100)
-    let pv_top_left = Vec2 (pos.x * SCALE_FP_DIV_100, pos.y * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100)
-    let pv_bottom_right = Vec2 (pos.x * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100, pos.y * SCALE_FP_DIV_100)
-    let pv_top_right = Vec2 (pos.x * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100, pos.y * SCALE_FP_DIV_100 - 99 * SCALE_FP_DIV_100)
+    let pv_bottom_left = Vec2 (pos.x * SCALE_FP_DIV_PLANET_DIM, pos.y * SCALE_FP_DIV_PLANET_DIM)
+    let pv_top_left = Vec2 (pos.x * SCALE_FP_DIV_PLANET_DIM, pos.y * SCALE_FP_DIV_PLANET_DIM - (PLANET_DIM-1) * SCALE_FP_DIV_PLANET_DIM)
+    let pv_bottom_right = Vec2 (pos.x * SCALE_FP_DIV_PLANET_DIM - (PLANET_DIM-1) * SCALE_FP_DIV_PLANET_DIM, pos.y * SCALE_FP_DIV_PLANET_DIM)
+    let pv_top_right = Vec2 (pos.x * SCALE_FP_DIV_PLANET_DIM - (PLANET_DIM-1) * SCALE_FP_DIV_PLANET_DIM, pos.y * SCALE_FP_DIV_PLANET_DIM - (PLANET_DIM-1) * SCALE_FP_DIV_PLANET_DIM)
 
-    # debug_emit_vec2.emit (pv_bottom_left)
-    # debug_emit_vec2.emit (pv_top_left)
-    # debug_emit_vec2.emit (pv_bottom_right)
-    # debug_emit_vec2.emit (pv_top_right)
+    debug_emit_vec2.emit (pv_bottom_left)
+    debug_emit_vec2.emit (pv_top_left)
+    debug_emit_vec2.emit (pv_bottom_right)
+    debug_emit_vec2.emit (pv_top_right)
 
     #
     # Retrieve four random vectors given face
@@ -189,10 +189,10 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
         rv_top_right : Vec2
     ) = get_random_vecs (permuted_face)
 
-    # debug_emit_vec2.emit (rv_bottom_left)
-    # debug_emit_vec2.emit (rv_top_left)
-    # debug_emit_vec2.emit (rv_bottom_right)
-    # debug_emit_vec2.emit (rv_top_right)
+    debug_emit_vec2.emit (rv_bottom_left)
+    debug_emit_vec2.emit (rv_top_left)
+    debug_emit_vec2.emit (rv_bottom_right)
+    debug_emit_vec2.emit (rv_top_right)
 
     #
     # Compute dot products

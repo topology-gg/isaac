@@ -52,6 +52,27 @@ from contracts.micro.micro_reset import (ns_micro_reset)
 ##############################
 
 #
+# Event emission for Apibara
+#
+@event
+func give_undeployed_device_occurred (
+        event_counter : felt,
+        to : felt,
+        type : felt,
+        amount : felt
+    ):
+end
+
+@event
+func activate_universe_occurred (
+        event_counter : felt,
+        civ_idx : felt
+    ):
+end
+
+##############################
+
+#
 # For yagi automation
 # Note: each universe is forwarded by yagi individually because of the
 #       complexity of universe forwarding; aggregating all universe forwarding
@@ -65,8 +86,6 @@ func probe_can_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
 
     return (bool)
 end
-
-## Note: hook up router with `anyone_forward_universe` for yagi execution
 
 ##############################
 
@@ -86,15 +105,15 @@ end
 # Access control
 ################
 
-func assert_caller_is_admin {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
+# func assert_caller_is_admin {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
 
-    let (caller) = get_caller_address ()
-    with_attr error_message ("Isaac currently operates under gyoza the benevolent dictator. Only gyoza can tick Isaac forward."):
-        assert caller = GYOZA
-    end
+#     let (caller) = get_caller_address ()
+#     with_attr error_message ("Isaac currently operates under gyoza the benevolent dictator. Only gyoza can tick Isaac forward."):
+#         assert caller = GYOZA
+#     end
 
-    return ()
-end
+#     return ()
+# end
 
 func assert_address_in_civilization {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     address) -> ():
@@ -136,11 +155,6 @@ end
 @external
 func set_lobby_address_once {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     address) -> ():
-
-    #
-    # Only GYOZA can set lobby address
-    #
-    # assert_caller_is_admin ()
 
     #
     # Check if lobby address is already set
@@ -276,7 +290,8 @@ func activate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     # Increment civilization index
     #
     let (curr_civ_idx) = ns_universe_state_functions.civilization_index_read ()
-    ns_universe_state_functions.civilization_index_write (curr_civ_idx + 1)
+    let new_civ_idx = curr_civ_idx + 1
+    ns_universe_state_functions.civilization_index_write (new_civ_idx)
 
     #
     # Record L2 block at universe activation
@@ -285,6 +300,16 @@ func activate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     let (block) = get_block_number ()
     ns_universe_state_functions.l2_block_at_last_forward_write (block)
     ns_universe_state_functions.l2_block_at_genesis_write (block)
+
+    #
+    # Event emission for Apibara
+    #
+    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+    ns_universe_state_functions.event_counter_increment ()
+    activate_universe_occurred.emit (
+        event_counter,
+        new_civ_idx
+    )
 
     return ()
 end
@@ -372,14 +397,6 @@ end
 @external
 func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> ():
     alloc_locals
-
-    #
-    # Permission control (removed; allowing any third party to trigger world-forwarding for maximum availability)
-    #
-    # let (caller) = get_caller_address ()
-    # with_attr error_message ("Isaac currently operates under gyoza the benevolent dictator. Only gyoza can tick Isaac forward."):
-    #     assert caller = GYOZA
-    # end
 
     #
     # Confirm world can be forwarded now
@@ -844,22 +861,25 @@ end
 # Admin functions for testing purposes
 ######################################
 
-# @external
 func _give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     to : felt, type : felt, amount : felt):
-
-    #
-    # Confirm admin identity
-    #
-    # let (caller) = get_caller_address ()
-    # with_attr error_message ("Only admin can invoke this function."):
-    #     assert caller = GYOZA
-    # end
 
     #
     # Give device
     #
     ns_micro_state_functions.device_undeployed_ledger_write (to, type, amount)
+
+    #
+    # Event emission for Apibara
+    #
+    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+    ns_universe_state_functions.event_counter_increment ()
+    give_undeployed_device_occurred.emit (
+        event_counter,
+        to,
+        type,
+        amount
+    )
 
     return ()
 end

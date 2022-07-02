@@ -11,12 +11,13 @@ import math
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+import json
 
 LOGGER = logging.getLogger(__name__)
 TEST_NUM_PER_CASE = 200
 PRIME = 3618502788666131213697322783095070105623107215331596699973092056135872020481
 PRIME_HALF = PRIME//2
-PLANET_DIM = 100
+PLANET_DIM = 25
 SCALE_FP = 10**20
 
 ## Note to test logging:
@@ -25,53 +26,80 @@ SCALE_FP = 10**20
 @pytest.mark.asyncio
 async def test_perlin ():
 
-    starknet = await Starknet.empty()
-
-    #
-    # Compute values from contract
-    #
-    LOGGER.info (f'> Deploying mock_distribution.cairo ..')
-    contract = await starknet.deploy (
-        source = 'contracts/mocks/mock_distribution.cairo',
-        constructor_calldata = [])
-
-    # ret = await contract.mock_get_perlin_value(0, contract.Vec2(51,101)).call()
-    # for event in ret.main_call_events:
-    #     LOGGER.info (f"> event: {event}")
-
-    # LOGGER.info ("")
-    # pv = generate_perlin_on_face_given_normalized_grid (0, (51,1))
-
-    #
-    # Generate expected values for the entire face 0
-    #
-    arr2d = generate_perlin_on_face (0)
-
-    #
-    # Generate random coords on face 0
-    #
-    N = 500
-    random_indices = random.sample( [i for i in range(10000)], N )
-    random_x = [idx%100 for idx in random_indices]
-    random_y = [idx//100 for idx in random_indices]
-
     #
     # Generate contract values and compare against expected values
+    # on Face 0
     #
     i = 0
     element_type = 0 # ELEMENT_FE_RAW
-    for (y,x) in zip(random_y,random_x):
-        grid = contract.Vec2 (x, 100+y) # face0 has 100 as y-offset
-        ret = await contract.mock_get_adjusted_perlin_value(0, grid, element_type).call()
+    N = 500
+    random_indices = random.sample( [i for i in range(10000)], N )
+    random_x = [idx%PLANET_DIM for idx in random_indices]
+    random_y = [idx//PLANET_DIM for idx in random_indices]
+    # for (y,x) in zip(random_y,random_x):
 
-        got = ret.result.res
-        expected = math.floor(arr2d[y][x])
+    TEST_CONTRACT = False
+    if TEST_CONTRACT:
 
-        LOGGER.info (f"> {i+1}/{N}: Face 0 ({x},{y}); Contract: {got}; Expected: {expected}")
-        assert got == expected
+        LOGGER.info (f'> Deploying mock_distribution.cairo ..')
+        starknet = await Starknet.empty()
+        contract = await starknet.deploy (
+        source = 'contracts/mocks/mock_distribution.cairo',
+        constructor_calldata = [])
 
-        i += 1
+        for face in range (6):
+            if face == 0: face_offset = (0, PLANET_DIM)
+            elif face == 1: face_offset = (PLANET_DIM, 0)
+            elif face == 2: face_offset = (PLANET_DIM, PLANET_DIM)
+            elif face == 3: face_offset = (PLANET_DIM, PLANET_DIM*2)
+            elif face == 4: face_offset = (PLANET_DIM*2, PLANET_DIM)
+            elif face == 5: face_offset = (PLANET_DIM*3, PLANET_DIM)
 
+            log = []
+            for x in range (PLANET_DIM):
+                for y in range (PLANET_DIM):
+                    grid = contract.Vec2 (face_offset[0] + x, face_offset[1] + y)
+                    # ret = await contract.mock_get_adjusted_perlin_value(face, grid, element_type).call()
+
+                    # LOGGER.info (f"ret.main_call_events: {ret}")
+                    # for event in ret.main_call_events:
+                    #     event_vec_parsed = (parse_fp_felt(event.vec.x), parse_fp_felt(event.vec.y))
+                        # LOGGER.info (f"> event vector: {event_vec_parsed}")
+
+                    # got = ret.result.res
+                    # expected = math.floor(arr2d[y][x])
+                    expected = generate_perlin_on_face_given_normalized_grid (face, (x,y))
+
+                    # LOGGER.info (f"> Face 0 ({x},{y}); Contract: {got}; Expected: {expected}")
+                    LOGGER.info (f"> Face {face} ({x},{y}); Expected: {expected}")
+                    # assert got == math.floor (expected)
+                    log.append (expected)
+            LOGGER.info (f'> Face {face}, min {min(log)}, max {max(log)}')
+
+
+    #
+    # Generate expected values for the entire face 0
+    # and export to JSON
+    #
+    if not TEST_CONTRACT:
+        gen = {}
+        min_val = 1000
+        max_val = 0
+        for face in range(6):
+            arr2d = generate_perlin_on_face (face)
+            gen [face] = arr2d
+            for row in arr2d:
+                for ele in row:
+                    if ele < min_val:
+                        min_val = ele
+                    elif ele > max_val:
+                        max_val = ele
+
+        gen['min'] = min_val
+        gen['max'] = max_val
+
+        with open(f'perlin_planet_dim_{PLANET_DIM}.json', 'w') as file:
+            json.dump(gen, file)
 
 ##############################
 
@@ -103,14 +131,14 @@ def mag (vec):
 #
 def generate_perlin_value (random_vecs, positional_vecs, pos):
     # both random/positional_vecs have 4 elements, each element being a 2-tuple
-    # pos is a 2-tuple, each element lying in [0,99]
+    # pos is a 2-tuple, each element lying in [0,PLANET_DIM)
     # the length of positional_vec does not exceed sqrt(0.99^2 + 0.99^2)
 
     assert len(random_vecs) == 4
     assert len(positional_vecs) == 4
 
     for i in [0,1]:
-        assert 0 <= pos[i] <= 99
+        assert 0 <= pos[i] < PLANET_DIM
 
     MAX = math.sqrt(0.99**2 + 0.99**2)
     for each in positional_vecs:
@@ -132,7 +160,9 @@ def generate_perlin_value (random_vecs, positional_vecs, pos):
     # LOGGER.info (f"> {lerp_right}")
     # LOGGER.info (f"> {lerp_fin}")
 
-    val = relu (lerp_fin) *666
+    # val = relu (lerp_fin) *666
+    val = math.floor ( (lerp_fin + 1.6) * 100 )
+
     # LOGGER.info (f"> {val}")
 
     return val
@@ -150,6 +180,7 @@ def get_rv_from_rn (rn):
         return (-1.0, -1.0)
     else:
         return (1.0, -1.0)
+
 def get_random_vecs_from_face (face, rn_s):
     if face == 0:
         idx_s = [0,1,3,4]
@@ -174,16 +205,16 @@ def get_positional_vecs_from_pos (pos):
     # vector originates from corners and goes to `pos`
 
     for i in [0,1]:
-        assert 0 <= pos[i] <= 99
+        assert 0 <= pos[i] <= (PLANET_DIM-1)
 
     vecs = [
         (pos[0]-0, pos[1]-0),
-        (pos[0]-0, pos[1]-99),
-        (pos[0]-99, pos[1]-0),
-        (pos[0]-99, pos[1]-99)
+        (pos[0]-0, pos[1]-(PLANET_DIM-1)),
+        (pos[0]-(PLANET_DIM-1), pos[1]-0),
+        (pos[0]-(PLANET_DIM-1), pos[1]-(PLANET_DIM-1))
     ]
 
-    return [(v0/100., v1/100.) for (v0,v1) in vecs]
+    return [(v0/PLANET_DIM, v1/PLANET_DIM) for (v0,v1) in vecs]
 
 def generate_perlin_on_face_given_normalized_grid (face, normalized_grid):
     assert 0 <= face <= 5
@@ -192,7 +223,7 @@ def generate_perlin_on_face_given_normalized_grid (face, normalized_grid):
 
     positional_vecs = get_positional_vecs_from_pos (pos)
     # for i in range(4):
-    #     LOGGER.info (f"> {positional_vecs[i]}")
+    #     LOGGER.info (f"> positional_vecs[{i}]: {positional_vecs[i]}")
 
     random_vecs = get_random_vecs_from_face (face, rn_s)
     # for i in range(4):
@@ -204,9 +235,9 @@ def generate_perlin_on_face_given_normalized_grid (face, normalized_grid):
 
 def generate_perlin_on_face (face):
     arr = []
-    for y in range(100):
+    for y in range(PLANET_DIM):
         row = []
-        for x in range(100):
+        for x in range(PLANET_DIM):
             pv = generate_perlin_on_face_given_normalized_grid (face, (x,y))
             row.append (pv)
         arr.append (row)

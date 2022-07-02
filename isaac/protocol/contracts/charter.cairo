@@ -5,7 +5,6 @@ const PROPOSAL_PERIOD = 720 # 1 day = 24hr * 60min / 2min (~block time) = 720 bl
 const NEW_VOICES_FOR_GRADE_0 = 5 # in quadratic terms maps to 2 votes plus 1 voice left
 const NEW_VOICES_FOR_GRADE_1 = 82 # in quadratic terms maps to 9 votes plus 1 voice left
 
-
 @view
 func lookup_proposal_period {} (
     ) -> (period : felt):

@@ -46,6 +46,10 @@ end
 func l2_block_at_last_forward () -> (block_height : felt):
 end
 
+@storage_var
+func event_counter () -> (val : felt):
+end
+
 namespace ns_universe_state_functions:
 
     #
@@ -114,6 +118,14 @@ namespace ns_universe_state_functions:
         return (number)
     end
 
+    @view
+    func event_counter_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> (val : felt):
+
+        let (val) = event_counter.read ()
+
+        return (val)
+    end
 
     #
     # Setters
@@ -170,6 +182,22 @@ namespace ns_universe_state_functions:
         number : felt) -> ():
 
         l2_block_at_last_forward.write (number)
+
+        return ()
+    end
+
+    func event_counter_reset {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> ():
+
+        event_counter.write (0)
+
+        return ()
+    end
+    func event_counter_increment {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> ():
+
+        let (val) = event_counter.read ()
+        event_counter.write (val + 1)
 
         return ()
     end

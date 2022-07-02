@@ -38,6 +38,10 @@ end
 func dao_address () -> (address : felt):
 end
 
+@storage_var
+func event_counter () -> (val : felt):
+end
+
 namespace ns_lobby_state_functions:
 
     #
@@ -115,6 +119,15 @@ namespace ns_lobby_state_functions:
         return (address)
     end
 
+    @view
+    func event_counter_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> (val : felt):
+
+        let (val) = event_counter.read ()
+
+        return (val)
+    end
+
     #
     # Setters
     #
@@ -178,6 +191,22 @@ namespace ns_lobby_state_functions:
         address : felt) -> ():
 
         dao_address.write (address)
+
+        return ()
+    end
+
+    func event_counter_reset {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> ():
+
+        event_counter.write (0)
+
+        return ()
+    end
+    func event_counter_increment {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> ():
+
+        let (val) = event_counter.read ()
+        event_counter.write (val + 1)
 
         return ()
     end

@@ -25,6 +25,7 @@ const UNIVERSE_INDEX_OFFSET = 777
 #
 @event
 func universe_activation_occurred (
+    event_counter      : felt,
     universe_index     : felt,
     universe_address   : felt,
     arr_player_adr_len : felt,
@@ -34,6 +35,7 @@ end
 
 @event
 func universe_deactivation_occurred (
+    event_counter      : felt,
     universe_index     : felt,
     universe_address   : felt,
     arr_player_adr_len : felt,
@@ -196,10 +198,6 @@ func recurse_find_idle_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
     return (b, i)
 end
 
-@event
-func event_activating_universe (index : felt, address : felt):
-end
-
 @external
 func anyone_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> ():
@@ -243,8 +241,6 @@ func anyone_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : Has
     #
     ns_lobby_state_functions.universe_active_write (idle_universe_idx, 1)
 
-    event_activating_universe.emit (idle_universe_idx, universe_address)
-
     #
     # Dispatch
     #
@@ -257,7 +253,10 @@ func anyone_dispatch_player_to_universe {syscall_ptr : felt*, pedersen_ptr : Has
     #
     # Apibara event emission
     #
+    let (event_counter) = ns_lobby_state_functions.event_counter_read ()
+    ns_lobby_state_functions.event_counter_increment ()
     universe_activation_occurred.emit (
+        event_counter,
         idle_universe_idx,
         universe_address,
         CIV_SIZE,
@@ -387,7 +386,10 @@ func universe_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     #
     let (arr_player_adr : felt*) = alloc ()
     recurse_prepare_arr_player_adr_from_report_play (0, arr_player_adr, arr_play)
+    let (event_counter) = ns_lobby_state_functions.event_counter_read ()
+    ns_lobby_state_functions.event_counter_increment ()
     universe_deactivation_occurred.emit (
+        event_counter,
         universe_idx,
         caller,
         CIV_SIZE,

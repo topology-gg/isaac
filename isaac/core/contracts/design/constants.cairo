@@ -106,6 +106,7 @@ end
 # Constants for planet configuration
 #
 const PLANET_DIM = 25
+const SCALE_FP_DIV_PLANET_DIM = SCALE_FP / PLANET_DIM
 # TODO: params to control resource distribution via e.g. perlin noise
 
 #
