@@ -65,10 +65,11 @@ const STROKE_WIDTH_GRID_FACE = 0.4
 const PALETTE = 'DARK'
 const STROKE             = PALETTE === 'DARK' ? '#DDDDDD' : '#BBBBBB' // grid stroke color
 const CANVAS_BG          = PALETTE === 'DARK' ? '#282828' : '#E3EDFF'
-const FILL_CURSOR_GRID   = PALETTE === 'DARK' ? '#CCCCCC' : '#AAAAAA'
 const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#DDDDDD' : '#999999'
 const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
+const FILL_CURSOR_GRID            = PALETTE === 'DARK' ? '#AAAAAA55' : '#AAAAAA55'
+const FILL_CURSOR_SELECTED_GRID   = PALETTE === 'DARK' ? '#DDDDDD55' : '#AAAAAA55'
 
 //
 // Helper function for creating the triangles at the tips of axes
@@ -144,6 +145,13 @@ export default function GameWorld() {
     const _deviceDisplayRef = useRef();
     const _feDisplayRef = useRef();
 
+    const _gridAssistRectsGroupRef = useRef();
+    const _gridAssistRectsRef = useRef({});
+
+    const _mouseStateRef = useRef('up'); // up => down => up
+    const _selectStateRef = useRef('idle'); // idle => select => popup => idle
+    const _selectedGridsRef = useRef([]);
+
     //
     // React States
     //
@@ -152,6 +160,142 @@ export default function GameWorld() {
     const [MousePositionNorm, setMousePositionNorm] = useState({x: 0, y: 0})
     const [modalVisibility, setModalVisibility] = useState(false)
     const [modalInfo, setModalInfo] = useState({})
+
+    const [selectedGrids, setSelectedGrids] = useState([])
+
+    //
+    // Selection control mechanism -- linear state transitions:
+    // - mouse down, if select state in 'idle', if in grid range => select state = 'select', mouse state = 'down', push {x,y} to selectedGridsState
+    // - mouse drag, if select state in 'select', if mouse state in 'down', if in grid range and not in selectedGridsState => push {x,y} to selectedGridsState
+    // - mouse up, if in grid range and if selectedGridsState is not empty => select state = 'popup'
+    // - esc keypress / esc button clicked, if select state in 'popup' => select state = 'idle', setSelectedGridsState([])
+    //
+
+    function convert_screen_to_grid_x (x) {
+        return Math.floor( (x - PAD_X) / GRID )
+    }
+
+    function convert_screen_to_grid_y (y) {
+        return SIDE*3 - 1 - Math.floor( (y - PAD_Y) / GRID )
+    }
+
+    function handleMouseDown (x, y) {
+        _mouseStateRef.current = 'down'
+
+        const x_grid = convert_screen_to_grid_x (x)
+        const y_grid = convert_screen_to_grid_y (y)
+        const bool_in_range = is_valid_coord (x_grid, y_grid)
+        const bool_in_idle = (_selectStateRef.current === 'idle')
+
+        if (bool_in_idle && bool_in_range) {
+            _selectStateRef.current = 'select'
+            _selectedGridsRef.current.push ({x: x_grid, y: y_grid})
+
+            setSelectedGrids( selectedGrids.concat({x: x_grid, y: y_grid}) )
+
+            const face = find_face_given_grid (x_grid, y_grid)
+            const face_ori = find_face_ori (face)
+            _gridAssistRectsRef.current [`(${face},${x_grid-face_ori[0]},${y_grid-face_ori[1]})`].visible = true
+        }
+    }
+
+    function handleMouseDrag (x, y) { // selectState in 'select' confirmed already
+        const bool_mouse_down = (_mouseStateRef.current === 'down')
+
+        const x_grid = convert_screen_to_grid_x (x)
+        const y_grid = convert_screen_to_grid_y (y)
+        const bool_in_range = is_valid_coord (x_grid, y_grid)
+
+        // ref:
+        // https://stackoverflow.com/questions/50371188/javascripts-includes-function-not-working-correctly-with-array-of-objects
+        var bool_exist = _selectedGridsRef.current.some (ele =>{
+            return JSON.stringify({x: x_grid, y: y_grid}) === JSON.stringify(ele);
+        });
+
+        if (bool_mouse_down && bool_in_range && !bool_exist) {
+            _selectedGridsRef.current.push ({x: x_grid, y: y_grid})
+            setSelectedGrids( selectedGrids.concat({x: x_grid, y: y_grid}) )
+
+            const face = find_face_given_grid (x_grid, y_grid)
+            const face_ori = find_face_ori (face)
+            _gridAssistRectsRef.current [`(${face},${x_grid-face_ori[0]},${y_grid-face_ori[1]})`].visible = true
+        }
+    }
+
+    function handleMouseUp (x, y) {
+        _mouseStateRef.current = 'up'
+
+        const x_grid = convert_screen_to_grid_x (x)
+        const y_grid = convert_screen_to_grid_y (y)
+        const bool_in_range = is_valid_coord (x_grid, y_grid)
+        const bool_not_empty = (_selectedGridsRef.current.length !== 0)
+
+        if (bool_in_range && bool_not_empty) {
+            _selectStateRef.current = 'popup'
+            setModalVisibility (true)
+            modalVisibilityRef.current = true
+
+            var info = ""
+            for (const grid of _selectedGridsRef.current) {
+                info += `(${grid.x},${grid.y})`
+            }
+            setModalInfo (info)
+        }
+    }
+
+    function hidePopup () {
+        for (const grid of _selectedGridsRef.current) {
+            const face = find_face_given_grid (grid.x, grid.y)
+            const face_ori = find_face_ori (face)
+            _gridAssistRectsRef.current [`(${face},${grid.x-face_ori[0]},${grid.y-face_ori[1]})`].visible = false
+        }
+
+        setModalVisibility (false)
+        modalVisibilityRef.current = false
+
+        _selectStateRef.current = 'idle'
+        _selectedGridsRef.current = []
+        setSelectedGrids ([])
+    }
+
+    // ref: https://stackoverflow.com/questions/37440408/how-to-detect-esc-key-press-in-react-and-how-to-handle-it
+    const handleKeyDown = useCallback((ev) => {
+
+        if (ev.key === "Escape") {
+            if (modalVisibilityRef.current) {
+                hidePopup ()
+            }
+        }
+        else if(ev.key === '1'){
+            console.log('1')
+            _deviceDisplayRef.current.visible = true
+            _feDisplayRef.current.visible = false
+            updateMode (_canvasRef.current, 'devices')
+        }
+        else if(ev.key === '2'){
+            console.log('2')
+            _deviceDisplayRef.current.visible = false
+            _feDisplayRef.current.visible = true
+            updateMode (_canvasRef.current, 'FE distribution')
+        }
+        else if(ev.key === '3'){
+            console.log('3')
+            updateMode (_canvasRef.current, 'AL distribution')
+        }
+        else if(ev.key === '4'){
+            console.log('4')
+            updateMode (_canvasRef.current, 'CU distribution')
+        }
+        else if(ev.key === '5'){
+            console.log('5')
+            updateMode (_canvasRef.current, 'SI distribution')
+        }
+        else if(ev.key === '6'){
+            console.log('6')
+            updateMode (_canvasRef.current, 'PU distribution')
+        }
+
+      }, [modalVisibility]);
 
     //
     // Grid / face assistance
@@ -195,8 +339,8 @@ export default function GameWorld() {
     //
     // text box showing current display mode
     //
-    var displayModeText = new fabric.Text(
-        'Display: devices', {
+    var displayModeText = new fabric.Text( 'Display: devices',
+    {
         fontSize: 14, fill: '#CCCCCC',
         left: PAD_X + 3.2*GRID*SIDE,
         top: PAD_Y +  5*GRID,
@@ -213,19 +357,24 @@ export default function GameWorld() {
             backgroundColor: CANVAS_BG,
             selection: false
         })
-        // _canvasRef.current.on("mouse:move" ,function(e){
-        //     _canvasRef.current.selection = false
-        // })
+        _canvasRef.current.on("mouse:move" ,function(e){
+            if (_selectStateRef.current === 'select'){
+                handleMouseDrag (e.e.clientX, e.e.clientY)
+            }
+        })
         _canvasRef.current.on("mouse:down" ,function(e){
-            console.log("DOWN")
+            handleMouseDown (e.e.clientX, e.e.clientY)
         })
         _canvasRef.current.on("mouse:up" ,function(e){
-            console.log("UP")
+            handleMouseUp (e.e.clientX, e.e.clientY)
         })
 
         _hasDrawnRef.current = false
 
-        // setDrawMode ('devices')
+        document.addEventListener("keydown", handleKeyDown, false);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown, false);
+        };
 
     }, []);
 
@@ -235,10 +384,45 @@ export default function GameWorld() {
         }
     }, [device_emap, utb_grids]);
 
-    // useEffect (() => {
-    //     console.log('displayMode changed to', displayMode)
-    //     updateMode (_canvasRef.current)
-    // }, [displayMode]);
+    const initializeGridAssistRectsRef = canvi => {
+
+        //
+        // traverse across all grids of all faces, push a var Rect object to _gridAssistRectsRef,
+        // with key being stringified grid coord `(${face},${col},${row})`
+        //
+        var gridAssistRects = []
+        for (var face=0; face<6; face++) {
+            const face_ori = find_face_ori (face)
+            for (var row=0; row<SIDE; row++) {
+                for (var col=0; col<SIDE; col++) {
+
+                    var gridAssistRect = new fabric.Rect({
+                        height: GRID, width: GRID,
+                        left: PAD_X + (col + face_ori[0]) * GRID,
+                        top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
+                        fill: FILL_CURSOR_SELECTED_GRID,
+                        selectable: false,
+                        hoverCursor: 'default',
+                        visible: false
+                    });
+
+                    gridAssistRects.push (gridAssistRect)
+                    _gridAssistRectsRef.current [`(${face},${col},${row})`] = gridAssistRect
+                    canvi.add (gridAssistRect)
+                }
+            }
+        }
+
+        const group = new fabric.Group(
+            gridAssistRects, {
+                visible: false,
+                selectable: false
+        });
+        _gridAssistRectsGroupRef.current = group
+        canvi.add (group)
+
+        canvi.renderAll();
+    }
 
     const drawWorld = canvi => {
 
@@ -259,6 +443,7 @@ export default function GameWorld() {
                         drawAssist (canvi) // draw assistance objects the last to be on top
                         drawMode (canvi)
                         drawPerlin (canvi)
+                        initializeGridAssistRectsRef (canvi)
 
                         _hasDrawnRef.current = true
 
@@ -664,6 +849,27 @@ export default function GameWorld() {
         return start + (end-start) * ratio
     }
 
+    function find_face_ori (face) {
+        if (face === 0) {
+            return [0, SIDE]
+        }
+        else if (face === 1) {
+            return [SIDE, 0]
+        }
+        else if (face === 2) {
+            return [SIDE, SIDE]
+        }
+        else if (face === 3) {
+            return [SIDE, 2*SIDE]
+        }
+        else if (face === 4) {
+            return [2*SIDE, SIDE]
+        }
+        else { // face === 5
+            return [3*SIDE, SIDE]
+        }
+    }
+
     // PERLIN_VALUES
     const drawPerlin = canvi => {
 
@@ -673,31 +879,12 @@ export default function GameWorld() {
 
         for (var face=0; face<6; face++) {
 
-            var face_ori
-            if (face === 0) {
-                face_ori = [0, SIDE]
-            }
-            else if (face === 1) {
-                face_ori = [SIDE, 0]
-            }
-            else if (face === 2) {
-                face_ori = [SIDE, SIDE]
-            }
-            else if (face === 3) {
-                face_ori = [SIDE, 2*SIDE]
-            }
-            else if (face === 4) {
-                face_ori = [2*SIDE, SIDE]
-            }
-            else if (face === 5) {
-                face_ori = [3*SIDE, SIDE]
-            }
-
+            const face_ori = find_face_ori (face)
             for (var row=0; row<SIDE; row++) {
                 for (var col=0; col<SIDE; col++) {
                     const perlin_value = PERLIN_VALUES[face][row][col]
                     const perlin_value_normalized = (perlin_value - PERLIN_VALUES['min']) / (PERLIN_VALUES['max'] - PERLIN_VALUES['min'])
-                    console.log("perlin_value_normalized:", perlin_value_normalized)
+                    // console.log("perlin_value_normalized:", perlin_value_normalized)
 
                     const HI = [176, 196, 222]
                     const LO = [0, 45, 98]
@@ -707,7 +894,7 @@ export default function GameWorld() {
                     const B = lerp (LO[2], HI[2], perlin_value_normalized)
                     const rect_color = `rgb(${R}, ${G}, ${B})`
                     // const rect_color = `rgb(${perlin_value_norm},${perlin_value_norm},${perlin_value_norm})`
-                    console.log(`rect_color: ${rect_color}`)
+                    // console.log(`rect_color: ${rect_color}`)
 
                     const rect = new fabric.Rect({
                         height: GRID,
@@ -821,15 +1008,15 @@ export default function GameWorld() {
     //
     // Grid assists and popup window
     //
-    function find_face_given_coord (x, y) {
-        const x0 = x >= 0 && x <= 24
-        const x1 = x >= 25 && x <= 49
-        const x2 = x >= 50 && x <= 74
-        const x3 = x >= 75 && x <= 99
+    function find_face_given_grid (x, y) {
+        const x0 = x >= 0 && x < SIDE
+        const x1 = x >= SIDE && x < SIDE*2
+        const x2 = x >= SIDE*2 && x < SIDE*3
+        const x3 = x >= SIDE*3 && x < SIDE*4
 
-        const y0 = y >= 0 && y <= 24
-        const y1 = y >= 25 && y <= 49
-        const y2 = y >= 50 && y <= 74
+        const y0 = y >= 0 && y < SIDE
+        const y1 = y >= SIDE && y < SIDE*2
+        const y2 = y >= SIDE*2 && y < SIDE*3
 
         // face 0
         if (x0 && y1) {
@@ -912,7 +1099,7 @@ export default function GameWorld() {
     }
 
     function is_valid_coord (x, y) {
-        const face = find_face_given_coord (x, y)
+        const face = find_face_given_grid (x, y)
 
         if (face >= 0) {
             return true
@@ -921,6 +1108,81 @@ export default function GameWorld() {
             return false
         }
     }
+
+    function drawAssistObject (canvi, mPosNorm) {
+
+        if (_coordTextRef.current) {
+            if (mPosNorm.x.toString() === '-') {
+                //
+                // Show face & coordinate textbox
+                //
+                _coordTextRef.current.text = 'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
+                _coordTextRef.current.dirty  = true
+
+                //
+                // Hide grid assist square
+                //
+                _cursorGridRectRef.current.visible = false
+
+                //
+                // Hide face assist square
+                //
+                _cursorFaceRectRef.current.visible = false
+            }
+            else {
+                const face = find_face_given_grid (mPosNorm.x, mPosNorm.y)
+                const ori  = map_face_to_left_top (face)
+
+                //
+                // Show face & coordinate textbox
+                //
+                _coordTextRef.current.text = 'Face ' + face.toString() + ' / Grid (' + mPosNorm.x.toString() + ', ' + mPosNorm.y.toString() + ')'
+                _coordTextRef.current.dirty  = true
+
+                //
+                // Show grid assist square
+                //
+                _cursorGridRectRef.current.left = PAD_X + mPosNorm.x*GRID
+                _cursorGridRectRef.current.top  = PAD_Y + (SIDE*3 - mPosNorm.y - 1)*GRID
+                _cursorGridRectRef.current.visible = true
+
+                //
+                // Show face assist square
+                //
+                _cursorFaceRectRef.current.left = ori.left
+                _cursorFaceRectRef.current.top  = ori.top
+                _cursorFaceRectRef.current.visible = true
+            }
+            _cursorGridRectRef.current.dirty = true
+            _cursorFaceRectRef.current.dirty = true
+
+            canvi.renderAll();
+        }
+    }
+
+    useEffect (() => {
+        drawAssistObject (_canvasRef.current, MousePositionNorm)
+    }, [MousePositionNorm]);
+
+    function drawAssistObjects (canvi, grids) {
+        if (_coordTextRef.current) {
+            if (grids.length === 0){
+                console.log ('drawAssistObjects() with empty grids')
+                _gridAssistRectsGroupRef.current.visible = false
+            }
+            else {
+                console.log ('drawAssistObjects() with non-empty grids')
+                _gridAssistRectsGroupRef.current.visible = true
+            }
+            _gridAssistRectsGroupRef.current.dirty = true
+
+            canvi.renderAll();
+        }
+    }
+
+    useEffect (() => {
+        drawAssistObjects (_canvasRef.current, selectedGrids)
+    }, [selectedGrids])
 
     function handleMouseMove(ev) {
         const x_norm = Math.floor( (ev.pageX - PAD_X) / GRID )
@@ -941,157 +1203,22 @@ export default function GameWorld() {
         }
     }
 
-    function drawAssistObject (canvi, mPosNorm) {
+    // function handleClick(ev) {
+    //     const x_norm = Math.floor( (ev.pageX - PAD_X) / GRID )
+    //     const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD_Y) / GRID )
+    //     const bool = is_valid_coord (x_norm, y_norm)
 
-        if (_coordTextRef.current) {
-            if (mPosNorm.x.toString() === '-') {
-                //
-                // Face & coordinate textbox
-                //
-                _coordTextRef.current.text = 'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
-                _coordTextRef.current.dirty  = true
-
-                //
-                // Hide grid assist square
-                //
-                _cursorGridRectRef.current.visible = false
-
-                //
-                // Hide face assist square
-                //
-                _cursorFaceRectRef.current.visible = false
-            }
-            else {
-                const face = find_face_given_coord (mPosNorm.x, mPosNorm.y)
-                const ori  = map_face_to_left_top (face)
-
-                //
-                // Face & coordinate textbox
-                //
-                _coordTextRef.current.text = 'Face ' + face.toString() + ' / Grid (' + mPosNorm.x.toString() + ', ' + mPosNorm.y.toString() + ')'
-                _coordTextRef.current.dirty  = true
-
-                //
-                // Hide grid assist square
-                //
-                _cursorGridRectRef.current.left = PAD_X + mPosNorm.x*GRID
-                _cursorGridRectRef.current.top  = PAD_Y + (SIDE*3 - mPosNorm.y - 1)*GRID
-                _cursorGridRectRef.current.visible = true
-
-                //
-                // Hide face assist square
-                //
-                _cursorFaceRectRef.current.left = ori.left
-                _cursorFaceRectRef.current.top  = ori.top
-                _cursorFaceRectRef.current.visible = true
-            }
-            _cursorGridRectRef.current.dirty = true
-            _cursorFaceRectRef.current.dirty = true
-
-            canvi.renderAll();
-        }
-    }
-
-    useEffect (() => {
-        drawAssistObject (_canvasRef.current, MousePositionNorm)
-    }, [MousePositionNorm]);
-
-
-    function handleClick(ev) {
-        const x_norm = Math.floor( (ev.pageX - PAD_X) / GRID )
-        const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD_Y) / GRID )
-        const bool = is_valid_coord (x_norm, y_norm)
-
-        if (bool && !modalVisibility) {
-            setClickPositionNorm ({
-                x: x_norm,
-                y: y_norm
-            })
-            setModalInfo ({
-                grid_x: x_norm,
-                grid_y: y_norm
-            })
-            setModalVisibility (true);
-            modalVisibilityRef.current = true
-        }
-    }
-
-    // useEffect (() => {
-    //     console.log("useEffect for [modalVisibility]) called, modalVisibility is", modalVisibility)
-    // }, [modalVisibility]);
-
-    // ref: https://stackoverflow.com/questions/37440408/how-to-detect-esc-key-press-in-react-and-how-to-handle-it
-    const keydownHandle = useCallback((ev) => {
-
-        if (ev.key === "Escape") {
-            if (modalVisibilityRef.current) {
-                setModalVisibility (false);
-                modalVisibilityRef.current = false
-            }
-        }
-        else if(ev.key === '1'){
-            console.log('1')
-            _deviceDisplayRef.current.visible = true
-            _feDisplayRef.current.visible = false
-            updateMode (_canvasRef.current, 'devices')
-        }
-        else if(ev.key === '2'){
-            console.log('2')
-            _deviceDisplayRef.current.visible = false
-            _feDisplayRef.current.visible = true
-            updateMode (_canvasRef.current, 'FE distribution')
-        }
-        else if(ev.key === '3'){
-            console.log('3')
-            updateMode (_canvasRef.current, 'AL distribution')
-        }
-        else if(ev.key === '4'){
-            console.log('4')
-            updateMode (_canvasRef.current, 'CU distribution')
-        }
-        else if(ev.key === '5'){
-            console.log('5')
-            updateMode (_canvasRef.current, 'SI distribution')
-        }
-        else if(ev.key === '6'){
-            console.log('6')
-            updateMode (_canvasRef.current, 'PU distribution')
-        }
-
-      }, [modalVisibility]);
-
-    useEffect(() => {
-        document.addEventListener("keydown", keydownHandle, false);
-
-        return () => {
-            document.removeEventListener("keydown", keydownHandle, false);
-        };
-    }, []);
-
-    // function handleKeyDown (ev) {
-    //     if(ev.key === '1'){
-    //         console.log('1')
-    //         updateMode (_canvasRef.current, 'devices')
-    //     }
-    //     else if(ev.key === '2'){
-    //         console.log('2')
-    //         updateMode (_canvasRef.current, 'FE distribution')
-    //     }
-    //     else if(ev.key === '3'){
-    //         console.log('3')
-    //         updateMode (_canvasRef.current, 'AL distribution')
-    //     }
-    //     else if(ev.key === '4'){
-    //         console.log('4')
-    //         updateMode (_canvasRef.current, 'CU distribution')
-    //     }
-    //     else if(ev.key === '5'){
-    //         console.log('5')
-    //         updateMode (_canvasRef.current, 'SI distribution')
-    //     }
-    //     else if(ev.key === '6'){
-    //         console.log('6')
-    //         updateMode (_canvasRef.current, 'PU distribution')
+    //     if (bool && !modalVisibility) {
+    //         setClickPositionNorm ({
+    //             x: x_norm,
+    //             y: y_norm
+    //         })
+    //         setModalInfo ({
+    //             grid_x: x_norm,
+    //             grid_y: y_norm
+    //         })
+    //         setModalVisibility (true);
+    //         modalVisibilityRef.current = true
     //     }
     // }
 
@@ -1105,15 +1232,13 @@ export default function GameWorld() {
     return(
         <div
             onMouseMove={(ev)=> handleMouseMove(ev)}
-            onClick={(ev)=> handleClick(ev)}
+            // onClick={(ev)=> handleClick(ev)}
             id="canvas_wrap"
-
-            // onKeyDown={(ev)=> handleKeyDown(ev)}
             tabIndex="-1"
         >
             <Modal
                 show   = {modalVisibility}
-                onHide = {() => setModalVisibility (false)}
+                onHide = {hidePopup}
                 info = {modalInfo}
             />
             <canvas id="c" />
