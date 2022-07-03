@@ -78,7 +78,9 @@ class Dynamics:
             "planet": self.planet.to_json(),
         }
 
-
+#
+# Decode event: universe::`forward_world_macro_occurred`
+#
 def decode_forward_world_event(event: Event) -> Tuple[Dynamic, int]:
     data_iter = iter(event.data)
 
@@ -86,3 +88,15 @@ def decode_forward_world_event(event: Event) -> Tuple[Dynamic, int]:
     phi = _felt_from_iter(data_iter, scale=False)
 
     return dynamics, phi
+
+#
+# Decode event: universe::`give_undeployed_device_occurred`
+#
+def decode_give_undeployed_device_occurred_event (event: Event) -> Tuple []:
+
+        # event_counter : felt,
+        # to : felt,
+        # type : felt,
+        # amount : felt
+
+    return
