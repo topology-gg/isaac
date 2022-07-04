@@ -175,11 +175,15 @@ async def start(argv):
                         #
                         # Update database
                         #
+                        universe0_civ_state.find_one_and_update (
+                            {"most_recent" : 1},
+                            {"$set" : {"most_recent" : 0}}
+                        )
                         universe0_civ_state.insert_one (
                             {
                                 "civ_idx" : civ_idx,
                                 "active"  : 1,
-                                "block_number": response.block_number
+                                "most_recent" : 1
                             }
                         )
 
@@ -224,15 +228,12 @@ async def start(argv):
                         # Update database: both universe0_player_balances and universe0_civ_state
                         #
                         assert arr_player_adr_len == CIV_SIZE
-
                         for account in arr_player_adr:
                             result = universe0_player_balances.delete_one ({'account' : account})
                             assert result.deleted_count == 1
-
                         record_count_after_deactivation = universe0_player_balances.count_documents ({})
                         assert record_count_after_deactivation == 0
 
-                        ## find the record with active:1 and turn it off
                         universe0_civ_state.update_one (
                             {"active" : 1},
                             {"$set": {"active" : 0}},
