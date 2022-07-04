@@ -4,6 +4,8 @@ import { toBN } from 'starknet/dist/utils/number'
 
 import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
 
+import { useCivState, usePlayerBalances } from '../lib/api'
+
 import Modal from "./Modal";
 import {
     useStarknet,
@@ -17,6 +19,33 @@ const UNIVERSE_ADDR = '0x0758e8e3153a61474376838aeae42084dae0ef55e0206b19b2a85e0
 function useUniverseContract() {
     return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
 }
+
+//
+// Note: reading requirement (translated to Apibara integration design)
+//
+// 1. get the type & grid of all deployed-devices (for display)
+// -- const { data: deployed_all } = useDeployedAll ()
+// 2. given a grid, know if the grid is empty, or the device-id of the deployed-device there
+// -- const { data: }
+// 3. given the device-id of a deployed-device, know its owner, type, resource balance, energy balance
+// 4. given an account, know the number of undeployed-devices of all types owned by it
+// 5. know all acocunts in this universe
+// 6. know if this universe is active or not, and if active, know this universe's civ-id
+// 7. know how many L2 blocks left for this universe till max age reached
+// UX: click at one grid => show it's empty or the device info of deployed-device
+// UX: press key 'q' to toggle 'emphasize my deployed-devices' on/off
+
+//
+// Note: writing requirement
+//
+// 1. deploy device (single grid)
+// 2. deploy UTX (multple grids; check contiguity at frontend or not?)
+// 3. pick up device
+// 4. pick up UTX
+// 5. manufacture at UPSF
+// 6. launch NDPE
+// 7. transfer undeployed device
+// UX: multi call
 
 //
 // Import pre-generated perlin values
@@ -130,6 +159,14 @@ export default function GameWorld() {
         method: 'civilization_player_idx_to_address_read',
         args: [0]
     })
+
+    //
+    // Data fetched from Apibara backend
+    //
+    const { data: latest_civ_state } = useCivState ()
+    const { data: player_balances } = usePlayerBalances ()
+    console.log ("From Apibara: latest_civ_state", latest_civ_state)
+    console.log ("From Apibara: player_balances", player_balances)
 
     //
     // React References
