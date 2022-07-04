@@ -13,12 +13,13 @@ from apibara.client import contract_event_filter
 from apibara.model import NewBlock, NewEvents, Reorg
 from apibara.starknet import get_selector_from_name
 
-from isaac_api.contract import decode_forward_world_event
+from isaac_api.contract import decode_forward_world_event, decode_give_undeployed_device_occurred_event
 
 
 load_dotenv()
 
-
+CIV_SIZE = 1
+DEVICE_TYPE_COUNT = 16
 
 async def start(argv):
     """Start indexing the given indexer"""
@@ -32,7 +33,9 @@ async def start(argv):
     indexer_id = args.indexer_id
 
     mongo, isaac_db = _create_mongo_client_and_db()
-    macro_states = isaac_db.macro_states
+    universe0_macro_states    = isaac_db.macro_states
+    universe0_player_balances = isaac_db.player_balances
+    universe0_civ_state       = isaac_db.universe0_states
 
     isaac_universe0_address = bytes.fromhex ("0x00a3b8dee21daab96058098a65c5cd9974fc5088d9f3d1f2bfcbe1a872a70dee")
     isaac_lobby_address = bytes.fromhex ("0x07da5da722f0adb725f727300c0c1ea8403120c8aa5b2e3e1d36aba926962c56")
@@ -42,9 +45,9 @@ async def start(argv):
     #
     async with IndexerManagerClient.insecure_channel("localhost:7171") as app_manager:
         filters = [
-            contract_event_filter('forward_world_macro_occurred',    address=isaac_universe0_address),
-            contract_event_filter('give_undeployed_device_occurred', address=isaac_universe0_address),
-            contract_event_filter('activate_universe_occurred',      address=isaac_universe0_address),
+            contract_event_filter('universe0_forward_world_macro_occurred',    address=isaac_universe0_address),
+            contract_event_filter('universe0_give_undeployed_device_occurred', address=isaac_universe0_address),
+            contract_event_filter('universe0_activate_universe_occurred',      address=isaac_universe0_address),
 
             contract_event_filter('universe_activation_occurred',   address=isaac_lobby_address),
             contract_event_filter('universe_deactivation_occurred', address=isaac_lobby_address)
@@ -97,28 +100,23 @@ async def start(argv):
                     #
                     # handle event: universe0::forward_world_macro_occurred
                     #
-                    if event.topics[0] == get_selector_name ('forward_world_macro_occurred'):
+                    if event.topics[0] == get_selector_name ('universe0_forward_world_macro_occurred'):
 
                         #
-                        # Decode
+                        # Decode event
                         #
-                        dynamics, phi = decode_forward_world_event(event)
-                        # print("Sun 0  = ", dynamics.sun0.q.x, dynamics.sun0.q.y)
-                        # print("Sun 1  = ", dynamics.sun1.q.x, dynamics.sun1.q.y)
-                        # print("Sun 2  = ", dynamics.sun2.q.x, dynamics.sun2.q.y)
-                        # print("Planet = ", dynamics.planet.q.x, dynamics.planet.q.y)
-                        # print("phi    = ", phi)
+                        dynamics, phi = decode_forward_world_event (event)
 
                         #
                         # Update database
                         #
                         with mongo.start_session () as sess:
                             with sess.start_transaction () as tx:
-                                macro_states.update_one ( # Clamp block range of previous value
+                                universe0_macro_states.update_one ( # Clamp block range of previous value
                                     {"_chain.valid_to": None},
                                     {"$set": {"_chain.valid_to": response.block_number}},
                                 )
-                                macro_states.insert_one (
+                                universe0_macro_states.insert_one (
                                     {
                                         "phi": phi.to_bytes(32, "big"),
                                         "dynamics": dynamics.to_json(),
@@ -133,27 +131,105 @@ async def start(argv):
                     #
                     # handle event: universe0::give_undeployed_device_occurred
                     #
-                    elif event.topics[0] == get_selector_name ('give_undeployed_device_occurred'):
-                        # TODO: decode event
+                    elif event.topics[0] == get_selector_name ('universe0_give_undeployed_device_occurred')
+
+                        #
+                        # Decode event
+                        #
+                        event_counter, to_account, device_type, device_amount = decode_give_undeployed_device_occurred_event (event)
+
+                        #
+                        # Construct new record for player_balances
+                        # record in player_balances ~ {account, 0, 1, 2, ..., 15}, where 0-15 is the enumeration of device types
+                        #
+                        record = universe0_player_balances.find_one (
+                            {
+                                'account': to_account
+                            }
+                        )
+                        old_device_amount = record [device_type]
+                        new_record = {'account': to_account}
+                        for i in range(DEVICE_TYPE_COUNT):
+                            new_record [i] = 0
+                        new_record [device_type] = old_device_amount + device_amount
+
+                        #
+                        # Update database
+                        #
+                        universe0_player_balances.replace_one(
+                            {'account': to_account},
+                            new_record,
+                            upsert = False
+                        )
 
                     #
                     # handle event: universe0::activate_universe_occurred
                     #
-                    elif event.topics[0] == get_selector_name ('activate_universe_occurred'):
-                        # TODO: decode event
+                    elif event.topics[0] == get_selector_name ('universe0_activate_universe_occurred'):
+
+                        #
+                        # Decode event
+                        #
+                        event_counter, civ_idx = decode_activate_universe_occurred_event (event)
+
+                        #
+                        # Update database
+                        #
+                        universe0_civ_state.insert_one (
+                            {
+                                "civ_idx" : civ_idx,
+                                "active"  : 1
+                            }
+                        )
 
                     #
                     # handle event: lobby::universe_activation_occurred
                     #
                     elif event.topics[0] == get_selector_name ('universe_activation_occurred'):
-                        # TODO: decode event
+
+                        #
+                        # Decode event
+                        #
+                        event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr = decode_universe_activation_occurred_event (event)
+
+                        #
+                        # Update database
+                        #
+                        assert arr_player_adr_len == CIV_SIZE
+                        for account in arr_player_adr:
+                            new_record = {
+                                'account': account
+                            }
+
+                            for i in range(DEVICE_TYPE_COUNT):
+                                new_record [i] = 0
+
+                            universe0_player_balances.insert_one (
+                                new_record
+                            )
+
 
                     #
                     # handle event: lobby::universe_deactivation_occurred
                     #
                     elif event.topics[0] == get_selector_name ('universe_deactivation_occurred'):
-                        # TODO: decode event
 
+                        #
+                        # Decode event
+                        #
+                        event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr = decode_universe_deactivation_occurred_event (event)
+
+                        #
+                        # Update database
+                        #
+                        assert arr_player_adr_len == CIV_SIZE
+
+                        for account in arr_player_adr:
+                            result = universe0_player_balances.delete_one ({'account' : account})
+                            assert result.deleted_count == 1
+
+                        record_count_after_deactivation = universe0_player_balances.count_documents ({})
+                        assert record_count_after_deactivation == 0
 
                 #
                 # Inform Apibara server that we processed the block.
