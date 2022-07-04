@@ -178,7 +178,8 @@ async def start(argv):
                         universe0_civ_state.insert_one (
                             {
                                 "civ_idx" : civ_idx,
-                                "active"  : 1
+                                "active"  : 1,
+                                "block_number": response.block_number
                             }
                         )
 
@@ -220,7 +221,7 @@ async def start(argv):
                         event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr = decode_universe_deactivation_occurred_event (event)
 
                         #
-                        # Update database
+                        # Update database: both universe0_player_balances and universe0_civ_state
                         #
                         assert arr_player_adr_len == CIV_SIZE
 
@@ -230,6 +231,12 @@ async def start(argv):
 
                         record_count_after_deactivation = universe0_player_balances.count_documents ({})
                         assert record_count_after_deactivation == 0
+
+                        ## find the record with active:1 and turn it off
+                        universe0_civ_state.update_one (
+                            {"active" : 1},
+                            {"$set": {"active" : 0}},
+                        )
 
                 #
                 # Inform Apibara server that we processed the block.
