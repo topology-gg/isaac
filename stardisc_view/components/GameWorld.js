@@ -164,12 +164,12 @@ export default function GameWorld() {
     })
 
     //
-    // Data fetched from Apibara backend
+    // Data fetched from backend on Apibara
     //
     const { data: civ_state } = useCivState ()
     const { data: player_balances } = usePlayerBalances ()
     if (civ_state) {
-        console.log ("From Apibara: civ_state", civ_state.civ_state)
+        console.log ("From Apibara: civ_state[0]", civ_state.civ_state[0])
     }
     if (player_balances) {
         console.log ("From Apibara: player_balances[0]", player_balances.player_balances[0])
@@ -1234,7 +1234,6 @@ export default function GameWorld() {
     }
 
     useEffect (() => {
-        console.log ('yo')
         drawAssistObject (_canvasRef.current, MousePositionNorm)
     }, [MousePositionNorm]);
 
