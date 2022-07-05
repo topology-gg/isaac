@@ -12,7 +12,7 @@ STARK_PRIME_HALF = (
 )
 
 
-def _felt_from_iter(it: Iterator[bytes], scale=True):
+def _felt_from_iter(it: Iterator[bytes], scale=False):
     fe = int.from_bytes(next(it), "big")
     if fe > STARK_PRIME_HALF:
         fe = fe - STARK_PRIME
@@ -29,8 +29,8 @@ class Vec2:
 
     @staticmethod
     def from_iter(it: Iterator[bytes]):
-        x = _felt_from_iter(it)
-        y = _felt_from_iter(it)
+        x = _felt_from_iter(it, scale=True)
+        y = _felt_from_iter(it, scale=True)
         return Vec2(x, y)
 
     def to_json(self) -> Any:
@@ -78,7 +78,9 @@ class Dynamics:
             "planet": self.planet.to_json(),
         }
 
-
+#
+# Decode event: universe::forward_world_macro_occurred
+#
 def decode_forward_world_event(event: Event) -> Tuple[Dynamic, int]:
     data_iter = iter(event.data)
 
@@ -86,3 +88,99 @@ def decode_forward_world_event(event: Event) -> Tuple[Dynamic, int]:
     phi = _felt_from_iter(data_iter, scale=False)
 
     return dynamics, phi
+
+#
+# Decode event: universe::give_undeployed_device_occurred
+#
+def decode_give_undeployed_device_occurred_event (event: Event) -> Tuple [int, int, int, int]:
+
+    # @event
+    # func give_undeployed_device_occurred (
+    #         event_counter : felt,
+    #         to : felt,
+    #         type : felt,
+    #         amount : felt
+    #     ):
+    # end
+
+    it = iter (event.data)
+
+    event_counter = _felt_from_iter (it, scale=False)
+    to_account    = _felt_from_iter (it, scale=False)
+    device_type   = _felt_from_iter (it, scale=False)
+    device_amount = _felt_from_iter (it, scale=False)
+
+    return event_counter, to_account, device_type, device_amount
+
+#
+# Decode event: universe::activate_universe_occurred
+#
+def decode_activate_universe_occurred_event (event: Event) -> Tuple [int, int]:
+
+    # @event
+    # func activate_universe_occurred (
+    #         event_counter : felt,
+    #         civ_idx : felt
+    #     ):
+    # end
+
+    it = iter (event.data)
+
+    event_counter = _felt_from_iter (it, scale=False)
+    civ_idx       = _felt_from_iter (it, scale=False)
+
+    return event_counter, civ_idx
+
+#
+# Decode event: lobby::universe_activation_occurred
+#
+def decode_universe_activation_occurred_event (event: Event) -> Tuple [int, int, int, int, list]:
+
+    # @event
+    # func universe_activation_occurred (
+    #     event_counter      : felt,
+    #     universe_index     : felt,
+    #     universe_address   : felt,
+    #     arr_player_adr_len : felt,
+    #     arr_player_adr     : felt*
+    # ):
+    # end
+
+    it = iter (event.data)
+
+    event_counter      = _felt_from_iter (it, scale=False)
+    universe_idx       = _felt_from_iter (it, scale=False)
+    universe_adr       = _felt_from_iter (it, scale=False)
+    arr_player_adr_len = _felt_from_iter (it, scale=False)
+    arr_player_adr     = [
+        _felt_from_iter (it, scale=False) for _ in range (arr_player_adr_len)
+    ]
+
+    return event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr
+
+#
+# Decode event: lobby::universe_deactivation_occurred
+#
+def decode_universe_deactivation_occurred_event (event: Event) -> Tuple [int, int, int, int, list]:
+
+    # @event
+    # func universe_deactivation_occurred (
+    #     event_counter      : felt,
+    #     universe_index     : felt,
+    #     universe_address   : felt,
+    #     arr_player_adr_len : felt,
+    #     arr_player_adr     : felt*
+    # ):
+    # end
+
+    it = iter (event.data)
+
+    event_counter      = _felt_from_iter (it, scale=False)
+    universe_idx       = _felt_from_iter (it, scale=False)
+    universe_adr       = _felt_from_iter (it, scale=False)
+    arr_player_adr_len = _felt_from_iter (it, scale=False)
+    arr_player_adr     = [
+        _felt_from_iter (it, scale=False) for _ in range (arr_player_adr_len)
+    ]
+
+    return event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr
