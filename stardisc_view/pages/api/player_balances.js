@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
     const db = client.db('isaac_alpha')
     const player_balances = await db
-        .collection(UNIVERSE + '_player_balances')
+        .collection('universe0' + '_player_balances')
         .find()
         .toArray()
 
