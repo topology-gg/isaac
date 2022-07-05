@@ -103,7 +103,7 @@ def decode_give_undeployed_device_occurred_event (event: Event) -> Tuple [int, i
     #     ):
     # end
 
-    data_iter = iter (event.data)
+    it = iter (event.data)
 
     event_counter = _felt_from_iter (it, scale=False)
     to_account    = _felt_from_iter (it, scale=False)
@@ -124,7 +124,7 @@ def decode_activate_universe_occurred_event (event: Event) -> Tuple [int, int]:
     #     ):
     # end
 
-    data_iter = iter (event.data)
+    it = iter (event.data)
 
     event_counter = _felt_from_iter (it, scale=False)
     civ_idx       = _felt_from_iter (it, scale=False)
@@ -134,7 +134,7 @@ def decode_activate_universe_occurred_event (event: Event) -> Tuple [int, int]:
 #
 # Decode event: lobby::universe_activation_occurred
 #
-def decode_universe_activation_occurred_event (event: Event) -> Tuple [int, int, int, int, List]:
+def decode_universe_activation_occurred_event (event: Event) -> Tuple [int, int, int, int, list]:
 
     # @event
     # func universe_activation_occurred (
@@ -146,7 +146,8 @@ def decode_universe_activation_occurred_event (event: Event) -> Tuple [int, int,
     # ):
     # end
 
-    data_iter = iter (event.data)
+    it = iter (event.data)
+
     event_counter      = _felt_from_iter (it, scale=False)
     universe_idx       = _felt_from_iter (it, scale=False)
     universe_adr       = _felt_from_iter (it, scale=False)
@@ -160,7 +161,7 @@ def decode_universe_activation_occurred_event (event: Event) -> Tuple [int, int,
 #
 # Decode event: lobby::universe_deactivation_occurred
 #
-def decode_universe_deactivation_occurred_event (event: Event) -> Tuple [int, int, int, int, List]:
+def decode_universe_deactivation_occurred_event (event: Event) -> Tuple [int, int, int, int, list]:
 
     # @event
     # func universe_deactivation_occurred (
@@ -172,7 +173,8 @@ def decode_universe_deactivation_occurred_event (event: Event) -> Tuple [int, in
     # ):
     # end
 
-    data_iter = iter (event.data)
+    it = iter (event.data)
+
     event_counter      = _felt_from_iter (it, scale=False)
     universe_idx       = _felt_from_iter (it, scale=False)
     universe_adr       = _felt_from_iter (it, scale=False)
