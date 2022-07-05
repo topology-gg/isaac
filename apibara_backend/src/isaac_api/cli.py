@@ -5,7 +5,6 @@ import os
 import sys
 from argparse import ArgumentParser
 
-
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from apibara import IndexerManagerClient
