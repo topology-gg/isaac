@@ -4,7 +4,10 @@ import { toBN } from 'starknet/dist/utils/number'
 
 import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
 
-import { useCivState, usePlayerBalances } from '../lib/api'
+import {
+    useCivState,
+    usePlayerBalances
+} from '../lib/api'
 
 import Modal from "./Modal";
 import {
@@ -163,13 +166,13 @@ export default function GameWorld() {
     //
     // Data fetched from Apibara backend
     //
-    const { data: latest_civ_state } = useCivState ()
+    const { data: civ_state } = useCivState ()
     const { data: player_balances } = usePlayerBalances ()
-    if (latest_civ_state) {
-        console.log ("From Apibara: latest_civ_state", latest_civ_state.latest_civ_state)
+    if (civ_state) {
+        console.log ("From Apibara: civ_state", civ_state.civ_state)
     }
     if (player_balances) {
-        console.log ("From Apibara: player_balances", player_balances.player_balances)
+        console.log ("From Apibara: player_balances[0]", player_balances.player_balances[0])
     }
 
     //
