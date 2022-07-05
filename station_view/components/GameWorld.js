@@ -165,8 +165,12 @@ export default function GameWorld() {
     //
     const { data: latest_civ_state } = useCivState ()
     const { data: player_balances } = usePlayerBalances ()
-    console.log ("From Apibara: latest_civ_state", latest_civ_state)
-    console.log ("From Apibara: player_balances", player_balances)
+    if (latest_civ_state) {
+        console.log ("From Apibara: latest_civ_state", latest_civ_state.latest_civ_state)
+    }
+    if (player_balances) {
+        console.log ("From Apibara: player_balances", player_balances.player_balances)
+    }
 
     //
     // React References
