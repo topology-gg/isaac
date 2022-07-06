@@ -15,7 +15,7 @@ aiochannel = "^1.1.1"
 pymongo = {extras = ["srv"], version = "^4.1.1"}
 python-dotenv = "^0.20.0"
 setuptools = "^62.6.0"
-apibara = "^0.1.1"
+apibara = "^0.2.0"
 
 [tool.poetry.dev-dependencies]
 grpcio-tools = "^1.46.3"
