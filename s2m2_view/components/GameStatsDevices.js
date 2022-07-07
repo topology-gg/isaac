@@ -249,15 +249,20 @@ export default function GameStatsDevices() {
         "5 x 5", "5 x 5"
     ]
 
+    const indices = [
+        0, 1, 2, 7, 3, 8, 4, 9, 5, 10, 6, 11, 12, 13, 14, 15
+    ]
+
     var rows = [];
     for (var row_idx = 0; row_idx < 16; row_idx ++){
         var cell = []
-        const device_color = DEVICE_COLOR_MAP.get(row_idx)
-        // cell.push (<td> <p style={{ color: device_color, fontSize:'1.6em'}}>■</p> </td>)
+        const index = indices [row_idx]
+
+        const device_color = DEVICE_COLOR_MAP.get(index)
         cell.push (<td><div style={{height:"1em",width:"1em",backgroundColor:device_color,margin:"auto"}}></div></td>)
-        cell.push (<td>{arr_types[row_idx]}</td>)
-        cell.push (<td>{arr_footprints[row_idx]}</td>)
-        cell.push (<td>{arr_values[row_idx]}</td>)
+        cell.push (<td>{arr_types[index]}</td>)
+        cell.push (<td>{arr_footprints[index]}</td>)
+        cell.push (<td>{arr_values[index]}</td>)
 
         rows.push(<tr>{cell}</tr>)
     }
