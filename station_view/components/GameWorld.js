@@ -6,7 +6,8 @@ import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
 
 import {
     useCivState,
-    usePlayerBalances
+    usePlayerBalances,
+    useDeployedDevices
 } from '../lib/api'
 
 import Modal from "./Modal";
@@ -166,13 +167,17 @@ export default function GameWorld() {
     //
     // Data fetched from backend on Apibara
     //
-    const { data: civ_state } = useCivState ()
-    const { data: player_balances } = usePlayerBalances ()
-    if (civ_state) {
-        console.log ("From Apibara: civ_state[0]", civ_state.civ_state[0])
+    const { data: db_civ_state } = useCivState ()
+    const { data: db_player_balances } = usePlayerBalances ()
+    const { data: db_deployed_devices } = useDeployedDevices ()
+    if (db_civ_state) {
+        console.log ("From Apibara: civ_state[0]", db_civ_state.civ_state[0])
     }
-    if (player_balances) {
-        console.log ("From Apibara: player_balances[0]", player_balances.player_balances[0])
+    if (db_player_balances) {
+        console.log ("From Apibara: player_balances[0]", db_player_balances.player_balances[0])
+    }
+    if (db_deployed_devices) {
+        console.log ("From Apibara: deployed_devices", db_deployed_devices.deployed_devices)
     }
 
     //
