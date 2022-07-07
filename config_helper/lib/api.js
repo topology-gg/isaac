@@ -9,3 +9,7 @@ export function useCivState () {
 export function usePlayerBalances () {
     return useSWR('/api/player_balances', fetcher)
 }
+
+export function useDeployedDevices () {
+    return useSWR('/api/deployed_devices', fetcher)
+}
