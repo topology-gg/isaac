@@ -184,6 +184,18 @@
     },
     {
         "inputs": [],
+        "name": "number_of_ticks_since_genesis_read",
+        "outputs": [
+            {
+                "name": "value",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "civilization_index_read",
         "outputs": [
             {
@@ -251,6 +263,18 @@
         "outputs": [
             {
                 "name": "number",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "event_counter_read",
+        "outputs": [
+            {
+                "name": "val",
                 "type": "felt"
             }
         ],
@@ -631,6 +655,147 @@
         ],
         "keys": [],
         "name": "debug_emit_felt",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "to",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "give_undeployed_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "civ_idx",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "activate_universe_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "player_deploy_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "player_pickup_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "src_device_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "dst_device_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "locs_len",
+                "type": "felt"
+            },
+            {
+                "name": "locs",
+                "type": "Vec2*"
+            }
+        ],
+        "keys": [],
+        "name": "player_deploy_utx_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "player_pickup_utx_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "bool_universe_terminable",
+                "type": "felt"
+            },
+            {
+                "name": "bool_destruction",
+                "type": "felt"
+            },
+            {
+                "name": "bool_universe_max_age_reached",
+                "type": "felt"
+            },
+            {
+                "name": "bool_universe_escape_condition_met",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "terminate_universe_occurred",
         "type": "event"
     },
     {

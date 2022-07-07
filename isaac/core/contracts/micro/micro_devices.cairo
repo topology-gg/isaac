@@ -245,7 +245,9 @@ namespace ns_micro_devices:
             caller : felt,
             type : felt,
             grid : Vec2
-        ) -> ():
+        ) -> (
+            device_id : felt
+        ):
         alloc_locals
 
         #
@@ -303,7 +305,7 @@ namespace ns_micro_devices:
         #
         ns_micro_state_functions.device_undeployed_ledger_write (caller, type, amount_curr - 1)
 
-        return ()
+        return (new_id)
     end
 
     func recurse_untether_utx_for_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (

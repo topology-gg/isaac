@@ -12,7 +12,8 @@ const GYOZA = 0x02f880133db4F533Bdbc10C3d02FBC9b264Dac2Ff52Eae4e0cEc0Ce794BAd898
 # --> towards multi-scale simulation
 #
 const MIN_L2_BLOCK_NUM_BETWEEN_FORWARD = 2
-const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 3 # for testing universe deactivation
+const UNIVERSE_MAX_AGE_IN_TICKS = 3
+# const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 2 * MIN_L2_BLOCK_NUM_BETWEEN_FORWARD # for testing universe deactivation
 # const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 2160 # 6 days * 24 hours * 60 minutes / 4 minutes (2x L2 block time) = 2160
 
 #

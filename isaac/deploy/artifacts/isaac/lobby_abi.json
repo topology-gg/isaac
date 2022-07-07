@@ -138,7 +138,23 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "event_counter_read",
+        "outputs": [
+            {
+                "name": "val",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
             {
                 "name": "universe_index",
                 "type": "felt"
@@ -162,6 +178,10 @@
     },
     {
         "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
             {
                 "name": "universe_index",
                 "type": "felt"
@@ -239,21 +259,6 @@
         ],
         "stateMutability": "view",
         "type": "function"
-    },
-    {
-        "data": [
-            {
-                "name": "index",
-                "type": "felt"
-            },
-            {
-                "name": "address",
-                "type": "felt"
-            }
-        ],
-        "keys": [],
-        "name": "event_activating_universe",
-        "type": "event"
     },
     {
         "inputs": [],

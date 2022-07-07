@@ -67,7 +67,9 @@ namespace ns_micro_utx:
             locs : Vec2*,
             src_device_grid : Vec2,
             dst_device_grid : Vec2
-        ) -> ():
+        ) -> (
+            utx_label : felt
+        ):
         alloc_locals
 
         assert_device_type_is_utx (utx_device_type)
@@ -199,7 +201,7 @@ namespace ns_micro_utx:
             new_label
         )
 
-        return ()
+        return (new_label)
     end
 
     func recurse_utx_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (

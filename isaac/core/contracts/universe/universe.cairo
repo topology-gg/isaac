@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import assert_le
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
@@ -12,7 +12,7 @@ from starkware.starknet.common.syscalls import (get_block_number, get_caller_add
 from contracts.design.constants import (
     GYOZA, ns_device_types,
     MIN_L2_BLOCK_NUM_BETWEEN_FORWARD,
-    UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM,
+    UNIVERSE_MAX_AGE_IN_TICKS,
     CIV_SIZE,
     ns_macro_init
 )
@@ -67,6 +67,50 @@ end
 func activate_universe_occurred (
         event_counter : felt,
         civ_idx : felt
+    ):
+end
+
+@event
+func player_deploy_device_occurred (
+        owner : felt,
+        device_id : felt,
+        type : felt,
+        grid : Vec2
+    ):
+end
+
+@event
+func player_pickup_device_occurred (
+        owner : felt,
+        grid : Vec2
+    ):
+end
+
+@event
+func player_deploy_utx_occurred (
+        owner : felt,
+        utx_label : felt,
+        utx_device_type : felt,
+        src_device_grid : Vec2,
+        dst_device_grid : Vec2,
+        locs_len : felt,
+        locs : Vec2*
+    ):
+end
+
+@event
+func player_pickup_utx_occurred (
+        owner : felt,
+        grid : Vec2
+    ):
+end
+
+@event
+func terminate_universe_occurred (
+        bool_universe_terminable : felt,
+        bool_destruction : felt,
+        bool_universe_max_age_reached : felt,
+        bool_universe_escape_condition_met : felt
     ):
 end
 
@@ -208,6 +252,11 @@ func reset_and_deactivate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuil
     let (macro_initial_state) = get_macro_initial_state ()
     ns_macro_state_functions.macro_state_curr_write (macro_initial_state)
     ns_macro_state_functions.phi_curr_write (ns_macro_init.phi)
+
+    #
+    # Reset number of ticks since genesis
+    #
+    ns_universe_state_functions.number_of_ticks_since_genesis_write (0)
 
     #
     # Clear civilization registry
@@ -419,6 +468,12 @@ func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     ns_micro_forwarding.forward_world_micro ()
 
     #
+    # Increase number_of_ticks_since_genesis by 1
+    #
+    let (curr_ticks) = ns_universe_state_functions.number_of_ticks_since_genesis_read ()
+    ns_universe_state_functions.number_of_ticks_since_genesis_write (curr_ticks + 1)
+
+    #
     # Check if this universe can be terminated
     #
     let (
@@ -426,12 +481,18 @@ func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
         bool_destruction,
         bool_universe_max_age_reached,
         bool_universe_escape_condition_met
-    ) = is_universe_terminable (block_curr)
+    ) = is_universe_terminable (curr_ticks + 1)
 
     #
     # Initiate termination process if universe is terminable
     #
     if bool_universe_terminable == 1:
+        terminate_universe_occurred.emit (
+            bool_universe_terminable,
+            bool_destruction,
+            bool_universe_max_age_reached,
+            bool_universe_escape_condition_met
+        )
         terminate_universe_and_notify_lobby (
             bool_destruction,
             bool_universe_escape_condition_met
@@ -481,7 +542,7 @@ func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : Ha
 end
 
 func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        block_curr : felt
+        curr_ticks : felt
     ) -> (
         bool : felt,
         bool_destruction : felt,
@@ -498,9 +559,10 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     #
     # Check universe age against max age
     #
-    let (block_genesis) = ns_universe_state_functions.l2_block_at_genesis_read ()
-    let universe_age = block_curr - block_genesis
-    let (bool_universe_max_age_reached) = is_le (UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM, universe_age)
+    let (bool_universe_max_age_reached) = is_le (UNIVERSE_MAX_AGE_IN_TICKS, curr_ticks)
+    # let (block_genesis) = ns_universe_state_functions.l2_block_at_genesis_read ()
+    # let universe_age = block_curr - block_genesis
+    # let (bool_universe_max_age_reached) = is_le (UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM, universe_age)
 
     #
     # Check macro state against escape condition
@@ -510,7 +572,8 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     #
     # Aggregate flags
     #
-    let bool = bool_destruction * bool_universe_max_age_reached * bool_universe_escape_condition_met
+    let sum = bool_destruction + bool_universe_max_age_reached + bool_universe_escape_condition_met
+    let (bool) = is_not_zero (sum)
     return (bool, bool_destruction, bool_universe_max_age_reached, bool_universe_escape_condition_met)
 end
 
@@ -562,11 +625,19 @@ end
 @external
 func player_deploy_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     type : felt, grid : Vec2) -> ():
+    alloc_locals
 
     let (caller) = get_caller_address ()
     assert_address_in_civilization (caller)
 
-    ns_micro_devices.device_deploy (caller, type, grid)
+    let (device_id) = ns_micro_devices.device_deploy (caller, type, grid)
+
+    player_deploy_device_occurred.emit (
+        owner = caller,
+        device_id = device_id,
+        type = type,
+        grid = grid
+    )
 
     return ()
 end
@@ -574,11 +645,17 @@ end
 @external
 func player_pickup_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     grid : Vec2) -> ():
+    alloc_locals
 
     let (caller) = get_caller_address ()
     assert_address_in_civilization (caller)
 
     ns_micro_devices.device_pickup_by_grid (caller, grid)
+
+    player_pickup_device_occurred.emit (
+        owner = caller,
+        grid = grid
+    )
 
     return ()
 end
@@ -591,11 +668,12 @@ func player_deploy_utx_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
         locs_len : felt,
         locs : Vec2*
     ) -> ():
+    alloc_locals
 
     let (caller) = get_caller_address ()
     assert_address_in_civilization (caller)
 
-    ns_micro_utx.utx_deploy (
+    let (utx_label) = ns_micro_utx.utx_deploy (
         caller,
         utx_device_type,
         locs_len,
@@ -604,17 +682,33 @@ func player_deploy_utx_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
         dst_device_grid
     )
 
+    player_deploy_utx_occurred.emit (
+        owner = caller,
+        utx_label = utx_label,
+        utx_device_type = utx_device_type,
+        src_device_grid = src_device_grid,
+        dst_device_grid = dst_device_grid,
+        locs_len = locs_len,
+        locs = locs
+    )
+
     return ()
 end
 
 @external
 func player_pickup_utx_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     grid : Vec2) -> ():
+    alloc_locals
 
     let (caller) = get_caller_address ()
     assert_address_in_civilization (caller)
 
     ns_micro_utx.utx_pickup_by_grid (caller, grid)
+
+    player_pickup_utx_occurred.emit (
+        owner = caller,
+        grid = grid
+    )
 
     return ()
 end

@@ -26,6 +26,10 @@ func l2_block_at_genesis () -> (block_height : felt):
 end
 
 @storage_var
+func number_of_ticks_since_genesis () -> (value : felt):
+end
+
+@storage_var
 func civilization_index () -> (civ_idx : felt):
 end
 
@@ -71,6 +75,15 @@ namespace ns_universe_state_functions:
         let (number) = l2_block_at_genesis.read ()
 
         return (number)
+    end
+
+    @view
+    func number_of_ticks_since_genesis_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> (value : felt):
+
+        let (value) = number_of_ticks_since_genesis.read ()
+
+        return (value)
     end
 
     @view
@@ -142,6 +155,14 @@ namespace ns_universe_state_functions:
         number : felt) -> ():
 
         l2_block_at_genesis.write (number)
+
+        return ()
+    end
+
+    func number_of_ticks_since_genesis_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        value : felt) -> ():
+
+        number_of_ticks_since_genesis.write (value)
 
         return ()
     end
