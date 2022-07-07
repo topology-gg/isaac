@@ -1,37 +1,30 @@
 import React, { Component, useState, useEffect, useRef, useMemo, Table } from "react";
 import { fabric } from 'fabric';
-
-import {
-    useStarknet,
-    useContract,
-    useStarknetCall,
-    useStarknetInvoke
-} from '@starknet-react/core'
 import { toBN } from 'starknet/dist/utils/number'
 
-import UniverseAbi from '../abi/universe_abi.json'
-const UNIVERSE_ADDR = '0x0758e8e3153a61474376838aeae42084dae0ef55e0206b19b2a85e039d1ef180' // universe #0
-function useUniverseContract() {
-    return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
-}
+import {
+    useCivState,
+    usePlayerBalances
+} from '../lib/api'
 
 export default function GameStatsPlayers() {
-    const { contract } = useUniverseContract()
-    const { account } = useStarknet()
 
-    //
-    // 0
-    //
-    const { data: result_0 } = useStarknetCall({
-        contract: contract, method: 'civilization_player_idx_to_address_read', args: [0],
-    })
-    const value_0 = useMemo(() => {
-        if (result_0 && result_0.length > 0) {
-            const value = toBN(result_0[0])
-            const value_string = value.toString(16)
-            return "0x" + value_string.slice(0,3) + "..." + value_string.slice(-4)
+    const { data: db_civ_state } = useCivState ()
+    const { data: db_player_balances } = usePlayerBalances ()
+    var rows = [];
+
+    if (db_player_balances) {
+        const num_of_player = db_player_balances.player_balances.length
+        for (var row_idx = 0; row_idx < num_of_player; row_idx ++){
+            const account_str = toBN(db_player_balances.player_balances[row_idx]['account']).toString(16)
+            const account_str_abbrev = "0x" + account_str.slice(0,3) + "..." + account_str.slice(-4)
+
+            var cell = []
+            cell.push (<td>{row_idx}</td>)
+            cell.push (<td>{account_str_abbrev}</td>)
+            rows.push(<tr className="player_account">{cell}</tr>)
         }
-    }, [result_0])
+    }
 
     //
     // Return component
@@ -48,10 +41,7 @@ export default function GameStatsPlayers() {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr className="player_account">
-                        <td>0</td>
-                        <td>{value_0}</td>
-                    </tr>
+                    {rows}
                 </tbody>
             </table>
 

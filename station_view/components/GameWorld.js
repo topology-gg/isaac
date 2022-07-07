@@ -7,7 +7,8 @@ import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
 import {
     useCivState,
     usePlayerBalances,
-    useDeployedDevices
+    useDeployedDevices,
+    useUtxSets
 } from '../lib/api'
 
 import Modal from "./Modal";
@@ -81,6 +82,8 @@ DEVICE_DIM_MAP.set(8, 2);
 DEVICE_DIM_MAP.set(9, 2);
 DEVICE_DIM_MAP.set(10, 2);
 DEVICE_DIM_MAP.set(11, 2);
+DEVICE_DIM_MAP.set(12, 1);
+DEVICE_DIM_MAP.set(13, 1);
 DEVICE_DIM_MAP.set(14, 5);
 DEVICE_DIM_MAP.set(15, 5);
 
@@ -103,6 +106,11 @@ const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const FILL_CURSOR_GRID            = PALETTE === 'DARK' ? '#AAAAAA55' : '#AAAAAA55'
 const FILL_CURSOR_SELECTED_GRID   = PALETTE === 'DARK' ? '#DDDDDD55' : '#AAAAAA55'
+
+//
+// Animation
+//
+const ANIM_UPDATE_INTERVAL_MS = 150
 
 //
 // Helper function for creating the triangles at the tips of axes
@@ -138,38 +146,17 @@ export default function GameWorld() {
     // https://stackoverflow.com/questions/60723440/problem-in-attaching-event-to-canvas-in-useeffect
     // https://eliaslog.pw/how-to-add-multiple-refs-to-one-useref-hook/
 
-    //
-    // Logic to retrieve state from Starknet
-    //
     const { contract } = useUniverseContract()
     const { account } = useStarknet()
-    // const { data: device_emap } = useStarknetCall({
-    //     contract,
-    //     method: 'anyone_view_device_deployed_emap',
-    //     args: []
-    // })
-    // const { data: utb_grids } = useStarknetCall({
-    //     contract,
-    //     method: 'anyone_view_all_utx_grids',
-    //     args: [12]
-    // })
-    // const { data: utl_grids } = useStarknetCall({
-    //     contract,
-    //     method: 'anyone_view_all_utx_grids',
-    //     args: [13]
-    // })
-    // const { data: civ_player_address_0 } = useStarknetCall({
-    //     contract,
-    //     method: 'civilization_player_idx_to_address_read',
-    //     args: [0]
-    // })
 
     //
     // Data fetched from backend on Apibara
     //
     const { data: db_civ_state } = useCivState ()
-    const { data: db_player_balances } = usePlayerBalances ()
+    // const { data: db_player_balances } = usePlayerBalances ()
     const { data: db_deployed_devices } = useDeployedDevices ()
+    const { data: db_utx_sets } = useUtxSets ()
+
     // if (db_civ_state) {
     //     console.log ("From Apibara: civ_state[0]", db_civ_state.civ_state[0])
     // }
@@ -202,15 +189,28 @@ export default function GameWorld() {
     const _selectStateRef = useRef('idle'); // idle => select => popup => idle
     const _selectedGridsRef = useRef([]);
 
+    const _utxAnimRectsRef = useRef([]); // references to the animation rectangles
+    const _utxAnimGridsRef = useRef([]); // references to the animation grids for each rectangle (2d array)
+    const _utxAnimGridIndicesRef = useRef([]); // references to the current animation index for each rectangle
+
     //
     // React States
     //
+    const [hasDrawnState, setHasDrawnState] = useState(0)
     const [ClickPositionNorm, setClickPositionNorm] = useState({left: 0, top: 0})
     const [MousePositionNorm, setMousePositionNorm] = useState({x: 0, y: 0})
     const [modalVisibility, setModalVisibility] = useState(false)
     const [modalInfo, setModalInfo] = useState({})
 
     const [selectedGrids, setSelectedGrids] = useState([])
+
+    //
+    // UTX animation
+    //
+    // approach:
+    // 0. for each utx_id, build an array of animation destinations
+    // 1. utxAnimStates[utx_id] - 0 if current animation is completed, 1 if ongoing
+    // 2. useEffect tracks utxAnimStates[i] and runs the next animation (wrap back if end reached) for i if detecting 0
 
     //
     // Selection control mechanism -- linear state transitions:
@@ -451,7 +451,7 @@ export default function GameWorld() {
         if (!_hasDrawnRef.current) {
             drawWorld (_canvasRef.current)
         }
-    }, [db_civ_state, db_deployed_devices]);
+    }, [db_civ_state, db_deployed_devices, db_utx_sets]);
 
     const initializeGridAssistRectsRef = canvi => {
 
@@ -509,10 +509,12 @@ export default function GameWorld() {
                     drawDevices (canvi)
                     drawPerlin (canvi)
                     drawAssist (canvi) // draw assistance objects the last to be on top
+                    drawUtxAnim (canvi)
                     drawMode (canvi)
                     initializeGridAssistRectsRef (canvi)
 
                     _hasDrawnRef.current = true
+                    setHasDrawnState (1)
 
                     document.getElementById('canvas_wrap').focus();
                 }
@@ -536,6 +538,81 @@ export default function GameWorld() {
             });
         canvi.add (tbox_idle_message)
     }
+
+    const drawUtxAnim = canvi => {
+        if (!db_utx_sets) return
+
+        for (const utx_set of db_utx_sets.utx_sets) {
+
+            //
+            // For each utx set, create a rect for animation
+            //
+            const color = DEVICE_COLOR_MAP.get(`${utx_set.type}-anim`)
+            const rect = new fabric.Rect({
+                height: GRID,
+                width: GRID,
+                left: PAD_X + utx_set.grids[0].x*GRID,
+                top:  PAD_Y + (SIDE*3 - utx_set.grids[0].y - 1)*GRID,
+                fill: color,
+                selectable: false,
+                hoverCursor: 'default'
+            });
+            _utxAnimRectsRef.current.push (rect)
+
+            //
+            // For each utx set, set the grids along its animation path;
+            // set animation index to 0
+            //
+            _utxAnimGridsRef.current.push (utx_set.grids)
+            _utxAnimGridIndicesRef.current.push (0)
+
+            canvi.add (rect)
+        }
+
+    }
+
+    // reference: https://stackoverflow.com/questions/57137094/implementing-a-countdown-timer-in-react-with-hooks
+    useEffect(() => {
+
+        if (!db_utx_sets) return;
+        if (hasDrawnState === 0) return;
+        if (_canvasRef === null) return;
+
+        const n_utx_set = db_utx_sets.utx_sets.length
+
+        const interval = setInterval(() => {
+
+            for (const i=0; i<n_utx_set; i++) {
+
+                //
+                // get the next animation index
+                //
+                const anim_length = _utxAnimGridsRef.current[i].length
+                const anim_idx_ = _utxAnimGridIndicesRef.current[i] + 1
+                const anim_idx = (anim_idx_ == anim_length) ? 0 : anim_idx_
+                // console.log (`${i} anim_idx=${anim_idx}`)
+                _utxAnimGridIndicesRef.current[i] = anim_idx
+
+                //
+                // animate x
+                //
+                const x = _utxAnimGridsRef.current[i][anim_idx].x
+                _utxAnimRectsRef.current[i].left = PAD_X + x*GRID
+
+                //
+                // animate y
+                //
+                const y = _utxAnimGridsRef.current[i][anim_idx].y
+                _utxAnimRectsRef.current[i].top = PAD_Y + (SIDE*3 - y - 1)*GRID
+
+                // console.log (`ANIMATE: new grid (${x}, ${y})`)
+            }
+            _canvasRef.current.renderAll ();
+
+        }, ANIM_UPDATE_INTERVAL_MS);
+
+        return () => clearInterval(interval);
+    }, [db_utx_sets, hasDrawnState]);
 
     const drawGrid = canvi => {
         const TBOX_FONT_FAMILY = "Poppins-Light"
@@ -1031,8 +1108,6 @@ export default function GameWorld() {
 
             const device_dim = DEVICE_DIM_MAP.get(typ)
             const device_color = DEVICE_COLOR_MAP.get(typ)
-            console.log (`entry: grid=(${entry.grid.x},${entry.grid.y}), type=${entry.type}, dim=${device_dim}, color=${device_color}`)
-            console.log (`typeof: x=${typeof(x)}, y=${typeof(y)}, type=${typeof(typ)}`)
 
             const rect = new fabric.Rect({
                 height: device_dim*GRID,
@@ -1219,11 +1294,11 @@ export default function GameWorld() {
     function drawAssistObjects (canvi, grids) {
         if (_coordTextRef.current) {
             if (grids.length === 0){
-                console.log ('drawAssistObjects() with empty grids')
+                // console.log ('drawAssistObjects() with empty grids')
                 _gridAssistRectsGroupRef.current.visible = false
             }
             else {
-                console.log ('drawAssistObjects() with non-empty grids')
+                // console.log ('drawAssistObjects() with non-empty grids')
                 _gridAssistRectsGroupRef.current.visible = true
             }
             _gridAssistRectsGroupRef.current.dirty = true
