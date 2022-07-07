@@ -143,26 +143,26 @@ export default function GameWorld() {
     //
     const { contract } = useUniverseContract()
     const { account } = useStarknet()
-    const { data: device_emap } = useStarknetCall({
-        contract,
-        method: 'anyone_view_device_deployed_emap',
-        args: []
-    })
-    const { data: utb_grids } = useStarknetCall({
-        contract,
-        method: 'anyone_view_all_utx_grids',
-        args: [12]
-    })
-    const { data: utl_grids } = useStarknetCall({
-        contract,
-        method: 'anyone_view_all_utx_grids',
-        args: [13]
-    })
-    const { data: civ_player_address_0 } = useStarknetCall({
-        contract,
-        method: 'civilization_player_idx_to_address_read',
-        args: [0]
-    })
+    // const { data: device_emap } = useStarknetCall({
+    //     contract,
+    //     method: 'anyone_view_device_deployed_emap',
+    //     args: []
+    // })
+    // const { data: utb_grids } = useStarknetCall({
+    //     contract,
+    //     method: 'anyone_view_all_utx_grids',
+    //     args: [12]
+    // })
+    // const { data: utl_grids } = useStarknetCall({
+    //     contract,
+    //     method: 'anyone_view_all_utx_grids',
+    //     args: [13]
+    // })
+    // const { data: civ_player_address_0 } = useStarknetCall({
+    //     contract,
+    //     method: 'civilization_player_idx_to_address_read',
+    //     args: [0]
+    // })
 
     //
     // Data fetched from backend on Apibara
@@ -170,15 +170,15 @@ export default function GameWorld() {
     const { data: db_civ_state } = useCivState ()
     const { data: db_player_balances } = usePlayerBalances ()
     const { data: db_deployed_devices } = useDeployedDevices ()
-    if (db_civ_state) {
-        console.log ("From Apibara: civ_state[0]", db_civ_state.civ_state[0])
-    }
-    if (db_player_balances) {
-        console.log ("From Apibara: player_balances[0]", db_player_balances.player_balances[0])
-    }
-    if (db_deployed_devices) {
-        console.log ("From Apibara: deployed_devices", db_deployed_devices.deployed_devices)
-    }
+    // if (db_civ_state) {
+    //     console.log ("From Apibara: civ_state[0]", db_civ_state.civ_state[0])
+    // }
+    // if (db_player_balances) {
+    //     console.log ("From Apibara: player_balances[0]", db_player_balances.player_balances[0])
+    // }
+    // if (db_deployed_devices) {
+    //     console.log ("From Apibara: deployed_devices", db_deployed_devices.deployed_devices)
+    // }
 
     //
     // React References
@@ -451,7 +451,7 @@ export default function GameWorld() {
         if (!_hasDrawnRef.current) {
             drawWorld (_canvasRef.current)
         }
-    }, [device_emap, utb_grids]);
+    }, [db_civ_state, db_deployed_devices]);
 
     const initializeGridAssistRectsRef = canvi => {
 
@@ -496,29 +496,25 @@ export default function GameWorld() {
 
     const drawWorld = canvi => {
 
-        if (civ_player_address_0) {
-            if (civ_player_address_0.address) {
-                const player_0_addr = toBN (civ_player_address_0.address).toString()
-                console.log ("civ_player_address_0.address", player_0_addr)
-                if (player_0_addr === "0") {
-                    console.log ("The address of player 0 is 0x0 => this universe is not active!")
-                    drawIdleMessage (canvi)
-                    return
-                }
+        if (db_civ_state) {
 
-                if (device_emap && utb_grids) {
-                    if (device_emap.emap && utb_grids.grids) {
-                        drawGrid (canvi)
-                        drawDevices (canvi)
-                        drawPerlin (canvi)
-                        drawAssist (canvi) // draw assistance objects the last to be on top
-                        drawMode (canvi)
-                        initializeGridAssistRectsRef (canvi)
+            if (db_civ_state.civ_state[0].active != 1) {
+                console.log ("This universe is not active.")
+                drawIdleMessage (canvi)
+                return
+            }
+            else {
+                if (db_deployed_devices) {
+                    drawGrid (canvi)
+                    drawDevices (canvi)
+                    drawPerlin (canvi)
+                    drawAssist (canvi) // draw assistance objects the last to be on top
+                    drawMode (canvi)
+                    initializeGridAssistRectsRef (canvi)
 
-                        _hasDrawnRef.current = true
+                    _hasDrawnRef.current = true
 
-                        document.getElementById('canvas_wrap').focus();
-                    }
+                    document.getElementById('canvas_wrap').focus();
                 }
             }
         }
@@ -1028,14 +1024,15 @@ export default function GameWorld() {
         // Draw devices
         //
         const device_rects = []
-        for (const entry of device_emap.emap){
-            const x = entry.grid.x.toNumber()
-            const y = entry.grid.y.toNumber()
-            const typ = entry.type.toNumber()
-            // console.log("> entry: ", typ, x, y)
+        for (const entry of db_deployed_devices.deployed_devices){
+            const x = entry.grid.x
+            const y = entry.grid.y
+            const typ = parseInt (entry.type)
 
             const device_dim = DEVICE_DIM_MAP.get(typ)
             const device_color = DEVICE_COLOR_MAP.get(typ)
+            console.log (`entry: grid=(${entry.grid.x},${entry.grid.y}), type=${entry.type}, dim=${device_dim}, color=${device_color}`)
+            console.log (`typeof: x=${typeof(x)}, y=${typeof(y)}, type=${typeof(typ)}`)
 
             const rect = new fabric.Rect({
                 height: device_dim*GRID,
@@ -1047,29 +1044,6 @@ export default function GameWorld() {
                 hoverCursor: 'pointer'
             });
             device_rects.push (rect)
-        }
-
-        //
-        // Draw utbs
-        //
-        for (const grid of utb_grids.grids){
-            // console.log("> utb:",x, y)
-
-            const x = grid.x.toNumber()
-            const y = grid.y.toNumber()
-            const device_dim = 1
-            const device_color = DEVICE_COLOR_MAP.get(12)
-
-            const rect = new fabric.Rect({
-                    height: device_dim*GRID,
-                    width: device_dim*GRID,
-                    left: PAD_X + x*GRID,
-                    top:  PAD_Y + (SIDE*3-y-device_dim)*GRID,
-                    fill: device_color,
-                    selectable: false,
-                    hoverCursor: 'pointer'
-                });
-                device_rects.push (rect);
         }
 
         var device_rect_face0_group = new fabric.Group(
