@@ -13,3 +13,7 @@ export function usePlayerBalances () {
 export function useDeployedDevices () {
     return useSWR('/api/deployed_devices', fetcher)
 }
+
+export function useUtxSets () {
+    return useSWR('/api/utx_sets', fetcher)
+}
