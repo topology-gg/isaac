@@ -1,13 +1,7 @@
 import React, { Component } from "react";
 import styles from "../styles/Modal.module.css";
 
-import {
-  useCivState,
-  usePlayerBalances,
-  useDeployedDevices,
-  useUtxSets
-} from '../lib/api'
-import { addAddressPadding } from "starknet";
+// import { addAddressPadding } from "starknet";
 
 // Refs:
 // https://stackoverflow.com/questions/54880669/react-domexception-failed-to-execute-removechild-on-node-the-node-to-be-re
@@ -56,16 +50,26 @@ class Modal extends Component {
             // Gather information about this grid;
             // construct option
             //
-            var content = ""
+            var content1 = ''
+            var content2 = ''
             if (grid_str in grid_mapping) {
                 const grid_info = grid_mapping [grid_str]
-                content += `Device type: ${grid_info ['device_type']}; `
-                content += `Owner: ${grid_info ['owner']}`
+
+                const owner = grid_info ['owner']
+                const typ   = grid_info ['type']
+                const balances = grid_info ['balances']
+
+                content1 += `Device type: ${typ}; `
+                content1 += `Owner: ${owner}`
+
+                content2 += JSON.stringify(balances)
+
+
 
                 options = "do something with the device on this grid"
             }
             else {
-                content += "Grid not populated"
+                content1 += "Grid not populated"
 
                 options = "deploy something on this grid maybe"
             }
@@ -77,7 +81,8 @@ class Modal extends Component {
             display_info =
                 <div>
                     <h3>Info</h3>
-                    <p style={{fontSize:"0.9em"}}>{content}</p>
+                    <p style={{fontSize:"0.9em"}}>{content1}</p>
+                    <p style={{fontSize:"0.9em"}}>{content2}</p>
                 </div>
 
         }
