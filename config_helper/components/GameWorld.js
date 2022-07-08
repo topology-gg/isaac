@@ -8,7 +8,13 @@ import {
     useCivState,
     usePlayerBalances,
     useDeployedDevices,
-    useUtxSets
+    useUtxSets,
+
+    useDeployedPgs,
+    useDeployedHarvesters,
+    useDeployedTransformers,
+    useDeployedUpsfs,
+    useDeployedNdpes
 } from '../lib/api'
 
 import Modal from "./Modal";
@@ -157,6 +163,12 @@ export default function GameWorld() {
     const { data: db_deployed_devices } = useDeployedDevices ()
     const { data: db_utx_sets } = useUtxSets ()
 
+    const { data: db_deployed_pgs } = useDeployedPgs ()
+    const { data: db_deployed_harvesters } = useDeployedHarvesters ()
+    const { data: db_deployed_transformers } = useDeployedTransformers ()
+    const { data: db_deployed_upsfs } = useDeployedUpsfs ()
+    // const { data: db_deployed_ndpes } = useDeployedNdpes ()
+
     //
     // React References
     //
@@ -188,6 +200,7 @@ export default function GameWorld() {
     //
     // React States
     //
+    const [hasLoadedDB, setHasLoadedDB] = useState(false)
     const [hasDrawnState, setHasDrawnState] = useState(0)
     const [ClickPositionNorm, setClickPositionNorm] = useState({left: 0, top: 0})
     const [MousePositionNorm, setMousePositionNorm] = useState({x: 0, y: 0})
@@ -198,24 +211,124 @@ export default function GameWorld() {
 
     const [gridMapping, setGridMapping] = useState()
 
+    useEffect (() => {
+        if (hasLoadedDB) {
+            return
+        }
+        if (!db_civ_state || !db_deployed_devices || !db_utx_sets || !db_deployed_pgs || !db_deployed_harvesters || !db_deployed_transformers || !db_deployed_upsfs) {
+            console.log ('db not loaded..')
+            return
+        }
+        else {
+            console.log ('db loaded!')
+            setHasLoadedDB (true)
+        }
+    }, [db_civ_state, db_deployed_devices, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs]);
+
     function prepare_grid_mapping () {
+
+        //
+        // Build mapping for device id => resource & energy balances
+        //
+        const deployed_pg_mapping = new Map();
+        for (const pg of db_deployed_pgs.deployed_pgs) {
+            deployed_pg_mapping.set(
+                pg['id'],
+                {
+                    'energy' : pg['energy']
+                }
+            );
+        }
+
+        const deployed_harvester_mapping = new Map();
+        for (const harvester of db_deployed_harvesters.deployed_harvesters) {
+            deployed_harvester_mapping.set(
+                harvester['id'],
+                {
+                    'resourece' : harvester['resource'],
+                    'energy' : harvester['energy']
+                }
+            );
+        }
+
+        const deployed_transformer_mapping = new Map();
+        for (const transformer of db_deployed_transformers.deployed_transformers) {
+            deployed_transformer_mapping.set(
+                transformer['id'],
+                {
+                    'resourece_pre' : transformer['resource_pre'],
+                    'resourece_post' : transformer['resource_post'],
+                    'energy' : transformer['energy']
+                }
+            );
+        }
+
+        const deployed_upsf_mapping = new Map();
+        for (const upsf of db_deployed_upsfs.deployed_upsfs) {
+            deployed_upsf_mapping.set(
+                upsf['id'],
+                {
+                    'resourece_0' : upsf['resource_0'],
+                    'resourece_1' : upsf['resource_1'],
+                    'resourece_2' : upsf['resource_2'],
+                    'resourece_3' : upsf['resource_3'],
+                    'resourece_4' : upsf['resource_4'],
+                    'resourece_5' : upsf['resource_5'],
+                    'resourece_6' : upsf['resource_6'],
+                    'resourece_7' : upsf['resource_7'],
+                    'resourece_8' : upsf['resource_8'],
+                    'resourece_9' : upsf['resource_9'],
+                    'energy' : upsf['energy']
+                }
+            );
+        }
+
+        // const deployed_ndpe_mapping = new Map();
+        // for (const ndpe of db_deployed_ndpes) {
+        //     deployed_ndpe_mapping.set(
+        //         ndpe['id'],
+        //         {
+        //             'energy' : ndpe['energy']
+        //         }
+        //     );
+        // }
+
 
         for (const entry of db_deployed_devices.deployed_devices){
             const x = entry.grid.x
             const y = entry.grid.y
             const typ = parseInt (entry.type)
+            const id = entry.id
 
             const owner_hexstr = toBN(entry.owner).toString(16)
             const owner_hexstr_abbrev = "0x" + owner_hexstr.slice(0,3) + "..." + owner_hexstr.slice(-4)
 
             const device_dim = DEVICE_DIM_MAP.get (typ)
 
+            var balances
+            if (typ in [0, 1]) {
+                balances = deployed_pg_mapping.get (id)
+            }
+            else if (typ in [2,3,4,5,6]) {
+                balances = deployed_harvester_mapping.get (id)
+            }
+            else if (typ in [7,8,9,10,11]) {
+                balances = deployed_transformer_mapping.get (id)
+            }
+            else if (typ == 14) {
+                balances = deployed_upsf_mapping.get (id)
+            }
+            else {
+                balances = {}
+            }
+
             // Use device dimension to insert entry into grid mapping (every device is a square)
             for (const i=0; i<device_dim; i++) {
                 for (const j=0; j<device_dim; j++) {
                     _gridMapping.current [`(${x+i},${y+j})`] = {
-                        'device_type' : typ,
-                        'owner' : owner_hexstr_abbrev
+                        'owner' : owner_hexstr_abbrev,
+                        'type' : typ,
+                        'balances' : balances
                     }
                 }
             }
@@ -481,7 +594,7 @@ export default function GameWorld() {
         if (!_hasDrawnRef.current) {
             drawWorld (_canvasRef.current)
         }
-    }, [db_civ_state, db_deployed_devices, db_utx_sets]);
+    }, [hasLoadedDB]);
 
     const initializeGridAssistRectsRef = canvi => {
 
@@ -526,7 +639,7 @@ export default function GameWorld() {
 
     const drawWorld = canvi => {
 
-        if (db_civ_state) {
+        if (hasLoadedDB) {
 
             if (db_civ_state.civ_state[0].active != 1) {
                 console.log ("This universe is not active.")
@@ -534,22 +647,20 @@ export default function GameWorld() {
                 return
             }
             else {
-                if (db_deployed_devices) {
-                    prepare_grid_mapping ()
+                prepare_grid_mapping ()
 
-                    drawGrid (canvi)
-                    drawDevices (canvi)
-                    drawPerlin (canvi)
-                    drawAssist (canvi) // draw assistance objects the last to be on top
-                    drawUtxAnim (canvi)
-                    drawMode (canvi)
-                    initializeGridAssistRectsRef (canvi)
+                drawGrid (canvi)
+                drawDevices (canvi)
+                drawPerlin (canvi)
+                drawAssist (canvi) // draw assistance objects the last to be on top
+                drawUtxAnim (canvi)
+                drawMode (canvi)
+                initializeGridAssistRectsRef (canvi)
 
-                    _hasDrawnRef.current = true
-                    setHasDrawnState (1)
+                _hasDrawnRef.current = true
+                setHasDrawnState (1)
 
-                    document.getElementById('canvas_wrap').focus();
-                }
+                document.getElementById('canvas_wrap').focus();
             }
         }
     }
@@ -1051,8 +1162,8 @@ export default function GameWorld() {
     const drawPerlin = canvi => {
 
         const perlin_cells = []
-        console.log ("max perline value:", PERLIN_VALUES['max'])
-        console.log ("min perline value:", PERLIN_VALUES['min'])
+        // console.log ("max perline value:", PERLIN_VALUES['max'])
+        // console.log ("min perline value:", PERLIN_VALUES['min'])
 
         for (var face=0; face<6; face++) {
 
