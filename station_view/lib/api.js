@@ -17,3 +17,24 @@ export function useDeployedDevices () {
 export function useUtxSets () {
     return useSWR('/api/utx_sets', fetcher)
 }
+
+export function useDeployedPgs () {
+    return useSWR('/api/deployed_pgs', fetcher)
+}
+
+export function useDeployedHarvesters () {
+    return useSWR('/api/deployed_harvesters', fetcher)
+}
+
+export function useDeployedTransformers () {
+    return useSWR('/api/deployed_transformers', fetcher)
+}
+
+export function useDeployedUpsfs () {
+    return useSWR('/api/deployed_upsfs', fetcher)
+}
+
+export function useDeployedNdpes () {
+    return useSWR('/api/deployed_ndpes', fetcher)
+}
+
