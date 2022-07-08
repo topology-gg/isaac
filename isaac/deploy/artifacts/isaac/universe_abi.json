@@ -702,6 +702,10 @@
                 "type": "felt"
             },
             {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
                 "name": "type",
                 "type": "felt"
             },
@@ -733,6 +737,10 @@
         "data": [
             {
                 "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "utx_label",
                 "type": "felt"
             },
             {

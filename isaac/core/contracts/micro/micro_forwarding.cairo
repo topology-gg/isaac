@@ -44,6 +44,40 @@ from contracts.macro.macro_state import (
     ns_macro_state_functions
 )
 
+#
+# Event emission for Apibara
+#
+@event
+func resource_update_at_harvester_occurred (
+        device_id : felt,
+        new_quantity : felt
+    ):
+end
+
+@event
+func resource_update_at_transformer_occurred (
+        device_id : felt,
+        new_quantity_pre : felt,
+        new_quantity_post : felt
+    ):
+end
+
+@event
+func resource_update_at_upsf_occurred (
+        device_id : felt,
+        element_type : felt,
+        new_quantity : felt
+    ):
+end
+
+@event
+func energy_update_at_device_occurred (
+        device_id : felt,
+        new_quantity : felt
+    ):
+end
+
+
 namespace ns_micro_forwarding:
 
     func resource_energy_update_at_devices {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
@@ -117,6 +151,11 @@ namespace ns_micro_forwarding:
                 curr_energy + energy_generated
             )
 
+            energy_update_at_device_occurred.emit (
+                device_id = emap_entry.id,
+                new_quantity = curr_energy + energy_generated
+            )
+
             tempvar syscall_ptr = syscall_ptr
             tempvar pedersen_ptr = pedersen_ptr
             tempvar range_check_ptr = range_check_ptr
@@ -133,6 +172,11 @@ namespace ns_micro_forwarding:
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
                 emap_entry.id,
                 curr_energy + energy_generated
+            )
+
+            energy_update_at_device_occurred.emit (
+                device_id = emap_entry.id,
+                new_quantity = curr_energy + energy_generated
             )
 
             tempvar syscall_ptr = syscall_ptr
@@ -181,12 +225,22 @@ namespace ns_micro_forwarding:
                 new_quantity
             )
 
+            resource_update_at_harvester_occurred.emit (
+                device_id = emap_entry.id,
+                new_quantity = new_quantity
+            )
+
             #
             # Clear energy balance at this harvester
             #
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
                 emap_entry.id,
                 0
+            )
+
+            energy_update_at_device_occurred.emit (
+                device_id = emap_entry.id,
+                new_quantity = 0
             )
 
             tempvar syscall_ptr = syscall_ptr
@@ -232,12 +286,20 @@ namespace ns_micro_forwarding:
             #
             # Apply transform on balances
             #
+            let quantity_pre  = balances.balance_resource_before_transform - transform_amount
+            let quantity_post = balances.balance_resource_after_transform + transform_amount
             ns_micro_state_functions.transformers_deployed_id_to_resource_balances_write (
                 emap_entry.id,
                 TransformerResourceBalances (
-                    balances.balance_resource_before_transform - transform_amount,
-                    balances.balance_resource_after_transform + transform_amount
+                    quantity_pre,
+                    quantity_post
                 )
+            )
+
+            resource_update_at_transformer_occurred.emit (
+                device_id = emap_entry.id,
+                new_quantity_pre  = quantity_pre,
+                new_quantity_post = quantity_post
             )
 
             #
@@ -246,6 +308,11 @@ namespace ns_micro_forwarding:
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
                 emap_entry.id,
                 0
+            )
+
+            energy_update_at_device_occurred.emit (
+                device_id = emap_entry.id,
+                new_quantity = 0
             )
 
             tempvar syscall_ptr = syscall_ptr
@@ -379,6 +446,11 @@ namespace ns_micro_forwarding:
                     src_balance - quantity_should_send
                 )
 
+                resource_update_at_harvester_occurred.emit (
+                    device_id = emap_entry.src_device_id,
+                    new_quantity = src_balance - quantity_should_send
+                )
+
                 tempvar syscall_ptr = syscall_ptr
                 tempvar pedersen_ptr = pedersen_ptr
                 tempvar range_check_ptr = range_check_ptr
@@ -417,6 +489,12 @@ namespace ns_micro_forwarding:
                         src_balance - quantity_should_send
                 ))
 
+                resource_update_at_transformer_occurred.emit (
+                    device_id = emap_entry.src_device_id,
+                    new_quantity_pre  = src_balances.balance_resource_before_transform,
+                    new_quantity_post = src_balance - quantity_should_send
+                )
+
                 tempvar syscall_ptr = syscall_ptr
                 tempvar pedersen_ptr = pedersen_ptr
                 tempvar range_check_ptr = range_check_ptr
@@ -439,6 +517,12 @@ namespace ns_micro_forwarding:
                     emap_entry.dst_device_id,
                     element_type,
                     dst_balance + quantity_received ## no max carry limitation
+                )
+
+                resource_update_at_upsf_occurred.emit (
+                    device_id = emap_entry.dst_device_id,
+                    element_type = element_type,
+                    new_quantity = dst_balance + quantity_received
                 )
 
                 tempvar syscall_ptr = syscall_ptr
@@ -477,6 +561,12 @@ namespace ns_micro_forwarding:
                         new_balance_resource_before_transform,
                         dst_balances.balance_resource_after_transform
                 ))
+
+                resource_update_at_transformer_occurred.emit (
+                    device_id = emap_entry.dst_device_id,
+                    new_quantity_pre  = new_balance_resource_before_transform,
+                    new_quantity_post = dst_balances.balance_resource_after_transform
+                )
 
                 tempvar syscall_ptr = syscall_ptr
                 tempvar pedersen_ptr = pedersen_ptr
@@ -553,6 +643,11 @@ namespace ns_micro_forwarding:
                 src_device_energy - energy_should_send
             )
 
+            energy_update_at_device_occurred.emit (
+                device_id = src_device_id,
+                new_quantity = src_device_energy - energy_should_send
+            )
+
             #
             # Effect energy update at destination
             # note: could have multi-fanin resulting higher energy boost
@@ -560,6 +655,11 @@ namespace ns_micro_forwarding:
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
                 dst_device_id,
                 dst_device_energy + energy_should_receive
+            )
+
+            energy_update_at_device_occurred.emit (
+                device_id = dst_device_id,
+                new_quantity = dst_device_energy + energy_should_receive
             )
 
             tempvar syscall_ptr = syscall_ptr
@@ -570,7 +670,6 @@ namespace ns_micro_forwarding:
             tempvar pedersen_ptr = pedersen_ptr
             tempvar range_check_ptr = range_check_ptr
         end
-
 
         recurse_energy_transfer_across_utl_sets (
             len,
