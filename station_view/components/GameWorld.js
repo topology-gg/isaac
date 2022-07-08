@@ -157,16 +157,6 @@ export default function GameWorld() {
     const { data: db_deployed_devices } = useDeployedDevices ()
     const { data: db_utx_sets } = useUtxSets ()
 
-    // if (db_civ_state) {
-    //     console.log ("From Apibara: civ_state[0]", db_civ_state.civ_state[0])
-    // }
-    // if (db_player_balances) {
-    //     console.log ("From Apibara: player_balances[0]", db_player_balances.player_balances[0])
-    // }
-    // if (db_deployed_devices) {
-    //     console.log ("From Apibara: deployed_devices", db_deployed_devices.deployed_devices)
-    // }
-
     //
     // React References
     //
@@ -193,6 +183,8 @@ export default function GameWorld() {
     const _utxAnimGridsRef = useRef([]); // references to the animation grids for each rectangle (2d array)
     const _utxAnimGridIndicesRef = useRef([]); // references to the current animation index for each rectangle
 
+    const _gridMapping = useRef({});
+
     //
     // React States
     //
@@ -204,21 +196,36 @@ export default function GameWorld() {
 
     const [selectedGrids, setSelectedGrids] = useState([])
 
-    //
-    // UTX animation
-    //
-    // approach:
-    // 0. for each utx_id, build an array of animation destinations
-    // 1. utxAnimStates[utx_id] - 0 if current animation is completed, 1 if ongoing
-    // 2. useEffect tracks utxAnimStates[i] and runs the next animation (wrap back if end reached) for i if detecting 0
+    const [gridMapping, setGridMapping] = useState()
 
-    //
-    // Selection control mechanism -- linear state transitions:
-    // - mouse down, if select state in 'idle', if in grid range => select state = 'select', mouse state = 'down', push {x,y} to selectedGridsState
-    // - mouse drag, if select state in 'select', if mouse state in 'down', if in grid range and not in selectedGridsState => push {x,y} to selectedGridsState
-    // - mouse up, if in grid range and if selectedGridsState is not empty => select state = 'popup'
-    // - esc keypress / esc button clicked, if select state in 'popup' => select state = 'idle', setSelectedGridsState([])
-    //
+    function prepare_grid_mapping () {
+
+        for (const entry of db_deployed_devices.deployed_devices){
+            const x = entry.grid.x
+            const y = entry.grid.y
+            const typ = parseInt (entry.type)
+
+            const owner_hexstr = toBN(entry.owner).toString(16)
+            const owner_hexstr_abbrev = "0x" + owner_hexstr.slice(0,3) + "..." + owner_hexstr.slice(-4)
+
+            const device_dim = DEVICE_DIM_MAP.get (typ)
+
+            // Use device dimension to insert entry into grid mapping (every device is a square)
+            for (const i=0; i<device_dim; i++) {
+                for (const j=0; j<device_dim; j++) {
+                    _gridMapping.current [`(${x+i},${y+j})`] = {
+                        'device_type' : typ,
+                        'owner' : owner_hexstr_abbrev
+                    }
+                }
+            }
+
+        }
+
+        setGridMapping (_gridMapping.current)
+
+        return
+    }
 
     function convert_screen_to_grid_x (x) {
         return Math.floor( (x - PAD_X) / GRID )
@@ -227,6 +234,14 @@ export default function GameWorld() {
     function convert_screen_to_grid_y (y) {
         return SIDE*3 - 1 - Math.floor( (y - PAD_Y) / GRID )
     }
+
+    //
+    // Selection control mechanism -- linear state transitions:
+    // - mouse down, if select state in 'idle', if in grid range => select state = 'select', mouse state = 'down', push {x,y} to selectedGridsState
+    // - mouse drag, if select state in 'select', if mouse state in 'down', if in grid range and not in selectedGridsState => push {x,y} to selectedGridsState
+    // - mouse up, if in grid range and if selectedGridsState is not empty => select state = 'popup'
+    // - esc keypress / esc button clicked, if select state in 'popup' => select state = 'idle', setSelectedGridsState([])
+    //
 
     function handleMouseDown (x, y) {
         _mouseStateRef.current = 'down'
@@ -294,9 +309,8 @@ export default function GameWorld() {
             setModalVisibility (true)
             modalVisibilityRef.current = true
 
-            var info = ""
-            for (const grid of _selectedGridsRef.current) {
-                info += `(${grid.x},${grid.y})`
+            const info = {
+                'grids' : _selectedGridsRef.current
             }
             setModalInfo (info)
         }
@@ -317,7 +331,10 @@ export default function GameWorld() {
         setSelectedGrids ([])
     }
 
+    //
+    // Handle key down events
     // ref: https://stackoverflow.com/questions/37440408/how-to-detect-esc-key-press-in-react-and-how-to-handle-it
+    //
     const handleKeyDown = useCallback((ev) => {
 
         if (!_hasDrawnRef.current) {
@@ -332,14 +349,18 @@ export default function GameWorld() {
         else if(ev.key === '1'){
             console.log('1')
             _displayModeRef.current = 'devices'
-            _deviceDisplayRef.current.visible = true
+
+            change_working_view_visibility (true)
+
             _feDisplayRef.current.visible = false
             updateMode (_canvasRef.current, 'devices')
         }
         else if(ev.key === '2'){
             console.log('2')
             _displayModeRef.current = 'fe'
-            _deviceDisplayRef.current.visible = false
+
+            change_working_view_visibility (false)
+
             _feDisplayRef.current.visible = true
             updateMode (_canvasRef.current, 'FE distribution')
         }
@@ -365,6 +386,15 @@ export default function GameWorld() {
         }
 
       }, [modalVisibility]);
+
+    function change_working_view_visibility (visibility) {
+
+        _deviceDisplayRef.current.visible = visibility
+
+        for (const rect of _utxAnimRectsRef.current) {
+            rect.visible = visibility
+        }
+    }
 
     //
     // Grid / face assistance
@@ -505,6 +535,8 @@ export default function GameWorld() {
             }
             else {
                 if (db_deployed_devices) {
+                    prepare_grid_mapping ()
+
                     drawGrid (canvi)
                     drawDevices (canvi)
                     drawPerlin (canvi)
@@ -539,6 +571,9 @@ export default function GameWorld() {
         canvi.add (tbox_idle_message)
     }
 
+    //
+    // UTX animation
+    //
     const drawUtxAnim = canvi => {
         if (!db_utx_sets) return
 
@@ -568,9 +603,7 @@ export default function GameWorld() {
 
             canvi.add (rect)
         }
-
     }
-
     // reference: https://stackoverflow.com/questions/57137094/implementing-a-countdown-timer-in-react-with-hooks
     useEffect(() => {
 
@@ -612,7 +645,8 @@ export default function GameWorld() {
         }, ANIM_UPDATE_INTERVAL_MS);
 
         return () => clearInterval(interval);
-    }, [db_utx_sets, hasDrawnState]);
+    }, [hasDrawnState]);
+
 
     const drawGrid = canvi => {
         const TBOX_FONT_FAMILY = "Poppins-Light"
@@ -1065,12 +1099,6 @@ export default function GameWorld() {
                         top: PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
                     });
                     perlin_cells.push (cell)
-                    // perlin_rects.push (
-                    //     rect
-                    // )
-                    // perlin_rects.push (
-                    //     text
-                    // )
                 }
             }
             // break
@@ -1330,25 +1358,6 @@ export default function GameWorld() {
         }
     }
 
-    // function handleClick(ev) {
-    //     const x_norm = Math.floor( (ev.pageX - PAD_X) / GRID )
-    //     const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD_Y) / GRID )
-    //     const bool = is_valid_coord (x_norm, y_norm)
-
-    //     if (bool && !modalVisibility) {
-    //         setClickPositionNorm ({
-    //             x: x_norm,
-    //             y: y_norm
-    //         })
-    //         setModalInfo ({
-    //             grid_x: x_norm,
-    //             grid_y: y_norm
-    //         })
-    //         setModalVisibility (true);
-    //         modalVisibilityRef.current = true
-    //     }
-    // }
-
     //
     // Return component
     // Reference:
@@ -1367,6 +1376,7 @@ export default function GameWorld() {
                 show   = {modalVisibility}
                 onHide = {hidePopup}
                 info = {modalInfo}
+                gridMapping = {gridMapping}
             />
             <canvas id="c" />
         </div>
