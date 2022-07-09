@@ -19,43 +19,46 @@ function Home() {
 
   return (
     <StarknetProvider>
-      <CoverArtBack />
-      <CoverArt />
+        <CoverArtBack />
+        <CoverArt />
 
-      <div className="mother-container">
+        <audio id='sound-popup-open'  src='/sound-open.ogg'/>
+        <audio id='sound-popup-close' src='/sound-close.ogg'/>
 
-          <div className="left-child-container">
-            <GameWorld />
-          </div>
+        <div className="mother-container">
 
-          <div className="right-child-container">
-
-            <div className="right-child-title">
-              <span>.</span>
-
-              <h3>ISAAC: Working View</h3>
-              <ConnectWallet />
+            <div className="left-child-container">
+                <GameWorld />
             </div>
 
-            <div className="right-child-middle">
-              <span>.</span>
-              <h4>Control</h4>
-              <p>Key press 1~6: choose display mode</p>
-              <p>Mouse click: select grid</p>
-              <p>Mouse drag: select grids</p>
-              <span>.</span>
-              <h4>Universe Stats</h4>
+            <div className="right-child-container">
+
+                <div className="right-child-title">
+                    <span>.</span>
+
+                    <h3>ISAAC: Working View</h3>
+                    <ConnectWallet />
+                </div>
+
+                <div className="right-child-middle">
+                    <span>.</span>
+                    <h4>Control</h4>
+                    <p>Key press 1~6: choose display mode</p>
+                    <p>Mouse click: select grid</p>
+                    <p>Mouse drag: select grids</p>
+                    <span>.</span>
+                    <h4>Universe Stats</h4>
+                </div>
+
+                <div className="right-child-bottom">
+                    <GameStatsPlayers />
+                    <span>.</span>
+                    <GameStatsDevices />
+                </div>
+
             </div>
 
-            <div className="right-child-bottom">
-              <GameStatsPlayers />
-              <span>.</span>
-              <GameStatsDevices />
-            </div>
-
-          </div>
-
-      </div>
+        </div>
 
     </StarknetProvider>
   )
