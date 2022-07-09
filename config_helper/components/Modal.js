@@ -125,6 +125,17 @@ class Modal extends Component {
         }
     }
 
+    var options_gated = []
+    if (!this.props.account) {
+        options_gated.push (<p>no account signed in</p>)
+    }
+    else if (!this.props.in_civ) {
+        options_gated.push (<p>account not in this civilization</p>)
+    }
+    else {
+        options_gated = options
+    }
+
     const modal_left_child_style = {
         display: 'flex',
         flexDirection: 'column',
@@ -160,7 +171,7 @@ class Modal extends Component {
                 <div style={modal_right_child_style}>
                     <h3>Options:</h3>
 
-                    {options}
+                    {options_gated}
 
                 </div>
 
