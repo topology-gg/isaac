@@ -12,10 +12,12 @@ STARK_PRIME_HALF = (
 )
 
 
-def _felt_from_iter(it: Iterator[bytes], scale=False):
+def _felt_from_iter(it: Iterator[bytes], scale=False, signed=True):
     fe = int.from_bytes(next(it), "big")
-    if fe > STARK_PRIME_HALF:
-        fe = fe - STARK_PRIME
+
+    if signed:
+        if fe > STARK_PRIME_HALF:
+            fe = fe - STARK_PRIME
 
     if not scale:
         return fe
@@ -28,9 +30,9 @@ class Vec2:
     y: float
 
     @staticmethod
-    def from_iter(it: Iterator[bytes]):
-        x = _felt_from_iter(it, scale=True)
-        y = _felt_from_iter(it, scale=True)
+    def from_iter(it: Iterator[bytes], scale=False):
+        x = _felt_from_iter(it, scale=scale)
+        y = _felt_from_iter(it, scale=scale)
         return Vec2(x, y)
 
     def to_json(self) -> Any:
@@ -44,8 +46,8 @@ class Dynamic:
 
     @staticmethod
     def from_iter(it: Iterator[bytes]):
-        q = Vec2.from_iter(it)
-        qd = Vec2.from_iter(it)
+        q  = Vec2.from_iter(it = it, scale=True)
+        qd = Vec2.from_iter(it = it, scale=True)
         return Dynamic(q, qd)
 
     def to_json(self) -> Any:
@@ -184,3 +186,191 @@ def decode_universe_deactivation_occurred_event (event: Event) -> Tuple [int, in
     ]
 
     return event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr
+
+#
+# Decode event: universe::player_deploy_device_occurred
+#
+def decode_player_deploy_device_occurred_event (event: Event) -> Tuple [int, int, Vec2]:
+    it = iter(event.data)
+
+    # @event
+    # func player_deploy_device_occurred (
+    #         owner : felt,
+    #         device_id : felt,
+    #         type : felt,
+    #         grid : Vec2
+    #     ):
+    # end
+
+    owner       = _felt_from_iter (it, scale=False)
+    device_id   = _felt_from_iter (it, scale=False, signed=False)
+    device_type = _felt_from_iter (it, scale=False)
+    grid        = Vec2.from_iter  (it, scale=False)
+
+    return owner, device_id, device_type, grid
+
+
+#
+# Decode event: universe::player_pickup_device_occurred
+#
+def decode_player_pickup_device_occurred_event (event: Event) -> Tuple [int, Vec2]:
+    it = iter(event.data)
+
+    # @event
+    # func player_pickup_device_occurred (
+    #         owner : felt,
+    #         grid : Vec2
+    #     ):
+    # end
+
+    owner = _felt_from_iter (it, scale=False)
+    grid  = Vec2.from_iter  (it, scale=False)
+
+    return owner, grid
+
+
+#
+# Decode event: universe::terminate_universe_occurred
+#
+def decode_terminate_universe_occurred_event (event: Event) -> Tuple [int, int, int, int]:
+    it = iter(event.data)
+
+    # @event
+    # func terminate_universe_occurred (
+    #         bool_universe_terminable : felt,
+    #         bool_destruction : felt,
+    #         bool_universe_max_age_reached : felt,
+    #         bool_universe_escape_condition_met : felt
+    #     ):
+    # end
+
+    bool_universe_terminable           = _felt_from_iter (it, scale=False)
+    bool_destruction                   = _felt_from_iter (it, scale=False)
+    bool_universe_max_age_reached      = _felt_from_iter (it, scale=False)
+    bool_universe_escape_condition_met = _felt_from_iter (it, scale=False)
+
+    return bool_universe_terminable, bool_destruction, bool_universe_max_age_reached, bool_universe_escape_condition_met
+
+#
+# Decode event: universe::player_deploy_utx_occurred
+#
+def decode_player_deploy_utx_occurred_event (event: Event) -> Tuple [int, int, int, Vec2, Vec2, int, list]:
+    it = iter (event.data)
+
+    # @event
+    # func player_deploy_utx_occurred (
+    #         owner : felt,
+    #         utx_label : felt,
+    #         utx_device_type : felt,
+    #         src_device_grid : Vec2,
+    #         dst_device_grid : Vec2,
+    #         locs_len : felt,
+    #         locs : Vec2*
+    #     ):
+    # end
+
+    owner           = _felt_from_iter (it, scale=False)
+    utx_label       = _felt_from_iter (it, scale=False, signed=False)
+    utx_device_type = _felt_from_iter (it, scale=False)
+    src_device_grid = Vec2.from_iter  (it, scale=False)
+    dst_device_grid = Vec2.from_iter  (it, scale=False)
+    locs_len        = _felt_from_iter (it, scale=False)
+    locs = [
+        Vec2.from_iter(it, scale=False).to_json() for _ in range (locs_len)
+    ]
+
+    return owner, utx_label, utx_device_type, src_device_grid, dst_device_grid, locs_len, locs
+
+#
+# Decode event: universe::player_pickup_utx_occurred
+#
+def decode_player_pickup_utx_occurred_event (event: Event) -> Tuple [int, Vec2]:
+    it = iter (event.data)
+
+    # @event
+    # func player_pickup_utx_occurred (
+    #         owner : felt,
+    #         grid : Vec2
+    #     ):
+    # end
+
+    owner = _felt_from_iter (it, scale=False)
+    grid  = Vec2.from_iter  (it, scale=False)
+
+    return owner, grid
+
+#
+# Decode event: universe::resource_update_at_harvester_occurred
+#
+def decode_resource_update_at_harvester_occurred_event (event: Event) -> Tuple [int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func resource_update_at_harvester_occurred (
+    #         device_id : felt,
+    #         new_quantity : felt
+    #     ):
+    # end
+
+    device_id    = _felt_from_iter (it, scale=False, signed=False)
+    new_quantity = _felt_from_iter (it, scale=False)
+
+    return device_id, new_quantity
+
+#
+# Decode event: universe::resource_update_at_transformer_occurred
+#
+def decode_resource_update_at_transformer_occurred_event (event: Event) -> Tuple [int, int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func resource_update_at_transformer_occurred (
+    #         device_id : felt,
+    #         new_quantity_pre : felt,
+    #         new_quantity_post : felt
+    #     ):
+    # end
+
+    device_id         = _felt_from_iter (it, scale=False, signed=False)
+    new_quantity_pre  = _felt_from_iter (it, scale=False)
+    new_quantity_post = _felt_from_iter (it, scale=False)
+
+    return device_id, new_quantity_pre, new_quantity_post
+
+#
+# Decode event: universe::resource_update_at_upsf_occurred
+#
+def decode_resource_update_at_upsf_occurred_event (event: Event) -> Tuple [int, int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func resource_update_at_upsf_occurred (
+    #         device_id : felt,
+    #         element_type : felt,
+    #         new_quantity : felt
+    #     ):
+    # end
+
+    device_id    = _felt_from_iter (it, scale=False, signed=False)
+    element_type = _felt_from_iter (it, scale=False)
+    new_quantity = _felt_from_iter (it, scale=False)
+
+    return device_id, element_type, new_quantity
+
+#
+# Decode event: universe::energy_update_at_device_occurred
+#
+def decode_energy_update_at_device_occurred_event (event: Event) -> Tuple [int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func energy_update_at_device_occurred (
+    #         device_id : felt,
+    #         new_quantity : felt
+    #     ):
+    # end
+
+    device_id    = _felt_from_iter (it, scale=False, signed=False)
+    new_quantity = _felt_from_iter (it, scale=False)
+
+    return device_id, new_quantity
