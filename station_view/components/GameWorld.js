@@ -163,7 +163,7 @@ export default function GameWorld() {
     // Data fetched from backend on Apibara
     //
     const { data: db_civ_state } = useCivState ()
-    // const { data: db_player_balances } = usePlayerBalances ()
+    const { data: db_player_balances } = usePlayerBalances ()
     const { data: db_deployed_devices } = useDeployedDevices ()
     const { data: db_utx_sets } = useUtxSets ()
 
@@ -210,16 +210,18 @@ export default function GameWorld() {
     const [MousePositionNorm, setMousePositionNorm] = useState({x: 0, y: 0})
     const [modalVisibility, setModalVisibility] = useState(false)
     const [modalInfo, setModalInfo] = useState({})
-
     const [selectedGrids, setSelectedGrids] = useState([])
-
     const [gridMapping, setGridMapping] = useState()
+    const [accountInCiv, setAccountInCiv] = useState(false)
 
+    //
+    // useEffect for checking if all database collections are loaded
+    //
     useEffect (() => {
         if (hasLoadedDB) {
             return
         }
-        if (!db_civ_state || !db_deployed_devices || !db_utx_sets || !db_deployed_pgs || !db_deployed_harvesters || !db_deployed_transformers || !db_deployed_upsfs) {
+        if (!db_civ_state || !db_player_balances || !db_deployed_devices || !db_utx_sets || !db_deployed_pgs || !db_deployed_harvesters || !db_deployed_transformers || !db_deployed_upsfs) {
             console.log ('db not loaded..')
             return
         }
@@ -227,8 +229,38 @@ export default function GameWorld() {
             console.log ('db loaded!')
             setHasLoadedDB (true)
         }
-    }, [db_civ_state, db_deployed_devices, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs]);
+    }, [db_civ_state, db_player_balances, db_deployed_devices, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs]);
 
+    //
+    // useEffect to check if the signed in account is in current civilization
+    //
+    useEffect (() => {
+        if (!db_player_balances) return
+        if (!account) return
+
+        const player_balances = db_player_balances.player_balances
+        var account_intstr_list = []
+        for (const entry of player_balances) {
+            account_intstr_list.push (entry['account'])
+        }
+
+        const account_intstr = toBN(account).toString()
+
+        if (account_intstr_list.includes(account_intstr)) {
+            console.log ('account is in this civilization')
+            setAccountInCiv (true)
+        }
+        else {
+            console.log ('account is not in this civilization')
+            setAccountInCiv (false)
+        }
+
+    }, [db_player_balances, account]);
+
+
+    //
+    // Function to build mapping from device id to device info for various device classes
+    //
     function prepare_grid_mapping () {
 
         //
@@ -1517,6 +1549,8 @@ export default function GameWorld() {
                 onHide = {hidePopup}
                 info = {modalInfo}
                 gridMapping = {gridMapping}
+                account = {account}
+                in_civ = {accountInCiv}
             />
             <canvas id="c" />
         </div>
