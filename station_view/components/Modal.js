@@ -11,6 +11,16 @@ import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 // https://stackoverflow.com/questions/24502898/show-or-hide-element-in-react
 // https://medium.com/@ralph1786/using-css-modules-in-react-app-c2079eadbb87
 
+const button_style = {
+    fontSize:'12px',
+    marginBottom:'5px',
+    paddingTop:'5px',
+    paddingBottom:'5px',
+    paddingLeft:'30px',
+    paddingRight:'30px',
+    lineHeight:'15px'
+}
+
 class Modal extends Component {
 
   render() {
@@ -22,7 +32,7 @@ class Modal extends Component {
     var title = ""
     var grids = ""
     var display_info
-    var options = ""
+    var options = []
 
     if (info['grids']) {
 
@@ -36,7 +46,7 @@ class Modal extends Component {
             }
 
             display_info = null
-            options = "deploy UTB / UTL"
+            options.push (<button>Deploy utx</button>)
         }
         //
         // Single grid selected
@@ -58,7 +68,7 @@ class Modal extends Component {
                 const grid_info = grid_mapping [grid_str]
 
                 const owner = grid_info ['owner']
-                const typ   = DEVICE_TYPE_MAP.get (grid_info ['type'])
+                const typ   = DEVICE_TYPE_MAP [grid_info ['type']]
                 const balances = grid_info ['balances']
 
                 content1 += `Device type: ${typ}; `
@@ -71,18 +81,23 @@ class Modal extends Component {
                     cell.push (<td style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0'}}>{key}</td>)
                     cell.push (<td style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0.6em'}}>{balances[key]}</td>)
                     tbody.push (<tr>{cell}</tr>)
-                    // console.log(key + " -> " + balances[key])
-                    // content2.push (<p>{key}: {balances[key]}</p>)
                 }
 
-                // content2 += <p>{JSON.stringify(balances)}</p>
-
-                options = "do something with the device on this grid"
+                options.push (<button style={button_style}>Pick up {typ}</button>)
+                if (['UPSF'].includes(typ)) {
+                    for (const i=0; i<16; i++) {
+                        options.push (<button style={button_style}>Construct {DEVICE_TYPE_MAP [i]}</button>)
+                    }
+                }
+                else if (['NDPE'].includes(typ)) {
+                    options.push (<button style={button_style}>Launch NDPE</button>)
+                }
             }
             else {
                 content1 += "Grid not populated"
 
-                options = "deploy something on this grid maybe"
+                options.push (<button style={button_style}>Deploy device</button>)
+                options.push (<button style={button_style}>Deploy utx</button>)
             }
 
 
@@ -109,11 +124,6 @@ class Modal extends Component {
 
         }
     }
-
-    // const modal_left_child_style = {
-    //     display: 'flex',
-    //     order: 1
-    // }
 
     const modal_left_child_style = {
         display: 'flex',
@@ -144,14 +154,14 @@ class Modal extends Component {
 
                     <span>.</span>
 
-                    <button onClick={this.props.onHide}>Esc</button>
+                    <button onClick={this.props.onHide} style={{width:'fit-content'}}>Esc</button>
                 </div>
 
                 <div style={modal_right_child_style}>
                     <h3>Options:</h3>
-                    <p style={{fontSize:"0.9em",margin:'0'}}>
-                        {options}
-                    </p>
+
+                    {options}
+
                 </div>
 
             </div>
