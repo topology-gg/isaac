@@ -3,7 +3,7 @@ import styles from "../styles/Modal.module.css";
 
 import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 
-// import { addAddressPadding } from "starknet";
+import { PickupDeviceInterface } from './ActionPickupDevice'
 
 // Refs:
 // https://stackoverflow.com/questions/54880669/react-domexception-failed-to-execute-removechild-on-node-the-node-to-be-re
@@ -83,7 +83,8 @@ class Modal extends Component {
                     tbody.push (<tr>{cell}</tr>)
                 }
 
-                options.push (<button style={button_style}>Pick up {typ}</button>)
+                // options.push (<button style={button_style}>Pick up {typ}</button>)
+                options.push (<PickupDeviceInterface grid_x={grid.x} grid_y={grid.y} typ={typ}/>)
                 if (['UPSF'].includes(typ)) {
                     for (const i=0; i<16; i++) {
                         options.push (<button style={button_style}>Construct {DEVICE_TYPE_MAP [i]}</button>)

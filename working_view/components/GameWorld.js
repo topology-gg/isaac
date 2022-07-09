@@ -22,18 +22,10 @@ import {
 } from '../lib/api'
 
 import Modal from "./Modal";
-import {
-    useStarknet,
-    useContract,
-    useStarknetCall,
-    useStarknetInvoke
-} from '@starknet-react/core'
 
-import UniverseAbi from '../abi/universe_abi.json'
-const UNIVERSE_ADDR = '0x0758e8e3153a61474376838aeae42084dae0ef55e0206b19b2a85e039d1ef180' // universe #0
-function useUniverseContract() {
-    return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
-}
+import {
+    useStarknet
+} from '@starknet-react/core'
 
 //
 // Note: reading requirement (translated to Apibara integration design)
@@ -123,6 +115,11 @@ const FILL_CURSOR_SELECTED_GRID   = PALETTE === 'DARK' ? '#DDDDDD55' : '#AAAAAA5
 const ANIM_UPDATE_INTERVAL_MS = 150
 
 //
+// Sound effect
+//
+const VOLUME = 0.2
+
+//
 // Helper function for creating the triangles at the tips of axes
 //
 function createTriangle(x, y, rotation)
@@ -156,7 +153,6 @@ export default function GameWorld() {
     // https://stackoverflow.com/questions/60723440/problem-in-attaching-event-to-canvas-in-useeffect
     // https://eliaslog.pw/how-to-add-multiple-refs-to-one-useref-hook/
 
-    const { contract } = useUniverseContract()
     const { account } = useStarknet()
 
     //
@@ -461,6 +457,7 @@ export default function GameWorld() {
 
         // play opening sound
         var sound_open = document.getElementById('sound-popup-open');
+        sound_open.volume = VOLUME
         sound_open.play ()
 
         const x_grid = convert_screen_to_grid_x (x)
@@ -489,6 +486,7 @@ export default function GameWorld() {
 
         // play closing sound
         var sound_close = document.getElementById('sound-popup-close');
+        sound_close.volume = VOLUME
         sound_close.play ()
 
         for (const grid of _selectedGridsRef.current) {
