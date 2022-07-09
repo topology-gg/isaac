@@ -3,6 +3,7 @@ import { fabric } from 'fabric';
 import { toBN } from 'starknet/dist/utils/number'
 
 import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
+import { DEVICE_RESOURCE_MAP } from './ConstantDeviceResources'
 
 import {
     useCivState,
@@ -240,12 +241,15 @@ export default function GameWorld() {
             );
         }
 
+        // ref: https://stackoverflow.com/questions/10640159/key-for-javascript-dictionary-is-not-stored-as-value-but-as-variable-name
         const deployed_harvester_mapping = new Map();
         for (const harvester of db_deployed_harvesters.deployed_harvesters) {
+            const resource_type = DEVICE_RESOURCE_MAP [harvester['type']]
+
             deployed_harvester_mapping.set(
                 harvester['id'],
                 {
-                    'resourece' : harvester['resource'],
+                    [resource_type] : harvester['resource'],
                     'energy' : harvester['energy']
                 }
             );
@@ -253,11 +257,14 @@ export default function GameWorld() {
 
         const deployed_transformer_mapping = new Map();
         for (const transformer of db_deployed_transformers.deployed_transformers) {
+            const resource_type_pre  = DEVICE_RESOURCE_MAP [transformer['type']] ['pre']
+            const resource_type_post = DEVICE_RESOURCE_MAP [transformer['type']] ['post']
+
             deployed_transformer_mapping.set(
                 transformer['id'],
                 {
-                    'resourece_pre' : transformer['resource_pre'],
-                    'resourece_post' : transformer['resource_post'],
+                    [resource_type_pre]  : transformer['resource_pre'],
+                    [resource_type_post] : transformer['resource_post'],
                     'energy' : transformer['energy']
                 }
             );
@@ -268,17 +275,17 @@ export default function GameWorld() {
             deployed_upsf_mapping.set(
                 upsf['id'],
                 {
-                    'resourece_0' : upsf['resource_0'],
-                    'resourece_1' : upsf['resource_1'],
-                    'resourece_2' : upsf['resource_2'],
-                    'resourece_3' : upsf['resource_3'],
-                    'resourece_4' : upsf['resource_4'],
-                    'resourece_5' : upsf['resource_5'],
-                    'resourece_6' : upsf['resource_6'],
-                    'resourece_7' : upsf['resource_7'],
-                    'resourece_8' : upsf['resource_8'],
-                    'resourece_9' : upsf['resource_9'],
-                    'energy' : upsf['energy']
+                    'FE raw     ' : upsf['resource_0'],
+                    'AL raw     ' : upsf['resource_1'],
+                    'CU raw     ' : upsf['resource_2'],
+                    'SI raw     ' : upsf['resource_3'],
+                    'PU raw     ' : upsf['resource_4'],
+                    'FE refined ' : upsf['resource_5'],
+                    'AL refined ' : upsf['resource_6'],
+                    'CU refined ' : upsf['resource_7'],
+                    'SI refined ' : upsf['resource_8'],
+                    'PU enriched' : upsf['resource_9'],
+                    'Energy     ' : upsf['energy']
                 }
             );
         }
