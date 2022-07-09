@@ -5,6 +5,9 @@ import { toBN } from 'starknet/dist/utils/number'
 import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
 import { DEVICE_RESOURCE_MAP } from './ConstantDeviceResources'
 
+// import sound_open from '../public/sound-open.ogg'
+// import sound_close from '../public/sound-close.ogg';
+
 import {
     useCivState,
     usePlayerBalances,
@@ -419,6 +422,15 @@ export default function GameWorld() {
             return
         }
 
+        // pause and reset closing sound
+        var sound_close = document.getElementById('sound-popup-close');
+        sound_close.pause ()
+        sound_close.currentTime = 0
+
+        // play opening sound
+        var sound_open = document.getElementById('sound-popup-open');
+        sound_open.play ()
+
         const x_grid = convert_screen_to_grid_x (x)
         const y_grid = convert_screen_to_grid_y (y)
         const bool_in_range = is_valid_coord (x_grid, y_grid)
@@ -437,6 +449,16 @@ export default function GameWorld() {
     }
 
     function hidePopup () {
+
+        // pause and reset opening sound
+        var sound_open = document.getElementById('sound-popup-open');
+        sound_open.pause ()
+        sound_open.currentTime = 0
+
+        // play closing sound
+        var sound_close = document.getElementById('sound-popup-close');
+        sound_close.play ()
+
         for (const grid of _selectedGridsRef.current) {
             const face = find_face_given_grid (grid.x, grid.y)
             const face_ori = find_face_ori (face)
