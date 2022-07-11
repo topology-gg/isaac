@@ -139,7 +139,10 @@ func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     #
     let (arr_paths : Path*) = alloc ()
     let (arr_cell_index_visited_at_idx : felt*) = alloc ()
-    let (circle_count) = _produce_arr_paths_and_perform_checks (
+    let (
+        circle_count,
+        puzzle_dict_ptr_
+    ) = _produce_arr_paths_and_perform_checks (
         idx = 0,
         arr_cell_indices_len = arr_cell_indices_len,
         arr_cell_indices = arr_cell_indices,
@@ -160,7 +163,7 @@ func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         arr_cell_indices_len = arr_cell_indices_len,
         arr_cell_indices = arr_cell_indices,
         arr_paths = arr_paths,
-        puzzle_dict_ptr = puzzle_dict_ptr
+        puzzle_dict_ptr = puzzle_dict_ptr_
     )
 
     #
@@ -194,7 +197,7 @@ func _check_black_white_condition {syscall_ptr : felt*, pedersen_ptr : HashBuilt
     #
     # get cell indices of self and neighbors
     #
-    let curr_cell_index = arr_cell_indices [idx]
+    local curr_cell_index = arr_cell_indices [idx]
     local prev_idx
     local next_idx
     if idx == 0:
@@ -236,11 +239,11 @@ func _check_black_white_condition {syscall_ptr : felt*, pedersen_ptr : HashBuilt
     # "every square containing a black circle must be a corner not connected directly to another corner"
     #
     if curr_cell_type == BLACK:
-        with_attr error_message ("black circle must be a corner"):
+        with_attr error_message ("black circle must be a corner; failed at cell index {curr_cell_index}"):
             assert is_curr_path_corner = 1
         end
 
-        with_attr error_message ("black circle must not be connected directly to another corner"):
+        with_attr error_message ("black circle must not be connected directly to another corner; failed at cell index {curr_cell_index}"):
             assert is_prev_path_corner = 0
             assert is_next_path_corner = 0
         end
@@ -251,12 +254,12 @@ func _check_black_white_condition {syscall_ptr : felt*, pedersen_ptr : HashBuilt
     # "every square containing a white circle must be a straight which is connected to at least one corner"
     #
     if curr_cell_type == WHITE:
-        with_attr error_message ("white circle must be a straight"):
+        with_attr error_message ("white circle must be a straight; failed at cell index {curr_cell_index}"):
             assert is_curr_path_straight = 1
         end
 
         let sum_neighbor_cornerness = is_prev_path_corner + is_next_path_corner
-        with_attr error_message ("white circle must be connected to at least one corner"):
+        with_attr error_message ("white circle must be connected to at least one corner; failed at cell index {curr_cell_index}"):
             assert_not_zero (sum_neighbor_cornerness)
         end
     end
@@ -344,7 +347,10 @@ func _produce_arr_paths_and_perform_checks {syscall_ptr : felt*, pedersen_ptr : 
         arr_cell_index_visited_at_idx : felt*,
         puzzle_dict_ptr : DictAccess*,
         circle_count : felt
-    ) -> (circle_count_final : felt):
+    ) -> (
+        circle_count_final : felt,
+        puzzle_dict_ptr_final : DictAccess*
+    ):
     alloc_locals
 
     #
@@ -415,13 +421,16 @@ func _produce_arr_paths_and_perform_checks {syscall_ptr : felt*, pedersen_ptr : 
     # return if reached last cell of the solution
     #
     if idx == arr_cell_indices_len - 1:
-        return (circle_count + bool_has_circle)
+        return (circle_count + bool_has_circle, puzzle_dict_ptr)
     end
 
     #
     # tail recursion
     #
-    let (circle_count_final) = _produce_arr_paths_and_perform_checks (
+    let (
+        circle_count_final,
+        puzzle_dict_ptr_final : DictAccess*
+    ) = _produce_arr_paths_and_perform_checks (
         idx + 1,
         arr_cell_indices_len,
         arr_cell_indices,
@@ -430,7 +439,7 @@ func _produce_arr_paths_and_perform_checks {syscall_ptr : felt*, pedersen_ptr : 
         puzzle_dict_ptr,
         circle_count + bool_has_circle
     )
-    return (circle_count_final)
+    return (circle_count_final, puzzle_dict_ptr_final)
 
 end
 

@@ -64,11 +64,14 @@ async def test_masyu (account_factory):
     #
     # toy solutions
     #
-    await contract.solve (
-        [
-            0,1,2,3,11,10,2,1,9,8
-        ]
 
+    incorrect_solution_revisit = [0,1,2,3,11,10,2,1,9,8]
+    incorrect_solution_failing_black_white = list_a_to_b(0,7) + \
+         list_a_to_b(15,9) + list_a_to_b(17,23) + list_a_to_b(31,25) + list_a_to_b(33,39) + \
+         list_a_to_b(47,41) + list_a_to_b(49,55) + list_a_to_b(63,57) + [56, 48, 40, 32, 24, 16, 8]
+
+    await contract.solve (
+        incorrect_solution_failing_black_white
     ).invoke()
 
 
@@ -81,3 +84,9 @@ async def test_masyu (account_factory):
     #         1
     #     ]
     # )
+
+def list_a_to_b (a, b):
+    if b>a:
+        return [a + i for i in range(b-a+1)]
+    else:
+        return [a - i for i in range(a-b+1)]
