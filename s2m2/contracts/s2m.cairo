@@ -367,7 +367,7 @@ func _produce_arr_paths_and_perform_checks {syscall_ptr : felt*, pedersen_ptr : 
     # check for revisit by marking it with current `idx`;
     # if revisited then the assertion will fail because the trace cell would have been populated
     #
-    with_attr error_message ("the solution path revisits the same cell at {curr_cell_index}"):
+    with_attr error_message ("the solution path revisits the same cell at cell index: {curr_cell_index}"):
         assert arr_cell_index_visited_at_idx [curr_cell_index] = idx
     end
 

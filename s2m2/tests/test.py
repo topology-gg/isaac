@@ -66,9 +66,7 @@ async def test_masyu (account_factory):
     #
     await contract.solve (
         [
-            0,1,2,3,4,5,6,7,
-            15,14,13,12,11,10,9,
-            17,18,19,20,21,22,23
+            0,1,2,3,11,10,2,1,9,8
         ]
 
     ).invoke()
