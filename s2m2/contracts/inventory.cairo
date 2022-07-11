@@ -3,8 +3,8 @@
 from starkware.cairo.common.alloc import alloc
 
 const PUZZLE_DIM = 8
-const BLACK = 0
-const WHITE = 1
+const BLACK = 1
+const WHITE = 2
 
 #
 # Circle.type: {BLACK, WHITE}

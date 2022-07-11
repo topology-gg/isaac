@@ -534,7 +534,7 @@ func _compute_path_type {range_check_ptr} (
         return (1)
     end
 
-    with_attr error_message ("unknown path type perhaps due to space-time curvature"):
+    with_attr error_message ("the solution path is not closed"):
         assert 1 = 0
     end
     return (0)
@@ -549,7 +549,6 @@ func is_zero {range_check_ptr} (x) -> (res):
     end
     return (1)
 end
-
 
 func _is_path_corner {range_check_ptr} (
     path : Path) -> (bool):
