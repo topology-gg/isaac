@@ -12,10 +12,18 @@ from starkware.cairo.common.dict import (
 from starkware.cairo.common.dict_access import DictAccess
 
 from contracts.inventory import (
-    Circle, BLACK, WHITE, PUZZLE_DIM, _get_puzzle
+    Circle, BLACK, WHITE, PUZZLE_COUNT, PUZZLE_DIM, _get_puzzle
 )
 
+# Puzzle checks:
+# - path closed (pairwise contiguity from start to end and between end-start)
+# - no revisit
+# - black condition met at all black circles
+# - white condition met at all white circles
+# - all circles visited
+
 ##############################
+
 #
 # storages
 #
@@ -31,57 +39,26 @@ end
 
 ##############################
 
-# @event
-# func new_puzzle (
-#     arr_cell_len : felt,
-#     arr_cell : felt*
-# )
+#
+# Event emission for Apibara
+#
 
 @event
-func success (
+func new_puzzle_occurred (
+        arr_circles_len : felt,
+        arr_circles : Circle*
+    ):
+end
+
+@event
+func success_occurred (
         solver : felt,
         puzzle_id : felt
     ):
 end
 
-# @event
-# func ended ()
-
-# constructor() -> emit new_puzzle
-# solve() -> _check()
-#   -- if success -> emit success; emit new_puzzle
-#   -- if fail -> emit fail
-
-# checking for:
-# - path enclosed (pairwise contiguity from start to end and between end-start)
-# - no revisit
-# - black condition met at all black circles
-# - white condition met at all white circles
-# - all circles visited
-
-##############################
-
-#
-# Event emission for Apibara
-#
-# TODO
-
-##############################
-
-@constructor
-func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
-
-    #
-    # initialize puzzle_id and s2m_status
-    #
-    puzzle_id.write (0)
-    s2m_status.write (1)
-
-    #
-    # Emit `new_puzzle` event
-    #
-
-    return()
+@event
+func s2m_ended_occurred ():
 end
 
 ##############################
@@ -98,6 +75,37 @@ end
 struct Path:
     member type : felt
 end
+
+##############################
+
+@constructor
+func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
+
+    alloc_locals
+
+    #
+    # initialize puzzle_id and s2m_status
+    #
+    puzzle_id.write (0)
+    s2m_status.write (1)
+
+    #
+    # Emit `new_puzzle` event
+    #
+    let (
+        new_arr_circles_len : felt,
+        new_arr_circles : Circle*
+    ) = _get_puzzle (0)
+
+    new_puzzle_occurred.emit (
+        new_arr_circles_len,
+        new_arr_circles
+    )
+
+    return()
+end
+
+##############################
 
 #
 # Solver calls solve() to submit the `arr_cell_indices` array,
@@ -173,10 +181,33 @@ func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     #    => switch off s2m active, emit `ended` event;
     #       else increment puzzle_id, emit `new_puzzle` event
     #
-    success.emit (
+    success_occurred.emit (
         solver = solver,
         puzzle_id = curr_puzzle_id
     )
+    if curr_puzzle_id == PUZZLE_COUNT - 1:
+        s2m_ended_occurred.emit ()
+        s2m_status.write (0)
+
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        puzzle_id.write (curr_puzzle_id + 1)
+        let (
+            new_arr_circles_len : felt,
+            new_arr_circles : Circle*
+        ) = _get_puzzle (curr_puzzle_id + 1)
+        new_puzzle_occurred.emit (
+            new_arr_circles_len,
+            new_arr_circles
+        )
+
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
+
     return ()
 end
 

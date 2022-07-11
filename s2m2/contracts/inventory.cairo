@@ -2,6 +2,7 @@
 
 from starkware.cairo.common.alloc import alloc
 
+const PUZZLE_COUNT = 1
 const PUZZLE_DIM = 8
 const BLACK = 1
 const WHITE = 2
