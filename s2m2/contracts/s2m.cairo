@@ -24,6 +24,14 @@ from contracts.inventory import (
 
 ##############################
 
+# TODO:
+# - think solver account checking - using custom storage, or using ~721 standard but made non transferrable
+# - think puzzle generation - we need at least 100 puzzles
+# - build frontend + indexer, where frontend is a simple html table where cell contains circle (circle is div with rounded corner);
+#   plus a popup window showing the list of solvers with the puzzle id they solved
+
+##############################
+
 #
 # storages
 #

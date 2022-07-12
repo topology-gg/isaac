@@ -66,12 +66,19 @@ async def test_masyu (account_factory):
     #
 
     incorrect_solution_revisit = [0,1,2,3,11,10,2,1,9,8]
+
     incorrect_solution_failing_black_white = list_a_to_b(0,7) + \
          list_a_to_b(15,9) + list_a_to_b(17,23) + list_a_to_b(31,25) + list_a_to_b(33,39) + \
          list_a_to_b(47,41) + list_a_to_b(49,55) + list_a_to_b(63,57) + [56, 48, 40, 32, 24, 16, 8]
 
+    correct_solution = [
+        0,1,9,10,2,3,4,5,13,12,11,19,27,26,18,17,25,33,34,35,
+        43,51,52,44,36,28,20,21,22,14,6,7,15,23,31,30,29,37,45,46,38,39,47,55,54,
+        62,61,60,59,58,57,56,48,49,50,42,41,40,32,24,16,8
+    ]
+
     await contract.solve (
-        incorrect_solution_failing_black_white
+        correct_solution
     ).invoke()
 
 
