@@ -33,16 +33,39 @@ from contracts.inventory import (
 ##############################
 
 #
+# Path.type takes value {0,1,2,3,4,5}
+# 0: horizontal
+# 1: vertical
+# 2: vertical turn horizontal left
+# 3: vertical turn horizontal right
+# 4: horizontal turn vertical up
+# 5: horizontal turn vertical down
+#
+struct Path:
+    member type : felt
+end
+
+struct Record:
+    member success : felt
+    member puzzle_id : felt
+end
+
+##############################
+
+#
 # storages
 #
 
 @storage_var
-func puzzle_id () -> (id : felt):
+func s2m_puzzle_id () -> (id : felt):
 end
-
 
 @storage_var
 func s2m_status () -> (status : felt):
+end
+
+@storage_var
+func s2m_solver_record (address : felt) -> (record : Record):
 end
 
 ##############################
@@ -71,21 +94,6 @@ end
 
 ##############################
 
-#
-# Path.type takes value {0,1,2,3,4,5}
-# 0: horizontal
-# 1: vertical
-# 2: vertical turn horizontal left
-# 3: vertical turn horizontal right
-# 4: horizontal turn vertical up
-# 5: horizontal turn vertical down
-#
-struct Path:
-    member type : felt
-end
-
-##############################
-
 @constructor
 func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
 
@@ -94,7 +102,7 @@ func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
     #
     # initialize puzzle_id and s2m_status
     #
-    puzzle_id.write (0)
+    s2m_puzzle_id.write (0)
     s2m_status.write (1)
 
     #
@@ -137,13 +145,16 @@ func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     #
     # if caller has solved a puzzle => revert
     #
-    let (solver) = get_caller_address ()
-    # TODO
+    let (caller) = get_caller_address ()
+    let (local record) = s2m_solver_record.read (caller)
+    with_attr error_message ("caller has solved puzzle #{record.puzzle_id}"):
+        assert record.success = 0
+    end
 
     #
     # get current puzzle and build dictionary
     #
-    let (curr_puzzle_id) = puzzle_id.read ()
+    let (curr_puzzle_id) = s2m_puzzle_id.read ()
     let (arr_circles_len, arr_circles) = _get_puzzle (curr_puzzle_id)
     let (puzzle_dict_ptr : DictAccess*) = _build_puzzle_dictionary (
         arr_circles_len,
@@ -183,16 +194,27 @@ func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     )
 
     #
-    # success:
-    # -- emit `success` event;
-    # -- check puzzle_id, if reached puzzle amount
-    #    => switch off s2m active, emit `ended` event;
-    #       else increment puzzle_id, emit `new_puzzle` event
+    # success - emit event
     #
     success_occurred.emit (
-        solver = solver,
+        solver = caller,
         puzzle_id = curr_puzzle_id
     )
+
+    #
+    # record solver & puzzle id
+    #
+    s2m_solver_record.write (
+        caller,
+        Record (
+            success = 1,
+            puzzle_id = curr_puzzle_id
+        )
+    )
+
+    #
+    # emit ended event if all puzzles are solved; otherwise increment puzzle id and emit new puzzle event
+    #
     if curr_puzzle_id == PUZZLE_COUNT - 1:
         s2m_ended_occurred.emit ()
         s2m_status.write (0)
@@ -201,7 +223,7 @@ func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
     else:
-        puzzle_id.write (curr_puzzle_id + 1)
+        s2m_puzzle_id.write (curr_puzzle_id + 1)
         let (
             new_arr_circles_len : felt,
             new_arr_circles : Circle*

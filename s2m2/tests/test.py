@@ -77,10 +77,12 @@ async def test_masyu (account_factory):
         62,61,60,59,58,57,56,48,49,50,42,41,40,32,24,16,8
     ]
 
-    await contract.solve (
+    ret = await contract.solve (
         correct_solution
     ).invoke()
 
+    LOGGER.info (f'ret: {ret}')
+    # LOGGER.info (f'ret.call_info.events: {ret.call_info.events}')
 
     # await admin['signer'].send_transaction(
     #     account = admin['account'], to = contract.contract_address,
