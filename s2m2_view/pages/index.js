@@ -16,16 +16,26 @@ import {
 } from '@starknet-react/core'
 
 import BoardView from "../components/Board";
+import RecordView from "../components/Record";
 
 function Home() {
 
-  return (
-    <div className="mother-container">
-        <h2>Solve2Mint: Masyu</h2>
-        <span>.</span>
-        <BoardView />
-    </div>
-  )
+    return (
+        <div className="mother-container">
+            <div className="top-child-container">
+                <h2>Solve2Mint 2.0</h2>
+                <p style={{marginBottom:'0'}}>Earn your ticket to the Isaac Alpha reality.</p>
+                <p style={{marginTop:'0',marginBottom:'0'}}>One puzzle, for one ticket, for one account.</p>
+                <p style={{marginTop:'0',marginBottom:'0'}}>N puzzles available. <a>Contract.</a> <a>Voyager.</a> </p>
+
+                <BoardView />
+            </div>
+
+            <div className="bottom-child-container">
+                <RecordView />
+            </div>
+        </div>
+    )
 
 
         //     <div className="left-child-container">
