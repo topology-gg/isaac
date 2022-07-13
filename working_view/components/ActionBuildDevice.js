@@ -7,7 +7,7 @@ import {
   useStarknetInvoke
 } from '@starknet-react/core'
 
-import { BUTTON_LEFT_STYLE, INPUT_STYLE, TX_HASH_STYLE } from "./ActionStyles";
+import { BUTTON_LEFT_STYLE, INPUT_END_STYLE, TX_HASH_STYLE } from "./ActionStyles";
 import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 import { useUniverseContract } from "./UniverseContract";
 
@@ -60,7 +60,7 @@ export function BuildDeviceInterface (props) {
 
             <form onSubmit={handleSubmitBuildAmount(onSubmitBuildDevice)}>
                 <input type="submit" value={`Build ${DEVICE_TYPE_MAP[typ]}`} style={BUTTON_LEFT_STYLE} className='action-button'/>
-                <input style={INPUT_STYLE} placeholder="amount" {...registerBuildAmount("amountRequired", { required: true })} />
+                <input style={INPUT_END_STYLE} placeholder="amount" {...registerBuildAmount("amountRequired", { required: true })} />
                 {/* {errorsBuildAmount.amountRequired && <span> (This field is required) </span>} */}
                 {/* <p>Error: {error || 'No error'}</p> */}
             </form>
