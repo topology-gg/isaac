@@ -19,6 +19,7 @@
     "next": "12.1.4",
     "react": "18.0.0",
     "react-dom": "18.0.0",
+    "react-hook-form": "^7.33.1",
     "react-native": "^0.69.1",
     "react-native-propel-kit": "^1.0.4",
     "starknet": "^3.5.1",

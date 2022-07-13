@@ -13,7 +13,7 @@ export default async function handler(req, res) {
     const civ_state = await db
         .collection ('universe0' + '_civ_state')
         .find ({'most_recent' : 1})
-        .project ({ 'civ_index': 1, 'active': 1, 'most_recent': 1 })
+        .project ({ 'civ_idx': 1, 'active': 1, 'most_recent': 1 })
         .toArray ()
 
     res.status(200).json({ 'civ_state': civ_state })

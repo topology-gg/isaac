@@ -68,6 +68,33 @@ button {
   touch-action: manipulation;
 }
 
+::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    color:  rgba(80, 80, 80, 0.4);
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+   color:    #555;
+   opacity:  0.4;
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+   color:    #555;
+   opacity:  0.4;
+}
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+   color:   rgba(80, 80, 80, 0.4);
+}
+::-ms-input-placeholder { /* Microsoft Edge */
+   color:   rgba(80, 80, 80, 0.4);
+}
+::placeholder { /* Most modern browsers support this now. */
+   color:    #555;
+   opacity: 0.4;
+}
+
+.action-button:hover {
+    background-color:#CCCCCC;
+    transition: 0.1s;
+}
+
 .mother-container {
     display: flex;
     background-color: #444444;
@@ -93,7 +120,7 @@ button {
 
 .right-child-bottom {
     overflow-y: auto;
-    height: 25em;
+    height: 23.5em;
     margin: 0;
 }
 

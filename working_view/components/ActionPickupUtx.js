@@ -18,20 +18,20 @@ const button_style = {
     paddingRight:'30px',
     lineHeight:'15px'
 }
-export function PickupDeviceInterface (props) {
+export function PickupUtxInterface (props) {
 
     const { account, connect } = useStarknet ()
     const { contract } = useUniverseContract ()
     const { data, loading, error, reset, invoke } = useStarknetInvoke ({
         contract,
-        method: 'player_pickup_device_by_grid'
+        method: 'player_pickup_utx_by_grid'
     })
     const x = props.grid_x
     const y = props.grid_y
     const typ = props.typ
 
     function onClick () {
-        console.log (`pickup device button clicked! (x,y,typ)=(${x}, ${y}, ${typ})`)
+        console.log (`pickup utx button clicked! (x,y,typ)=(${x}, ${y}, ${typ})`)
         invoke ({ args: [{x:x, y:y}] })
     }
 

@@ -3,7 +3,13 @@ import styles from "../styles/Modal.module.css";
 
 import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 
+import { DeployDeviceInterface } from './ActionDeployDevice'
 import { PickupDeviceInterface } from './ActionPickupDevice'
+import { PickupUtxInterface } from './ActionPickupUtx'
+import { DeployUtxInterface } from './ActionDeployUtx'
+import { BuildDeviceInterface } from './ActionBuildDevice'
+import { LaunchNdpeInterface } from './ActionLaunchNdpe'
+import { TransferDeviceInterface } from './ActionTransferDevice'
 
 // Refs:
 // https://stackoverflow.com/questions/54880669/react-domexception-failed-to-execute-removechild-on-node-the-node-to-be-re
@@ -31,11 +37,20 @@ class Modal extends Component {
     const info = this.props.info
     var title = ""
     var grids = ""
-    var display_info
+    var display_left_top = null
+    var display_left_bottom = null
     var options = []
+    var bool_display_left_bottom = true
 
-    if (info['grids']) {
-
+    if (!info['grids']) {
+        //
+        // transfer device
+        //
+        title += "Transfer device peer-to-peer"
+        grids = ""
+        options.push (<TransferDeviceInterface />)
+    }
+    else {
         //
         // Multiple grid selected
         //
@@ -45,9 +60,10 @@ class Modal extends Component {
                 grids += `(${grid.x},${grid.y})`
             }
 
-            display_info = null
-            options.push (<button>Deploy utx</button>)
+            options.push (<DeployUtxInterface grids={info['grids']} type={12}/>)
+            options.push (<DeployUtxInterface grids={info['grids']} type={13}/>)
         }
+
         //
         // Single grid selected
         //
@@ -83,45 +99,68 @@ class Modal extends Component {
                     tbody.push (<tr>{cell}</tr>)
                 }
 
-                // options.push (<button style={button_style}>Pick up {typ}</button>)
-                options.push (<PickupDeviceInterface grid_x={grid.x} grid_y={grid.y} typ={typ}/>)
+                //
+                // Generate options - actions to be performed by player
+                //
+
+                if (['UTB', 'UTL'].includes(typ)) {
+                    bool_display_left_bottom = false
+                    options.push (<PickupUtxInterface grid_x={grid.x} grid_y={grid.y} typ={typ}/>)
+                }
+                else {
+                    options.push (<PickupDeviceInterface grid_x={grid.x} grid_y={grid.y} typ={typ}/>)
+                }
+
                 if (['UPSF'].includes(typ)) {
                     for (const i=0; i<16; i++) {
-                        options.push (<button style={button_style}>Construct {DEVICE_TYPE_MAP [i]}</button>)
+                        options.push (
+                            <BuildDeviceInterface typ={i} grid_x={grid.x} grid_y={grid.y} />
+                        )
                     }
                 }
                 else if (['NDPE'].includes(typ)) {
-                    options.push (<button style={button_style}>Launch NDPE</button>)
+                    options.push (
+                        <LaunchNdpeInterface grid_x={grid.x} grid_y={grid.y} />
+                    )
                 }
             }
             else {
                 content1 += "Grid not populated"
+                bool_display_left_bottom = false
 
-                options.push (<button style={button_style}>Deploy device</button>)
-                options.push (<button style={button_style}>Deploy utx</button>)
+                for (const i=0; i<16; i++) {
+                    if ([12,13].includes(i)) { continue; }
+                    options.push (
+                        <DeployDeviceInterface typ={i} grid_x={grid.x} grid_y={grid.y} />
+                    )
+                }
             }
-
 
             //
             // Construct displayed information
             //
-            display_info =
+            display_left_top =
                 <div>
                     <h3>Info</h3>
                     <p style={{fontSize:"0.9em"}}>{content1}</p>
-
-                    <table style={{fontSize:"0.9em"}}>
-                        <thead>
-                            <tr>
-                                <th style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>
-                                <th>Balance</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {tbody}
-                        </tbody>
-                    </table>
                 </div>
+
+            display_left_bottom =
+                bool_display_left_bottom && (
+                    <div>
+                        <table style={{fontSize:"0.9em"}}>
+                            <thead>
+                                <tr>
+                                    <th style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>
+                                    <th>Balance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {tbody}
+                            </tbody>
+                        </table>
+                    </div>
+                )
 
         }
     }
@@ -162,11 +201,14 @@ class Modal extends Component {
                     <h3>{title}</h3>
                     <p style={{fontSize:"0.9em",margin:'0'}}>{grids}</p>
 
-                    {display_info}
+                    {display_left_top}
+                    {display_left_bottom}
 
                     <span>.</span>
 
-                    <button onClick={this.props.onHide} style={{width:'fit-content'}}>Esc</button>
+                    <button onClick={this.props.onHide} style={{width:'fit-content'}} className='action-button'>
+                        Esc
+                    </button>
                 </div>
 
                 <div style={modal_right_child_style}>

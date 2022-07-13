@@ -1,6 +1,7 @@
 import GameWorld from "../components/GameWorld";
 import GameStatsDevices from "../components/GameStatsDevices"
 import GameStatsPlayers from "../components/GameStatsPlayers"
+import GameStatsCiv from "../components/GameStatsCiv"
 import CoverArt from "../components/CoverArt"
 import CoverArtBack from "../components/CoverArtBack"
 
@@ -44,13 +45,17 @@ function Home() {
                     <span>.</span>
                     <h4>Control</h4>
                     <p>Key press 1~6: choose display mode</p>
+                    <p>Key press 7: transfer device</p>
                     <p>Mouse click: select grid</p>
                     <p>Mouse drag: select grids</p>
                     <span>.</span>
-                    <h4>Universe Stats</h4>
                 </div>
 
+                <h4 style={{paddingBottom:'1em'}}>Universe Stats</h4>
+
                 <div className="right-child-bottom">
+                    <GameStatsCiv />
+                    <span>.</span>
                     <GameStatsPlayers />
                     <span>.</span>
                     <GameStatsDevices />

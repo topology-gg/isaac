@@ -4,6 +4,7 @@ import { toBN } from 'starknet/dist/utils/number'
 
 import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
 import { DEVICE_RESOURCE_MAP } from './ConstantDeviceResources'
+import { PERLIN_COLOR_MAP } from './ConstantPerlinColors'
 
 // import sound_open from '../public/sound-open.ogg'
 // import sound_close from '../public/sound-close.ogg';
@@ -209,6 +210,8 @@ export default function GameWorld() {
     const [selectedGrids, setSelectedGrids] = useState([])
     const [gridMapping, setGridMapping] = useState()
     const [accountInCiv, setAccountInCiv] = useState(false)
+
+    // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
 
     //
     // useEffect for checking if all database collections are loaded
@@ -450,10 +453,12 @@ export default function GameWorld() {
             return
         }
 
-        // pause and reset closing sound
-        var sound_close = document.getElementById('sound-popup-close');
-        sound_close.pause ()
-        sound_close.currentTime = 0
+        // pause and reset all sounds
+        for (const id of ['sound-popup-close', 'sound-popup-open']) {
+            var sound = document.getElementById(id);
+            sound.pause ()
+            sound.currentTime = 0
+        }
 
         // play opening sound
         var sound_open = document.getElementById('sound-popup-open');
@@ -479,10 +484,12 @@ export default function GameWorld() {
 
     function hidePopup () {
 
-        // pause and reset opening sound
-        var sound_open = document.getElementById('sound-popup-open');
-        sound_open.pause ()
-        sound_open.currentTime = 0
+        // pause and reset all sounds
+        for (const id of ['sound-popup-close', 'sound-popup-open']) {
+            var sound = document.getElementById(id);
+            sound.pause ()
+            sound.currentTime = 0
+        }
 
         // play closing sound
         var sound_close = document.getElementById('sound-popup-close');
@@ -557,6 +564,30 @@ export default function GameWorld() {
             updateMode (_canvasRef.current, 'PU distribution')
         }
 
+        else if(ev.key === '7') {
+            console.log('7')
+
+            // pause and reset all sounds
+            for (const id of ['sound-popup-close', 'sound-popup-open']) {
+                var sound = document.getElementById(id);
+                sound.pause ()
+                sound.currentTime = 0
+            }
+
+            // play opening sound
+            var sound_open = document.getElementById('sound-popup-open');
+            sound_open.volume = VOLUME
+            sound_open.play ()
+
+            _selectStateRef.current = 'popup'
+            setModalVisibility (true)
+            modalVisibilityRef.current = true
+            const info = {
+                'grids' : null
+            }
+            setModalInfo (info)
+        }
+
       }, [modalVisibility]);
 
     function change_working_view_visibility (visibility) {
@@ -620,6 +651,9 @@ export default function GameWorld() {
         fontFamily: "Poppins-Light"
     });
 
+    //
+    // useEffect handling mouse events
+    //
     useEffect (() => {
 
         _canvasRef.current = new fabric.Canvas('c', {
@@ -1233,15 +1267,13 @@ export default function GameWorld() {
                     const perlin_value_normalized = (perlin_value - PERLIN_VALUES['min']) / (PERLIN_VALUES['max'] - PERLIN_VALUES['min'])
                     // console.log("perlin_value_normalized:", perlin_value_normalized)
 
-                    const HI = [176, 196, 222]
-                    const LO = [0, 45, 98]
+                    const hi = PERLIN_COLOR_MAP['fe']['hi']
+                    const lo = PERLIN_COLOR_MAP['fe']['lo']
 
-                    const R = lerp (LO[0], HI[0], perlin_value_normalized)
-                    const G = lerp (LO[1], HI[1], perlin_value_normalized)
-                    const B = lerp (LO[2], HI[2], perlin_value_normalized)
-                    const rect_color = `rgb(${R}, ${G}, ${B})`
-                    // const rect_color = `rgb(${perlin_value_norm},${perlin_value_norm},${perlin_value_norm})`
-                    // console.log(`rect_color: ${rect_color}`)
+                    const r = lerp (lo[0], hi[0], perlin_value_normalized)
+                    const g = lerp (lo[1], hi[1], perlin_value_normalized)
+                    const b = lerp (lo[2], hi[2], perlin_value_normalized)
+                    const rect_color = `rgb(${r}, ${g}, ${b})`
 
                     const rect = new fabric.Rect({
                         height: GRID,
@@ -1510,8 +1542,12 @@ export default function GameWorld() {
     }, [selectedGrids])
 
     function handleMouseMove(ev) {
-        const x_norm = Math.floor( (ev.pageX - PAD_X) / GRID )
-        const y_norm = SIDE*3 - 1 - Math.floor( (ev.pageY - PAD_Y) / GRID )
+
+        const x = ev.pageX
+        const y = ev.pageY
+
+        const x_norm = Math.floor( (x - PAD_X) / GRID )
+        const y_norm = SIDE*3 - 1 - Math.floor( (y - PAD_Y) / GRID )
         const bool = is_valid_coord (x_norm, y_norm)
 
         if (bool && !modalVisibility) {

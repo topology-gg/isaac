@@ -18,20 +18,19 @@ const button_style = {
     paddingRight:'30px',
     lineHeight:'15px'
 }
-export function PickupDeviceInterface (props) {
+export function LaunchNdpeInterface (props) {
 
     const { account, connect } = useStarknet ()
     const { contract } = useUniverseContract ()
     const { data, loading, error, reset, invoke } = useStarknetInvoke ({
         contract,
-        method: 'player_pickup_device_by_grid'
+        method: 'player_launch_all_deployed_ndpe'
     })
     const x = props.grid_x
     const y = props.grid_y
-    const typ = props.typ
 
     function onClick () {
-        console.log (`pickup device button clicked! (x,y,typ)=(${x}, ${y}, ${typ})`)
+        console.log (`launch ndpe button clicked! (x,y)=(${x}, ${y})`)
         invoke ({ args: [{x:x, y:y}] })
     }
 
@@ -42,7 +41,7 @@ export function PickupDeviceInterface (props) {
                 onClick = {onClick}
                 className = 'action-button'
             >
-                Pick up {typ}
+                Launch *all* NDPE
             </button>
 
             <div>
