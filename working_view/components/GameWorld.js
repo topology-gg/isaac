@@ -23,6 +23,7 @@ import {
 } from '../lib/api'
 
 import Modal from "./Modal";
+import HUD from "./HUD"
 
 import {
     useStarknet
@@ -198,6 +199,8 @@ export default function GameWorld() {
 
     const _gridMapping = useRef({});
 
+    const _panStateRef = useRef({'panning':false, 'last_x':0, 'last_y':0});
+
     //
     // React States
     //
@@ -210,6 +213,9 @@ export default function GameWorld() {
     const [selectedGrids, setSelectedGrids] = useState([])
     const [gridMapping, setGridMapping] = useState()
     const [accountInCiv, setAccountInCiv] = useState(false)
+
+    const [hudLines, setHudLines] = useState([])
+    const [hudVisible, setHudVisible] = useState (false)
 
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
 
@@ -397,7 +403,7 @@ export default function GameWorld() {
     // - esc keypress / esc button clicked, if select state in 'popup' => select state = 'idle', setSelectedGridsState([])
     //
 
-    function handleMouseDown (x, y) {
+    function handleLeftMouseDown (x, y) {
         _mouseStateRef.current = 'down'
         if (_displayModeRef.current !== 'devices') {
             return
@@ -447,7 +453,7 @@ export default function GameWorld() {
         }
     }
 
-    function handleMouseUp (x, y) {
+    function handleLeftMouseUp (x, y) {
         _mouseStateRef.current = 'up'
         if (_displayModeRef.current !== 'devices') {
             return
@@ -520,6 +526,16 @@ export default function GameWorld() {
             return
         }
 
+        if (ev.key === 'c') {
+
+            _canvasRef.current.setZoom(1)  // reset zoom so pan actions work as expected
+            _canvasRef.current.absolutePan({
+                x: 0,
+                y: 0
+            });
+            _canvasRef.current.renderAll ()
+        }
+
         if (ev.key === "Escape") {
             if (modalVisibilityRef.current) {
                 hidePopup ()
@@ -533,6 +549,9 @@ export default function GameWorld() {
 
             _feDisplayRef.current.visible = false
             updateMode (_canvasRef.current, 'devices')
+            setHudLines ( arr => [
+                arr[0], `Display: devices`
+            ])
         }
         else if(ev.key === '2'){
             console.log('2')
@@ -542,26 +561,41 @@ export default function GameWorld() {
 
             _feDisplayRef.current.visible = true
             updateMode (_canvasRef.current, 'FE distribution')
+            setHudLines ( arr => [
+                arr[0], `Display: FE distribution`
+            ])
         }
         else if(ev.key === '3'){
             console.log('3')
             _displayModeRef.current = 'al'
             updateMode (_canvasRef.current, 'AL distribution')
+            setHudLines ( arr => [
+                arr[0], `Display: AL distribution`
+            ])
         }
         else if(ev.key === '4'){
             console.log('4')
             _displayModeRef.current = 'cu'
             updateMode (_canvasRef.current, 'CU distribution')
+            setHudLines ( arr => [
+                arr[0], `Display: CU distribution`
+            ])
         }
         else if(ev.key === '5'){
             console.log('5')
             _displayModeRef.current = 'si'
             updateMode (_canvasRef.current, 'SI distribution')
+            setHudLines ( arr => [
+                arr[0], `Display: SI distribution`
+            ])
         }
         else if(ev.key === '6'){
             console.log('6')
             _displayModeRef.current = 'pu'
             updateMode (_canvasRef.current, 'PU distribution')
+            setHudLines ( arr => [
+                arr[0], `Display: PU distribution`
+            ])
         }
 
         else if(ev.key === '7') {
@@ -622,7 +656,8 @@ export default function GameWorld() {
         fill: FILL_CURSOR_GRID,
         selectable: false,
         hoverCursor: 'default',
-        visible: false
+        visible: false,
+        strokeWidth: 0
     });
 
     var cursorFaceRect = new fabric.Rect({
@@ -635,7 +670,8 @@ export default function GameWorld() {
         strokeWidth: STROKE_WIDTH_CURSOR_FACE,
         selectable: false,
         hoverCursor: 'default',
-        visible: false
+        visible: false,
+        strokeWidth: 0
     });
 
     //
@@ -652,7 +688,7 @@ export default function GameWorld() {
     });
 
     //
-    // useEffect handling mouse events
+    // create canvas, and handle mouse events
     //
     useEffect (() => {
 
@@ -660,18 +696,125 @@ export default function GameWorld() {
             height: CANVAS_H,
             width: CANVAS_W,
             backgroundColor: CANVAS_BG,
-            selection: false
+            selection: false,
+            fireRightClick: true,
+            stopContextMenu: true
         })
-        _canvasRef.current.on("mouse:move" ,function(e){
+
+        _canvasRef.current.on("mouse:move" ,function(opt){
+
+            //
+            // mouse x & y adjustment
+            // ref: https://stackoverflow.com/a/30869635
+            //
+            var pointer = _canvasRef.current.getPointer(opt.e);
+            var posx = pointer.x;
+            var posy = pointer.y;
+
+            //
+            // handle grid selection
+            //
             if (_selectStateRef.current === 'select'){
-                handleMouseDrag (e.e.clientX, e.e.clientY)
+                // handleMouseDrag (opt.e.clientX, opt.e.clientY)
+                handleMouseDrag (posx, posy)
+            }
+
+            //
+            // handle panning
+            //
+            if (_panStateRef.current['panning'] == true) {
+                _canvasRef.current.relativePan({ x: opt.e.clientX - _panStateRef.current['last_x'], y: opt.e.clientY - _panStateRef.current['last_y'] });
+                _canvasRef.current.requestRenderAll();
+                _panStateRef.current['last_x'] = opt.e.clientX;
+                _panStateRef.current['last_y'] = opt.e.clientY;
+            }
+
+        })
+        _canvasRef.current.on("mouse:down" ,function(opt){
+
+            var pointer = _canvasRef.current.getPointer(opt.e);
+            var posx = pointer.x;
+            var posy = pointer.y;
+
+            //
+            // handle mouse panning
+            //
+            // var evt= opt.e;
+            // if (evt.altKey === true) {
+            //     this.isDragging = true;
+            //     this.selection = false;
+            //     this.lastPosX = evt.clientX;
+            //     this.lastPosY = evt.clientY;
+            // }
+
+            //
+            // handle grid selection
+            //
+            if (opt.e.button == 0){
+                handleLeftMouseDown (posx, posy)
+            }
+
+            //
+            // handle pan state
+            //
+            if (opt.e.button == 2){
+                _panStateRef.current['panning'] = true
+                _panStateRef.current['last_x'] = opt.e.clientX
+                _panStateRef.current['last_y'] = opt.e.clientY
             }
         })
-        _canvasRef.current.on("mouse:down" ,function(e){
-            handleMouseDown (e.e.clientX, e.e.clientY)
+        _canvasRef.current.on("mouse:up" ,function(opt){
+
+            var pointer = _canvasRef.current.getPointer(opt.e);
+            var posx = pointer.x;
+            var posy = pointer.y;
+
+            //
+            // handle mouse panning
+            //
+            // this.setViewportTransform(this.viewportTransform);
+            // this.isDragging = false;
+            // this.selection = true;
+
+            //
+            // handle grid selection
+            //
+            if (opt.e.button == 0){
+                handleLeftMouseUp (posx, posy)
+            }
+
+            //
+            // handle pan state
+            //
+            if (opt.e.button == 2){
+                _panStateRef.current['panning'] = false
+            }
         })
-        _canvasRef.current.on("mouse:up" ,function(e){
-            handleMouseUp (e.e.clientX, e.e.clientY)
+
+        _canvasRef.current.on('mouse:wheel', function(opt) {
+            var delta = opt.e.deltaY;
+            var zoom = _canvasRef.current.getZoom();
+            zoom *= 0.999 ** delta;
+            if (zoom > 20) zoom = 20;
+            if (zoom < 1) zoom = 1;
+
+            _canvasRef.current.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
+            // _canvasRef.current.setZoom(zoom);
+            opt.e.preventDefault();
+            opt.e.stopPropagation();
+
+            // var vpt = this.viewportTransform;
+            // if (vpt[4] >= 0) {
+            //     vpt[4] = 0;
+            // } else if (vpt[4] < _canvasRef.current.getWidth() - 1000 * zoom) {
+            //     vpt[4] = _canvasRef.current.getWidth() - 1000 * zoom;
+            // }
+            // if (vpt[5] >= 0) {
+            //     vpt[5] = 0;
+            // } else if (vpt[5] < _canvasRef.current.getHeight() - 1000 * zoom) {
+            //     vpt[5] = _canvasRef.current.getHeight() - 1000 * zoom;
+            // }
+
         })
 
         _hasDrawnRef.current = false
@@ -686,6 +829,7 @@ export default function GameWorld() {
     useEffect (() => {
         if (!_hasDrawnRef.current) {
             drawWorld (_canvasRef.current)
+            setHudVisible (true)
         }
     }, [hasLoadedDB]);
 
@@ -708,7 +852,8 @@ export default function GameWorld() {
                         fill: FILL_CURSOR_SELECTED_GRID,
                         selectable: false,
                         hoverCursor: 'default',
-                        visible: false
+                        visible: false,
+                        strokeWidth: 0
                     });
 
                     gridAssistRects.push (gridAssistRect)
@@ -747,8 +892,13 @@ export default function GameWorld() {
                 drawPerlin (canvi)
                 drawAssist (canvi) // draw assistance objects the last to be on top
                 drawUtxAnim (canvi)
-                drawMode (canvi)
+                // drawMode (canvi)
                 initializeGridAssistRectsRef (canvi)
+
+                setHudLines ([
+                    'Face - / Grid (-,-)',
+                    'Display: devices'
+                ])
 
                 _hasDrawnRef.current = true
                 setHasDrawnState (1)
@@ -794,7 +944,8 @@ export default function GameWorld() {
                 top:  PAD_Y + (SIDE*3 - utx_set.grids[0].y - 1)*GRID,
                 fill: color,
                 selectable: false,
-                hoverCursor: 'default'
+                hoverCursor: 'default',
+                strokeWidth: 0
             });
             _utxAnimRectsRef.current.push (rect)
 
@@ -1214,8 +1365,8 @@ export default function GameWorld() {
         //
         // Draw textObject for showing user mouse coordinate
         //
-        canvi.add(coordText)
-        _coordTextRef.current = coordText
+        // canvi.add(coordText)
+        // _coordTextRef.current = coordText
 
         canvi.add (cursorGridRect)
         _cursorGridRectRef.current = cursorGridRect
@@ -1282,7 +1433,8 @@ export default function GameWorld() {
                         // top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
                         originX: 'center', originY: 'center',
                         fill: rect_color,
-                        selectable: false
+                        selectable: false,
+                        strokeWidth: 0
                     });
                     var text = new fabric.Text(
                         perlin_value.toString(), {
@@ -1346,7 +1498,8 @@ export default function GameWorld() {
                 top:  PAD_Y + (SIDE*3-y-device_dim)*GRID,
                 fill: device_color,
                 selectable: false,
-                hoverCursor: 'pointer'
+                hoverCursor: 'pointer',
+                strokeWidth: 0
             });
             device_rects.push (rect)
         }
@@ -1468,13 +1621,16 @@ export default function GameWorld() {
 
     function drawAssistObject (canvi, mPosNorm) {
 
-        if (_coordTextRef.current) {
+        if (_cursorGridRectRef.current && _cursorFaceRectRef.current) {
             if (mPosNorm.x.toString() === '-') {
                 //
                 // Show face & coordinate textbox
                 //
-                _coordTextRef.current.text = 'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
-                _coordTextRef.current.dirty  = true
+                // _coordTextRef.current.text = 'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
+                // _coordTextRef.current.dirty  = true
+                setHudLines ( arr => [
+                    'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')', arr[1]
+                ])
 
                 //
                 // Hide grid assist square
@@ -1493,8 +1649,11 @@ export default function GameWorld() {
                 //
                 // Show face & coordinate textbox
                 //
-                _coordTextRef.current.text = 'Face ' + face.toString() + ' / Grid (' + mPosNorm.x.toString() + ', ' + mPosNorm.y.toString() + ')'
-                _coordTextRef.current.dirty  = true
+                // _coordTextRef.current.text = 'Face ' + face.toString() + ' / Grid (' + mPosNorm.x.toString() + ', ' + mPosNorm.y.toString() + ')'
+                // _coordTextRef.current.dirty  = true
+                setHudLines ( arr => [
+                    'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')', arr[1]
+                ])
 
                 //
                 // Show grid assist square
@@ -1543,12 +1702,19 @@ export default function GameWorld() {
 
     function handleMouseMove(ev) {
 
-        const x = ev.pageX
-        const y = ev.pageY
+        // const x = ev.pageX
+        // const y = ev.pageY
+
+
+        var pointer = _canvasRef.current.getPointer(ev);
+        var x = pointer.x;
+        var y = pointer.y;
 
         const x_norm = Math.floor( (x - PAD_X) / GRID )
         const y_norm = SIDE*3 - 1 - Math.floor( (y - PAD_Y) / GRID )
         const bool = is_valid_coord (x_norm, y_norm)
+
+        console.log (`mouse moving, bool=${bool}, modalVisibility=${modalVisibility}`)
 
         if (bool && !modalVisibility) {
             setMousePositionNorm ({
@@ -1586,6 +1752,9 @@ export default function GameWorld() {
                 account = {account}
                 in_civ = {accountInCiv}
             />
+
+            <HUD lines={hudLines} />
+
             <canvas id="c" />
         </div>
     );

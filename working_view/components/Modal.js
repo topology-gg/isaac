@@ -17,16 +17,6 @@ import { TransferDeviceInterface } from './ActionTransferDevice'
 // https://stackoverflow.com/questions/24502898/show-or-hide-element-in-react
 // https://medium.com/@ralph1786/using-css-modules-in-react-app-c2079eadbb87
 
-const button_style = {
-    fontSize:'12px',
-    marginBottom:'5px',
-    paddingTop:'5px',
-    paddingBottom:'5px',
-    paddingLeft:'30px',
-    paddingRight:'30px',
-    lineHeight:'15px'
-}
-
 class Modal extends Component {
 
   render() {
