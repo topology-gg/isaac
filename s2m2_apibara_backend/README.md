@@ -1,4 +1,4 @@
-# Isaac Backend
+# Solve2Mint 2.0 Backend
 
 ## Getting Started
 
