@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "isaac_api"
+name = "s2m2_api"
 version = "0.1.0"
 description = ""
 authors = ["Francesco Ceccon <francesco@ceccon.me>"]
 
 [tool.poetry.scripts]
-isaac-api = "isaac_api.cli:main"
+s2m2-api = "s2m2_api.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.9"

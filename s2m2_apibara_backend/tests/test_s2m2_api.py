@@ -1,4 +1,4 @@
-from isaac_api import __version__
+from s2m2_api import __version__
 
 
 def test_version():
