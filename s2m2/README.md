@@ -1,2 +1,2 @@
-# s2m-masyu
-solve2mint: "masyu" -- gateway to Isaac
+# s2m2
+solve2mint 2.0 -- gateway to Isaac
