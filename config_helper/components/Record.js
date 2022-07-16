@@ -1,5 +1,6 @@
 import React, { Component, useState, useEffect, useRef, useCallback, useMemo } from "react";
 
+import { toBN } from 'starknet/dist/utils/number'
 import {
     usePuzzles,
     useS2mState
@@ -12,18 +13,27 @@ export default function Record (props) {
 
     if (db_puzzles) {
         for (const puzzle of db_puzzles.puzzles) {
+            const solver_hex_str = toBN(puzzle.solver).toString(16)
+            const solver_hex_str_abbrev = "0x" + solver_hex_str.slice(0,3) + "..." + solver_hex_str.slice(-4)
+
+            const button_style = {
+                backgroundColor : puzzle.solved == 1 ? '#999999' : 'CCCCCC',
+                border: 'none',
+                padding: '1px 8px'
+            }
+
             var cells = []
             cells.push (
                 <td>
                     <button onClick={() => {
                         props.callBack(puzzle.puzzle_id);
-                    }}>
+                    }} style={button_style}>
                      {puzzle.puzzle_id}
                     </button>
                 </td>
             )
             if (puzzle.solved == 1) {
-                cells.push (<td>puzzle.solver</td>)
+                cells.push (<td>{solver_hex_str_abbrev}</td>)
             }
             else {
                 cells.push (<td>{'-'}</td>)
