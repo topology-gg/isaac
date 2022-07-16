@@ -64,39 +64,6 @@ export default function BoardView () {
                 )
             }
         }
-        // legacy: drawing xticks and yticks
-        // if (y == 0) {
-        //     cells.push (<td style={{borderTopColor:color_none,borderBottomColor:color_none,borderLeftColor:color_none,borderRightColor:color_none}}>x \ y</td>)
-        //     for (var x=1; x<9; x++) {
-        //         cells.push (<td style={{borderTopColor:color_none,borderLeftColor:color_none,borderRightColor:color_none}}>{x-1}</td>)
-        //     }
-        // }
-        // else {
-        //     cells.push (<td style={{borderTopColor:color_none,borderBottomColor:color_none,borderLeftColor:color_none}}>{y-1}</td>)
-        //     for (var x=1; x<9; x++) {
-        //         const cell_idx = (y-1)*8 + (x-1)
-        //         if (cell_idx in mock_puzzle) {
-        //             const color = map_circle_type_to_color[mock_puzzle[cell_idx]]
-        //             console.log (`color: ${color}`)
-        //             cells.push (
-        //                 <td>
-        //                     <div style={{height:CIRCLE_WIDTH,width:CIRCLE_WIDTH,backgroundColor:color,margin:"auto",borderRadius:CIRCLE_RADIUS,color:"#00000044",lineHeight:CIRCLE_WIDTH,textAlign:'center'}}>
-        //                         {cell_idx}
-        //                     </div>
-        //                 </td>
-        //             )
-        //         }
-        //         else {
-        //             cells.push (
-        //                 <td>
-        //                     <div style={{color:'#FFFFFF44'}}>
-        //                         {cell_idx}
-        //                     </div>
-        //                 </td>
-        //             )
-        //         }
-        //     }
-        // }
 
         rows.push (<tr>{cells}</tr>)
     }

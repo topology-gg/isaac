@@ -41,7 +41,7 @@ body {
 
     align-items: center;
     justify-content: center;
-    padding-top: 30px;
+    padding-top: 3em;
 }
 
 .top-child-container {
@@ -104,4 +104,8 @@ h5 {
     margin-top: 0em;
     margin-bottom: 0.5em;
     text-decoration: underline;
+}
+
+*:focus {
+    outline: none;
 }

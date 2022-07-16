@@ -34,8 +34,25 @@ export function ConnectWallet() {
   const { account, connect } = useStarknet()
 
   if (account) {
-    return <p className="connected_account">Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}</p>
+    return (
+        <p
+            className="connected_account"
+            style={{padding:'0',margin:'0',height:'20px'}}
+        >
+            Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}
+        </p>
+    )
   }
 
-  return <button onClick={() => connect(new InjectedConnector())}>Connect Argent X wallet</button>
+  return <button
+            onClick = {
+                () => {
+                    connect(new InjectedConnector())
+                    console.log ('connect')
+                }
+            }
+            style={{padding:'0',margin:'0',height:'20px',border:'0',width:'160px'}}
+        >
+            Connect Argent X wallet
+        </button>
 }
