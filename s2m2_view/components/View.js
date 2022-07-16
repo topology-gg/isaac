@@ -540,6 +540,7 @@ function Parent (props) {
                     onHide  = {hidePopup}
                     info    = {modalInfo}
                     account = {account}
+                    puzzle_id = {shownPuzzleId}
                 />
             </div>
         </div>
