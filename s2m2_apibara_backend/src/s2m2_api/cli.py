@@ -19,7 +19,7 @@ from s2m2_api.contract import (
 
 load_dotenv()
 
-ORIGIN_BLOCK_TO_INDEX = 267_807
+ORIGIN_BLOCK_TO_INDEX = 267_807 - 1
 INDEXER_ID = 's2m2'
 S2M2_ADDRESS = '0x02369dbd0ec5e3e152aef28d10042abdf7a22a316c667e2a880bd4c0978e448b'
 
@@ -58,13 +58,13 @@ class S2M2EventHandler:
             print (f'  - got event: name={event.name}, address={from_adr}')
 
             if event.name == 'new_puzzle_occurred':
-                handle_new_puzzle_occurred (event)
+                self.handle_new_puzzle_occurred (event)
 
             elif event.name == 'success_occurred':
-                handle_success_occurred (event)
+                self.handle_success_occurred (event)
 
             elif event.name == 's2m_ended_occurred':
-                handle_s2m_ended_occurred () # this event has no payload
+                self.handle_s2m_ended_occurred () # this event has no payload
 
 
     def handle_new_puzzle_occurred (self, event):
@@ -88,11 +88,13 @@ class S2M2EventHandler:
             }
         )
 
+
     def handle_success_occurred (self, event):
         #
         # Decode event
         #
         solver, puzzle_id, arr_cell_indices_len, arr_cell_indices = decode_success_occurred (event)
+        print (f'> success_occurred: solver={solver}, puzzle_id={puzzle_id}, arr_cell_indices_len={arr_cell_indices_len}, arr_cell_indices={arr_cell_indices}')
 
         #
         # Update collection
@@ -100,11 +102,14 @@ class S2M2EventHandler:
         self._db ['puzzles'].update_one (
             filter = {'puzzle_id' : puzzle_id},
             update = {
-                '$set' : {'solved' : 1},
-                '$set' : {'solver' : solver},
-                '$set' : {'solution' : arr_cell_indices}
+                '$set' : {
+                    'solved' : 1,
+                    'solver' : str(solver),
+                    'solution' : arr_cell_indices
+                }
             }
         )
+
 
     def handle_s2m_ended_occurred ():
         #
