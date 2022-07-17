@@ -77,7 +77,7 @@ p {
 }
 
 table, th, td {
-    border: 1px solid '#00000000';
+    border: none !important;
     border-collapse: collapse;
     text-align: center;
     font-size: 0.85em;
