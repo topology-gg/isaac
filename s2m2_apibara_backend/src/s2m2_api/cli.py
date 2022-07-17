@@ -10,6 +10,7 @@ from pymongo import MongoClient
 from dotenv import load_dotenv
 
 from apibara import NewEvents, IndexerRunner, NewBlock, Info, Client
+from apibara.indexer.runner import IndexerRunnerConfiguration
 from apibara.model import EventFilter
 
 from s2m2_api.contract import (
@@ -140,10 +141,11 @@ async def start (args):
 
     parser = ArgumentParser()
     parser.add_argument("--reset", action="store_true", default=False)
+    parser.add_argument("--server-url", default=None)
     args = parser.parse_args()
 
     if args.reset:
-        async with Client.connect() as client:
+        async with Client.connect(args.server_url) as client:
             existing = await client.indexer_client().get_indexer(INDEXER_ID)
             if existing:
                 await client.indexer_client().delete_indexer(INDEXER_ID)
@@ -161,6 +163,9 @@ async def start (args):
     runner = IndexerRunner (
         indexer_id = INDEXER_ID,
         new_events_handler = s2m2_event_handler.handle_events,
+        config=IndexerRunnerConfiguration(
+            apibara_url=args.server_url,
+        )
     )
     runner.add_block_handler (handle_block)
 
