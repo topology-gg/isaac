@@ -62,6 +62,7 @@ export default function Modal (props) {
     }
 
     const link_to_voyager = `https://goerli.voyager.online/tx/${data}`
+    const button_string = "let's go"
 
     return (
         <div style={{display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -72,7 +73,7 @@ export default function Modal (props) {
                     <p>Submitting: {display_grids}</p>
 
                     <button onClick={onClick} style={{width:'fit-content'}} className='action-button'>
-                        let's go
+                        {button_string}
                     </button>
 
                     <p>{error ? error : null}</p>
