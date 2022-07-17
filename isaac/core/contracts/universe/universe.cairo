@@ -389,6 +389,9 @@ func recurse_populate_civilization_player_states {syscall_ptr : felt*, pedersen_
     _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTL,     amount = 20)
     _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UPSF,    amount = 1)
 
+    ## for testing: give 1 x NDPE
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_NDPE,    amount = 1)
+
 
     #
     # Tail recursion

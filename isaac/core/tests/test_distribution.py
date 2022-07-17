@@ -32,7 +32,7 @@ async def test_fade ():
         constructor_calldata = []
     )
 
-    N = 10
+    N = 50
     for _ in range(N):
         x_rand = random.randint (0, PLANET_DIM-1)
 
@@ -42,6 +42,11 @@ async def test_fade ():
 
         LOGGER.info (f"x_rand={x_rand}; fade() got={got}, expected={expected}")
 
+        scale = 10000
+        got_scaled_floor = math.floor (got * scale)
+        expected_scaled_floor = math.floor (expected * scale)
+        assert got_scaled_floor == expected_scaled_floor
+
 
 @pytest.mark.asyncio
 async def test_perlin ():
@@ -50,7 +55,7 @@ async def test_perlin ():
     # Generate contract values and compare against expected values
     # on Face 0
     #
-    N = 1
+    N = 50
 
     TEST_CONTRACT = True
     if TEST_CONTRACT:
