@@ -7,7 +7,7 @@ from contracts.util.distribution import (
 )
 
 @view
-func mock_get_adjusted_perlin_value {syscall_ptr : felt*, range_check_ptr} (
+func mock_get_adjusted_perlin_value {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         face : felt, grid : Vec2, element_type : felt
     ) -> (res : felt):
 

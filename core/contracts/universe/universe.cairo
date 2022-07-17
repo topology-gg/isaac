@@ -765,7 +765,6 @@ func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : Hash
         amount : felt,
         to : felt
     ) -> ():
-
     #
     # Confirm caller & to are both in this civilization
     #
@@ -774,10 +773,19 @@ func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : Hash
     assert_address_in_civilization (to)
 
     #
+    # Confirm caller != to
+    #
+    with_attr error_message ('why transferring to yourself?'):
+        assert caller != to
+    end
+
+    #
     # Confirm caller has at least `amount` number of undeployed devices of type `type`
     #
     let (from_curr_amount) = ns_micro_state_functions.device_undeployed_ledger_read (caller, type)
-    assert_le (amount, from_curr_amount)
+    with_attr error_message ('insufficient device balance'):
+        assert_le (amount, from_curr_amount)
+    end
 
     #
     # Make transfer

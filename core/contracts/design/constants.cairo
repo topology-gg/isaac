@@ -1,5 +1,6 @@
 from starkware.cairo.common.registers import get_label_location
 from contracts.util.structs import (Vec2)
+from starkware.cairo.common.alloc import alloc
 
 #
 # Permission control - if needed
@@ -106,7 +107,7 @@ end
 #
 # Constants for planet configuration
 #
-const PLANET_DIM = 25
+const PLANET_DIM = 40
 const SCALE_FP_DIV_PLANET_DIM = SCALE_FP / PLANET_DIM
 # TODO: params to control resource distribution via e.g. perlin noise
 
@@ -164,62 +165,104 @@ end
 # Constant for parametrizing perlin generation
 #
 namespace ns_perlin:
-    func get_params {range_check_ptr} (
-            element_type : felt
+
+    func random_vector_lookup {range_check_ptr} (
+            element_type : felt, idx : felt
         ) -> (
-            face_permut_offset : felt,
-            scaler : felt,
-            offset : felt
+            rv : Vec2
         ):
+        alloc_locals
+
+        let (fe_rvs : Vec2*) = alloc ()
+        assert fe_rvs[0] = Vec2 (0, -5)
+        assert fe_rvs[1] = Vec2 (-14, -22)
+        assert fe_rvs[2] = Vec2 (-2, 28)
+        assert fe_rvs[3] = Vec2 (9, 12)
+
+        let (al_rvs : Vec2*) = alloc ()
+        assert al_rvs[0] = Vec2 (15, -5)
+        assert al_rvs[1] = Vec2 (-15, 8)
+        assert al_rvs[2] = Vec2 (-25, -12)
+        assert al_rvs[3] = Vec2 (2, 8)
+
+        let (cu_rvs : Vec2*) = alloc ()
+        assert cu_rvs[0] = Vec2 (4, 6)
+        assert cu_rvs[1] = Vec2 (-10, 10)
+        assert cu_rvs[2] = Vec2 (-15, -30)
+        assert cu_rvs[3] = Vec2 (20, -10)
+
+        let (si_rvs : Vec2*) = alloc ()
+        assert si_rvs[0] = Vec2 (15, 25)
+        assert si_rvs[1] = Vec2 (-15, 8)
+        assert si_rvs[2] = Vec2 (-25, -12)
+        assert si_rvs[3] = Vec2 (-12, 8)
+
+        let (pu_rvs : Vec2*) = alloc ()
+        assert pu_rvs[0] = Vec2 (-15, -15)
+        assert pu_rvs[1] = Vec2 (-15, 8)
+        assert pu_rvs[2] = Vec2 (20, 12)
+        assert pu_rvs[3] = Vec2 (2, 8)
 
         if element_type == ns_element_types.ELEMENT_FE_RAW:
-            return (
-                face_permut_offset = 0,
-                scaler = 666,
-                offset = 0
-            )
+            return (fe_rvs [idx])
         end
 
         if element_type == ns_element_types.ELEMENT_AL_RAW:
-            return (
-                face_permut_offset = 1,
-                scaler = 719,
-                offset = 30 * SCALE_FP_DIV_100
-            )
+            return (al_rvs [idx])
         end
 
         if element_type == ns_element_types.ELEMENT_CU_RAW:
-            return (
-                face_permut_offset = 2,
-                scaler = 742,
-                offset = 50 * SCALE_FP_DIV_100
-            )
+            return (cu_rvs [idx])
         end
 
         if element_type == ns_element_types.ELEMENT_SI_RAW:
-            return (
-                face_permut_offset = 3,
-                scaler = 777,
-                offset = 70 * SCALE_FP_DIV_100
-            )
+            return (si_rvs [idx])
         end
 
         if element_type == ns_element_types.ELEMENT_PU_RAW:
-            return (
-                face_permut_offset = 4,
-                scaler = 805,
-                offset = 110 * SCALE_FP_DIV_100
-            )
+            return (pu_rvs [idx])
         end
 
         with_attr error_message ("Invalid element type."):
             assert 1 = 0
         end
+        return (Vec2(0,0))
 
-        return (0,0,0)
     end
 
-    const BOUND = 1000
+    func get_offset {range_check_ptr} (
+            element_type : felt
+        ) -> (
+            offset : felt
+        ):
+
+        if element_type == ns_element_types.ELEMENT_FE_RAW:
+            return (9)
+        end
+
+        if element_type == ns_element_types.ELEMENT_AL_RAW:
+            return (5)
+        end
+
+        if element_type == ns_element_types.ELEMENT_CU_RAW:
+            return (4)
+        end
+
+        if element_type == ns_element_types.ELEMENT_SI_RAW:
+            return (3)
+        end
+
+        if element_type == ns_element_types.ELEMENT_PU_RAW:
+            return (2)
+        end
+
+        with_attr error_message ("Invalid element type."):
+            assert 1 = 0
+        end
+        return (0)
+    end
+
+    const BOUND = 50
 end
 
 #

@@ -18,9 +18,12 @@ from contracts.util.perlin import (
 from contracts.util.grid import (
     locate_face_and_edge_given_valid_grid
 )
+from contracts.util.numerics import (mul_fp)
 
 namespace ns_distribution:
-    func get_concentration_at_grid_given_element_type {syscall_ptr : felt*, range_check_ptr} (
+
+    @view
+    func get_concentration_at_grid_given_element_type {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
             grid : Vec2,
             element_type : felt
         ) -> (
@@ -37,45 +40,38 @@ namespace ns_distribution:
 
         return (res)
     end
+
 end
 
-func get_adjusted_perlin_value {syscall_ptr : felt*, range_check_ptr} (
-        face : felt, grid : Vec2, element_type : felt
-    ) -> (res : felt):
+func get_adjusted_perlin_value {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        face : felt,
+        grid : Vec2,
+        element_type : felt
+    ) -> (
+        res : felt
+    ):
     alloc_locals
 
     #
-    # Get params for given `element_type
+    # Get offset for given element_type
     #
-    let (
-        face_permut_offset,
-        scaler,
-        offset
-    ) = ns_perlin.get_params (
-        element_type
-    )
+    let (offset) = ns_perlin.get_offset (element_type)
 
     #
-    # Get permuted face
+    # Get perlin value in fp
     #
-    let (permuated_face, _) = unsigned_div_rem (face + face_permut_offset, 6)
-
-    #
-    # Get perlin value
-    #
-    let (value) = get_perlin_value (
+    let (value_fp) = get_perlin_value (
         face,
-        permuated_face,
-        grid
+        grid,
+        element_type
     )
 
     #
     # Adjust value for given scaler and offset derived from `element_type`
     #
     let (res) = adjust (
-        x = value,
-        scaler = scaler,
-        offset = offset
+        value_fp,
+        offset
     )
 
     return (res)
@@ -83,21 +79,24 @@ end
 
 
 func adjust {range_check_ptr} (
-        x : felt,
-        scaler : felt,
+        x_fp : felt,
         offset : felt
-    ) -> (res : felt):
+    ) -> (
+        res : felt
+    ):
 
     #
-    # adjust = lambda x : relu (x - offset) * scaler
+    # adjust = lambda x : math.floor ( (x + offset)**2 )
     #
+    let (res_fp) = mul_fp (
+        x_fp + offset * SCALE_FP,
+        x_fp + offset * SCALE_FP
+    )
 
-    let (nn) = is_nn (x - offset)
+    #
+    # return to non-fp regime
+    #
+    let (res, _) = unsigned_div_rem (res_fp, SCALE_FP)
 
-    if nn == 0:
-        return (0)
-    else:
-        let (res, _) = signed_div_rem (x * scaler, SCALE_FP, RANGE_CHECK_BOUND)
-        return (res)
-    end
+    return (res)
 end

@@ -660,6 +660,74 @@
     {
         "data": [
             {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "resource_update_at_harvester_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity_pre",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity_post",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "resource_update_at_transformer_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "element_type",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "resource_update_at_upsf_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "energy_update_at_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
                 "name": "event_counter",
                 "type": "felt"
             },
