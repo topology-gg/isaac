@@ -10,7 +10,7 @@ from contracts.design.constants import (
     ns_perlin
 )
 from contracts.util.structs import (Vec2)
-from contracts.macro.macro_simulation import (div_fp, mul_fp)
+from contracts.util.numerics import (div_fp, mul_fp)
 
 # See README for illustration of the coordinate system and face/edge indexing scheme
 
@@ -48,54 +48,81 @@ func normalize_grid {range_check_ptr} (
     return (Vec2(0,0))
 end
 
+
 func get_random_vecs {range_check_ptr} (
-        face : felt
+        face : felt,
+        element_type : felt
     ) -> (
         rv_bottom_left : Vec2,
         rv_top_left : Vec2,
         rv_bottom_right : Vec2,
         rv_top_right : Vec2
     ):
+    alloc_locals
 
     if face == 0:
-        # (-1.0, 1.0), (-1.0, 1.0), (-1.0, 1.0), (-1.0, -1.0)
+        # 0,1,3,0
+        let (rv_bottom_left)  = ns_perlin.random_vector_lookup (element_type, 0)
+        let (rv_top_left)     = ns_perlin.random_vector_lookup (element_type, 1)
+        let (rv_bottom_right) = ns_perlin.random_vector_lookup (element_type, 3)
+        let (rv_top_right)    = ns_perlin.random_vector_lookup (element_type, 0)
         return (
-            Vec2 (-1, 1), Vec2 (-1, 1), Vec2 (-1, 1), Vec2 (-1, -1)
+            rv_bottom_left, rv_top_left, rv_bottom_right, rv_top_right
         )
     end
 
     if face == 1:
-        # (1.0, 1.0), (-1.0, 1.0), (1.0, -1.0), (-1.0, -1.0)
+        # 0,3,2,3
+        let (rv_bottom_left)  = ns_perlin.random_vector_lookup (element_type, 0)
+        let (rv_top_left)     = ns_perlin.random_vector_lookup (element_type, 3)
+        let (rv_bottom_right) = ns_perlin.random_vector_lookup (element_type, 2)
+        let (rv_top_right)    = ns_perlin.random_vector_lookup (element_type, 3)
         return (
-            Vec2 (1, 1), Vec2 (-1, 1), Vec2 (1, -1), Vec2 (-1, -1)
+            rv_bottom_left, rv_top_left, rv_bottom_right, rv_top_right
         )
     end
 
     if face == 2:
-        # (-1.0, 1.0), (-1.0, -1.0), (-1.0, -1.0), (1.0, -1.0)
+        # 3,0,3,0
+        let (rv_bottom_left)  = ns_perlin.random_vector_lookup (element_type, 3)
+        let (rv_top_left)     = ns_perlin.random_vector_lookup (element_type, 0)
+        let (rv_bottom_right) = ns_perlin.random_vector_lookup (element_type, 3)
+        let (rv_top_right)    = ns_perlin.random_vector_lookup (element_type, 0)
         return (
-            Vec2 (-1, 1), Vec2 (-1, -1), Vec2 (-1, -1), Vec2 (1, -1)
+            rv_bottom_left, rv_top_left, rv_bottom_right, rv_top_right
         )
     end
 
     if face == 3:
-        # (-1.0, -1.0), (1.0, -1.0), (1.0, -1.0), (1.0, 1.0)
+        # 0,1,0,2
+        let (rv_bottom_left)  = ns_perlin.random_vector_lookup (element_type, 0)
+        let (rv_top_left)     = ns_perlin.random_vector_lookup (element_type, 1)
+        let (rv_bottom_right) = ns_perlin.random_vector_lookup (element_type, 0)
+        let (rv_top_right)    = ns_perlin.random_vector_lookup (element_type, 2)
         return (
-            Vec2 (-1, -1), Vec2 (1, -1), Vec2 (1, -1), Vec2 (1, 1)
+            rv_bottom_left, rv_top_left, rv_bottom_right, rv_top_right
         )
     end
 
     if face == 4:
-        # (-1.0, -1.0), (1.0, -1.0), (1.0, 1.0), (-1.0, -1.0)
+        # 3,0,2,2
+        let (rv_bottom_left)  = ns_perlin.random_vector_lookup (element_type, 3)
+        let (rv_top_left)     = ns_perlin.random_vector_lookup (element_type, 0)
+        let (rv_bottom_right) = ns_perlin.random_vector_lookup (element_type, 2)
+        let (rv_top_right)    = ns_perlin.random_vector_lookup (element_type, 2)
         return (
-            Vec2 (-1, -1), Vec2 (1, -1), Vec2 (1, 1), Vec2 (-1, -1)
+            rv_bottom_left, rv_top_left, rv_bottom_right, rv_top_right
         )
     end
 
     if face == 5:
-        # (1.0, 1.0), (-1.0, -1.0), (1.0, 1.0), (-1.0, 1.0)
+        # 2,2,0,1
+        let (rv_bottom_left)  = ns_perlin.random_vector_lookup (element_type, 2)
+        let (rv_top_left)     = ns_perlin.random_vector_lookup (element_type, 2)
+        let (rv_bottom_right) = ns_perlin.random_vector_lookup (element_type, 0)
+        let (rv_top_right)    = ns_perlin.random_vector_lookup (element_type, 1)
         return (
-            Vec2 (1, 1), Vec2 (-1, -1), Vec2 (1, 1), Vec2 (-1, 1)
+            rv_bottom_left, rv_top_left, rv_bottom_right, rv_top_right
         )
     end
 
@@ -109,6 +136,7 @@ func get_random_vecs {range_check_ptr} (
 
 end
 
+
 func dot {range_check_ptr} (
         v1 : Vec2, v2 : Vec2
     ) -> (res : felt):
@@ -116,6 +144,7 @@ func dot {range_check_ptr} (
     return (v1.x * v2.x + v1.y * v2.y)
 
 end
+
 
 func fade {range_check_ptr} (
     t : felt) -> (res : felt):
@@ -133,6 +162,7 @@ func fade {range_check_ptr} (
     return (f)
 end
 
+
 func lerp {range_check_ptr} (
         t : felt,
         a : felt,
@@ -142,10 +172,10 @@ func lerp {range_check_ptr} (
     #
     # lerp = lambda t,a,b : a + t * (b-a)
     #
-    let (c) = mul_fp (t, b-a)
-    let d = a + c
+    let (prod) = mul_fp (t, b-a)
+    let res = a + prod
 
-    return (d)
+    return (res)
 end
 
 @event
@@ -157,8 +187,12 @@ func debug_emit_felt (x : felt):
 end
 
 func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
-        face : felt, permuted_face : felt, grid : Vec2
-    ) -> (res : felt):
+        face : felt,
+        grid : Vec2,
+        element_type : felt
+    ) -> (
+        res : felt
+    ):
     alloc_locals
 
     #
@@ -169,15 +203,27 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     #
     # Compute four positional vectors - from corners to pos - in fixed-point range
     #
-    let pv_bottom_left = Vec2 (pos.x * SCALE_FP_DIV_PLANET_DIM, pos.y * SCALE_FP_DIV_PLANET_DIM)
-    let pv_top_left = Vec2 (pos.x * SCALE_FP_DIV_PLANET_DIM, pos.y * SCALE_FP_DIV_PLANET_DIM - (PLANET_DIM-1) * SCALE_FP_DIV_PLANET_DIM)
-    let pv_bottom_right = Vec2 (pos.x * SCALE_FP_DIV_PLANET_DIM - (PLANET_DIM-1) * SCALE_FP_DIV_PLANET_DIM, pos.y * SCALE_FP_DIV_PLANET_DIM)
-    let pv_top_right = Vec2 (pos.x * SCALE_FP_DIV_PLANET_DIM - (PLANET_DIM-1) * SCALE_FP_DIV_PLANET_DIM, pos.y * SCALE_FP_DIV_PLANET_DIM - (PLANET_DIM-1) * SCALE_FP_DIV_PLANET_DIM)
-
-    debug_emit_vec2.emit (pv_bottom_left)
-    debug_emit_vec2.emit (pv_top_left)
-    debug_emit_vec2.emit (pv_bottom_right)
-    debug_emit_vec2.emit (pv_top_right)
+    let S = SCALE_FP_DIV_PLANET_DIM
+    let pv_bottom_left_fp = Vec2 (
+        pos.x * S,
+        pos.y * S
+    )
+    let pv_top_left_fp = Vec2 (
+        pos.x * S,
+        (pos.y - (PLANET_DIM - 1)) * S
+    )
+    let pv_bottom_right_fp = Vec2 (
+        (pos.x - (PLANET_DIM - 1)) * S,
+        pos.y * S
+    )
+    let pv_top_right_fp = Vec2 (
+        (pos.x - (PLANET_DIM - 1)) * S,
+        (pos.y - (PLANET_DIM - 1)) * S
+    )
+    debug_emit_vec2.emit (pv_bottom_left_fp)
+    debug_emit_vec2.emit (pv_top_left_fp)
+    debug_emit_vec2.emit (pv_bottom_right_fp)
+    debug_emit_vec2.emit (pv_top_right_fp)
 
     #
     # Retrieve four random vectors given face
@@ -187,7 +233,7 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
         rv_top_left : Vec2,
         rv_bottom_right : Vec2,
         rv_top_right : Vec2
-    ) = get_random_vecs (permuted_face)
+    ) = get_random_vecs (face, element_type)
 
     debug_emit_vec2.emit (rv_bottom_left)
     debug_emit_vec2.emit (rv_top_left)
@@ -197,10 +243,10 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     #
     # Compute dot products
     #
-    let (prod_bottom_left)  = dot (pv_bottom_left,  rv_bottom_left)
-    let (prod_top_left)     = dot (pv_top_left,     rv_top_left)
-    let (prod_bottom_right) = dot (pv_bottom_right, rv_bottom_right)
-    let (prod_top_right)    = dot (pv_top_right,    rv_top_right)
+    let (prod_bottom_left_fp)  = dot (pv_bottom_left_fp,  rv_bottom_left)
+    let (prod_top_left_fp)     = dot (pv_top_left_fp,     rv_top_left)
+    let (prod_bottom_right_fp) = dot (pv_bottom_right_fp, rv_bottom_right)
+    let (prod_top_right_fp)    = dot (pv_top_right_fp,    rv_top_right)
 
     # debug_emit_felt.emit (prod_bottom_left)
     # debug_emit_felt.emit (prod_top_left)
@@ -210,22 +256,21 @@ func get_perlin_value {syscall_ptr : felt*, range_check_ptr} (
     #
     # Compute u,v from fade()
     #
-    let (u) = fade (pos.x * SCALE_FP_DIV_100)
-    let (v) = fade (pos.y * SCALE_FP_DIV_100)
-
-    # debug_emit_felt.emit (u)
-    # debug_emit_felt.emit (v)
+    let (u) = fade (pos.x * SCALE_FP_DIV_PLANET_DIM)
+    let (v) = fade (pos.y * SCALE_FP_DIV_PLANET_DIM)
+    debug_emit_felt.emit (u)
+    debug_emit_felt.emit (v)
 
     #
     # Perform lerp
     #
-    let (lerp_left)  = lerp (v, prod_bottom_left, prod_top_left)
-    let (lerp_right) = lerp (v, prod_bottom_right, prod_top_right)
-    let (lerp_final) = lerp (u, lerp_left, lerp_right)
+    let (lerp_left_fp)  = lerp (v, prod_bottom_left_fp, prod_top_left_fp)
+    let (lerp_right_fp) = lerp (v, prod_bottom_right_fp, prod_top_right_fp)
+    let (lerp_final_fp) = lerp (u, lerp_left_fp, lerp_right_fp)
 
-    # debug_emit_felt.emit (lerp_left)
-    # debug_emit_felt.emit (lerp_right)
-    # debug_emit_felt.emit (lerp_final)
+    # debug_emit_felt.emit (lerp_left_fp)
+    # debug_emit_felt.emit (lerp_right_fp)
+    debug_emit_felt.emit (lerp_final_fp)
 
-    return (lerp_final)
+    return (lerp_final_fp)
 end
