@@ -77,12 +77,11 @@ export default function Modal (props) {
 
                     <p>{error ? error : null}</p>
                     <div>
-                        (
+                        {
                             data && (
                                 <a style={TX_HASH_STYLE} href={link_to_voyager}>view on voyager</a>
                             )
-                        )
-
+                        }
                     </div>
 
                 </div>
