@@ -1,0 +1,111 @@
+/* * {
+    box-sizing: border-box;
+} */
+
+@font-face{
+    font-family: "Poppins-Light";
+    src: url("../styles/fonts/Poppins/Poppins-Light.ttf") format("truetype");
+}
+
+html,
+body,
+#root {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #282828;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    overflow: hidden;
+}
+
+body {
+    position: fixed;
+    overflow: hidden;
+    overscroll-behavior-y: none;
+    font-family: Poppins-Light;
+    /* , -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif; */
+    /* color: #2e76c8; */
+    color: #DDDDDD;
+}
+
+.mother-container {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+
+    align-items: center;
+    justify-content: center;
+    padding-top: 3em;
+}
+
+.top-child-container {
+    display: flex;
+    flex-direction: column;
+    order: 0;
+
+    align-items: center;
+    justify-content: center;
+}
+
+.bottom-child-container {
+    display: flex;
+    flex-direction: column;
+    order: 1;
+
+    align-items: center;
+    /* justify-content: center; */
+
+    /* height: 13em; */
+    width: 25em;
+    margin-top: 2em;
+    /* overflow-y: auto; */
+}
+
+h2 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+p {
+    font-size: 0.75em;
+}
+
+table, th, td {
+    border: 1px solid '#00000000';
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 0.85em;
+    border-spacing: 0;
+    padding: 0;
+}
+
+td {
+    height: 3em;
+    width: 3em;
+}
+
+span {
+    color: transparent;
+    height: 10px;
+}
+
+h4 {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+}
+
+h5 {
+    margin-top: 0em;
+    margin-bottom: 0.5em;
+    text-decoration: underline;
+}
+
+*:focus {
+    outline: none;
+}

@@ -1,0 +1,188 @@
+[
+    {
+        "members": [
+            {
+                "name": "cell_index",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Cir",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "success",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "puzzle_id",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Record",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "inputs": [
+            {
+                "name": "puzzle_id",
+                "type": "felt"
+            }
+        ],
+        "name": "get_puzzle",
+        "outputs": [
+            {
+                "name": "arr_circles_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_circles",
+                "type": "Cir*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "read_s2m_is_puzzle_solved",
+        "outputs": [
+            {
+                "name": "solved",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "read_s2m_puzzle_solved_count",
+        "outputs": [
+            {
+                "name": "count",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "read_s2m_solver_record",
+        "outputs": [
+            {
+                "name": "record",
+                "type": "Record"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "data": [
+            {
+                "name": "puzzle_id",
+                "type": "felt"
+            },
+            {
+                "name": "arr_circles_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_circles",
+                "type": "Cir*"
+            }
+        ],
+        "keys": [],
+        "name": "new_puzzle_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "solver",
+                "type": "felt"
+            },
+            {
+                "name": "puzzle_id",
+                "type": "felt"
+            },
+            {
+                "name": "arr_cell_indices_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_cell_indices",
+                "type": "felt*"
+            }
+        ],
+        "keys": [],
+        "name": "success_occurred",
+        "type": "event"
+    },
+    {
+        "data": [],
+        "keys": [],
+        "name": "s2m_ended_occurred",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "puzzle_id",
+                "type": "felt"
+            },
+            {
+                "name": "arr_cell_indices_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_cell_indices",
+                "type": "felt*"
+            }
+        ],
+        "name": "solve",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "has_unsolved_puzzle",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]

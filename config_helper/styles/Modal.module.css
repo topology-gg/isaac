@@ -1,0 +1,18 @@
+.modal {
+    z-index: 100;
+    /* position: absolute; */
+    width: 35em;
+    height: 5em;
+    /* margin: 0 auto; */
+    /* padding-top: 2em; */
+    /* padding-left: 40px; */
+    color: '#CCCCCC';
+
+    /* overflow-y: auto; */
+    /* display: flex; */
+    /* flex-direction: column; */
+  }
+
+.grids {
+  font-size: 2em;
+}
