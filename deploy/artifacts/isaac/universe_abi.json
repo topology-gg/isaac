@@ -658,6 +658,27 @@
         "type": "event"
     },
     {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "element_type",
+                "type": "felt"
+            }
+        ],
+        "name": "get_concentration_at_grid_given_element_type",
+        "outputs": [
+            {
+                "name": "res",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "data": [
             {
                 "name": "device_id",

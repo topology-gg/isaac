@@ -14,7 +14,7 @@ UNIVERSE_INDEX_OFFSET = 777
 ###
 
 LOGGER = logging.getLogger(__name__)
-NUM_SIGNING_ACCOUNTS = 1
+NUM_SIGNING_ACCOUNTS = 2
 DUMMY_PRIVATE = 9812304879503423120395
 users = []
 
@@ -98,7 +98,10 @@ async def test_lobby (account_factory, starknet, block_info_mock):
     #
     # Deploy and configure lobby
     #
-    contract_lobby = await starknet.deploy (source = 'contracts/lobby/lobby.cairo', constructor_calldata = [])
+    contract_lobby = await starknet.deploy (
+        source = 'contracts/lobby/lobby.cairo',
+        constructor_calldata = [NUM_SIGNING_ACCOUNTS] + [user['account'].contract_address for user in users]
+    )
     await contract_lobby.set_universe_addresses_once ([
         contract_universe.contract_address
     ]).invoke ()
@@ -127,23 +130,25 @@ async def test_lobby (account_factory, starknet, block_info_mock):
     ###
 
     ## Test invoking anyone_ask_to_queue() from 0x0 address => should revert
-    LOGGER.info(f'> Test 0: asking to join queue from 0x0 address should revert.')
+    LOGGER.info(f'> Test: asking to join queue from 0x0 address should revert.')
     with pytest.raises(Exception) as e_info:
         await contract_lobby.anyone_ask_to_queue().invoke()
+    LOGGER.info(f'  -- got exception: {e_info}')
 
     ## can-dispatch should return false
-    LOGGER.info(f'> Test 1: can-dispatch should return 0 at start.')
+    LOGGER.info(f'> Test: can-dispatch should return 0 at start.')
     ret = await contract_lobby.can_dispatch_player_to_universe().call()
     assert ret.result.bool == 0
 
     ## users[0] and users[1] join queue
-    LOGGER.info(f'> Test 2: 1 player join queue; can-dispatch should return 1.')
-    player = users[0]
-    await player['signer'].send_transaction(
-        account = player['account'], to = contract_lobby.contract_address,
-        selector_name = 'anyone_ask_to_queue',
-        calldata=[]
-    )
+    LOGGER.info(f'> Test: {NUM_SIGNING_ACCOUNTS} player join queue; can-dispatch should return 1.')
+    for i in range(NUM_SIGNING_ACCOUNTS):
+        player = users[i]
+        await player['signer'].send_transaction(
+            account = player['account'], to = contract_lobby.contract_address,
+            selector_name = 'anyone_ask_to_queue',
+            calldata=[]
+        )
 
     ret = await contract_lobby.can_dispatch_player_to_universe().call()
     assert ret.result.bool == 1
@@ -152,15 +157,14 @@ async def test_lobby (account_factory, starknet, block_info_mock):
     head_idx = ret.result.head_idx
     ret = await contract_lobby.queue_tail_index_read().call()
     tail_idx = ret.result.tail_idx
-    assert (head_idx, tail_idx) == (0, 1)
+    assert (head_idx, tail_idx) == (0, NUM_SIGNING_ACCOUNTS)
 
     ## set l2 block
     block_info_mock.set_block_number(345)
 
     ## dispatch players to universe
-    LOGGER.info(f"> Test 7: Invoke dispatch function once; check queue head & tail; check universe-0's civilization addresses, civ index, genesis block")
+    LOGGER.info(f"> Test: Invoke dispatch function once; check queue head & tail; check universe-0's civilization addresses, civ index, genesis block")
     ret_dispatch = await contract_lobby.anyone_dispatch_player_to_universe().invoke()
-
     LOGGER.info(f"-- events: {ret_dispatch.main_call_events}")
 
     ret = await contract_universe.civilization_index_read().call()
@@ -172,10 +176,35 @@ async def test_lobby (account_factory, starknet, block_info_mock):
     ret = await contract_lobby.universe_active_read(UNIVERSE_INDEX_OFFSET + 0).call()
     assert ret.result.is_active == 1
 
-    for i in range(1):
-        ret = await contract_universe.civilization_player_idx_to_address_read(i).call()
-        LOGGER.info(f'  universe 0: player address at idx {i} = {ret.result.address}')
-        assert ret.result.address == users[i]['account'].contract_address
+    ## check if users[0] is in universe 0
+    LOGGER.info(f'> Test: check if users[0] is in universe')
+    ret = await contract_universe.civilization_player_idx_to_address_read(0).call()
+    LOGGER.info(f'  universe 0: player address at idx {0} = {ret.result.address}')
+    assert ret.result.address == users[0]['account'].contract_address
 
-        ret = await contract_universe.civilization_player_address_to_bool_read(users[i]['account'].contract_address).call()
-        assert ret.result.bool == 1 # active
+    ret = await contract_universe.civilization_player_address_to_bool_read(users[0]['account'].contract_address).call()
+    assert ret.result.bool == 1 # active
+
+    ## check if users[0] is not allowed to queue at lobby because already in active universe
+    LOGGER.info(f'> Test: check if users[0] is not allowed to join queue')
+    with pytest.raises(Exception) as e_info:
+        player = users[0]
+        await player['signer'].send_transaction(
+            account = player['account'], to = contract_lobby.contract_address,
+            selector_name = 'anyone_ask_to_queue',
+            calldata=[]
+        )
+    LOGGER.info(f'  -- got exception: {e_info}')
+
+    ## check if users[1] is not allowed to queue at lobby because already in queue
+    LOGGER.info(f'> Test: check if users[1] is not allowed to join queue')
+    with pytest.raises(Exception) as e_info:
+        player = users[1]
+        await player['signer'].send_transaction(
+            account = player['account'], to = contract_lobby.contract_address,
+            selector_name = 'anyone_ask_to_queue',
+            calldata=[]
+        )
+    LOGGER.info(f'  -- got exception: {e_info}')
+
+

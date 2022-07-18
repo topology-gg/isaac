@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_le
+from starkware.cairo.common.math import assert_le, assert_not_equal
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
@@ -159,10 +159,19 @@ end
 #     return ()
 # end
 
+@view
+func check_address_in_civilization {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    address : felt) -> (bool : felt):
+
+    let (bool) = ns_universe_state_functions.civilization_player_address_to_bool_read (address)
+
+    return (bool)
+end
+
 func assert_address_in_civilization {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     address) -> ():
 
-    let (bool) = ns_universe_state_functions.civilization_player_address_to_bool_read (address)
+    let (bool) = check_address_in_civilization (address)
     with_attr error_message ("caller is not in the civilization of this universe"):
         assert bool = 1
     end
@@ -776,17 +785,17 @@ func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : Hash
     assert_address_in_civilization (to)
 
     #
-    # Confirm caller != to
+    # Confirm caller is not equal to transfer destination
     #
-    with_attr error_message ('why transferring to yourself?'):
-        assert caller != to
+    with_attr error_message ("why transferring to yourself?"):
+        assert_not_equal (caller, to)
     end
 
     #
     # Confirm caller has at least `amount` number of undeployed devices of type `type`
     #
     let (from_curr_amount) = ns_micro_state_functions.device_undeployed_ledger_read (caller, type)
-    with_attr error_message ('insufficient device balance'):
+    with_attr error_message ("insufficient device balance"):
         assert_le (amount, from_curr_amount)
     end
 
