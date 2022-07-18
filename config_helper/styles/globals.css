@@ -14,7 +14,7 @@ body,
     height: 100%;
     margin: 0;
     padding: 0;
-    background-color: #282828;
+    /* background-color: "#EFE599"; */
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -31,8 +31,14 @@ body {
     font-family: Poppins-Light;
     /* , -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif; */
     /* color: #2e76c8; */
-    color: #DDDDDD;
+    color: #555555;
+
+    /* ref: https://stackoverflow.com/questions/3540194/how-to-make-a-grid-like-graph-paper-grid-with-just-css */
+    background:
+        conic-gradient(from 90deg at 1px 1px,#0000 90deg, #33333311 0)
+        0 0/30px 30px;
 }
+
 
 .mother-container {
     display: flex;
