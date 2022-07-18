@@ -7,6 +7,16 @@
     src: url("../styles/fonts/Poppins/Poppins-Light.ttf") format("truetype");
 }
 
+@font-face{
+    font-family: "Rikos";
+    src: url("../styles/fonts/Rikos/Rikos-OEZ8.ttf") format("truetype");
+}
+
+@font-face{
+    font-family: "Anoxic";
+    src: url("../styles/fonts/Anoxic/AnoxicLight-3zlK8.ttf") format("truetype");
+}
+
 html,
 body,
 #root {
