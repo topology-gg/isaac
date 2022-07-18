@@ -100,7 +100,15 @@ export default function View () {
                 const info = [
                     <p key='civ-num' style={p_style}>Civilization number: {civ_idx}</p>,
                     <p key='univ-age' style={p_style}>Universe age: {ticks_since_birth} / 2160 ticks</p>,
-                    <p key='transport' style={p_style}>Transport to Space View and Working View</p>
+                    <p key='transport' style={p_style}>
+                        <a href="" target="_blank" rel="noopener noreferrer">
+                            Space View
+                        </a>
+                        /
+                        <a href="" target="_blank" rel="noopener noreferrer">
+                            Working View
+                        </a>
+                    </p>
                 ]
                 setUniverseInfo (info)
             }
@@ -114,8 +122,16 @@ export default function View () {
                 setJoinButtonText ('join queue')
             }
             else {
-                setQueueInfo (`waiting for ${15-queue_length} more players before dispatching`)
 
+                //
+                // check if all universes are active or if some is available
+                //
+                if (db_civ_state.civ_state[0].active == 1){
+                    setQueueInfo (`all universes are active`)
+                }
+                else {
+                    setQueueInfo (`waiting for ${15-queue_length} more players before dispatching`)
+                }
                 const account_int_str = toBN(account).toString(10)
 
                 //
@@ -148,13 +164,14 @@ export default function View () {
                     }
                     if (civ_accounts.includes(account_int_str)) {
                         setAccountQueueInfo ('account is in the civilization of the active universe #0')
+                        setJoinButtonColor ('#999999')
                     }
                     else {
                         setAccountQueueInfo ('account is not queue nor in the civilization of the active universe #0')
+                        setJoinButtonColor ('#333333')
                     }
 
                     setJoinButtonText ('join queue')
-                    setJoinButtonColor ('#333333')
                 }
 
             }
@@ -171,25 +188,6 @@ export default function View () {
         if (joinButtonColor==='#333333') {
             invoke ({ args: [] })
         }
-    }
-
-    const sun_radius = '12em'
-    const sun_dim = '24em'
-    const sun_style = {
-        marginTop: '40px',
-        width: sun_dim,
-        height: sun_dim,
-        borderRadius: sun_radius,
-        border: '1px #333333 solid',
-        marginLeft: 'auto',
-        marginRight: 'auto',
-
-        display: 'flex',
-        justifyContent: 'center',
-        alignContent: 'center',
-        flexDirection: 'column',
-
-        backgroundColor: '#CCCCCC44'
     }
 
     const join_button_color = {color:joinButtonColor}
@@ -223,7 +221,10 @@ export default function View () {
                 }
             </div>
 
-            <div style={sun_style}>
+            <div className='sun'>
+            </div>
+
+            <div>
                 <h3 style={{textAlign:'center',marginBottom:'0'}}>
                     Universe #0
                 </h3>

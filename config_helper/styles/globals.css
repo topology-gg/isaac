@@ -125,3 +125,44 @@ h5 {
 *:focus {
     outline: none;
 }
+
+@keyframes float {
+	0% {
+		/* box-shadow: 0 5px 15px 0px rgba(0,0,0,0.6); */
+		transform: translatey(0px);
+	}
+	50% {
+		/* box-shadow: 0 25px 15px 0px rgba(0,0,0,0.2); */
+		transform: translatey(-20px);
+	}
+	100% {
+		/* box-shadow: 0 5px 15px 0px rgba(0,0,0,0.6); */
+		transform: translatey(0px);
+	}
+}
+
+.sun {
+    margin-top: 10px;
+    width: 300px;
+    height: 300px;
+    /* border: 1px #333333 solid */
+    border: none !important;
+    margin-left: auto;
+    margin-right: auto;
+
+    /* box-shadow: 0 5px 15px 0px rgba(0,0,0,0.6); */
+	transform: translatey(0px);
+	animation: float 4s ease-in-out infinite;
+
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    flex-direction: column;
+
+    /* background-color: '#CCCCCC44'; */
+    background-image: url("../public/station_view_sun.png");
+    background-position: center center;
+    background-repeat: no-repeat;
+    /* background-size: contain */
+    background-size: 350px 350px;
+}

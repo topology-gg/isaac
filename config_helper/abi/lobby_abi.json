@@ -150,6 +150,18 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "init_invitations_made_read",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "name": "account",
@@ -248,6 +260,17 @@
         "type": "event"
     },
     {
+        "data": [
+            {
+                "name": "account",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "give_invitation_occurred",
+        "type": "event"
+    },
+    {
         "inputs": [],
         "name": "probe_can_dispatch_to_universe",
         "outputs": [
@@ -264,6 +287,21 @@
         "name": "constructor",
         "outputs": [],
         "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "arr_guests_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_guests",
+                "type": "felt*"
+            }
+        ],
+        "name": "init_give_invitations_once",
+        "outputs": [],
+        "type": "function"
     },
     {
         "inputs": [
