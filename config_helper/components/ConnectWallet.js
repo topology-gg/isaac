@@ -11,7 +11,7 @@ export function ConnectWallet() {
     return (
         <p
             className="connected_account"
-            style={{padding:'0',margin:'0',height:'25px',verticalAlign:'middle'}}
+            style={{padding:'0',margin:'0',height:'25px',verticalAlign:'middle',fontSize:'12px'}}
         >
             Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}
         </p>
@@ -25,7 +25,7 @@ export function ConnectWallet() {
                     console.log ('connect')
                 }
             }
-            style={{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',color:'#333333'}}
+            style={{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',color:'#333333',fontSize:'12px'}}
         >
             Connect Argent X wallet
         </button>

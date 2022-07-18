@@ -13,3 +13,7 @@ export function usePlayerBalances () {
 export function useLobbyQueue () {
     return useSWR('/api/lobby_queue', fetcher)
 }
+
+export function useMacroStates () {
+    return useSWR('/api/macro_states', fetcher)
+}
