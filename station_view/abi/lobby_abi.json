@@ -1,0 +1,367 @@
+[
+    {
+        "members": [
+            {
+                "name": "player_address",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "grade",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Play",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "inputs": [],
+        "name": "queue_head_index_read",
+        "outputs": [
+            {
+                "name": "head_idx",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "queue_tail_index_read",
+        "outputs": [
+            {
+                "name": "tail_idx",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "queue_address_to_index_read",
+        "outputs": [
+            {
+                "name": "idx",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "idx",
+                "type": "felt"
+            }
+        ],
+        "name": "queue_index_to_address_read",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "idx",
+                "type": "felt"
+            }
+        ],
+        "name": "universe_addresses_read",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "universe_address_to_index_read",
+        "outputs": [
+            {
+                "name": "idx",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "idx",
+                "type": "felt"
+            }
+        ],
+        "name": "universe_active_read",
+        "outputs": [
+            {
+                "name": "is_active",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "dao_address_read",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "event_counter_read",
+        "outputs": [
+            {
+                "name": "val",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "account",
+                "type": "felt"
+            }
+        ],
+        "name": "account_has_invitation_read",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "s2m2_address_read",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "universe_index",
+                "type": "felt"
+            },
+            {
+                "name": "universe_address",
+                "type": "felt"
+            },
+            {
+                "name": "arr_player_adr_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_player_adr",
+                "type": "felt*"
+            }
+        ],
+        "keys": [],
+        "name": "universe_activation_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "universe_index",
+                "type": "felt"
+            },
+            {
+                "name": "universe_address",
+                "type": "felt"
+            },
+            {
+                "name": "arr_player_adr_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_player_adr",
+                "type": "felt*"
+            }
+        ],
+        "keys": [],
+        "name": "universe_deactivation_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "account",
+                "type": "felt"
+            },
+            {
+                "name": "queue_idx",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "ask_to_queue_occurred",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "probe_can_dispatch_to_universe",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "universe_addresses_len",
+                "type": "felt"
+            },
+            {
+                "name": "universe_addresses",
+                "type": "felt*"
+            }
+        ],
+        "name": "set_universe_addresses_once",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "account",
+                "type": "felt"
+            }
+        ],
+        "name": "gyoza_give_invitation_to_account",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "set_s2m2_address_once",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "can_dispatch_player_to_universe",
+        "outputs": [
+            {
+                "name": "curr_head_idx",
+                "type": "felt"
+            },
+            {
+                "name": "curr_tail_idx",
+                "type": "felt"
+            },
+            {
+                "name": "idle_universe_idx",
+                "type": "felt"
+            },
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "anyone_dispatch_player_to_universe",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "anyone_ask_to_queue",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "set_dao_address_once",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "arr_play_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_play",
+                "type": "Play*"
+            }
+        ],
+        "name": "universe_report_play",
+        "outputs": [],
+        "type": "function"
+    }
+]

@@ -1,0 +1,1250 @@
+[
+    {
+        "members": [
+            {
+                "name": "sun0",
+                "offset": 0,
+                "type": "Dynamic"
+            },
+            {
+                "name": "sun1",
+                "offset": 4,
+                "type": "Dynamic"
+            },
+            {
+                "name": "sun2",
+                "offset": 8,
+                "type": "Dynamic"
+            },
+            {
+                "name": "plnt",
+                "offset": 12,
+                "type": "Dynamic"
+            }
+        ],
+        "name": "Dynamics",
+        "size": 16,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "q",
+                "offset": 0,
+                "type": "Vec2"
+            },
+            {
+                "name": "qd",
+                "offset": 2,
+                "type": "Vec2"
+            }
+        ],
+        "name": "Dynamic",
+        "size": 4,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "x",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "y",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Vec2",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "populated",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "deployed_device_type",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "deployed_device_id",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "deployed_device_owner",
+                "offset": 3,
+                "type": "felt"
+            }
+        ],
+        "name": "GridStat",
+        "size": 4,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "grid",
+                "offset": 0,
+                "type": "Vec2"
+            },
+            {
+                "name": "type",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "id",
+                "offset": 3,
+                "type": "felt"
+            }
+        ],
+        "name": "DeviceDeployedEmapEntry",
+        "size": 4,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "balance_resource_before_transform",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "balance_resource_after_transform",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "TransformerResourceBalances",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "utx_set_deployed_label",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "utx_deployed_index_start",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "utx_deployed_index_end",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "src_device_id",
+                "offset": 3,
+                "type": "felt"
+            },
+            {
+                "name": "dst_device_id",
+                "offset": 4,
+                "type": "felt"
+            }
+        ],
+        "name": "UtxSetDeployedEmapEntry",
+        "size": 5,
+        "type": "struct"
+    },
+    {
+        "inputs": [],
+        "name": "lobby_address_read",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "l2_block_at_genesis_read",
+        "outputs": [
+            {
+                "name": "number",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "number_of_ticks_since_genesis_read",
+        "outputs": [
+            {
+                "name": "value",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "civilization_index_read",
+        "outputs": [
+            {
+                "name": "civ_idx",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "idx",
+                "type": "felt"
+            }
+        ],
+        "name": "civilization_player_idx_to_address_read",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "civilization_player_address_to_bool_read",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "civilization_player_address_to_has_launched_ndpe_read",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "l2_block_at_last_forward_read",
+        "outputs": [
+            {
+                "name": "number",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "event_counter_read",
+        "outputs": [
+            {
+                "name": "val",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "phi_curr_read",
+        "outputs": [
+            {
+                "name": "phi",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "macro_state_curr_read",
+        "outputs": [
+            {
+                "name": "macro_state",
+                "type": "Dynamics"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "impulse_cache_read",
+        "outputs": [
+            {
+                "name": "impulse_aggregated",
+                "type": "Vec2"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "data": [
+            {
+                "name": "macro_state",
+                "type": "Dynamics"
+            },
+            {
+                "name": "phi",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "forward_world_macro_occurred",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "name": "civ_idx",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "grid_stats_read",
+        "outputs": [
+            {
+                "name": "grid_stat",
+                "type": "GridStat"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            }
+        ],
+        "name": "device_undeployed_ledger_read",
+        "outputs": [
+            {
+                "name": "amount",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "device_deployed_emap_size_read",
+        "outputs": [
+            {
+                "name": "size",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "emap_index",
+                "type": "felt"
+            }
+        ],
+        "name": "device_deployed_emap_read",
+        "outputs": [
+            {
+                "name": "emap_entry",
+                "type": "DeviceDeployedEmapEntry"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "device_deployed_id_to_emap_index_read",
+        "outputs": [
+            {
+                "name": "emap_index",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "harvesters_deployed_id_to_resource_balance_read",
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "transformers_deployed_id_to_resource_balances_read",
+        "outputs": [
+            {
+                "name": "balances",
+                "type": "TransformerResourceBalances"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            },
+            {
+                "name": "element_type",
+                "type": "felt"
+            }
+        ],
+        "name": "opsf_deployed_id_to_resource_balances_read",
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "device_deployed_id_to_energy_balance_read",
+        "outputs": [
+            {
+                "name": "energy",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            }
+        ],
+        "name": "utx_set_deployed_emap_size_read",
+        "outputs": [
+            {
+                "name": "size",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "emap_index",
+                "type": "felt"
+            }
+        ],
+        "name": "utx_set_deployed_emap_read",
+        "outputs": [
+            {
+                "name": "emap_entry",
+                "type": "UtxSetDeployedEmapEntry"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "label",
+                "type": "felt"
+            }
+        ],
+        "name": "utx_set_deployed_label_to_emap_index_read",
+        "outputs": [
+            {
+                "name": "emap_index",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            }
+        ],
+        "name": "utx_deployed_index_to_grid_size_read",
+        "outputs": [
+            {
+                "name": "size",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "index",
+                "type": "felt"
+            }
+        ],
+        "name": "utx_deployed_index_to_grid_read",
+        "outputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
+                "type": "felt"
+            }
+        ],
+        "name": "utx_tether_count_of_deployed_device_read",
+        "outputs": [
+            {
+                "name": "count",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "idx",
+                "type": "felt"
+            }
+        ],
+        "name": "utx_tether_labels_of_deployed_device_read",
+        "outputs": [
+            {
+                "name": "utx_set_label",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "data": [
+            {
+                "name": "vec",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "debug_emit_vec2",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "x",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "debug_emit_felt",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "element_type",
+                "type": "felt"
+            }
+        ],
+        "name": "get_concentration_at_grid_given_element_type",
+        "outputs": [
+            {
+                "name": "res",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "data": [
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "resource_update_at_harvester_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity_pre",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity_post",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "resource_update_at_transformer_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "element_type",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "resource_update_at_upsf_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "energy_update_at_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "to",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "give_undeployed_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "civ_idx",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "activate_universe_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "player_deploy_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "player_pickup_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "utx_label",
+                "type": "felt"
+            },
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "src_device_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "dst_device_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "locs_len",
+                "type": "felt"
+            },
+            {
+                "name": "locs",
+                "type": "Vec2*"
+            }
+        ],
+        "keys": [],
+        "name": "player_deploy_utx_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "player_pickup_utx_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "bool_universe_terminable",
+                "type": "felt"
+            },
+            {
+                "name": "bool_destruction",
+                "type": "felt"
+            },
+            {
+                "name": "bool_universe_max_age_reached",
+                "type": "felt"
+            },
+            {
+                "name": "bool_universe_escape_condition_met",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "terminate_universe_occurred",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "probe_can_forward_universe",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "set_lobby_address_once",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "arr_player_adr_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_player_adr",
+                "type": "felt*"
+            }
+        ],
+        "name": "activate_universe",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "can_forward_universe",
+        "outputs": [
+            {
+                "name": "block_curr",
+                "type": "felt"
+            },
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "anyone_forward_universe",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "player_deploy_device_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "player_pickup_device_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "src_device_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "dst_device_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "locs_len",
+                "type": "felt"
+            },
+            {
+                "name": "locs",
+                "type": "Vec2*"
+            }
+        ],
+        "name": "player_deploy_utx_by_grids",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "player_pickup_utx_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "device_type",
+                "type": "felt"
+            },
+            {
+                "name": "device_count",
+                "type": "felt"
+            }
+        ],
+        "name": "player_opsf_build_device",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "name": "player_launch_all_deployed_ndpe",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "felt"
+            },
+            {
+                "name": "to",
+                "type": "felt"
+            }
+        ],
+        "name": "player_transfer_undeployed_device",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "grid_y",
+                "type": "felt"
+            }
+        ],
+        "name": "flat_device_deploy",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "grid_y",
+                "type": "felt"
+            }
+        ],
+        "name": "flat_device_pickup_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "src_device_grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "src_device_grid_y",
+                "type": "felt"
+            },
+            {
+                "name": "dst_device_grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "dst_device_grid_y",
+                "type": "felt"
+            },
+            {
+                "name": "locs_x_len",
+                "type": "felt"
+            },
+            {
+                "name": "locs_x",
+                "type": "felt*"
+            },
+            {
+                "name": "locs_y_len",
+                "type": "felt"
+            },
+            {
+                "name": "locs_y",
+                "type": "felt*"
+            }
+        ],
+        "name": "flat_utx_deploy",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "grid_y",
+                "type": "felt"
+            }
+        ],
+        "name": "flat_utx_pickup_by_grid",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid_x",
+                "type": "felt"
+            },
+            {
+                "name": "grid_y",
+                "type": "felt"
+            },
+            {
+                "name": "device_type",
+                "type": "felt"
+            },
+            {
+                "name": "device_count",
+                "type": "felt"
+            }
+        ],
+        "name": "flat_opsf_build_device",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "anyone_view_device_deployed_emap",
+        "outputs": [
+            {
+                "name": "emap_len",
+                "type": "felt"
+            },
+            {
+                "name": "emap",
+                "type": "DeviceDeployedEmapEntry*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            }
+        ],
+        "name": "anyone_view_utx_deployed_emap",
+        "outputs": [
+            {
+                "name": "emap_len",
+                "type": "felt"
+            },
+            {
+                "name": "emap",
+                "type": "UtxSetDeployedEmapEntry*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            }
+        ],
+        "name": "anyone_view_all_utx_grids",
+        "outputs": [
+            {
+                "name": "grids_len",
+                "type": "felt"
+            },
+            {
+                "name": "grids",
+                "type": "Vec2*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]

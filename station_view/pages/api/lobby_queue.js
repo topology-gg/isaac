@@ -7,12 +7,12 @@ const client = new MongoClient(MONGO_CONNECTION_STRING)
 export default async function handler(req, res) {
     await client.connect()
 
-    const db = client.db('s2m2')
-    const puzzles = await db
-        .collection ('puzzles')
-        .find ()
-        .sort ({ 'puzzle_id': 1 })
+    const db = client.db('isaac_alpha')
+    const lobby_queue = await db
+        .collection ('lobby_queue')
+        .find ({ 'expired': 0 })
+        .sort ({ 'queue_idx': 1 })
         .toArray ()
 
-    res.status(200).json({ 'puzzles': puzzles })
+    res.status(200).json({ 'lobby_queue': lobby_queue })
 }

@@ -10,9 +10,9 @@ function Home() {
         <StarknetProvider>
             <div className="mother-container">
                 <div className="top-child-container">
-                    <h2>Solve2Mint 2.0</h2>
-                    <p style={{marginBottom:'0'}}>Earn your ticket to the Isaac Alpha reality.</p>
-                    <p style={{marginTop:'0',marginBottom:'0'}}>Control: mouse down and drag to select path; ESC to reset</p>
+                    <h2>ISAAC</h2>
+                    {/* <p style={{marginBottom:'0'}}>Earn your ticket to the Isaac Alpha reality.</p>
+                    <p style={{marginTop:'0',marginBottom:'0'}}>Control: mouse down and drag to select path; ESC to reset</p> */}
 
                     <span>.</span>
                     <ConnectWallet />
