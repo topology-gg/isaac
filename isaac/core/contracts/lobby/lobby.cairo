@@ -10,10 +10,13 @@ from contracts.util.structs import (
     Play
 )
 from contracts.design.constants import (
-    CIV_SIZE, UNIVERSE_COUNT
+    GYOZA, CIV_SIZE, UNIVERSE_COUNT
 )
 from contracts.lobby.lobby_state import (
     ns_lobby_state_functions
+)
+from contracts.lobby.ticket_state import (
+    ns_ticket_state
 )
 
 const UNIVERSE_INDEX_OFFSET = 777
@@ -43,6 +46,19 @@ func universe_deactivation_occurred (
 ):
 end
 
+@event
+func ask_to_queue_occurred (
+    account : felt,
+    queue_idx : felt
+):
+end
+
+@event
+func give_invitation_occurred (
+    account : felt
+):
+end
+
 ##############################
 
 #
@@ -56,6 +72,13 @@ namespace IContractUniverse:
         arr_player_adr : felt*
     ) -> ():
     end
+
+    func check_address_in_civilization (
+        address : felt
+    ) -> (
+        bool : felt
+    ):
+    end
 end
 
 @contract_interface
@@ -65,6 +88,27 @@ namespace IContractDAO:
         arr_play : Play*
     ) -> ():
     end
+end
+
+##############################
+
+#
+# Interfacing with s2m2
+#
+struct Record:
+        member success : felt
+        member puzzle_id : felt
+    end
+
+
+@contract_interface
+namespace IContractS2m2:
+
+    func read_s2m_solver_record (
+        address : felt
+    ) -> (record : Record):
+    end
+
 end
 
 ##############################
@@ -86,9 +130,44 @@ end
 ##############################
 
 @constructor
-func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
+func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        arr_guests_len : felt,
+        arr_guests : felt*
+    ):
+
+    #
+    # give an invitation to GYOZA
+    #
+    ns_ticket_state.account_has_invitation_write (GYOZA, 1)
+    give_invitation_occurred.emit (GYOZA)
+
+    #
+    # give an invitation to each guest
+    #
+    recurse_give_invitations (0, arr_guests_len, arr_guests)
 
     return()
+end
+
+func recurse_give_invitations {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        idx : felt,
+        arr_addr_len : felt,
+        arr_addr : felt*
+    ) -> ():
+
+    if idx == arr_addr_len:
+        return ()
+    end
+
+    ns_ticket_state.account_has_invitation_write (arr_addr[idx], 1)
+    give_invitation_occurred.emit (arr_addr[idx])
+
+    recurse_give_invitations (
+        idx + 1,
+        arr_addr_len,
+        arr_addr
+    )
+    return ()
 end
 
 @external
@@ -139,6 +218,69 @@ func recurse_write_universe_addresses {syscall_ptr : felt*, pedersen_ptr : HashB
     #
     recurse_write_universe_addresses (adr_len, adr, idx + 1)
     return ()
+end
+
+##############################
+
+#
+# Functions to handle access to lobby queueing
+#
+
+@external
+func gyoza_give_invitation_to_account {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        account : felt
+    ) -> ():
+
+    let (caller) = get_caller_address ()
+    with_attr error_message ("only gyoza can invoke this function"):
+        assert caller = GYOZA
+    end
+
+    ns_ticket_state.account_has_invitation_write (account, 1)
+    give_invitation_occurred.emit (account)
+
+    return ()
+end
+
+@external
+func set_s2m2_address_once {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        address : felt
+    ) -> ():
+
+    let (curr_address) = ns_ticket_state.s2m2_address_read ()
+    with_attr error_message ("s2m2 contract address has been set"):
+        assert curr_address = 0
+    end
+
+    ns_ticket_state.s2m2_address_write (address)
+
+    return ()
+end
+
+func account_has_ticket_or_invitation {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        account : felt
+    ) -> (
+        bool : felt
+    ):
+
+    #
+    # Check if account has invitation
+    #
+    let (bool_has_invitation) = ns_ticket_state.account_has_invitation_read (account)
+    if bool_has_invitation == 1:
+        return (1)
+    end
+
+    #
+    # Check if account has solved s2m2
+    #
+    let (s2m2_address) = ns_ticket_state.s2m2_address_read ()
+    let (record : Record) = IContractS2m2.read_s2m_solver_record (s2m2_address, account)
+    if record.success == 1:
+        return (1)
+    end
+
+    return (0)
 end
 
 ##############################
@@ -316,7 +458,9 @@ func anyone_ask_to_queue {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     # Revert is caller is 0x0 address => universe contract uses 0x0 as indicator of uninitialized
     #
     let (caller) = get_caller_address ()
-    assert_not_zero (caller)
+    with_attr error_message ("address 0x0 is not allowed to join queue"):
+        assert_not_zero (caller)
+    end
 
     #
     # Revert if caller index-in-queue is not zero, indicating the caller is already in the queue
@@ -324,6 +468,19 @@ func anyone_ask_to_queue {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     let (caller_idx_in_queue) = ns_lobby_state_functions.queue_address_to_index_read (caller)
     with_attr error_message ("caller index in queue != 0 => caller already in queue."):
         assert caller_idx_in_queue = 0
+    end
+
+    #
+    # Revert if caller is in one of the active universes
+    #
+    recurse_assert_caller_not_in_active_universe (0, caller)
+
+    #
+    # Revert if caller has no ticket nor invitation to the Isaac reality
+    #
+    let (bool_has_ticket_or_invitation) = account_has_ticket_or_invitation (caller)
+    with_attr error_message ("caller has no invitation to Isaac nor record of having solved a puzzle at s2m2"):
+        assert bool_has_ticket_or_invitation = 1
     end
 
     #
@@ -335,8 +492,45 @@ func anyone_ask_to_queue {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     ns_lobby_state_functions.queue_address_to_index_write (caller, new_player_idx)
     ns_lobby_state_functions.queue_index_to_address_write (new_player_idx, caller)
 
+
+    #
+    # Event emission
+    #
+    ask_to_queue_occurred.emit (
+        caller,
+        new_player_idx
+    )
+
     return ()
 end
+
+
+func recurse_assert_caller_not_in_active_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        idx : felt,
+        caller : felt
+    ) -> ():
+    alloc_locals
+
+    local index = idx
+
+    if index == UNIVERSE_COUNT:
+        return ()
+    end
+
+    let universe_idx = index + UNIVERSE_INDEX_OFFSET
+    let (universe_addr) = ns_lobby_state_functions.universe_addresses_read (universe_idx)
+    let (bool_in_civ) = IContractUniverse.check_address_in_civilization (
+        universe_addr,
+        caller
+    )
+    with_attr error_message ("caller already in the active universe {index}"):
+        assert bool_in_civ = 0
+    end
+
+    recurse_assert_caller_not_in_active_universe (idx + 1, caller)
+    return ()
+end
+
 
 ##############################
 

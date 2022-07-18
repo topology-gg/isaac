@@ -150,6 +150,35 @@
         "type": "function"
     },
     {
+        "inputs": [
+            {
+                "name": "account",
+                "type": "felt"
+            }
+        ],
+        "name": "account_has_invitation_read",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "s2m2_address_read",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "data": [
             {
                 "name": "event_counter",
@@ -204,6 +233,21 @@
         "type": "event"
     },
     {
+        "data": [
+            {
+                "name": "account",
+                "type": "felt"
+            },
+            {
+                "name": "queue_idx",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "ask_to_queue_occurred",
+        "type": "event"
+    },
+    {
         "inputs": [],
         "name": "probe_can_dispatch_to_universe",
         "outputs": [
@@ -233,6 +277,28 @@
             }
         ],
         "name": "set_universe_addresses_once",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "account",
+                "type": "felt"
+            }
+        ],
+        "name": "gyoza_give_invitation_to_account",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "set_s2m2_address_once",
         "outputs": [],
         "type": "function"
     },
