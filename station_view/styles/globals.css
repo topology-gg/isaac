@@ -83,6 +83,20 @@ body {
     /* overflow-y: auto; */
 }
 
+.side-panel {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #CCCCCC55;
+    overflow-x: hidden;
+    white-space: nowrap;
+    transition: 0.5s;
+    padding-top: 40px;
+}
+
 h2 {
     margin-top: 1em;
     margin-bottom: 0.5em;
@@ -126,6 +140,8 @@ h5 {
     outline: none;
 }
 
+
+/* ref: https://codepen.io/MarioDesigns/pen/woJgeo */
 @keyframes float {
 	0% {
 		/* box-shadow: 0 5px 15px 0px rgba(0,0,0,0.6); */

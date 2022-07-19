@@ -6,6 +6,10 @@ export function useCivState () {
     return useSWR('/api/civ_state', fetcher)
 }
 
+export function useCivStates () {
+    return useSWR('/api/civ_states', fetcher)
+}
+
 export function usePlayerBalances () {
     return useSWR('/api/player_balances', fetcher)
 }
