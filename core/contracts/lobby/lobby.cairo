@@ -48,6 +48,7 @@ end
 
 @event
 func ask_to_queue_occurred (
+    event_counter : felt,
     account : felt,
     queue_idx : felt
 ):
@@ -55,6 +56,7 @@ end
 
 @event
 func give_invitation_occurred (
+    event_counter : felt,
     account : felt
 ):
 end
@@ -130,24 +132,41 @@ end
 ##############################
 
 @constructor
-func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        arr_guests_len : felt,
-        arr_guests : felt*
-    ):
+func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
 
     #
     # give an invitation to GYOZA
     #
     ns_ticket_state.account_has_invitation_write (GYOZA, 1)
-    give_invitation_occurred.emit (GYOZA)
 
-    #
-    # give an invitation to each guest
-    #
-    recurse_give_invitations (0, arr_guests_len, arr_guests)
+    let (event_counter) = ns_lobby_state_functions.event_counter_read ()
+    ns_lobby_state_functions.event_counter_increment ()
+    give_invitation_occurred.emit (
+        event_counter,
+        GYOZA
+    )
 
     return()
 end
+
+
+@external
+func init_give_invitations_once {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        arr_guests_len : felt,
+        arr_guests : felt*
+    ):
+
+    let (bool) = ns_lobby_state_functions.init_invitations_made_read ()
+    with_attr error_message ("this function can only be invoked once"):
+        assert bool = 0
+    end
+
+    recurse_give_invitations (0, arr_guests_len, arr_guests)
+    ns_lobby_state_functions.init_invitations_made_set ()
+
+    return ()
+end
+
 
 func recurse_give_invitations {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         idx : felt,
@@ -160,7 +179,13 @@ func recurse_give_invitations {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*,
     end
 
     ns_ticket_state.account_has_invitation_write (arr_addr[idx], 1)
-    give_invitation_occurred.emit (arr_addr[idx])
+
+    let (event_counter) = ns_lobby_state_functions.event_counter_read ()
+    ns_lobby_state_functions.event_counter_increment ()
+    give_invitation_occurred.emit (
+        event_counter,
+        arr_addr[idx]
+    )
 
     recurse_give_invitations (
         idx + 1,
@@ -237,7 +262,13 @@ func gyoza_give_invitation_to_account {syscall_ptr : felt*, pedersen_ptr : HashB
     end
 
     ns_ticket_state.account_has_invitation_write (account, 1)
-    give_invitation_occurred.emit (account)
+
+    let (event_counter) = ns_lobby_state_functions.event_counter_read ()
+    ns_lobby_state_functions.event_counter_increment ()
+    give_invitation_occurred.emit (
+        event_counter,
+        account
+    )
 
     return ()
 end
@@ -496,7 +527,10 @@ func anyone_ask_to_queue {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     #
     # Event emission
     #
+    let (event_counter) = ns_lobby_state_functions.event_counter_read ()
+    ns_lobby_state_functions.event_counter_increment ()
     ask_to_queue_occurred.emit (
+        event_counter,
         caller,
         new_player_idx
     )
@@ -580,6 +614,7 @@ func universe_report_play {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     #
     let (arr_player_adr : felt*) = alloc ()
     recurse_prepare_arr_player_adr_from_report_play (0, arr_player_adr, arr_play)
+
     let (event_counter) = ns_lobby_state_functions.event_counter_read ()
     ns_lobby_state_functions.event_counter_increment ()
     universe_deactivation_occurred.emit (

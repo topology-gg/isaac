@@ -72,6 +72,7 @@ end
 
 @event
 func player_deploy_device_occurred (
+        event_counter : felt,
         owner : felt,
         device_id : felt,
         type : felt,
@@ -81,6 +82,7 @@ end
 
 @event
 func player_pickup_device_occurred (
+        event_counter : felt,
         owner : felt,
         grid : Vec2
     ):
@@ -88,6 +90,7 @@ end
 
 @event
 func player_deploy_utx_occurred (
+        event_counter : felt,
         owner : felt,
         utx_label : felt,
         utx_device_type : felt,
@@ -100,6 +103,7 @@ end
 
 @event
 func player_pickup_utx_occurred (
+        event_counter : felt,
         owner : felt,
         grid : Vec2
     ):
@@ -107,8 +111,9 @@ end
 
 @event
 func terminate_universe_occurred (
+        event_counter : felt,
         bool_universe_terminable : felt,
-        bool_destruction : felt,
+        destruction_by_which_sun : felt,
         bool_universe_max_age_reached : felt,
         bool_universe_escape_condition_met : felt
     ):
@@ -360,6 +365,11 @@ func activate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     ns_universe_state_functions.l2_block_at_genesis_write (block)
 
     #
+    # Forward macro once for Space View to render
+    #
+    forward_world_macro ()
+
+    #
     # Event emission for Apibara
     #
     let (event_counter) = ns_universe_state_functions.event_counter_read ()
@@ -490,7 +500,7 @@ func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     #
     let (
         bool_universe_terminable,
-        bool_destruction,
+        destruction_by_which_sun,
         bool_universe_max_age_reached,
         bool_universe_escape_condition_met
     ) = is_universe_terminable (curr_ticks + 1)
@@ -499,9 +509,12 @@ func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
     # Initiate termination process if universe is terminable
     #
     if bool_universe_terminable == 1:
+        let (event_counter) = ns_universe_state_functions.event_counter_read ()
+        ns_universe_state_functions.event_counter_increment ()
         terminate_universe_occurred.emit (
+            event_counter,
             bool_universe_terminable,
-            bool_destruction,
+            destruction_by_which_sun,
             bool_universe_max_age_reached,
             bool_universe_escape_condition_met
         )
@@ -557,7 +570,7 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
         curr_ticks : felt
     ) -> (
         bool : felt,
-        bool_destruction : felt,
+        destruction_by_which_sun : felt,
         bool_universe_max_age_reached : felt,
         bool_universe_escape_condition_met : felt
     ):
@@ -566,7 +579,7 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     #
     # Check planet - sun collisions
     #
-    let (bool_destruction) = is_world_macro_destructed ()
+    let (which_sun) = is_world_macro_destructed ()
 
     #
     # Check universe age against max age
@@ -584,9 +597,9 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     #
     # Aggregate flags
     #
-    let sum = bool_destruction + bool_universe_max_age_reached + bool_universe_escape_condition_met
+    let sum = which_sun + bool_universe_max_age_reached + bool_universe_escape_condition_met
     let (bool) = is_not_zero (sum)
-    return (bool, bool_destruction, bool_universe_max_age_reached, bool_universe_escape_condition_met)
+    return (bool, which_sun, bool_universe_max_age_reached, bool_universe_escape_condition_met)
 end
 
 func recurse_prepare_play_record {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
@@ -644,11 +657,14 @@ func player_deploy_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuilt
 
     let (device_id) = ns_micro_devices.device_deploy (caller, type, grid)
 
+    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+    ns_universe_state_functions.event_counter_increment ()
     player_deploy_device_occurred.emit (
-        owner = caller,
-        device_id = device_id,
-        type = type,
-        grid = grid
+        event_counter,
+        caller,
+        device_id,
+        type,
+        grid
     )
 
     return ()
@@ -664,9 +680,12 @@ func player_pickup_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuilt
 
     ns_micro_devices.device_pickup_by_grid (caller, grid)
 
+    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+    ns_universe_state_functions.event_counter_increment ()
     player_pickup_device_occurred.emit (
-        owner = caller,
-        grid = grid
+        event_counter,
+        caller,
+        grid
     )
 
     return ()
@@ -694,7 +713,10 @@ func player_deploy_utx_by_grids {syscall_ptr : felt*, pedersen_ptr : HashBuiltin
         dst_device_grid
     )
 
+    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+    ns_universe_state_functions.event_counter_increment ()
     player_deploy_utx_occurred.emit (
+        event_counter = event_counter,
         owner = caller,
         utx_label = utx_label,
         utx_device_type = utx_device_type,
@@ -717,7 +739,10 @@ func player_pickup_utx_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
 
     ns_micro_utx.utx_pickup_by_grid (caller, grid)
 
+    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+    ns_universe_state_functions.event_counter_increment ()
     player_pickup_utx_occurred.emit (
+        event_counter = event_counter,
         owner = caller,
         grid = grid
     )

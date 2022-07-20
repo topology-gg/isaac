@@ -98,14 +98,14 @@ async def test_lobby (account_factory, starknet, block_info_mock):
     #
     # Deploy and configure lobby
     #
-    contract_lobby = await starknet.deploy (
-        source = 'contracts/lobby/lobby.cairo',
-        constructor_calldata = [NUM_SIGNING_ACCOUNTS] + [user['account'].contract_address for user in users]
-    )
-    await contract_lobby.set_universe_addresses_once ([
-        contract_universe.contract_address
-    ]).invoke ()
-    LOGGER.info (f'> Lobby contract deployed at {contract_lobby.contract_address}; universe addresses configured')
+    contract_lobby = await starknet.deploy (source = 'contracts/lobby/lobby.cairo', constructor_calldata = [])
+    await contract_lobby.set_universe_addresses_once (
+        [contract_universe.contract_address]
+    ).invoke ()
+    await contract_lobby.init_give_invitations_once (
+        [user['account'].contract_address for user in users]
+    ).invoke ()
+    LOGGER.info (f'> Lobby contract deployed at {contract_lobby.contract_address}; universe addresses configured; init invitations given')
 
     #
     # Deploy and configure mock DAO

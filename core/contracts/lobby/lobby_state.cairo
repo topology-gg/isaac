@@ -42,6 +42,10 @@ end
 func event_counter () -> (val : felt):
 end
 
+@storage_var
+func init_invitations_made () -> (bool : felt):
+end
+
 namespace ns_lobby_state_functions:
 
     #
@@ -128,6 +132,16 @@ namespace ns_lobby_state_functions:
         return (val)
     end
 
+    @view
+    func init_invitations_made_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> (bool : felt):
+
+        let (bool) = init_invitations_made.read ()
+
+        return (bool)
+    end
+
+
     #
     # Setters
     #
@@ -207,6 +221,14 @@ namespace ns_lobby_state_functions:
 
         let (val) = event_counter.read ()
         event_counter.write (val + 1)
+
+        return ()
+    end
+
+    func init_invitations_made_set {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> ():
+
+        init_invitations_made.write (1)
 
         return ()
     end

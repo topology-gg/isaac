@@ -19,6 +19,7 @@ from contracts.util.dynamics_ops import (dynamics_add, dynamics_mul_scalar_fp, d
 from contracts.util.vector_ops import (distance_2, distance_3, vec2_add2, vec2_add3, compute_vector_rotate)
 from contracts.util.pseudorandom import (ns_prng)
 from contracts.macro.macro_state import (ns_macro_state_functions)
+from contracts.universe.universe_state import (ns_universe_state_functions)
 
 ########################
 
@@ -26,7 +27,11 @@ from contracts.macro.macro_state import (ns_macro_state_functions)
 # Event emission for Apibara
 #
 @event
-func forward_world_macro_occurred (macro_state : Dynamics, phi : felt):
+func forward_world_macro_occurred (
+    event_counter : felt,
+    macro_state : Dynamics,
+    phi : felt
+):
 end
 
 ########################
@@ -312,7 +317,13 @@ func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     #
     # Event emission
     #
-    forward_world_macro_occurred.emit (macro_state = state_nxt, phi = phi_nxt)
+    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+    ns_universe_state_functions.event_counter_increment ()
+    forward_world_macro_occurred.emit (
+        event_counter = event_counter,
+        macro_state = state_nxt,
+        phi = phi_nxt
+    )
 
     #
     # Update macro states and clear impulse cache
@@ -406,7 +417,7 @@ end
 # Check for destruction condition
 #
 func is_world_macro_destructed {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    ) -> (bool : felt):
+    ) -> (which_sun : felt):
     alloc_locals
 
     let (state_curr : Dynamics) = ns_macro_state_functions.macro_state_curr_read ()
@@ -423,13 +434,13 @@ func is_world_macro_destructed {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
     let (dist_plnt_sun1_sq) = distance_2 (state_curr.plnt.q, state_curr.sun1.q)
     let (bool_sun1_collide) = is_le (dist_plnt_sun1_sq, RADIUS_SUN1_SQ)
     if bool_sun1_collide == 1:
-        return (1)
+        return (2)
     end
 
     let (dist_plnt_sun2_sq) = distance_2 (state_curr.plnt.q, state_curr.sun2.q)
     let (bool_sun2_collide) = is_le (dist_plnt_sun2_sq, RADIUS_SUN2_SQ)
     if bool_sun2_collide == 1:
-        return (1)
+        return (3)
     end
 
     #

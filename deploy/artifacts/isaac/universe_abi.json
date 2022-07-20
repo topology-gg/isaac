@@ -320,6 +320,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "macro_state",
                 "type": "Dynamics"
             },
@@ -681,6 +685,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "device_id",
                 "type": "felt"
             },
@@ -695,6 +703,10 @@
     },
     {
         "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
             {
                 "name": "device_id",
                 "type": "felt"
@@ -715,6 +727,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "device_id",
                 "type": "felt"
             },
@@ -733,6 +749,10 @@
     },
     {
         "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
             {
                 "name": "device_id",
                 "type": "felt"
@@ -787,6 +807,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "owner",
                 "type": "felt"
             },
@@ -810,6 +834,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "owner",
                 "type": "felt"
             },
@@ -824,6 +852,10 @@
     },
     {
         "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
             {
                 "name": "owner",
                 "type": "felt"
@@ -860,6 +892,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "owner",
                 "type": "felt"
             },
@@ -874,6 +910,10 @@
     },
     {
         "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
             {
                 "name": "bool_universe_terminable",
                 "type": "felt"
@@ -898,6 +938,23 @@
     {
         "inputs": [],
         "name": "probe_can_forward_universe",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "check_address_in_civilization",
         "outputs": [
             {
                 "name": "bool",
