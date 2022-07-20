@@ -1,6 +1,7 @@
 import React, { Component, useState, useEffect, useRef, useMemo } from "react";
 import { fabric } from 'fabric';
 import { BigNumber } from 'bignumber.js'
+
 import {
     useStarknet,
     useContract,
@@ -11,7 +12,8 @@ import {
 import UniverseAbi from '../abi/universe_abi.json'
 import { useMacroStates } from '../lib/api'
 
-const UNIVERSE_ADDR = '0x00a3b8dee21daab96058098a65c5cd9974fc5088d9f3d1f2bfcbe1a872a70dee' // universe #0
+
+const UNIVERSE_ADDR = '0x0066eb1b228a5aeed216c78c119f157cc9b57bbbd9d1aa8e7e7dc4537cc76a65' // universe #0
 
 function useUniverseContract() {
     return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
@@ -22,7 +24,6 @@ function useUniverseContract() {
 //
 const STARK_PRIME = new BigNumber('3618502788666131213697322783095070105623107215331596699973092056135872020481')
 const STARK_PRIME_HALF = new BigNumber('1809251394333065606848661391547535052811553607665798349986546028067936010240')
-const STROKE = 'rgba(200,200,200,1)' // grid stroke color
 
 function createSquare (x, y, d, rotation, fill, stroke, stroke_w, cursor)
 {
@@ -47,7 +48,7 @@ function createSquare (x, y, d, rotation, fill, stroke, stroke_w, cursor)
     });
 }
 
-function createTriangle(x, y, w, h, rotation)
+function createTriangle (x, y, w, h, rotation, stroke)
 {
     var width  = w;
     var height = h;
@@ -61,8 +62,8 @@ function createTriangle(x, y, w, h, rotation)
         width: width,
         height: height,
         selectable: false,
-        fill: STROKE,
-        stroke: STROKE,
+        fill: stroke,
+        stroke: stroke,
         strokeWidth: 1,
         left: pos.x,
         top: pos.y,
@@ -81,6 +82,18 @@ function parse_phi_to_degree (phi)
 
 export default function GameWorld() {
 
+    const CANVAS_BG_LIGHT = '#f9ffff'
+    const SUN0_FILL_LIGHT = '#f0e3d0'
+    const SUN1_FILL_LIGHT = '#e3bab4'
+    const SUN2_FILL_LIGHT = '#b9e3f3'
+    const EV_FILL_LIGHT = '#405566'
+
+    const CANVAS_BF_DARK = '#00202C'
+    const SUN0_FILL_DARK = '#6289AF'
+    const SUN1_FILL_DARK = '#FF8B58'
+    const SUN2_FILL_DARK = '#A05760'
+    const EV_FILL_DARK = '#8E8E8E'
+
     fabric.Object.prototype.selectable = false;
 
     // Credits:
@@ -94,7 +107,7 @@ export default function GameWorld() {
     const { contract } = useUniverseContract()
     const { account } = useStarknet()
 
-    const { data: macro_states } = useMacroStates()
+    const { data: db_macro_states } = useMacroStates()
 
     //
     // Logic to initialize a Fabric canvas
@@ -102,25 +115,50 @@ export default function GameWorld() {
     const [canvas, setCanvas] = useState([]);
     const [hasDrawn, _] = useState([]);
     const [windowDimensions, setWindowDimensions] = useState (getWindowDimensions());
-    const _refs = useRef([]);
-    // const _canvasRef = useRef(0);
-    // const _hasDrawnRef =
+
+    const _canvasRef = useRef()
+    const _hasDrawnRef = useRef(false)
+
+    const [timeLeft, setTimeLeft] = useState(2);
+    const [imgVisibility, setImgVisibility] = useState('hidden');
+    const intervalRef = useRef(); // Add a ref to store the interval id
+    useEffect(() => {
+        intervalRef.current = setInterval(() => {
+            setTimeLeft((t) => t - 1);
+        }, 1000);
+        return () => clearInterval(intervalRef.current);
+    }, []);
+
+    useEffect(() => {
+        if (timeLeft <= 0) {
+            clearInterval(intervalRef.current);
+            console.log ('timer reached 0')
+            setImgVisibility ('visible')
+        }
+    }, [timeLeft]);
 
     useEffect (() => {
-        _refs.current[0] = new fabric.Canvas('c', {
+        _canvasRef.current = new fabric.Canvas('c', {
             height: 1500,
             width: 1500,
-            backgroundColor: '#00202C',
+            backgroundColor: CANVAS_BG_LIGHT,
             selection: false
         })
-        _refs.current[1] = false
+        _hasDrawnRef.current = false
     }, []);
 
     useEffect (() => {
-        if (!_refs.current[1]) {
-            drawWorld (_refs.current[0])
+        if (!db_macro_states) {
+            return
         }
-    }, [macro_states]);
+        else if (timeLeft > 0) {
+            return
+        }
+        else if (!_hasDrawnRef.current) {
+            console.log ('lets draw world')
+            drawWorld (_canvasRef.current)
+        }
+    }, [db_macro_states, timeLeft]);
 
     useEffect(() => {
         function handleResize() {
@@ -131,31 +169,12 @@ export default function GameWorld() {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    const { data: civ_player_address_0 } = useStarknetCall({
-        contract,
-        method: 'civilization_player_idx_to_address_read',
-        args: [0]
-    })
-
     const drawWorld = canvi => {
+        console.log (db_macro_states.macro_states)
 
-        // if (civ_player_address_0) {
-        //     console.log("HI")
-        //     if (civ_player_address_0.address) {
-        //         const player_0_addr = new BigNumber(civ_player_address_0.address).toString()
-        //         console.log ("civ_player_address_0.address", player_0_addr)
-
-        //         if (player_0_addr === "0") {
-        //             console.log ("The address of player 0 is 0x0 => this universe is not active!")
-        //             drawIdleMessage (canvi)
-        //             return
-        //         }
-        //     }
-        // }
-
-        if (macro_states && macro_states.macro_states.length > 0) {
-            console.log ("fetched", macro_states.macro_states.length, "macro_states in total.")
-            const macro_state = macro_states.macro_states[0]
+        if (db_macro_states.macro_states.length > 0) {
+            console.log ("fetched", db_macro_states.macro_states.length, "macro_states in total.")
+            const macro_state = db_macro_states.macro_states[0]
             const dynamics = macro_state.dynamics
             const phi = macro_state.phi
 
@@ -170,15 +189,20 @@ export default function GameWorld() {
             console.log ("phi_degree", phi_degree.toString())
 
             drawSpace (canvi, dynamics, phi_degree)
-            _refs.current[1] = true
+            _hasDrawnRef.current = true
         }
-
+        else {
+            console.log ('idle universe')
+            drawIdleMessage (canvi)
+        }
     }
 
     const drawIdleMessage = canvi => {
         const tbox_idle_message = new fabric.Text(
             'This universe is not active.', {
-            fontSize: 16, originX: 'center', originY: 'bottom', fill: '#CCCCCC'
+            fontSize: 16,
+            left: 620, top: 350,
+            fill: '#CCCCCC'
         });
 
         canvi.add (tbox_idle_message)
@@ -202,10 +226,18 @@ export default function GameWorld() {
         const ORIGIN_Y = window_dim.height / 2
         const DISPLAY_SCALE = 60
         const GRID_STYLE = {
-            stroke: '#CCCCCC',
+            stroke: '#BBBBBB',
             strokeWidth: 0.5,
             selectable: false
         }
+        const AXIS_STYLE = {
+            stroke: '#666666',
+            strokeWidth: 0.5,
+            selectable: false
+        }
+        const TBOX_BG = '#DDDDDD55'
+        const COCENTRIC_STROKE_COLOR = '#AAAAAA'
+        const COCENTRIC_STROKE_WIDTH = 0.5
 
         //
         // Compute coordinates of celestial bodies
@@ -240,23 +272,29 @@ export default function GameWorld() {
         //
         // Draw grid lines first
         //
+        const FONT_FAMILY = 'Poppins-Light'
+        const TEXTBOX_WIDTH = 120
+        const TEXTBOX_HEIGHT = 55
+        const FONT_SIZE_NAME = 15
+        const FONT_SIZE_COORD = 12
+        const COORD_SLICE = 6
         const line0_vertical = new fabric.Line(
-            [sun0_left_center, 0, sun0_left_center, sun0_top_center], GRID_STYLE);
+            [sun0_left_center, TEXTBOX_HEIGHT, sun0_left_center, sun0_top_center], GRID_STYLE);
         // const line0_horizontal = new fabric.Line(
         //     [0, sun0_top_center, sun0_left_center, sun0_top_center], GRID_STYLE);
 
         // const line1_vertical = new fabric.Line(
         //     [sun1_left_center, 0, sun1_left_center, sun1_top_center], GRID_STYLE);
         const line1_horizontal = new fabric.Line(
-            [0, sun1_top_center, sun1_left_center, sun1_top_center], GRID_STYLE);
+            [TEXTBOX_WIDTH, sun1_top_center, sun1_left_center, sun1_top_center], GRID_STYLE);
 
         // const line2_vertical = new fabric.Line(
         //     [sun2_left_center, 0, sun2_left_center, sun2_top_center], GRID_STYLE);
         const line2_horizontal = new fabric.Line(
-            [sun2_left_center, sun2_top_center, window_dim.width, sun2_top_center], GRID_STYLE);
+            [sun2_left_center, sun2_top_center, window_dim.width-TEXTBOX_WIDTH, sun2_top_center], GRID_STYLE);
 
         const line_plnt_vertical = new fabric.Line(
-            [plnt_left_center, plnt_top_center, plnt_left_center, window_dim.height], GRID_STYLE);
+            [plnt_left_center, plnt_top_center, plnt_left_center, window_dim.height-TEXTBOX_HEIGHT], GRID_STYLE);
 
         canvi.add (line0_vertical)
         // canvi.add (line0_horizontal)
@@ -270,92 +308,89 @@ export default function GameWorld() {
         //
         // Draw textboxes
         //
-        const FONT_SIZE_NAME = 15
-        const FONT_SIZE_COORD = 12
-        const COORD_SLICE = 6
         const sun0_coord_text = '(' + sun0_x.toString().slice(0,COORD_SLICE) + ', ' + sun0_y.toString().slice(0,COORD_SLICE) + ')'
         const sun1_coord_text = '(' + sun1_x.toString().slice(0,COORD_SLICE) + ', ' + sun1_y.toString().slice(0,COORD_SLICE) + ')'
         const sun2_coord_text = '(' + sun2_x.toString().slice(0,COORD_SLICE) + ', ' + sun2_y.toString().slice(0,COORD_SLICE) + ')'
         const plnt_coord_text = '(' + plnt_x.toString().slice(0,COORD_SLICE) + ', ' + plnt_y.toString().slice(0,COORD_SLICE) + ')'
 
         const tbox_plnt_bg = new fabric.Rect({
-            fill: '#CCCCCC', scaleY: 0.5,
+            fill: TBOX_BG,
             originX: 'center', originY: 'center',
             rx: 5, ry: 5,
-            width:  90, height: 80
+            width:  TEXTBOX_WIDTH, height: TEXTBOX_HEIGHT
         });
         const tbox_plnt_text = new fabric.Text(
             'EV', {
-            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333'
+            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333', fontFamily: FONT_FAMILY
         });
         const tbox_plnt_coord_text = new fabric.Text(
             plnt_coord_text, {
-            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333'
+            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333', fontFamily: FONT_FAMILY
         });
         const tbox_plnt_group = new fabric.Group(
             [ tbox_plnt_bg, tbox_plnt_text, tbox_plnt_coord_text], {
-            left: plnt_left_center - 45,
-            top: window_dim.height - 40
+            left: plnt_left_center - TEXTBOX_WIDTH/2,
+            top: window_dim.height - TEXTBOX_HEIGHT
         });
 
         const tbox_sun0_bg = new fabric.Rect({
-            fill: '#CCCCCC', scaleY: 0.5,
+            fill: TBOX_BG,
             originX: 'center', originY: 'center',
             rx: 5, ry: 5,
-            width: 90, height: 80
+            width: TEXTBOX_WIDTH, height: TEXTBOX_HEIGHT
         });
         const tbox_sun0_text = new fabric.Text(
             'BÖYÜK', {
-            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333'
+            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333', fontFamily: FONT_FAMILY
         });
         const tbox_sun0_coord_text = new fabric.Text(
             sun0_coord_text, {
-            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333'
+            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333', fontFamily: FONT_FAMILY
         });
         const tbox_sun0_group = new fabric.Group(
             [ tbox_sun0_bg, tbox_sun0_text, tbox_sun0_coord_text ], {
-            left: sun0_left_center - 45,
+            left: sun0_left_center - TEXTBOX_WIDTH/2,
             top: 0
         });
 
         const tbox_sun1_bg = new fabric.Rect({
-            fill: '#CCCCCC', scaleY: 0.5,
+            fill: TBOX_BG,
             originX: 'center', originY: 'center',
             rx: 5, ry: 5,
-            width: 90, height: 80
+            width: TEXTBOX_WIDTH, height: TEXTBOX_HEIGHT
         });
         const tbox_sun1_text = new fabric.Text(
             'ORTA', {
-            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333'
+            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333', fontFamily: FONT_FAMILY
         });
         const tbox_sun1_coord_text = new fabric.Text(
             sun1_coord_text, {
-            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333'
+            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333', fontFamily: FONT_FAMILY
         });
         const tbox_sun1_group = new fabric.Group(
             [ tbox_sun1_bg, tbox_sun1_text, tbox_sun1_coord_text ], {
             left: 0,
-            top: sun1_top_center - 40/2
+            top: sun1_top_center - TEXTBOX_HEIGHT/2
         });
 
         const tbox_sun2_bg = new fabric.Rect({
-            fill: '#CCCCCC', scaleY: 0.5,
+            fill: TBOX_BG,
             originX: 'center', originY: 'center',
             rx: 5, ry: 5,
-            width: 90, height: 80
+            width: TEXTBOX_WIDTH, height: TEXTBOX_HEIGHT
         });
         const tbox_sun2_text = new fabric.Text(
             'BALACA', {
-            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333'
+            fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333', fontFamily: FONT_FAMILY
         });
         const tbox_sun2_coord_text = new fabric.Text(
             sun2_coord_text, {
-            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333'
+            fontSize: FONT_SIZE_COORD, originX: 'center', originY: 'top', fill: '#333333', fontFamily: FONT_FAMILY
         });
         const tbox_sun2_group = new fabric.Group(
             [ tbox_sun2_bg, tbox_sun2_text, tbox_sun2_coord_text ], {
-            left: window_dim.width-90,
-            top: sun2_top_center - 40/2
+            left: window_dim.width-TEXTBOX_WIDTH,
+            top: sun2_top_center - TEXTBOX_HEIGHT/2
         });
 
         canvi.add (tbox_plnt_group)
@@ -374,8 +409,8 @@ export default function GameWorld() {
                 left: ORIGIN_X - radius,
                 top:  ORIGIN_Y - radius,
                 radius: radius,
-                stroke: '#CCCCCC',
-                strokeWidth: 0.2,
+                stroke: COCENTRIC_STROKE_COLOR,
+                strokeWidth: COCENTRIC_STROKE_WIDTH,
                 strokeDashArray: [5, 5],
                 fill: '',
                 selectable: false,
@@ -387,11 +422,11 @@ export default function GameWorld() {
         //
         // Draw the trajectories using historical states
         //
-        if (macro_states.macro_states.length > 1){
-            const history_len = macro_states.macro_states.length
+        if (db_macro_states.macro_states.length > 1){
+            const history_len = db_macro_states.macro_states.length
             console.log("history_len", history_len)
             for (var i = 1; i < history_len; i++){
-                const historical_state = macro_states.macro_states[i]
+                const historical_state = db_macro_states.macro_states[i]
                 const historical_dynamics = historical_state.dynamics
                 const historical_phi = historical_state.phi
                 const historical_phi_degree = parse_phi_to_degree (historical_phi)
@@ -423,7 +458,7 @@ export default function GameWorld() {
                     radius: SUN0_RADIUS * DISPLAY_SCALE,
                     stroke: '',
                     strokeWidth: 0.1,
-                    fill: '#6289AF10',
+                    fill: SUN0_FILL_LIGHT.concat('10'),
                     selectable: false,
                     hoverCursor: "pointer"
                 });
@@ -434,7 +469,7 @@ export default function GameWorld() {
                     radius: SUN1_RADIUS * DISPLAY_SCALE,
                     stroke: '',
                     strokeWidth: 0.1,
-                    fill: '#FF8B5810',
+                    fill: SUN1_FILL_LIGHT.concat('10'),
                     selectable: false,
                     hoverCursor: "pointer"
                 });
@@ -445,7 +480,7 @@ export default function GameWorld() {
                     radius: SUN2_RADIUS * DISPLAY_SCALE,
                     stroke: '',
                     strokeWidth: 0.1,
-                    fill: '#A0576010',
+                    fill: SUN2_FILL_LIGHT.concat('10'),
                     selectable: false,
                     hoverCursor: "pointer"
                 });
@@ -466,9 +501,9 @@ export default function GameWorld() {
                     plnt_top,
                     PLNT_RADIUS * 2 * DISPLAY_SCALE,
                     historical_phi_degree,
-                    '#8E8E8E10',
+                    EV_FILL_LIGHT,
                     '',
-                    0.1,
+                    0.03,
                     'default'
                 )
 
@@ -482,18 +517,13 @@ export default function GameWorld() {
         //
         // Draw the suns
         //
-        const SUN0_FILL = '#6289AF'
-        const SUN1_FILL = '#FF8B58'
-        const SUN2_FILL = '#A05760'
-        const PLNT_FILL = '#8E8E8E'
-
         const sun0_circle = new fabric.Circle ({
             left: sun0_left,
             top:  sun0_top,
             radius: SUN0_RADIUS * DISPLAY_SCALE,
-            stroke: '#CCCCCC',
-            strokeWidth: 1,
-            fill: SUN0_FILL,
+            stroke: '#000000',
+            strokeWidth: 2,
+            fill: SUN0_FILL_LIGHT,
             selectable: false,
             hoverCursor: "pointer"
         });
@@ -502,9 +532,9 @@ export default function GameWorld() {
             left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
             top:  ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
             radius: SUN1_RADIUS * DISPLAY_SCALE,
-            stroke: '#CCCCCC',
-            strokeWidth: 1,
-            fill: SUN1_FILL,
+            stroke: '#000000',
+            strokeWidth: 2,
+            fill: SUN1_FILL_LIGHT,
             selectable: false,
             hoverCursor: "pointer"
         });
@@ -513,9 +543,9 @@ export default function GameWorld() {
             left: ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
             top:  ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
             radius: SUN2_RADIUS * DISPLAY_SCALE,
-            stroke: '#CCCCCC',
-            strokeWidth: 1,
-            fill: SUN2_FILL,
+            stroke: '#000000',
+            strokeWidth: 3,
+            fill: SUN2_FILL_LIGHT,
             selectable: false,
             hoverCursor: "pointer"
         });
@@ -525,8 +555,8 @@ export default function GameWorld() {
             ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
             PLNT_RADIUS * 2 * DISPLAY_SCALE,
             phi_degree,
-            PLNT_FILL,
-            '#CCCCCC',
+            EV_FILL_LIGHT,
+            '#000000',
             1,
             "pointer"
         )
@@ -538,6 +568,59 @@ export default function GameWorld() {
         // canvi.add (plnt_circle)
 
         //
+        // Draw suns as images
+        //
+        const sun0_scale = 0.134
+        const sun0_img_offset_x = 0.6
+        const sun0_img_offset_y = 0.38
+        const sun0_img_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS-sun0_img_offset_x) *DISPLAY_SCALE
+        const sun0_img_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS-sun0_img_offset_y) *DISPLAY_SCALE
+
+        const sun1_scale = 0.126
+        const sun1_img_offset_x = 1.05
+        const sun1_img_offset_y = 1.02
+        const sun1_img_left = ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS-sun1_img_offset_x) *DISPLAY_SCALE
+        const sun1_img_top  = ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS-sun1_img_offset_y) *DISPLAY_SCALE
+
+        const sun2_scale = 0.077
+        const sun2_img_offset_x = 0.723
+        const sun2_img_offset_y = 0.683
+        const sun2_img_left = ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS-sun2_img_offset_x) *DISPLAY_SCALE
+        const sun2_img_top  = ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS-sun2_img_offset_y) *DISPLAY_SCALE
+
+        const sun0_img_element = document.getElementById('sun0-img');
+        const sun0_img_instance = new fabric.Image(sun0_img_element, {
+            left: sun0_img_left,
+            top: sun0_img_top,
+            scaleX: sun0_scale,
+            scaleY: sun0_scale,
+            opacity: 1
+        });
+
+        const sun1_img_element = document.getElementById('sun1-img');
+        const sun1_img_instance = new fabric.Image(sun1_img_element, {
+            left: sun1_img_left,
+            top: sun1_img_top,
+            scaleX: sun1_scale,
+            scaleY: sun1_scale,
+            opacity: 1
+        });
+
+        const sun2_img_element = document.getElementById('sun2-img');
+        const sun2_img_instance = new fabric.Image(sun2_img_element, {
+            left: sun2_img_left,
+            top: sun2_img_top,
+            scaleX: sun2_scale,
+            scaleY: sun2_scale,
+            opacity: 1
+        });
+
+        canvi.add(sun0_img_instance);
+        canvi.add(sun1_img_instance);
+        canvi.add(sun2_img_instance);
+
+
+        //
         // Draw axis directionalities
         //
         const AXIS_LEN = 50
@@ -546,32 +629,36 @@ export default function GameWorld() {
         const AXIS_ORI_X = 50
         const AXIS_ORI_Y = 50
         const axis_line_x = new fabric.Line(
-            [AXIS_ORI_X, AXIS_ORI_Y, AXIS_ORI_X+AXIS_LEN, AXIS_ORI_Y], GRID_STYLE);
+            [AXIS_ORI_X, AXIS_ORI_Y, AXIS_ORI_X+AXIS_LEN, AXIS_ORI_Y], AXIS_STYLE);
         const axis_line_y = new fabric.Line(
-            [AXIS_ORI_X, AXIS_ORI_Y, AXIS_ORI_X, AXIS_ORI_Y+AXIS_LEN], GRID_STYLE);
+            [AXIS_ORI_X, AXIS_ORI_Y, AXIS_ORI_X, AXIS_ORI_Y+AXIS_LEN], AXIS_STYLE);
         const axis_tri_x = createTriangle (
             AXIS_ORI_X+AXIS_LEN, AXIS_ORI_Y-AXIS_TRI_W,
             AXIS_TRI_W, AXIS_TRI_H,
-            90
+            90,
+            AXIS_STYLE
         )
         const axis_tri_y = createTriangle (
             AXIS_ORI_X-AXIS_TRI_W/2+1, AXIS_ORI_Y+AXIS_LEN-2,
             AXIS_TRI_W, AXIS_TRI_H,
-            180
+            180,
+            AXIS_STYLE
         )
         const tbox_axis_x = new fabric.Text(
             'x', {
             left: AXIS_ORI_X + AXIS_LEN + AXIS_TRI_H + 5,
             top: AXIS_ORI_Y - 10,
             fontSize: 16,
-            fill: '#CCCCCC'
+            fill: '#333333',
+            fontFamily: FONT_FAMILY
         });
         const tbox_axis_y = new fabric.Text(
             'y', {
             left: AXIS_ORI_X - 5,
             top: AXIS_ORI_Y + AXIS_LEN + AXIS_TRI_H,
             fontSize: 16,
-            fill: '#CCCCCC'
+            fill: '#333333',
+            fontFamily: FONT_FAMILY
         });
 
         canvi.add (axis_line_x)
@@ -647,9 +734,13 @@ export default function GameWorld() {
     // Return component
     //
     return(
-    <div>
-        <canvas id="c" />
-    </div>
+        <div>
+            <div style={{fontFamily:'Poppins-Light',height:'0'}}>{timeLeft}s</div>
+            <canvas id="c" />
+            <img src='/sun0.png' id="sun0-img" style={{visibility:imgVisibility}} />
+            <img src="/sun1.png" id="sun1-img" style={{visibility:imgVisibility}} />
+            <img src="/sun2.png" id="sun2-img" style={{visibility:imgVisibility}} />
+        </div>
     );
 }
 

@@ -2,6 +2,18 @@
     box-sizing: border-box;
 }
 
+@font-face{
+    font-family: "Poppins-Light";
+    src: url("../styles/fonts/Poppins/Poppins-Light.ttf") format("truetype");
+    font-display: swap;
+}
+
+@font-face{
+    font-family: "Anoxic";
+    src: url("../styles/fonts/Anoxic/AnoxicLight-3zlK8.ttf") format("truetype");
+    font-display: swap;
+}
+
 html,
 body,
 #root {
@@ -36,7 +48,7 @@ color: #2e76c8;
     right: 0px;
     bottom: 0px;
     left: 0px;
-    background-color: #282828;
+    background-color: #f9ffff;
 }
 
 /* refs:
@@ -51,7 +63,7 @@ https://stackoverflow.com/questions/8200204/fit-background-image-to-div */
     right: 0px;
     bottom: 0px;
     left: 0px;
-    background-color: #282828;
+    background-color: #f9ffff;
     background-image: url("../public/cover-art.png");
     background-position: center center;
     background-repeat:no-repeat;
@@ -59,8 +71,8 @@ https://stackoverflow.com/questions/8200204/fit-background-image-to-div */
 }
 
 .hide_slow {
-    -webkit-animation: fadeinout 1s linear forwards;
-    animation: fadeinout 1s linear forwards;
+    -webkit-animation: fadeinout 0.7s linear forwards;
+    animation: fadeinout 0.7s linear forwards;
     /* transition: all 1s; */
 }
 
