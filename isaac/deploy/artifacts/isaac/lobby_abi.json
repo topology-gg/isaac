@@ -150,6 +150,18 @@
         "type": "function"
     },
     {
+        "inputs": [],
+        "name": "init_invitations_made_read",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
         "inputs": [
             {
                 "name": "account",
@@ -235,6 +247,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "account",
                 "type": "felt"
             },
@@ -245,6 +261,21 @@
         ],
         "keys": [],
         "name": "ask_to_queue_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "account",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "give_invitation_occurred",
         "type": "event"
     },
     {
@@ -264,6 +295,21 @@
         "name": "constructor",
         "outputs": [],
         "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "arr_guests_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_guests",
+                "type": "felt*"
+            }
+        ],
+        "name": "init_give_invitations_once",
+        "outputs": [],
+        "type": "function"
     },
     {
         "inputs": [

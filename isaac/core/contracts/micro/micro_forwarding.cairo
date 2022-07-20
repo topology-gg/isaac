@@ -43,12 +43,16 @@ from contracts.micro.micro_solar import (
 from contracts.macro.macro_state import (
     ns_macro_state_functions
 )
+from contracts.universe.universe_state import (
+    ns_universe_state_functions
+)
 
 #
 # Event emission for Apibara
 #
 @event
 func resource_update_at_harvester_occurred (
+        event_counter : felt,
         device_id : felt,
         new_quantity : felt
     ):
@@ -56,6 +60,7 @@ end
 
 @event
 func resource_update_at_transformer_occurred (
+        event_counter : felt,
         device_id : felt,
         new_quantity_pre : felt,
         new_quantity_post : felt
@@ -64,6 +69,7 @@ end
 
 @event
 func resource_update_at_upsf_occurred (
+        event_counter : felt,
         device_id : felt,
         element_type : felt,
         new_quantity : felt
@@ -72,6 +78,7 @@ end
 
 @event
 func energy_update_at_device_occurred (
+        event_counter : felt,
         device_id : felt,
         new_quantity : felt
     ):
@@ -151,7 +158,10 @@ namespace ns_micro_forwarding:
                 curr_energy + energy_generated
             )
 
+            let (event_counter) = ns_universe_state_functions.event_counter_read ()
+            ns_universe_state_functions.event_counter_increment ()
             energy_update_at_device_occurred.emit (
+                event_counter = event_counter,
                 device_id = emap_entry.id,
                 new_quantity = curr_energy + energy_generated
             )
@@ -174,7 +184,10 @@ namespace ns_micro_forwarding:
                 curr_energy + energy_generated
             )
 
+            let (event_counter) = ns_universe_state_functions.event_counter_read ()
+            ns_universe_state_functions.event_counter_increment ()
             energy_update_at_device_occurred.emit (
+                event_counter = event_counter,
                 device_id = emap_entry.id,
                 new_quantity = curr_energy + energy_generated
             )
@@ -225,7 +238,10 @@ namespace ns_micro_forwarding:
                 new_quantity
             )
 
+            let (event_counter) = ns_universe_state_functions.event_counter_read ()
+            ns_universe_state_functions.event_counter_increment ()
             resource_update_at_harvester_occurred.emit (
+                event_counter = event_counter,
                 device_id = emap_entry.id,
                 new_quantity = new_quantity
             )
@@ -238,7 +254,10 @@ namespace ns_micro_forwarding:
                 0
             )
 
+            let (event_counter) = ns_universe_state_functions.event_counter_read ()
+            ns_universe_state_functions.event_counter_increment ()
             energy_update_at_device_occurred.emit (
+                event_counter = event_counter,
                 device_id = emap_entry.id,
                 new_quantity = 0
             )
@@ -296,7 +315,10 @@ namespace ns_micro_forwarding:
                 )
             )
 
+            let (event_counter) = ns_universe_state_functions.event_counter_read ()
+            ns_universe_state_functions.event_counter_increment ()
             resource_update_at_transformer_occurred.emit (
+                event_counter = event_counter,
                 device_id = emap_entry.id,
                 new_quantity_pre  = quantity_pre,
                 new_quantity_post = quantity_post
@@ -310,7 +332,10 @@ namespace ns_micro_forwarding:
                 0
             )
 
+            let (event_counter) = ns_universe_state_functions.event_counter_read ()
+            ns_universe_state_functions.event_counter_increment ()
             energy_update_at_device_occurred.emit (
+                event_counter = event_counter,
                 device_id = emap_entry.id,
                 new_quantity = 0
             )
@@ -446,7 +471,10 @@ namespace ns_micro_forwarding:
                     src_balance - quantity_should_send
                 )
 
+                let (event_counter) = ns_universe_state_functions.event_counter_read ()
+                ns_universe_state_functions.event_counter_increment ()
                 resource_update_at_harvester_occurred.emit (
+                    event_counter = event_counter,
                     device_id = emap_entry.src_device_id,
                     new_quantity = src_balance - quantity_should_send
                 )
@@ -489,7 +517,10 @@ namespace ns_micro_forwarding:
                         src_balance - quantity_should_send
                 ))
 
+                let (event_counter) = ns_universe_state_functions.event_counter_read ()
+                ns_universe_state_functions.event_counter_increment ()
                 resource_update_at_transformer_occurred.emit (
+                    event_counter = event_counter,
                     device_id = emap_entry.src_device_id,
                     new_quantity_pre  = src_balances.balance_resource_before_transform,
                     new_quantity_post = src_balance - quantity_should_send
@@ -519,7 +550,10 @@ namespace ns_micro_forwarding:
                     dst_balance + quantity_received ## no max carry limitation
                 )
 
+                let (event_counter) = ns_universe_state_functions.event_counter_read ()
+                ns_universe_state_functions.event_counter_increment ()
                 resource_update_at_upsf_occurred.emit (
+                    event_counter = event_counter,
                     device_id = emap_entry.dst_device_id,
                     element_type = element_type,
                     new_quantity = dst_balance + quantity_received
@@ -562,7 +596,10 @@ namespace ns_micro_forwarding:
                         dst_balances.balance_resource_after_transform
                 ))
 
+                let (event_counter) = ns_universe_state_functions.event_counter_read ()
+                ns_universe_state_functions.event_counter_increment ()
                 resource_update_at_transformer_occurred.emit (
+                    event_counter = event_counter,
                     device_id = emap_entry.dst_device_id,
                     new_quantity_pre  = new_balance_resource_before_transform,
                     new_quantity_post = dst_balances.balance_resource_after_transform
@@ -643,7 +680,10 @@ namespace ns_micro_forwarding:
                 src_device_energy - energy_should_send
             )
 
+            let (event_counter) = ns_universe_state_functions.event_counter_read ()
+            ns_universe_state_functions.event_counter_increment ()
             energy_update_at_device_occurred.emit (
+                event_counter = event_counter,
                 device_id = src_device_id,
                 new_quantity = src_device_energy - energy_should_send
             )
@@ -657,7 +697,10 @@ namespace ns_micro_forwarding:
                 dst_device_energy + energy_should_receive
             )
 
+            let (event_counter) = ns_universe_state_functions.event_counter_read ()
+            ns_universe_state_functions.event_counter_increment ()
             energy_update_at_device_occurred.emit (
+                event_counter = event_counter,
                 device_id = dst_device_id,
                 new_quantity = dst_device_energy + energy_should_receive
             )

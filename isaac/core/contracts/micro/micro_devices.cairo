@@ -835,11 +835,11 @@ namespace ns_micro_devices:
             #
             # SPG / NPG => any of the devices;
             # meaning device_type0 needs to be power generator (pg) :: {0, 1}
-            # and device_type1 needs to be power consumer (pc) :: {2, 3 ... 14}
+            # and device_type1 needs to be power consumer (pc) :: {2, 3 ... 15}
             #
 
             let (is_device_type0_pg) = is_nn_le (device_type0, 1)
-            let (is_device_type1_pc) = is_nn_le (device_type1 - 2, 12)
+            let (is_device_type1_pc) = is_nn_le (device_type1 - 2, 13)
             if is_device_type0_pg * is_device_type1_pc == 1:
                 return ()
             end
