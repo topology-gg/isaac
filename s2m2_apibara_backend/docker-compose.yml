@@ -5,8 +5,8 @@ services:
     image: mongo:latest
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: isaac
-      MONGO_INITDB_ROOT_PASSWORD: isaac
+      MONGO_INITDB_ROOT_USERNAME: s2m2
+      MONGO_INITDB_ROOT_PASSWORD: s2m2
     ports:
     - 27017:27017
     volumes:
@@ -21,6 +21,6 @@ services:
     ports:
     - 7171:7171
     volumes:
-    - ./configuration.toml:/usr/etc/apibara/configuration.toml
+    - ./apibara/configuration.toml:/usr/etc/apibara/configuration.toml
     links:
     - mongo

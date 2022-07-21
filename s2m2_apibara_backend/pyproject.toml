@@ -1,11 +1,11 @@
 [tool.poetry]
-name = "indexer"
+name = "s2m2_api"
 version = "0.1.0"
 description = "Web3 indexer with Apibara"
 authors = []
 
 [tool.poetry.scripts]
-indexer = "indexer.main:cli"
+s2m2 = "s2m2_api.main:cli"
 
 [tool.poetry.dependencies]
 python = ">3.7.2,<3.10"

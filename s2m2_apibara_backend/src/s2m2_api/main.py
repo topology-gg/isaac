@@ -5,7 +5,7 @@ from functools import wraps
 
 import click
 
-from indexer.indexer import run_indexer
+from s2m2_api.indexer import run_indexer
 
 
 def async_command(f):
@@ -33,7 +33,7 @@ async def start(server_url, mongo_url, restart):
     if server_url is None:
         server_url = "localhost:7171"
     if mongo_url is None:
-        mongo_url = "mongodb://isaac:isaac@localhost:27017"
+        mongo_url = "mongodb://s2m2:s2m2@localhost:27017"
     await run_indexer(
         restart=restart,
         server_url=server_url,
