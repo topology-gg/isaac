@@ -13,7 +13,7 @@ services:
     - ./_docker/apibara_mongodb:/data/db
 
   apibara:
-    image: apibara/apibara:0.1.2
+    image: apibara/apibara:0.3.0
     restart: always
     command: start --config /usr/etc/apibara/configuration.toml
     environment:
@@ -21,6 +21,6 @@ services:
     ports:
     - 7171:7171
     volumes:
-    - ./apibara:/usr/etc/apibara
+    - ./configuration.toml:/usr/etc/apibara/configuration.toml
     links:
     - mongo

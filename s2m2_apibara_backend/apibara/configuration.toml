@@ -1,3 +1,5 @@
 [admin.storage]
-# Connect to the production mongo instance
 connection_string = "mongodb://s2m2:s2m2@mongo:27017"
+[network.starknet-goerli]
+type = "starknet"
+provider_url = "https://starknet-goerli.apibara.com/"

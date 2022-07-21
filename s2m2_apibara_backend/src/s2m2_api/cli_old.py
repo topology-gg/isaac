@@ -29,7 +29,6 @@ def _create_mongo_client_and_db():
     mongo_db_name = os.getenv ("S2M2_MONGO_DB_NAME")
 
     mongo = MongoClient (mongo_connection_url)
-    mongo.drop_database(INDEXER_ID.replace("-", "_"))
     s2m2_db = mongo [mongo_db_name]
 
     #
@@ -138,33 +137,37 @@ async def handle_block (info: Info, block: NewBlock):
 #
 # Main
 #
-async def run_indexer (server_url=None, mongo_url=None, restart=None):
+async def start (args):
 
-    if restart:
-        async with Client.connect(server_url) as client:
+    parser = ArgumentParser()
+    parser.add_argument("--reset", action="store_true", default=False)
+    parser.add_argument("--server-url", default=None)
+    args = parser.parse_args()
+
+    if args.reset:
+        async with Client.connect(args.server_url) as client:
             existing = await client.indexer_client().get_indexer(INDEXER_ID)
             if existing:
                 await client.indexer_client().delete_indexer(INDEXER_ID)
+                print('> Indexer deleted. Starting from beginning.')
 
-            mongo, s2m2_db = _create_mongo_client_and_db ()
-            db = {}
-            db ['puzzles'] = s2m2_db.puzzles
-            db ['status']  = s2m2_db.state
-            db ['status'].insert_one (
-                {'active' : 1}
-            )
+    mongo, s2m2_db = _create_mongo_client_and_db ()
+    db = {}
+    db ['puzzles'] = s2m2_db.puzzles
+    db ['status']  = s2m2_db.state
+    db ['status'].insert_one (
+        {'active' : 1}
+    )
 
     s2m2_event_handler = S2M2EventHandler (db = db, mongo = mongo)
-    runner = IndexerRunner(
+    runner = IndexerRunner (
+        indexer_id = INDEXER_ID,
+        new_events_handler = s2m2_event_handler.handle_events,
         config=IndexerRunnerConfiguration(
-            apibara_url=server_url,
-            storage_url=mongo_url,
-        ),
-        network_name="starknet-goerli",
-        indexer_id=INDEXER_ID,
-        new_events_handler=s2m2_event_handler.handle_events,
+            apibara_url=args.server_url,
+        )
     )
-    runner.add_block_handler(handle_block)
+    runner.add_block_handler (handle_block)
 
     # Create the indexer if it doesn't exist on the server,
     # otherwise it will resume indexing from where it left off.
@@ -190,3 +193,7 @@ async def run_indexer (server_url=None, mongo_url=None, restart=None):
     )
 
     await runner.run()
+
+def main():
+    asyncio.run (start(sys.argv[1:]))
+
