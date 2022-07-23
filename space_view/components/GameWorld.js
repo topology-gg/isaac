@@ -13,7 +13,7 @@ import UniverseAbi from '../abi/universe_abi.json'
 import { useMacroStates } from '../lib/api'
 
 
-const UNIVERSE_ADDR = '0x0066eb1b228a5aeed216c78c119f157cc9b57bbbd9d1aa8e7e7dc4537cc76a65' // universe #0
+const UNIVERSE_ADDR = '0x05538cf7d703fa3dccb61329d23598a6b31748c120c6fff0b7c48da2396ba104' // universe #0
 
 function useUniverseContract() {
     return useContract({ abi: UniverseAbi, address: UNIVERSE_ADDR })
@@ -25,7 +25,7 @@ function useUniverseContract() {
 const STARK_PRIME = new BigNumber('3618502788666131213697322783095070105623107215331596699973092056135872020481')
 const STARK_PRIME_HALF = new BigNumber('1809251394333065606848661391547535052811553607665798349986546028067936010240')
 
-function createSquare (x, y, d, rotation, fill, stroke, stroke_w, cursor)
+function createSquare (x, y, d, rotation, fill, stroke, stroke_w, cursor, opacity)
 {
     var pos = fabric.util.rotatePoint(
         new fabric.Point(x, y),
@@ -44,7 +44,8 @@ function createSquare (x, y, d, rotation, fill, stroke, stroke_w, cursor)
         left: pos.x,
         top: pos.y,
         angle: rotation,
-        hoverCursor: cursor
+        hoverCursor: cursor,
+        opacity: opacity
     });
 }
 
@@ -86,7 +87,13 @@ export default function GameWorld() {
     const SUN0_FILL_LIGHT = '#f0e3d0'
     const SUN1_FILL_LIGHT = '#e3bab4'
     const SUN2_FILL_LIGHT = '#b9e3f3'
-    const EV_FILL_LIGHT = '#405566'
+
+    const SUN0_TRAIL_FILL_LIGHT = '#f0e3d0'
+    const SUN1_TRAIL_FILL_LIGHT = '#e3bab4'
+    const SUN2_TRAIL_FILL_LIGHT = '#b9e3f3'
+
+    // const EV_FILL_LIGHT = '#405566'
+    const EV_FILL_LIGHT = '#7777AA'
 
     const CANVAS_BF_DARK = '#00202C'
     const SUN0_FILL_DARK = '#6289AF'
@@ -114,11 +121,15 @@ export default function GameWorld() {
     //
     const [canvas, setCanvas] = useState([]);
     const [hasDrawn, _] = useState([]);
+    const [universeAge, setUniverseAge] = useState ();
     const [windowDimensions, setWindowDimensions] = useState (getWindowDimensions());
 
     const _canvasRef = useRef()
     const _hasDrawnRef = useRef(false)
 
+    //
+    // timer trick to tackle the font loading issue
+    //
     const [timeLeft, setTimeLeft] = useState(2);
     const [imgVisibility, setImgVisibility] = useState('hidden');
     const intervalRef = useRef(); // Add a ref to store the interval id
@@ -128,7 +139,6 @@ export default function GameWorld() {
         }, 1000);
         return () => clearInterval(intervalRef.current);
     }, []);
-
     useEffect(() => {
         if (timeLeft <= 0) {
             clearInterval(intervalRef.current);
@@ -137,6 +147,9 @@ export default function GameWorld() {
         }
     }, [timeLeft]);
 
+    //
+    // main hooks to initialize canvas and draw everything conditioned on db loaded and font-loading timer expired
+    //
     useEffect (() => {
         _canvasRef.current = new fabric.Canvas('c', {
             height: 1500,
@@ -178,6 +191,8 @@ export default function GameWorld() {
             const dynamics = macro_state.dynamics
             const phi = macro_state.phi
 
+            setUniverseAge (db_macro_states.macro_states.length - 1) // at age 0 a macro state event is emitted
+
             //
             // Phi: decode base64 to bytes, then bytes to BigNumber
             //
@@ -202,7 +217,8 @@ export default function GameWorld() {
             'This universe is not active.', {
             fontSize: 16,
             left: 620, top: 350,
-            fill: '#CCCCCC'
+            fill: '#555555',
+            fontFamily: 'Poppins-Light'
         });
 
         canvi.add (tbox_idle_message)
@@ -458,7 +474,8 @@ export default function GameWorld() {
                     radius: SUN0_RADIUS * DISPLAY_SCALE,
                     stroke: '',
                     strokeWidth: 0.1,
-                    fill: SUN0_FILL_LIGHT.concat('10'),
+                    fill: SUN0_TRAIL_FILL_LIGHT,
+                    opacity: 0.027,
                     selectable: false,
                     hoverCursor: "pointer"
                 });
@@ -469,7 +486,8 @@ export default function GameWorld() {
                     radius: SUN1_RADIUS * DISPLAY_SCALE,
                     stroke: '',
                     strokeWidth: 0.1,
-                    fill: SUN1_FILL_LIGHT.concat('10'),
+                    fill: SUN1_TRAIL_FILL_LIGHT,
+                    opacity: 0.01,
                     selectable: false,
                     hoverCursor: "pointer"
                 });
@@ -480,7 +498,8 @@ export default function GameWorld() {
                     radius: SUN2_RADIUS * DISPLAY_SCALE,
                     stroke: '',
                     strokeWidth: 0.1,
-                    fill: SUN2_FILL_LIGHT.concat('10'),
+                    fill: SUN2_TRAIL_FILL_LIGHT,
+                    opacity: 0.01,
                     selectable: false,
                     hoverCursor: "pointer"
                 });
@@ -504,7 +523,8 @@ export default function GameWorld() {
                     EV_FILL_LIGHT,
                     '',
                     0.03,
-                    'default'
+                    'default',
+                    0.01
                 )
 
                 canvi.add (historical_sun0_circle)
@@ -517,12 +537,15 @@ export default function GameWorld() {
         //
         // Draw the suns
         //
+        const SUN0_STROKE_WIDTH = 2
+        const SUN1_STROKE_WIDTH = 3
+        const SUN2_STROKE_WIDTH = 3
         const sun0_circle = new fabric.Circle ({
             left: sun0_left,
             top:  sun0_top,
             radius: SUN0_RADIUS * DISPLAY_SCALE,
             stroke: '#000000',
-            strokeWidth: 2,
+            strokeWidth: SUN0_STROKE_WIDTH,
             fill: SUN0_FILL_LIGHT,
             selectable: false,
             hoverCursor: "pointer"
@@ -533,7 +556,7 @@ export default function GameWorld() {
             top:  ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
             radius: SUN1_RADIUS * DISPLAY_SCALE,
             stroke: '#000000',
-            strokeWidth: 2,
+            strokeWidth: SUN1_STROKE_WIDTH,
             fill: SUN1_FILL_LIGHT,
             selectable: false,
             hoverCursor: "pointer"
@@ -544,7 +567,7 @@ export default function GameWorld() {
             top:  ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
             radius: SUN2_RADIUS * DISPLAY_SCALE,
             stroke: '#000000',
-            strokeWidth: 3,
+            strokeWidth: SUN2_STROKE_WIDTH,
             fill: SUN2_FILL_LIGHT,
             selectable: false,
             hoverCursor: "pointer"
@@ -557,8 +580,9 @@ export default function GameWorld() {
             phi_degree,
             EV_FILL_LIGHT,
             '#000000',
-            1,
-            "pointer"
+            1.5,
+            "pointer",
+            1.0
         )
 
         canvi.add (sun0_circle)
@@ -571,22 +595,22 @@ export default function GameWorld() {
         // Draw suns as images
         //
         const sun0_scale = 0.134
-        const sun0_img_offset_x = 0.6
-        const sun0_img_offset_y = 0.38
-        const sun0_img_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS-sun0_img_offset_x) *DISPLAY_SCALE
-        const sun0_img_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS-sun0_img_offset_y) *DISPLAY_SCALE
+        const sun0_img_offset_x = 0 //0.6
+        const sun0_img_offset_y = 0 //0.38
+        const sun0_img_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS-sun0_img_offset_x) *DISPLAY_SCALE +SUN0_STROKE_WIDTH/2
+        const sun0_img_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS-sun0_img_offset_y) *DISPLAY_SCALE +SUN0_STROKE_WIDTH/2
 
-        const sun1_scale = 0.126
-        const sun1_img_offset_x = 1.05
-        const sun1_img_offset_y = 1.02
-        const sun1_img_left = ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS-sun1_img_offset_x) *DISPLAY_SCALE
-        const sun1_img_top  = ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS-sun1_img_offset_y) *DISPLAY_SCALE
+        const sun1_scale = 0.129
+        const sun1_img_offset_x = 0 //1.05
+        const sun1_img_offset_y = 0 //1.02
+        const sun1_img_left = ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS-sun1_img_offset_x) *DISPLAY_SCALE +SUN1_STROKE_WIDTH/2
+        const sun1_img_top  = ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS-sun1_img_offset_y) *DISPLAY_SCALE +SUN1_STROKE_WIDTH/2
 
-        const sun2_scale = 0.077
-        const sun2_img_offset_x = 0.723
-        const sun2_img_offset_y = 0.683
-        const sun2_img_left = ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS-sun2_img_offset_x) *DISPLAY_SCALE
-        const sun2_img_top  = ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS-sun2_img_offset_y) *DISPLAY_SCALE
+        const sun2_scale = 0.0787
+        const sun2_img_offset_x = 0 //0.723
+        const sun2_img_offset_y = 0 //0.683
+        const sun2_img_left = ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS-sun2_img_offset_x) *DISPLAY_SCALE +SUN2_STROKE_WIDTH/2
+        const sun2_img_top  = ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS-sun2_img_offset_y) *DISPLAY_SCALE +SUN2_STROKE_WIDTH/2
 
         const sun0_img_element = document.getElementById('sun0-img');
         const sun0_img_instance = new fabric.Image(sun0_img_element, {
@@ -730,16 +754,37 @@ export default function GameWorld() {
         canvi.renderAll();
     }
 
+    const info_style = {
+        position:'fixed',
+        right:'0',
+        bottom:'0',
+        width:'20em',
+        paddingLeft:'1em',
+        paddingRight:'1em',
+        height:'3em',
+        lineHeight:'3em',
+        color: '#555555',
+        backgroundColor:'#AAAAAA55',
+        fontFamily: 'Poppins-Light',
+        fontSize: '0.85em',
+        zIndex:'3',
+        textAlign:'center',
+        verticalAlign:'middle'
+    }
+
     //
     // Return component
     //
     return(
         <div>
-            <div style={{fontFamily:'Poppins-Light',height:'0'}}>{timeLeft}s</div>
+            <div style={{fontFamily:'Poppins-Light',height:'0',fontColor:'#00000000'}}>{timeLeft}s</div>
             <canvas id="c" />
-            <img src='/sun0.png' id="sun0-img" style={{visibility:imgVisibility}} />
-            <img src="/sun1.png" id="sun1-img" style={{visibility:imgVisibility}} />
-            <img src="/sun2.png" id="sun2-img" style={{visibility:imgVisibility}} />
+            <img src='/sun0_crop.png' id="sun0-img" style={{visibility:imgVisibility}} />
+            <img src="/sun1_crop.png" id="sun1-img" style={{visibility:imgVisibility}} />
+            <img src="/sun2_crop.png" id="sun2-img" style={{visibility:imgVisibility}} />
+            <div style={info_style}>
+                Age of universe: {universeAge} / 2160 ticks
+            </div>
         </div>
     );
 }
