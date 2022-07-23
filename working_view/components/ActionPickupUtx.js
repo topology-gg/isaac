@@ -45,7 +45,7 @@ export function PickupUtxInterface (props) {
                 Pick up {typ}
             </button>
 
-            <div>
+            <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0',verticalAlign:'center'}}>
                 {
                     data && (
                         <div>

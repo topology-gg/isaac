@@ -16,7 +16,7 @@ class HUD extends Component {
         }
 
         return (
-            <div>
+            <div style={{visibility: this.props.universeActive?'visible':'hidden'}}>
                 <div className={styles.hud}>
                     {content}
                 </div>

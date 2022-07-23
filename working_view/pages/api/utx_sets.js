@@ -11,8 +11,8 @@ export default async function handler(req, res) {
 
     const db = client.db('isaac_alpha')
     const utx_sets = await db
-        .collection('universe0' + '_utx_sets')
-        .find()
+        .collection('u0' + '_utx_sets')
+        .find({'_chain.valid_to' : null})
         .toArray()
 
     res.status(200).json({ 'utx_sets': utx_sets })

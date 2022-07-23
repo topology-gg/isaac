@@ -64,7 +64,7 @@ export function TransferDeviceInterface (props) {
                 {/* <p>Error: {error || 'No error'}</p> */}
             </form>
 
-            <div style={{paddingLeft:'10px'}}>
+            <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0',verticalAlign:'center'}}>
                 {
                     data && (
                         <div>

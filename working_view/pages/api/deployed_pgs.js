@@ -11,8 +11,8 @@ export default async function handler(req, res) {
 
     const db = client.db('isaac_alpha')
     const deployed_pgs = await db
-        .collection('universe0' + '_deployed_pgs')
-        .find()
+        .collection('u0' + '_deployed_pgs')
+        .find({'_chain.valid_to' : null})
         .toArray()
 
     res.status(200).json({ 'deployed_pgs': deployed_pgs })

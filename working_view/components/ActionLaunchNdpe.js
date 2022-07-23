@@ -34,6 +34,8 @@ export function LaunchNdpeInterface (props) {
         invoke ({ args: [{x:x, y:y}] })
     }
 
+    const link_to_voyager = `https://goerli.voyager.online/tx/${data}`
+
     return (
         <div style={{display:'flex',flexDirection:'row'}}>
             <button
@@ -44,11 +46,12 @@ export function LaunchNdpeInterface (props) {
                 Launch *all* NDPE
             </button>
 
-            <div>
-                {
+            <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0',verticalAlign:'center'}}>
+            {
                     data && (
                         <div>
-                            <p>Transaction Hash: {data}</p>
+                            {/* <p>Transaction Hash: {data}</p> */}
+                            <a style={{fontSize:'12px'}} href={link_to_voyager}>view on voyager</a>
                         </div>
                     )
                 }

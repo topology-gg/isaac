@@ -7,15 +7,17 @@ import {
     usePlayerBalances
 } from '../lib/api'
 
-export default function GameStatsPlayers() {
+export default function GameStatsPlayers(props) {
 
     const { data: db_civ_state } = useCivState ()
     const { data: db_player_balances } = usePlayerBalances ()
     var rows = [];
+    console.log (db_player_balances)
 
     if (db_player_balances) {
-        const num_of_player = db_player_balances.player_balances.length
-        for (var row_idx = 0; row_idx < num_of_player; row_idx ++){
+        console.log('GameStatsPlayers:', db_player_balances)
+        const population = db_player_balances.player_balances.length
+        for (var row_idx = 0; row_idx < population; row_idx ++){
             const account_str = toBN(db_player_balances.player_balances[row_idx]['account']).toString(16)
             const account_str_abbrev = "0x" + account_str.slice(0,3) + "..." + account_str.slice(-4)
 
@@ -30,7 +32,7 @@ export default function GameStatsPlayers() {
     // Return component
     //
     return(
-        <div>
+        <div style={{visibility: props.universeActive?'visible':'hidden'}}>
             <h5>Player accounts in this universe</h5>
 
             <table>

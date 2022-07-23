@@ -51,7 +51,7 @@ export function DeployDeviceInterface (props) {
                 Deploy {DEVICE_TYPE_MAP[typ]}
             </button>
 
-            <div style={{padding:'10px'}}>
+            <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0',verticalAlign:'center'}}>
                 {
                     data && (
                         <div>

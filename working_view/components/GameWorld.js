@@ -19,7 +19,9 @@ import {
     useDeployedHarvesters,
     useDeployedTransformers,
     useDeployedUpsfs,
-    useDeployedNdpes
+    useDeployedNdpes,
+
+    useMacroStates
 } from '../lib/api'
 
 import Modal from "./Modal";
@@ -57,15 +59,10 @@ import {
 // UX: multi call
 
 //
-// Import pre-generated perlin values
-//
-const PERLIN_VALUES = require('../public/perlin_planet_dim_25.json');
-
-//
 // Dimensions
 //
-const SIDE = 25 // number of grids per size (planet dimension)
-const GRID = 8 // grid size
+const SIDE = 40 // number of grids per size (planet dimension)
+const GRID = 200 / SIDE // grid size
 const PAD_X = 160 // pad size
 const PAD_Y = 120 // pad size
 const CANVAS_W = 1122
@@ -92,6 +89,22 @@ DEVICE_DIM_MAP.set(14, 5);
 DEVICE_DIM_MAP.set(15, 5);
 
 //
+// Import pre-generated perlin values
+//
+const PERLIN_VALUES_FE_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_0.json`);
+const PERLIN_VALUES_AL_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_2.json`);
+const PERLIN_VALUES_CU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_4.json`);
+const PERLIN_VALUES_SI_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_6.json`);
+const PERLIN_VALUES_PU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_8.json`);
+const PERLIN_VALUES = {
+    'fe' : PERLIN_VALUES_FE_RAW,
+    'al' : PERLIN_VALUES_AL_RAW,
+    'cu' : PERLIN_VALUES_CU_RAW,
+    'si' : PERLIN_VALUES_SI_RAW,
+    'pu' : PERLIN_VALUES_PU_RAW
+}
+
+//
 // Sizes
 //
 const STROKE_WIDTH_CURSOR_FACE = 2
@@ -103,7 +116,7 @@ const STROKE_WIDTH_GRID_FACE = 0.4
 // Styles
 //
 const PALETTE = 'DARK'
-const STROKE             = PALETTE === 'DARK' ? '#DDDDDD' : '#BBBBBB' // grid stroke color
+const STROKE             = PALETTE === 'DARK' ? '#DDDDDD55' : '#BBBBBB' // grid stroke color
 const CANVAS_BG          = PALETTE === 'DARK' ? '#282828' : '#E3EDFF'
 const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#DDDDDD' : '#999999'
 const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
@@ -169,12 +182,15 @@ export default function GameWorld() {
     const { data: db_deployed_harvesters } = useDeployedHarvesters ()
     const { data: db_deployed_transformers } = useDeployedTransformers ()
     const { data: db_deployed_upsfs } = useDeployedUpsfs ()
-    // const { data: db_deployed_ndpes } = useDeployedNdpes ()
+    const { data: db_deployed_ndpes } = useDeployedNdpes ()
+
+    const { data: db_macro_states } = useMacroStates ()
 
     //
     // React References
     //
     const _canvasRef = useRef();
+    const _universeActiveRef = useRef(false);
     const _hasDrawnRef = useRef();
     const _coordTextRef = useRef();
     const _cursorGridRectRef = useRef();
@@ -184,7 +200,9 @@ export default function GameWorld() {
     const _displayModeTextRef = useRef('');
 
     const _deviceDisplayRef = useRef();
-    const _feDisplayRef = useRef();
+    const _elementDisplayRef = useRef();
+    const _elementDisplayRectsRef = useRef({});
+    const _perlinColorsPerElementRef = useRef({});
 
     const _gridAssistRectsGroupRef = useRef();
     const _gridAssistRectsRef = useRef({});
@@ -205,6 +223,7 @@ export default function GameWorld() {
     // React States
     //
     const [hasLoadedDB, setHasLoadedDB] = useState(false)
+    const [universeActive, setUniverseActive] = useState (false)
     const [hasDrawnState, setHasDrawnState] = useState(0)
     const [ClickPositionNorm, setClickPositionNorm] = useState({left: 0, top: 0})
     const [MousePositionNorm, setMousePositionNorm] = useState({x: 0, y: 0})
@@ -226,7 +245,7 @@ export default function GameWorld() {
         if (hasLoadedDB) {
             return
         }
-        if (!db_civ_state || !db_player_balances || !db_deployed_devices || !db_utx_sets || !db_deployed_pgs || !db_deployed_harvesters || !db_deployed_transformers || !db_deployed_upsfs) {
+        if (!db_macro_states || !db_civ_state || !db_player_balances || !db_deployed_devices || !db_utx_sets || !db_deployed_pgs || !db_deployed_harvesters || !db_deployed_transformers || !db_deployed_upsfs || !db_deployed_ndpes) {
             console.log ('db not loaded..')
             return
         }
@@ -234,7 +253,7 @@ export default function GameWorld() {
             console.log ('db loaded!')
             setHasLoadedDB (true)
         }
-    }, [db_civ_state, db_player_balances, db_deployed_devices, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs]);
+    }, [db_macro_states, db_civ_state, db_player_balances, db_deployed_devices, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs, db_deployed_ndpes]);
 
     //
     // useEffect to check if the signed in account is in current civilization
@@ -330,15 +349,15 @@ export default function GameWorld() {
             );
         }
 
-        // const deployed_ndpe_mapping = new Map();
-        // for (const ndpe of db_deployed_ndpes) {
-        //     deployed_ndpe_mapping.set(
-        //         ndpe['id'],
-        //         {
-        //             'energy' : ndpe['energy']
-        //         }
-        //     );
-        // }
+        const deployed_ndpe_mapping = new Map();
+        for (const ndpe of db_deployed_ndpes.deployed_ndpes) {
+            deployed_ndpe_mapping.set(
+                ndpe['id'],
+                {
+                    'energy' : ndpe['energy']
+                }
+            );
+        }
 
 
         for (const entry of db_deployed_devices.deployed_devices){
@@ -364,6 +383,9 @@ export default function GameWorld() {
             }
             else if (typ == 14) {
                 balances = deployed_upsf_mapping.get (id)
+            }
+            else if (typ == 15) {
+                balances = deployed_ndpe_mapping.get (id)
             }
             else {
                 balances = {}
@@ -408,6 +430,9 @@ export default function GameWorld() {
         if (_displayModeRef.current !== 'devices') {
             return
         }
+        if (!_universeActiveRef.current) {
+            return
+        }
 
         const x_grid = convert_screen_to_grid_x (x)
         const y_grid = convert_screen_to_grid_y (y)
@@ -428,6 +453,9 @@ export default function GameWorld() {
 
     function handleMouseDrag (x, y) { // selectState in 'select' confirmed already
         if (_displayModeRef.current !== 'devices') {
+            return
+        }
+        if (!_universeActiveRef.current) {
             return
         }
 
@@ -456,6 +484,9 @@ export default function GameWorld() {
     function handleLeftMouseUp (x, y) {
         _mouseStateRef.current = 'up'
         if (_displayModeRef.current !== 'devices') {
+            return
+        }
+        if (!_universeActiveRef.current) {
             return
         }
 
@@ -516,6 +547,35 @@ export default function GameWorld() {
         setSelectedGrids ([])
     }
 
+    function resetZoom () {
+        _canvasRef.current.setZoom(1)  // reset zoom so pan actions work as expected
+        _canvasRef.current.absolutePan({
+            x: 0,
+            y: 0
+        });
+        _canvasRef.current.renderAll ()
+    }
+
+
+    function handleElementDisplayVisibility (visible, element) {
+        console.log (`handleElementDisplayVisibility element=${element}`)
+        for (var face=0; face<6; face++) {
+            for (var row=0; row<SIDE; row++) {
+                for (var col=0; col<SIDE; col++) {
+                    const idx = `(${face},${row},${col})`
+                    const fill = !visible ? '#000000' : _perlinColorsPerElementRef.current [element][idx]
+                    _elementDisplayRectsRef.current [idx].fill = fill
+                    _elementDisplayRectsRef.current [idx].visible = visible
+                    _elementDisplayRectsRef.current [idx].dirty = true
+
+                    if ( row==10 && col==10 && face==1 ) {
+                        console.log (`fill at row=10, col=10, face=1: ${fill}`)
+                    }
+                }
+            }
+        }
+    }
+
     //
     // Handle key down events
     // ref: https://stackoverflow.com/questions/37440408/how-to-detect-esc-key-press-in-react-and-how-to-handle-it
@@ -525,15 +585,18 @@ export default function GameWorld() {
         if (!_hasDrawnRef.current) {
             return
         }
+        if (!_universeActiveRef.current) {
+            return
+        }
 
         if (ev.key === 'c') {
-
-            _canvasRef.current.setZoom(1)  // reset zoom so pan actions work as expected
-            _canvasRef.current.absolutePan({
-                x: 0,
-                y: 0
-            });
-            _canvasRef.current.renderAll ()
+            resetZoom ()
+            // _canvasRef.current.setZoom(1)  // reset zoom so pan actions work as expected
+            // _canvasRef.current.absolutePan({
+            //     x: 0,
+            //     y: 0
+            // });
+            // _canvasRef.current.renderAll ()
         }
 
         if (ev.key === "Escape") {
@@ -546,9 +609,8 @@ export default function GameWorld() {
             _displayModeRef.current = 'devices'
 
             change_working_view_visibility (true)
+            handleElementDisplayVisibility (false, '')
 
-            _feDisplayRef.current.visible = false
-            updateMode (_canvasRef.current, 'devices')
             setHudLines ( arr => [
                 arr[0], `Display: devices`
             ])
@@ -558,9 +620,8 @@ export default function GameWorld() {
             _displayModeRef.current = 'fe'
 
             change_working_view_visibility (false)
+            handleElementDisplayVisibility (true, 'fe')
 
-            _feDisplayRef.current.visible = true
-            updateMode (_canvasRef.current, 'FE distribution')
             setHudLines ( arr => [
                 arr[0], `Display: FE distribution`
             ])
@@ -568,7 +629,10 @@ export default function GameWorld() {
         else if(ev.key === '3'){
             console.log('3')
             _displayModeRef.current = 'al'
-            updateMode (_canvasRef.current, 'AL distribution')
+
+            change_working_view_visibility (false)
+            handleElementDisplayVisibility (true, 'al')
+
             setHudLines ( arr => [
                 arr[0], `Display: AL distribution`
             ])
@@ -576,7 +640,10 @@ export default function GameWorld() {
         else if(ev.key === '4'){
             console.log('4')
             _displayModeRef.current = 'cu'
-            updateMode (_canvasRef.current, 'CU distribution')
+
+            change_working_view_visibility (false)
+            handleElementDisplayVisibility (true, 'cu')
+
             setHudLines ( arr => [
                 arr[0], `Display: CU distribution`
             ])
@@ -584,7 +651,10 @@ export default function GameWorld() {
         else if(ev.key === '5'){
             console.log('5')
             _displayModeRef.current = 'si'
-            updateMode (_canvasRef.current, 'SI distribution')
+
+            change_working_view_visibility (false)
+            handleElementDisplayVisibility (true, 'si')
+
             setHudLines ( arr => [
                 arr[0], `Display: SI distribution`
             ])
@@ -592,7 +662,10 @@ export default function GameWorld() {
         else if(ev.key === '6'){
             console.log('6')
             _displayModeRef.current = 'pu'
-            updateMode (_canvasRef.current, 'PU distribution')
+
+            change_working_view_visibility (false)
+            handleElementDisplayVisibility (true, 'pu')
+
             setHudLines ( arr => [
                 arr[0], `Display: PU distribution`
             ])
@@ -879,22 +952,21 @@ export default function GameWorld() {
 
         if (hasLoadedDB) {
 
-            if (db_civ_state.civ_state[0].active != 1) {
+            if (db_macro_states.macro_states.length == 0) {
                 console.log ("This universe is not active.")
+                _universeActiveRef.current = false
+                setUniverseActive (false)
                 drawIdleMessage (canvi)
                 return
             }
             else {
                 prepare_grid_mapping ()
-
+                drawPerlin (canvi)
                 drawGrid (canvi)
                 drawDevices (canvi)
-                drawPerlin (canvi)
                 drawAssist (canvi) // draw assistance objects the last to be on top
                 drawUtxAnim (canvi)
-                // drawMode (canvi)
                 initializeGridAssistRectsRef (canvi)
-
                 setHudLines ([
                     'Face - / Grid (-,-)',
                     'Display: devices'
@@ -902,6 +974,8 @@ export default function GameWorld() {
 
                 _hasDrawnRef.current = true
                 setHasDrawnState (1)
+                _universeActiveRef.current = true;
+                setUniverseActive (true)
 
                 document.getElementById('canvas_wrap').focus();
             }
@@ -913,12 +987,12 @@ export default function GameWorld() {
 
         const tbox_idle_message = new fabric.Textbox(
             'This universe is not active.', {
-                width: 200,
+                width: 300,
                 top:  CANVAS_H/2 - 100,
                 left: CANVAS_W/2 - 100,
-                fontSize: 20,
+                fontSize: 17,
                 textAlign: 'left',
-                fill: "#333333",
+                fill: "#CCCCCC",
                 hoverCursor: 'default',
                 fontFamily: TBOX_FONT_FAMILY
             });
@@ -1085,7 +1159,7 @@ export default function GameWorld() {
             const tbox_y_d = new fabric.Textbox(
                 text_y_d, {
                     width: 100,
-                    left: PAD_X + 0 - GRID*6,
+                    left: PAD_X + 0 - GRID*9,
                     top:  PAD_Y + SIDE*GRID*2 - GRID*1.5,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
@@ -1099,7 +1173,7 @@ export default function GameWorld() {
             const tbox_y_2d = new fabric.Textbox(
                 text_y_2d, {
                     width: 100,
-                    left: PAD_X + 0 - GRID*6,
+                    left: PAD_X + 0 - GRID*9,
                     top:  PAD_Y + SIDE*GRID*1 - GRID*1.5,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
@@ -1113,7 +1187,7 @@ export default function GameWorld() {
             const tbox_y_3d = new fabric.Textbox(
                 text_y_3d, {
                     width: 100,
-                    left: PAD_X + 0 - GRID*6,
+                    left: PAD_X + 0 - GRID*9.5,
                     top:  PAD_Y + SIDE*GRID*0 - GRID*1.5,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
@@ -1353,13 +1427,13 @@ export default function GameWorld() {
         canvi.renderAll();
     }
 
-    const updateMode = (canvi, mode) => {
-        console.log ('updateMode()')
-        _displayModeTextRef.current.text = 'Display: ' + mode
-        _displayModeTextRef.current.dirty = true
+    // const updateMode = (canvi, mode) => {
+    //     console.log ('updateMode()')
+    //     _displayModeTextRef.current.text = 'Display: ' + mode
+    //     _displayModeTextRef.current.dirty = true
 
-        canvi.renderAll();
-    }
+    //     canvi.renderAll();
+    // }
 
     const drawAssist = canvi => {
         //
@@ -1405,66 +1479,81 @@ export default function GameWorld() {
     // PERLIN_VALUES
     const drawPerlin = canvi => {
 
-        const perlin_cells = []
-        // console.log ("max perline value:", PERLIN_VALUES['max'])
-        // console.log ("min perline value:", PERLIN_VALUES['min'])
+        //
+        // build colors
+        //
+        var perlin_colors_per_element = {}
+        for (const element of ['fe','al','cu','si','pu']){
 
+            var perlin_colors = {}
+            const perlin_values = PERLIN_VALUES[element]
+            console.log (`${element} / max perline value: ${perlin_values['max']}`)
+            console.log (`${element} / min perline value: ${perlin_values['min']}`)
+
+            for (var face=0; face<6; face++) {
+
+                for (var row=0; row<SIDE; row++) {
+                    for (var col=0; col<SIDE; col++) {
+
+                        const perlin_value = perlin_values[face][row][col]
+                        const perlin_value_normalized = (perlin_value - perlin_values['min']) / (perlin_values['max'] - perlin_values['min'])
+
+                        const hi = PERLIN_COLOR_MAP['fe']['hi']
+                        const lo = PERLIN_COLOR_MAP['fe']['lo']
+                        const r = lerp (lo[0], hi[0], perlin_value_normalized)
+                        const g = lerp (lo[1], hi[1], perlin_value_normalized)
+                        const b = lerp (lo[2], hi[2], perlin_value_normalized)
+                        const rect_color = `rgb(${r}, ${g}, ${b})`
+
+                        perlin_colors [`(${face},${row},${col})`] = rect_color
+                    }
+                }
+            }
+            perlin_colors_per_element [element] = perlin_colors
+        }
+        _perlinColorsPerElementRef.current = perlin_colors_per_element
+
+        //
+        // build rects
+        //
+        const perlin_rects = []
+        const perlin_rects_dict = {}
         for (var face=0; face<6; face++) {
 
             const face_ori = find_face_ori (face)
+
             for (var row=0; row<SIDE; row++) {
+
                 for (var col=0; col<SIDE; col++) {
-                    const perlin_value = PERLIN_VALUES[face][row][col]
-                    const perlin_value_normalized = (perlin_value - PERLIN_VALUES['min']) / (PERLIN_VALUES['max'] - PERLIN_VALUES['min'])
-                    // console.log("perlin_value_normalized:", perlin_value_normalized)
 
-                    const hi = PERLIN_COLOR_MAP['fe']['hi']
-                    const lo = PERLIN_COLOR_MAP['fe']['lo']
-
-                    const r = lerp (lo[0], hi[0], perlin_value_normalized)
-                    const g = lerp (lo[1], hi[1], perlin_value_normalized)
-                    const b = lerp (lo[2], hi[2], perlin_value_normalized)
-                    const rect_color = `rgb(${r}, ${g}, ${b})`
-
-                    const rect = new fabric.Rect({
+                    var rect = new fabric.Rect({
                         height: GRID,
                         width: GRID,
-                        // left: PAD_X + (col + face_ori[0]) * GRID,
-                        // top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
-                        originX: 'center', originY: 'center',
-                        fill: rect_color,
-                        selectable: false,
-                        strokeWidth: 0
-                    });
-                    var text = new fabric.Text(
-                        perlin_value.toString(), {
-                        fontSize: 4.1, fill: '#CCCCCC',
-                        // left: PAD_X + (col + face_ori[0]) * GRID,
-                        // top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
-                        // width: GRID,
-                        originX: 'center', originY: 'center',
-                        selectable: false,
-                        fontFamily: "Poppins-Light"
-                    });
-
-                    const cell = new fabric.Group(
-                        [ rect, text ], {
                         left: PAD_X + (col + face_ori[0]) * GRID,
                         top: PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
+                        fill: '#FFFFFF',
+                        selectable: false,
+                        visible: false,
+                        strokeWidth: 0
                     });
-                    perlin_cells.push (cell)
+                    perlin_rects.push (rect)
+                    perlin_rects_dict [`(${face},${row},${col})`] = rect
+                    canvi.add (rect) // if we need per-rect control we need to add each rect to the canvas
                 }
             }
-            // break
         }
+        _elementDisplayRectsRef.current = perlin_rects_dict
 
-        var perlin_rect_face0_group = new fabric.Group(
-            perlin_cells, {
-                visible: false,
-                selectable: false
-            });
-        canvi.add(perlin_rect_face0_group)
-        _feDisplayRef.current = perlin_rect_face0_group
+        // // TODO: may be able to fix text blurring at high zoom by messing with cache
+        // // see: http://fabricjs.com/fabric-object-caching
+        // var perlin_rects_group = new fabric.Group(
+        //     perlin_rects, {
+        //         visible: false,
+        //         selectable: false,
+        //         // objectCaching: false
+        //     });
+        // canvi.add(perlin_rects_group)
+        // _elementDisplayRef.current = perlin_rects_group
 
         canvi.renderAll();
     }
@@ -1714,8 +1803,6 @@ export default function GameWorld() {
         const y_norm = SIDE*3 - 1 - Math.floor( (y - PAD_Y) / GRID )
         const bool = is_valid_coord (x_norm, y_norm)
 
-        console.log (`mouse moving, bool=${bool}, modalVisibility=${modalVisibility}`)
-
         if (bool && !modalVisibility) {
             setMousePositionNorm ({
                 x: x_norm,
@@ -1753,7 +1840,7 @@ export default function GameWorld() {
                 in_civ = {accountInCiv}
             />
 
-            <HUD lines={hudLines} />
+            <HUD lines={hudLines} universeActive={universeActive}/>
 
             <canvas id="c" />
         </div>

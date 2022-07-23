@@ -65,7 +65,7 @@ export function BuildDeviceInterface (props) {
                 {/* <p>Error: {error || 'No error'}</p> */}
             </form>
 
-            <div style={{paddingLeft:'10px'}}>
+            <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0'}}>
                 {
                     data && (
                         <div>

@@ -1,3 +1,5 @@
+import React, { Component, useState, useEffect, useRef, useCallback, useMemo } from "react";
+
 import GameWorld from "../components/GameWorld";
 import GameStatsDevices from "../components/GameStatsDevices"
 import GameStatsPlayers from "../components/GameStatsPlayers"
@@ -5,8 +7,11 @@ import GameStatsCiv from "../components/GameStatsCiv"
 import CoverArt from "../components/CoverArt"
 import CoverArtBack from "../components/CoverArtBack"
 
-import styles from '../styles/Home.module.css'
 import { ConnectWallet } from "../components/ConnectWallet.js"
+
+import {
+    useMacroStates
+} from '../lib/api'
 
 import {
   useStarknet,
@@ -18,7 +23,24 @@ import {
 
 function Home() {
 
-  return (
+    const [universeActive, setUniverseActive] = useState (false)
+    const { data: db_macro_states } = useMacroStates ()
+
+    useEffect ( () => {
+        if (!db_macro_states) {
+            return
+        }
+        else {
+            if (db_macro_states.macro_states.length > 0) {
+                setUniverseActive (true)
+            }
+            else {
+                setUniverseActive (false)
+            }
+        }
+    }, [db_macro_states])
+
+    return (
     <StarknetProvider>
         <CoverArtBack />
         <CoverArt />
@@ -32,16 +54,18 @@ function Home() {
                 <GameWorld />
             </div>
 
-            <div className="right-child-container">
+            <div className="right-child-container" style={{display: universeActive?'flex':'none'}}>
 
                 <div className="right-child-title">
                     <span>.</span>
 
-                    <h3>ISAAC: Working View</h3>
+                    <h3 style={{fontFamily:'Anoxic',fontSize:'40px',marginTop:'10px',marginBottom:'20px'}}>
+                        ISAAC
+                    </h3>
                     <ConnectWallet />
                 </div>
 
-                <div className="right-child-middle">
+                <div className="right-child-middle" >
                     <span>.</span>
                     <h4>Control</h4>
                     <p>Key press 1~6: choose display mode</p>
@@ -56,9 +80,9 @@ function Home() {
                 <div className="right-child-bottom">
                     <GameStatsCiv />
                     <span>.</span>
-                    <GameStatsPlayers />
+                    <GameStatsPlayers universeActive={universeActive} />
                     <span>.</span>
-                    <GameStatsDevices />
+                    <GameStatsDevices universeActive={universeActive} />
                 </div>
 
             </div>
@@ -66,7 +90,7 @@ function Home() {
         </div>
 
     </StarknetProvider>
-  )
+    )
 }
 
 export default Home;

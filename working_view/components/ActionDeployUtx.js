@@ -62,7 +62,7 @@ export function DeployUtxInterface (props) {
                 Deploy {DEVICE_TYPE_MAP[utx_type]}
             </button>
 
-            <div style={{padding:'10px'}}>
+            <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0',verticalAlign:'center'}}>
                 {
                     data && (
                         <div>

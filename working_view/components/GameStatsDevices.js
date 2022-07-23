@@ -12,7 +12,7 @@ import {
     usePlayerBalances
 } from '../lib/api'
 
-export default function GameStatsDevices() {
+export default function GameStatsDevices(props) {
 
     const { account } = useStarknet()
     BigNumber.config({ EXPONENTIAL_AT: 76 })
@@ -76,7 +76,7 @@ export default function GameStatsDevices() {
     // Return component
     //
     return(
-        <div>
+        <div style={{visibility: props.universeActive?'visible':'hidden'}}>
             <h5>Amount of your undeployed devices</h5>
 
             <table>

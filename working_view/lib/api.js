@@ -38,3 +38,6 @@ export function useDeployedNdpes () {
     return useSWR('/api/deployed_ndpes', fetcher)
 }
 
+export function useMacroStates () {
+    return useSWR('/api/macro_states', fetcher)
+}

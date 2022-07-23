@@ -11,8 +11,8 @@ export default async function handler(req, res) {
 
     const db = client.db('isaac_alpha')
     const deployed_transformers = await db
-        .collection('universe0' + '_deployed_transformers')
-        .find()
+        .collection('u0' + '_deployed_transformers')
+        .find({'_chain.valid_to' : null})
         .toArray()
 
     res.status(200).json({ 'deployed_transformers': deployed_transformers })

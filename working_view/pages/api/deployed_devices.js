@@ -1,7 +1,5 @@
 import { MongoClient } from 'mongodb'
 
-const UNIVERSE = 'universe0'
-
 const MONGO_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING
 
 const client = new MongoClient(MONGO_CONNECTION_STRING)
@@ -11,8 +9,8 @@ export default async function handler(req, res) {
 
     const db = client.db('isaac_alpha')
     const deployed_devices = await db
-        .collection('universe0' + '_deployed_devices')
-        .find()
+        .collection('u0' + '_deployed_devices')
+        .find({'_chain.valid_to' : null})
         .toArray()
 
     res.status(200).json({ 'deployed_devices': deployed_devices })

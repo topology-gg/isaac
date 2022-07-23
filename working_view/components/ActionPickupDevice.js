@@ -45,11 +45,12 @@ export function PickupDeviceInterface (props) {
                 Pick up {typ}
             </button>
 
-            <div>
+            <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0',verticalAlign:'center'}}>
                 {
                     data && (
                         <div>
-                            <p>Transaction Hash: {data}</p>
+                            {/* <p>Transaction Hash: {data}</p> */}
+                            <a style={{fontSize:'12px'}} href={link_to_voyager}>view on voyager</a>
                         </div>
                     )
                 }

@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb'
 
-const UNIVERSE = 'universe0'
+const UNIVERSE = 'u0'
 
 const MONGO_CONNECTION_STRING = process.env.MONGO_CONNECTION_STRING
 
@@ -10,10 +10,13 @@ export default async function handler(req, res) {
     await client.connect()
 
     const db = client.db('isaac_alpha')
-    const deployed_upsfs = await db
-        .collection('u0' + '_deployed_upsfs')
+    const macro_states = await db
+        .collection(UNIVERSE + '_macro_states')
         .find({'_chain.valid_to' : null})
+        .project({ 'phi': 1, 'dynamics': 1, 'block_number': 1 })
+        .sort({ 'block_number': -1 })
+        .limit(100)
         .toArray()
 
-    res.status(200).json({ 'deployed_upsfs': deployed_upsfs })
+    res.status(200).json({ 'macro_states': macro_states })
 }
