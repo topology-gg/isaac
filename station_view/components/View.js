@@ -72,8 +72,8 @@ export default function View () {
     //
     useEffect (() => {
         if (hasLoadedDB) {
-            // console.log (db_civ_state)
-            // console.log (db_lobby_queue)
+            console.log (db_civ_state)
+            console.log (db_lobby_queue)
 
             //
             // set display queue length
@@ -87,14 +87,17 @@ export default function View () {
                 // no universe launched ever
                 //
                 setUniverseStatus ('idle')
+                console.log('aaa')
             }
             else if (db_civ_state.civ_state[0].active == 0) {
                 setUniverseStatus ('idle')
+                console.log('bbb')
             }
             else {
                 setUniverseStatus ('active')
+                console.log('ccc')
                 const civ_idx = db_civ_state.civ_state[0].civ_idx
-                const ticks_since_birth = db_macro_states.macro_states.length
+                const ticks_since_birth = db_macro_states.macro_states.length - 1 // at age 0 a macro state event is emitted
 
                 const p_style = {textAlign:'center',marginTop:'0',marginBottom:'0'}
                 const info = [
@@ -192,7 +195,7 @@ export default function View () {
 
     const join_button_color = {color:joinButtonColor}
     const join_button_style = {
-        ...{padding:'0',margin:'0',height:'25px',border:'0',width:'160px'},
+        ...{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',fontFamily:'Poppins-Light'},
         ...join_button_color
     }
 
