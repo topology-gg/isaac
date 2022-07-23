@@ -10,7 +10,10 @@ export default async function handler(req, res) {
     const db = client.db('isaac_alpha')
     const lobby_queue = await db
         .collection ('lobby_queue')
-        .find ({ 'expired': 0 })
+        .find ({
+            'expired': 0,
+            '_chain.valid_to' : null
+        })
         .sort ({ 'queue_idx': 1 })
         .toArray ()
 

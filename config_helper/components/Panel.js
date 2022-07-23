@@ -45,8 +45,8 @@ export default function Panel () {
             var rows = []
             for (const civ_state of db_civ_states.civ_states) {
                 var cells = []
-                cells.push (<td style={{textAlign:'right'}}>{`Civilization number ${civ_state.civ_idx}`}</td>)
-                cells.push (<td>{civ_state.fate}</td>)
+                cells.push (<td style={{fontSize:'14px',textAlign:'center'}}>{`Civ. number ${civ_state.civ_idx}`}</td>)
+                cells.push (<td style={{fontSize:'14px',textAlign:'left'}}>{civ_state.fate}</td>)
                 rows.push (<tr>{cells}</tr>)
             }
             setHistoryRows (rows)
@@ -56,8 +56,10 @@ export default function Panel () {
 
     return (
         <div style={{display:'flex',flexDirection:'column',textAlign:'center'}}>
-            <h2>Isaac History</h2>
+            <h2 style={{marginBottom:'0'}}>Isaac History</h2>
+            <p style={{marginTop:'5px',marginBottom:'30px'}}>the fate of past civilizations</p>
 
+            {/* <div style={{overflowY: 'auto', height:'300px'}}> */}
             <table>
                 <thead>
                     <tr>
@@ -69,6 +71,7 @@ export default function Panel () {
                     {historyRows}
                 </tbody>
             </table>
+            {/* </div> */}
 
         </div>
     );
