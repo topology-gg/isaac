@@ -435,74 +435,166 @@ export default function GameWorld() {
             canvi.add (circle)
         }
 
+
+
         //
         // Draw the trajectories using historical states
         //
-        if (db_macro_states.macro_states.length > 1){
+        if (db_macro_states.macro_states.length > 2){
             const history_len = db_macro_states.macro_states.length
             console.log("history_len", history_len)
-            for (var i = 1; i < history_len; i++){
-                const historical_state = db_macro_states.macro_states[i]
-                const historical_dynamics = historical_state.dynamics
-                const historical_phi = historical_state.phi
-                const historical_phi_degree = parse_phi_to_degree (historical_phi)
+            for (var i = 1; i < history_len-1; i++){
 
-                const plnt_x = historical_dynamics.planet.q.x
-                const plnt_y = historical_dynamics.planet.q.y
-                const sun0_x = historical_dynamics.sun0.q.x
-                const sun0_y = historical_dynamics.sun0.q.y
-                const sun1_x = historical_dynamics.sun1.q.x
-                const sun1_y = historical_dynamics.sun1.q.y
-                const sun2_x = historical_dynamics.sun2.q.x
-                const sun2_y = historical_dynamics.sun2.q.y
+                // const sun0_thickness = 20 * (history_len-i) / history_len
+                // const sun1_thickness = 10 * (history_len-i) / history_len
+                // const sun2_thickness = 7 * (history_len-i) / history_len
+                // const plnt_thickness = 2 * (history_len-i) / history_len
 
-                const sun0_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
-                const sun0_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
+                const ratio = (history_len-i) / history_len
 
-                const sun1_left = ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
-                const sun1_top  = ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
+                const sun0_thickness = SUN0_RADIUS *DISPLAY_SCALE *2 * ratio
+                const sun1_thickness = SUN1_RADIUS *DISPLAY_SCALE *2 * ratio
+                const sun2_thickness = SUN2_RADIUS *DISPLAY_SCALE *2 * ratio
+                const plnt_thickness = PLNT_RADIUS *DISPLAY_SCALE *2 * ratio
 
-                const sun2_left = ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
-                const sun2_top  = ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
 
-                const plnt_left = ORIGIN_X + (plnt_x.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE
-                const plnt_top  = ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE
+                const sun0_opacity = 0.03 + 0.5 * (ratio**5)
+                const sun1_opacity = 0.01 + 0.08 * (ratio**8)
+                const sun2_opacity = 0.05 * ratio
+                const plnt_opacity = 0.1 * (ratio**4)
 
-                const historical_sun0_circle = new fabric.Circle ({
-                    left: sun0_left,
-                    top:  sun0_top,
-                    radius: SUN0_RADIUS * DISPLAY_SCALE,
-                    stroke: '',
-                    strokeWidth: 0.1,
-                    fill: SUN0_TRAIL_FILL_LIGHT,
-                    opacity: 0.027,
-                    selectable: false,
-                    hoverCursor: "pointer"
-                });
+                // grab two consecutive states
+                const state_0 = db_macro_states.macro_states[i]
+                const dynamics_0 = state_0.dynamics
+                const state_1 = db_macro_states.macro_states[i+1]
+                const dynamics_1 = state_1.dynamics
 
-                const historical_sun1_circle = new fabric.Circle ({
-                    left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
-                    top:  ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
-                    radius: SUN1_RADIUS * DISPLAY_SCALE,
-                    stroke: '',
-                    strokeWidth: 0.1,
-                    fill: SUN1_TRAIL_FILL_LIGHT,
-                    opacity: 0.01,
-                    selectable: false,
-                    hoverCursor: "pointer"
-                });
+                // derive adjusted coordinates of celestial bodies
+                const plnt_x0 = dynamics_0.planet.q.x
+                const plnt_y0 = dynamics_0.planet.q.y
+                const sun0_x0 = dynamics_0.sun0.q.x
+                const sun0_y0 = dynamics_0.sun0.q.y
+                const sun1_x0 = dynamics_0.sun1.q.x
+                const sun1_y0 = dynamics_0.sun1.q.y
+                const sun2_x0 = dynamics_0.sun2.q.x
+                const sun2_y0 = dynamics_0.sun2.q.y
 
-                const historical_sun2_circle = new fabric.Circle ({
-                    left: ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
-                    top:  ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
-                    radius: SUN2_RADIUS * DISPLAY_SCALE,
-                    stroke: '',
-                    strokeWidth: 0.1,
-                    fill: SUN2_TRAIL_FILL_LIGHT,
-                    opacity: 0.01,
-                    selectable: false,
-                    hoverCursor: "pointer"
-                });
+                const sun0_left0 = ORIGIN_X + (sun0_x0.toString(10)) *DISPLAY_SCALE -sun0_thickness/2
+                const sun0_top0  = ORIGIN_Y + (sun0_y0.toString(10)) *DISPLAY_SCALE -sun0_thickness/2
+                const sun1_left0 = ORIGIN_X + (sun1_x0.toString(10)) *DISPLAY_SCALE -sun1_thickness/2
+                const sun1_top0  = ORIGIN_Y + (sun1_y0.toString(10)) *DISPLAY_SCALE -sun1_thickness/2
+                const sun2_left0 = ORIGIN_X + (sun2_x0.toString(10)) *DISPLAY_SCALE -sun2_thickness/2
+                const sun2_top0  = ORIGIN_Y + (sun2_y0.toString(10)) *DISPLAY_SCALE -sun2_thickness/2
+                const plnt_left0 = ORIGIN_X + (plnt_x0.toString(10)) *DISPLAY_SCALE -plnt_thickness/2
+                const plnt_top0  = ORIGIN_Y + (plnt_y0.toString(10)) *DISPLAY_SCALE -plnt_thickness/2
+
+                const plnt_x1 = dynamics_1.planet.q.x
+                const plnt_y1 = dynamics_1.planet.q.y
+                const sun0_x1 = dynamics_1.sun0.q.x
+                const sun0_y1 = dynamics_1.sun0.q.y
+                const sun1_x1 = dynamics_1.sun1.q.x
+                const sun1_y1 = dynamics_1.sun1.q.y
+                const sun2_x1 = dynamics_1.sun2.q.x
+                const sun2_y1 = dynamics_1.sun2.q.y
+
+                const sun0_left1 = ORIGIN_X + (sun0_x1.toString(10)) *DISPLAY_SCALE -sun0_thickness/2
+                const sun0_top1  = ORIGIN_Y + (sun0_y1.toString(10)) *DISPLAY_SCALE -sun0_thickness/2
+                const sun1_left1 = ORIGIN_X + (sun1_x1.toString(10)) *DISPLAY_SCALE -sun1_thickness/2
+                const sun1_top1  = ORIGIN_Y + (sun1_y1.toString(10)) *DISPLAY_SCALE -sun1_thickness/2
+                const sun2_left1 = ORIGIN_X + (sun2_x1.toString(10)) *DISPLAY_SCALE -sun2_thickness/2
+                const sun2_top1  = ORIGIN_Y + (sun2_y1.toString(10)) *DISPLAY_SCALE -sun2_thickness/2
+                const plnt_left1 = ORIGIN_X + (plnt_x1.toString(10)) *DISPLAY_SCALE -plnt_thickness/2
+                const plnt_top1  = ORIGIN_Y + (plnt_y1.toString(10)) *DISPLAY_SCALE -plnt_thickness/2
+
+                // draw line segment connecting two states;
+                // line thickness and opacity reflects recency
+                canvi.add (new fabric.Line(
+                    [sun0_left0, sun0_top0, sun0_left1, sun0_top1]
+                    , { stroke: SUN0_TRAIL_FILL_LIGHT, strokeWidth: sun0_thickness, opacity: sun0_opacity,
+                        strokeLineCap: 'round', selectable: false }
+                ));
+
+                canvi.add (new fabric.Line(
+                    [sun1_left0, sun1_top0, sun1_left1, sun1_top1]
+                    , { stroke: SUN1_TRAIL_FILL_LIGHT, strokeWidth: sun1_thickness, opacity: sun1_opacity,
+                        strokeLineCap: 'round', selectable: false }
+                ));
+
+                canvi.add (new fabric.Line(
+                    [sun2_left0, sun2_top0, sun2_left1, sun2_top1]
+                    , { stroke: SUN2_TRAIL_FILL_LIGHT, strokeWidth: sun2_thickness, opacity: sun2_opacity,
+                        strokeLineCap: 'round', selectable: false }
+                ));
+
+                canvi.add (new fabric.Line(
+                    [plnt_left0, plnt_top0, plnt_left1, plnt_top1]
+                    , { stroke: EV_FILL_LIGHT, strokeWidth: plnt_thickness, opacity: plnt_opacity,
+                        strokeLineCap: 'round', selectable: false }
+                ));
+
+
+
+                // const historical_state = db_macro_states.macro_states[i]
+                // const historical_dynamics = historical_state.dynamics
+                // const historical_phi = historical_state.phi
+                // const historical_phi_degree = parse_phi_to_degree (historical_phi)
+
+                // const plnt_x = historical_dynamics.planet.q.x
+                // const plnt_y = historical_dynamics.planet.q.y
+                // const sun0_x = historical_dynamics.sun0.q.x
+                // const sun0_y = historical_dynamics.sun0.q.y
+                // const sun1_x = historical_dynamics.sun1.q.x
+                // const sun1_y = historical_dynamics.sun1.q.y
+                // const sun2_x = historical_dynamics.sun2.q.x
+                // const sun2_y = historical_dynamics.sun2.q.y
+
+                // const sun0_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
+                // const sun0_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
+
+                // const sun1_left = ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
+                // const sun1_top  = ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
+
+                // const sun2_left = ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
+                // const sun2_top  = ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
+
+                // const plnt_left = ORIGIN_X + (plnt_x.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE
+                // const plnt_top  = ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE
+
+                // const historical_sun0_circle = new fabric.Circle ({
+                //     left: sun0_left,
+                //     top:  sun0_top,
+                //     radius: SUN0_RADIUS * DISPLAY_SCALE,
+                //     stroke: '',
+                //     strokeWidth: 0.1,
+                //     fill: SUN0_TRAIL_FILL_LIGHT,
+                //     opacity: 0.027,
+                //     selectable: false,
+                //     hoverCursor: "pointer"
+                // });
+
+                // const historical_sun1_circle = new fabric.Circle ({
+                //     left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
+                //     top:  ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
+                //     radius: SUN1_RADIUS * DISPLAY_SCALE,
+                //     stroke: '',
+                //     strokeWidth: 0.1,
+                //     fill: SUN1_TRAIL_FILL_LIGHT,
+                //     opacity: 0.01,
+                //     selectable: false,
+                //     hoverCursor: "pointer"
+                // });
+
+                // const historical_sun2_circle = new fabric.Circle ({
+                //     left: ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
+                //     top:  ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
+                //     radius: SUN2_RADIUS * DISPLAY_SCALE,
+                //     stroke: '',
+                //     strokeWidth: 0.1,
+                //     fill: SUN2_TRAIL_FILL_LIGHT,
+                //     opacity: 0.01,
+                //     selectable: false,
+                //     hoverCursor: "pointer"
+                // });
 
                 // const historical_plnt_circle = new fabric.Circle ({
                 //     left: plnt_left,
@@ -515,22 +607,22 @@ export default function GameWorld() {
                 //     hoverCursor: "pointer"
                 // });
 
-                const historical_plnt_square = createSquare (
-                    plnt_left,
-                    plnt_top,
-                    PLNT_RADIUS * 2 * DISPLAY_SCALE,
-                    historical_phi_degree,
-                    EV_FILL_LIGHT,
-                    '',
-                    0.03,
-                    'default',
-                    0.01
-                )
+                // const historical_plnt_square = createSquare (
+                //     plnt_left,
+                //     plnt_top,
+                //     PLNT_RADIUS * 2 * DISPLAY_SCALE,
+                //     historical_phi_degree,
+                //     EV_FILL_LIGHT,
+                //     '',
+                //     0.03,
+                //     'default',
+                //     0.01
+                // )
 
-                canvi.add (historical_sun0_circle)
-                canvi.add (historical_sun1_circle)
-                canvi.add (historical_sun2_circle)
-                canvi.add (historical_plnt_square)
+                // canvi.add (historical_sun0_circle)
+                // canvi.add (historical_sun1_circle)
+                // canvi.add (historical_sun2_circle)
+                // canvi.add (historical_plnt_square)
             }
         }
 
