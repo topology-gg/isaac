@@ -445,18 +445,12 @@ export default function GameWorld() {
             console.log("history_len", history_len)
             for (var i = 1; i < history_len-1; i++){
 
-                // const sun0_thickness = 20 * (history_len-i) / history_len
-                // const sun1_thickness = 10 * (history_len-i) / history_len
-                // const sun2_thickness = 7 * (history_len-i) / history_len
-                // const plnt_thickness = 2 * (history_len-i) / history_len
-
+                // use variable power of recency to taper opacity and width
                 const ratio = (history_len-i) / history_len
-
-                const sun0_thickness = SUN0_RADIUS *DISPLAY_SCALE *2 * ratio
-                const sun1_thickness = SUN1_RADIUS *DISPLAY_SCALE *2 * ratio
-                const sun2_thickness = SUN2_RADIUS *DISPLAY_SCALE *2 * ratio
-                const plnt_thickness = PLNT_RADIUS *DISPLAY_SCALE *2 * ratio
-
+                const sun0_thickness = SUN0_RADIUS *DISPLAY_SCALE *2 * (ratio**1.2)
+                const sun1_thickness = SUN1_RADIUS *DISPLAY_SCALE *2 * (ratio**1.5)
+                const sun2_thickness = SUN2_RADIUS *DISPLAY_SCALE *2 * (ratio**1.5)
+                const plnt_thickness = PLNT_RADIUS *DISPLAY_SCALE *2 * (ratio**2)
 
                 const sun0_opacity = 0.03 + 0.5 * (ratio**5)
                 const sun1_opacity = 0.01 + 0.08 * (ratio**8)
