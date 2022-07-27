@@ -520,6 +520,18 @@ function Parent (props) {
                 <div style={{marginTop:'1em'}}>
                     <h3>Puzzle Id: {shownPuzzleId}</h3>
 
+                    {
+                        !hasLoadedDB && (
+                            <div style={{zIndex:10,width:'320px',height:'320px'}}>
+                                <p style={{textAlign:'center',lineHeight:'320px',fontSize:'14px'}}>Loading ...</p>
+                            </div>
+                        )
+
+                    }
+                    {/* <div style={{zIndex:10,width:'320px',height:'320px',visibility:loading_visibility}}>
+                        <p style={{textAlign:'center',lineHeight:'320px'}}>Heyy</p>
+                    </div> */}
+
                     <div
                         id="canvas_wrap" tabIndex="-1"
                         onMouseMove={(ev)=> handleMouseMove(ev)}
