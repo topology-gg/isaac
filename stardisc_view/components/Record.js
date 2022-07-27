@@ -18,8 +18,10 @@ export default function Record (props) {
 
             const button_style = {
                 backgroundColor : puzzle.solved == 1 ? '#999999' : 'CCCCCC',
+                color : puzzle.solved == 1 ? '#555555' : '#333333',
                 border: 'none',
-                padding: '1px 8px'
+                padding: '1px 10px',
+                fontSize: '12px'
             }
 
             var cells = []
@@ -33,7 +35,7 @@ export default function Record (props) {
                 </td>
             )
             if (puzzle.solved == 1) {
-                cells.push (<td>{solver_hex_str_abbrev}</td>)
+                cells.push (<td style={{fontSize:'12px'}}>{solver_hex_str_abbrev}</td>)
             }
             else {
                 cells.push (<td>{'-'}</td>)
@@ -44,7 +46,7 @@ export default function Record (props) {
 
     const style = {
         overflowY:'auto',
-        height:'20em'
+        height:'21em'
     }
 
     return (
@@ -55,8 +57,8 @@ export default function Record (props) {
             <div style={style}>
                 <table style={{margin:'0 auto'}}>
                     <thead>
-                        <th style={{width:'5em'}}>puzzle id</th>
-                        <th style={{width:'10em'}}>solver</th>
+                        <th style={{width:'5em',fontSize:'12px'}}>puzzle id</th>
+                        <th style={{width:'10em',fontSize:'12px'}}>solver</th>
                     </thead>
 
                     <tbody>
