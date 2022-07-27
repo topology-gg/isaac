@@ -330,6 +330,7 @@ func activate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
         arr_player_adr_len : felt,
         arr_player_adr : felt*
     ) -> ():
+    alloc_locals
 
     #
     # Only lobby contract can invoke this function
@@ -519,7 +520,7 @@ func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
             bool_universe_escape_condition_met
         )
         terminate_universe_and_notify_lobby (
-            bool_destruction,
+            destruction_by_which_sun,
             bool_universe_escape_condition_met
         )
 
@@ -536,7 +537,7 @@ func anyone_forward_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, 
 end
 
 func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        bool_destruction : felt,
+        destruction_by_which_sun : felt,
         bool_universe_escape_condition_met : felt
     ) -> ():
     alloc_locals
@@ -547,7 +548,7 @@ func terminate_universe_and_notify_lobby {syscall_ptr : felt*, pedersen_ptr : Ha
     let (lobby_address) = ns_universe_state_functions.lobby_address_read ()
     let (arr_play : Play*) = alloc ()
     recurse_prepare_play_record (
-        bool_destruction,
+        destruction_by_which_sun,
         bool_universe_escape_condition_met,
         arr_play,
         0
@@ -603,7 +604,7 @@ func is_universe_terminable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
 end
 
 func recurse_prepare_play_record {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        bool_destruction : felt,
+        destruction_by_which_sun : felt,
         bool_universe_escape_condition_met : felt,
         arr_play : Play*,
         idx : felt
@@ -617,7 +618,8 @@ func recurse_prepare_play_record {syscall_ptr : felt*, pedersen_ptr : HashBuilti
     let (player_address) = ns_universe_state_functions.civilization_player_idx_to_address_read (idx)
     let (has_launched_ndpe) = ns_universe_state_functions.civilization_player_address_to_has_launched_ndpe_read (player_address)
 
-    if bool_destruction == 1:
+    let (bool_destructed) = is_not_zero (destruction_by_which_sun)
+    if bool_destructed == 1:
         assert arr_play[idx] = Play (
             player_address = player_address,
             grade = -1 # this would map to 0 vote by IsaacDAO's charter
@@ -633,7 +635,7 @@ func recurse_prepare_play_record {syscall_ptr : felt*, pedersen_ptr : HashBuilti
     # Tail recursion
     #
     recurse_prepare_play_record (
-        bool_destruction,
+        destruction_by_which_sun,
         bool_universe_escape_condition_met,
         arr_play,
         idx + 1

@@ -2,14 +2,14 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.math import signed_div_rem, sign, assert_nn, assert_not_zero, unsigned_div_rem, sqrt
-from starkware.cairo.common.math_cmp import is_le
+from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.hash import hash2
 
 from contracts.design.constants import (
     G, MASS_SUN0, MASS_SUN1, MASS_SUN2, MASS_PLNT,
     G_MASS_SUN0, G_MASS_SUN1, G_MASS_SUN2,
     RADIUS_SUN0_SQ, RADIUS_SUN1_SQ, RADIUS_SUN2_SQ,
-    OMEGA_DT_PLANET, TWO_PI,
+    DELTA_PHI_PLANET, TWO_PI,
     RANGE_CHECK_BOUND, SCALE_FP, SCALE_FP_SQRT, DT,
     ns_perturb
 )
@@ -31,6 +31,12 @@ func forward_world_macro_occurred (
     event_counter : felt,
     macro_state : Dynamics,
     phi : felt
+):
+end
+
+@event
+func impulse_applied_occurred (
+    impulse : Vec2
 ):
 end
 
@@ -178,7 +184,7 @@ end
 # A pure function for forwarding planet's rotation `phi`
 #
 func forward_planet_spin {range_check_ptr} (phi) -> (phi_nxt):
-    let phi_nxt_cand = phi + OMEGA_DT_PLANET
+    let phi_nxt_cand = phi + DELTA_PHI_PLANET
     let (overflow) = is_le (TWO_PI, phi_nxt_cand)
     if overflow == 1:
         return (phi_nxt_cand - TWO_PI)
@@ -283,6 +289,30 @@ func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
         state_curr.plnt,
         impulse_aggregated
     )
+
+    #
+    # Event emission for Apibara if impulse_aggregated is not zero
+    #
+    let (bool_impulse_x_nz) = is_not_zero (impulse_aggregated.x)
+    let (bool_impulse_y_nz) = is_not_zero (impulse_aggregated.y)
+    let (bool_impulse_nz) = is_not_zero (bool_impulse_x_nz + bool_impulse_y_nz)
+
+    if bool_impulse_nz == 1:
+        impulse_applied_occurred.emit (impulse_aggregated)
+
+        # boilerplate code go away!
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    else:
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
+    end
+
+    local syscall_ptr : felt*= syscall_ptr
+    local pedersen_ptr : HashBuiltin* = pedersen_ptr
+    local range_check_ptr = range_check_ptr
 
     #
     # Apply perturbation to planet dynamic

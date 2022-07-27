@@ -10,6 +10,7 @@ from starkware.starknet.common.syscalls import (get_block_number, get_caller_add
 from contracts.design.constants import (
     ns_device_types, assert_device_type_is_utx,
     harvester_device_type_to_element_type,
+    pg_device_type_to_max_carry,
     harvester_element_type_to_max_carry,
     transformer_element_type_to_max_carry,
     transformer_device_type_to_element_types,
@@ -153,9 +154,19 @@ namespace ns_micro_forwarding:
                 solar_exposure_fp
             )
             let (curr_energy) = ns_micro_state_functions.device_deployed_id_to_energy_balance_read (emap_entry.id)
+
+            let (max_carry) = pg_device_type_to_max_carry (ns_device_types.DEVICE_SPG)
+            let (bool_max_reached) = is_le (max_carry, curr_energy + energy_generated)
+            local new_quantity
+            if bool_max_reached == 1:
+                assert new_quantity = max_carry
+            else:
+                assert new_quantity = curr_energy + energy_generated
+            end
+
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
                 emap_entry.id,
-                curr_energy + energy_generated
+                new_quantity
             )
 
             let (event_counter) = ns_universe_state_functions.event_counter_read ()
@@ -163,7 +174,7 @@ namespace ns_micro_forwarding:
             energy_update_at_device_occurred.emit (
                 event_counter = event_counter,
                 device_id = emap_entry.id,
-                new_quantity = curr_energy + energy_generated
+                new_quantity = new_quantity
             )
 
             tempvar syscall_ptr = syscall_ptr
@@ -179,9 +190,19 @@ namespace ns_micro_forwarding:
         if emap_entry.type == ns_device_types.DEVICE_NPG:
             let (curr_energy) = ns_micro_state_functions.device_deployed_id_to_energy_balance_read (emap_entry.id)
             let (energy_generated) = ns_logistics_xpg.npg_energy_supplied_to_energy_generated_per_tick (curr_energy)
+
+            let (max_carry) = pg_device_type_to_max_carry (ns_device_types.DEVICE_NPG)
+            let (bool_max_reached) = is_le (max_carry, curr_energy + energy_generated)
+            local new_quantity
+            if bool_max_reached == 1:
+                assert new_quantity = max_carry
+            else:
+                assert new_quantity = curr_energy + energy_generated
+            end
+
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
                 emap_entry.id,
-                curr_energy + energy_generated
+                new_quantity
             )
 
             let (event_counter) = ns_universe_state_functions.event_counter_read ()
@@ -189,7 +210,7 @@ namespace ns_micro_forwarding:
             energy_update_at_device_occurred.emit (
                 event_counter = event_counter,
                 device_id = emap_entry.id,
-                new_quantity = curr_energy + energy_generated
+                new_quantity = new_quantity
             )
 
             tempvar syscall_ptr = syscall_ptr

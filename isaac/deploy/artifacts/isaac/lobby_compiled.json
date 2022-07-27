@@ -2478,7 +2478,7 @@
             "0x40137fff7fff8003",
             "0x48127ffe7fff8000",
             "0x480680017fff8000",
-            "0x1",
+            "0x2",
             "0x4829800080008003",
             "0x1104800180018000",
             "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffa07",
@@ -2586,7 +2586,7 @@
             "0x1104800180018000",
             "0x43",
             "0x4826800180008000",
-            "0x1",
+            "0x2",
             "0x1104800180018000",
             "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffc44",
             "0x480a80017fff8000",
@@ -2606,7 +2606,7 @@
             "0x48127ffe7fff8000",
             "0x480a80037fff8000",
             "0x480680017fff8000",
-            "0x1",
+            "0x2",
             "0x480a80027fff8000",
             "0x1104800180018000",
             "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd94",
@@ -2627,7 +2627,7 @@
             "0x480a80017fff8000",
             "0x480a80037fff8000",
             "0x480680017fff8000",
-            "0x1",
+            "0x2",
             "0x480a80027fff8000",
             "0x1104800180018000",
             "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd02",
@@ -2653,7 +2653,7 @@
             "0x40780017fff7fff",
             "0x0",
             "0x482680017ffd8000",
-            "0x800000000000011000000000000000000000000000000000000000000000000",
+            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffffff",
             "0x20680017fff7fff",
             "0x6",
             "0x480a7ff87fff8000",
@@ -2906,7 +2906,7 @@
             "0x480a80017fff8000",
             "0x480a80007fff8000",
             "0x480680017fff8000",
-            "0x1",
+            "0x2",
             "0x480a80027fff8000",
             "0x1104800180018000",
             "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffc10",
@@ -2959,7 +2959,7 @@
             "0x40780017fff7fff",
             "0x0",
             "0x482680017ffb8000",
-            "0x800000000000011000000000000000000000000000000000000000000000000",
+            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffffff",
             "0x20680017fff7fff",
             "0x6",
             "0x480a7ff87fff8000",
@@ -73594,7 +73594,11 @@
             },
             "contracts.design.constants.CIV_SIZE": {
                 "type": "const",
-                "value": 1
+                "value": 2
+            },
+            "contracts.design.constants.DELTA_PHI_PLANET": {
+                "type": "const",
+                "value": 6283185000000000000
             },
             "contracts.design.constants.DT": {
                 "type": "const",
@@ -73638,11 +73642,7 @@
             },
             "contracts.design.constants.MIN_L2_BLOCK_NUM_BETWEEN_FORWARD": {
                 "type": "const",
-                "value": 2
-            },
-            "contracts.design.constants.OMEGA_DT_PLANET": {
-                "type": "const",
-                "value": 37440000000000000000
+                "value": 1
             },
             "contracts.design.constants.PI": {
                 "type": "const",
@@ -73654,7 +73654,7 @@
             },
             "contracts.design.constants.RADIUS_SUN0": {
                 "type": "const",
-                "value": 149500000000000000000
+                "value": 95000000000000000000
             },
             "contracts.design.constants.RADIUS_SUN0_SQ": {
                 "type": "const",
@@ -73662,7 +73662,7 @@
             },
             "contracts.design.constants.RADIUS_SUN1": {
                 "type": "const",
-                "value": 86200000000000000000
+                "value": 134000000000000000000
             },
             "contracts.design.constants.RADIUS_SUN1_SQ": {
                 "type": "const",
@@ -73670,7 +73670,7 @@
             },
             "contracts.design.constants.RADIUS_SUN2": {
                 "type": "const",
-                "value": 38300000000000000000
+                "value": 55000000000000000000
             },
             "contracts.design.constants.RADIUS_SUN2_SQ": {
                 "type": "const",
@@ -73730,7 +73730,7 @@
             },
             "contracts.design.constants.UNIVERSE_MAX_AGE_IN_TICKS": {
                 "type": "const",
-                "value": 3
+                "value": 2520
             },
             "contracts.design.constants.Vec2": {
                 "destination": "contracts.util.structs.Vec2",
@@ -74066,67 +74066,67 @@
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_AL_HARV": {
                 "type": "const",
-                "value": 4
+                "value": 400
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_AL_REFN": {
                 "type": "const",
-                "value": 4
+                "value": 750
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_CU_HARV": {
                 "type": "const",
-                "value": 6
+                "value": 600
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_CU_REFN": {
                 "type": "const",
-                "value": 6
+                "value": 1000
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_FE_HARV": {
                 "type": "const",
-                "value": 2
+                "value": 200
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_FE_REFN": {
                 "type": "const",
-                "value": 2
+                "value": 500
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_NDPE": {
                 "type": "const",
-                "value": 50
+                "value": 5000
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_NPG": {
                 "type": "const",
-                "value": 10
+                "value": 5000
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_PEF": {
                 "type": "const",
-                "value": 10
+                "value": 1500
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_PU_HARV": {
                 "type": "const",
-                "value": 10
+                "value": 1000
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_SI_HARV": {
                 "type": "const",
-                "value": 8
+                "value": 800
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_SI_REFN": {
                 "type": "const",
-                "value": 8
+                "value": 1250
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_SPG": {
                 "type": "const",
-                "value": 2
+                "value": 200
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_UPSF": {
                 "type": "const",
-                "value": 50
+                "value": 2000
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_UTB": {
                 "type": "const",
-                "value": 1
+                "value": 15
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_UTL": {
                 "type": "const",
-                "value": 1
+                "value": 15
             },
             "contracts.design.constants.ns_energy_requirements.ImplicitArgs": {
                 "full_name": "contracts.design.constants.ns_energy_requirements.ImplicitArgs",
@@ -74464,6 +74464,37 @@
                 "type": "type_definition"
             },
             "contracts.design.constants.ns_perturb.SIZEOF_LOCALS": {
+                "type": "const",
+                "value": 0
+            },
+            "contracts.design.constants.ns_pg_max_carry": {
+                "type": "namespace"
+            },
+            "contracts.design.constants.ns_pg_max_carry.Args": {
+                "full_name": "contracts.design.constants.ns_pg_max_carry.Args",
+                "members": {},
+                "size": 0,
+                "type": "struct"
+            },
+            "contracts.design.constants.ns_pg_max_carry.DEVICE_NPG": {
+                "type": "const",
+                "value": 20000
+            },
+            "contracts.design.constants.ns_pg_max_carry.DEVICE_SPG": {
+                "type": "const",
+                "value": 1000
+            },
+            "contracts.design.constants.ns_pg_max_carry.ImplicitArgs": {
+                "full_name": "contracts.design.constants.ns_pg_max_carry.ImplicitArgs",
+                "members": {},
+                "size": 0,
+                "type": "struct"
+            },
+            "contracts.design.constants.ns_pg_max_carry.Return": {
+                "cairo_type": "()",
+                "type": "type_definition"
+            },
+            "contracts.design.constants.ns_pg_max_carry.SIZEOF_LOCALS": {
                 "type": "const",
                 "value": 0
             },

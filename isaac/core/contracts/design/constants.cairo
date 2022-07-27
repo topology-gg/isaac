@@ -9,19 +9,16 @@ const GYOZA = 0x02f880133db4F533Bdbc10C3d02FBC9b264Dac2Ff52Eae4e0cEc0Ce794BAd898
 
 #
 # Duration control
-# TODO: may be desirable to forward macro and micro at different time scale
-# --> towards multi-scale simulation
+# TODO: may be desirable to forward macro and micro at different time scale -> towards multi-scale simulation
 #
-const MIN_L2_BLOCK_NUM_BETWEEN_FORWARD = 2
-const UNIVERSE_MAX_AGE_IN_TICKS = 360
-# const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 2 * MIN_L2_BLOCK_NUM_BETWEEN_FORWARD # for testing universe deactivation
-# const UNIVERSE_MAX_AGE_IN_L2_BLOCK_NUM = 2160 # 6 days * 24 hours * 60 minutes / 4 minutes (2x L2 block time) = 2160
+const MIN_L2_BLOCK_NUM_BETWEEN_FORWARD = 1 # this results in 2 blocks between consecutive ticks
+const UNIVERSE_MAX_AGE_IN_TICKS = 2520 # ~7 days, given 2 blocks (4 minutes) per tick
 
 #
 # Capacity control - size of civilization per universe, and number of universes deployed
 #
-const CIV_SIZE = 1 # for testing; change to 5 / 15 / 25 to finalize
-const UNIVERSE_COUNT = 1 # for testing; change to 10 to finalize
+const CIV_SIZE = 2
+const UNIVERSE_COUNT = 1
 
 #
 # Constants for numerical precision / stability
@@ -50,16 +47,23 @@ const MASS_PLNT = 1 * SCALE_FP_DIV_10000
 const G_MASS_SUN0 = 65536 * SCALE_FP_DIV_10000 # 2.56 * 2.56 = 6.5536
 const G_MASS_SUN1 = 65536 * SCALE_FP_DIV_10000
 const G_MASS_SUN2 = 65536 * SCALE_FP_DIV_10000
-const RADIUS_SUN0 = 1495 * SCALE_FP_DIV_1000 # 1.495
-const RADIUS_SUN1 = 862 * SCALE_FP_DIV_1000 # 0.862
-const RADIUS_SUN2 = 383 * SCALE_FP_DIV_1000 # 0.383
+
+# const RADIUS_SUN0 = 1495 * SCALE_FP_DIV_1000 # 1.495
+# const RADIUS_SUN1 = 862 * SCALE_FP_DIV_1000 # 0.862
+# const RADIUS_SUN2 = 383 * SCALE_FP_DIV_1000 # 0.383
+const RADIUS_SUN0 = 950 * SCALE_FP_DIV_1000 # 0.95
+const RADIUS_SUN1 = 1340 * SCALE_FP_DIV_1000 # 1.34
+const RADIUS_SUN2 = 550 * SCALE_FP_DIV_1000 # 0.55
+
 const RADIUS_SUN0_SQ = 146689 * SCALE_FP_DIV_10_POW_6 # 0.146689
 const RADIUS_SUN1_SQ = 146689 * SCALE_FP_DIV_10_POW_6
 const RADIUS_SUN2_SQ = 146689 * SCALE_FP_DIV_10_POW_6
+
 ## Rotation
-const OMEGA_DT_PLANET = 624 / 100 * 6 / 100 * SCALE_FP # unit: radiant; takes ~100 DT to complete 2*pi
-const TWO_PI = 6283185 / 1000000 * SCALE_FP
+# const OMEGA_DT_PLANET = 624 / 100 * 6 / 100 * SCALE_FP # unit: radiant; takes ~100 DT to complete 2*pi
+const TWO_PI = 6283185 * SCALE_FP / 1000000
 const PI = TWO_PI / 2
+const DELTA_PHI_PLANET = TWO_PI / 100 # 100 ticks per planet revolution
 
 #
 # Constants for perturbation applied to planet dynamic macro physics simulation:
@@ -289,6 +293,14 @@ namespace ns_harvester_boost_factor:
 end
 
 #
+# Constants for maximum energy carry quantity for each pg type
+#
+namespace ns_pg_max_carry:
+    const DEVICE_SPG = 1000
+    const DEVICE_NPG = 20000
+end
+
+#
 # Constants for maximum carry quantity for each harvester type
 #
 namespace ns_harvester_max_carry:
@@ -364,22 +376,22 @@ end
 # Note: resource requirement is coded in `manufacturing.cairo`
 #
 namespace ns_energy_requirements:
-    const DEVICE_SPG     = 2  # solar power generator
-    const DEVICE_NPG     = 10 # nuclear power generator
-    const DEVICE_FE_HARV = 2  # iron harvester
-    const DEVICE_AL_HARV = 4  # aluminum harvester
-    const DEVICE_CU_HARV = 6  # copper harvester
-    const DEVICE_SI_HARV = 8  # silicon harvester
-    const DEVICE_PU_HARV = 10 # plutoniium harvester
-    const DEVICE_FE_REFN = 2  # iron refinery
-    const DEVICE_AL_REFN = 4  # aluminum refinery
-    const DEVICE_CU_REFN = 6  # copper refinery
-    const DEVICE_SI_REFN = 8  # silicon refinery
-    const DEVICE_PEF     = 10 # plutonium enrichment facility
-    const DEVICE_UTB     = 1  # universal transportation belt
-    const DEVICE_UTL     = 1  # universal transmission line
-    const DEVICE_UPSF    = 50 # universal production and storage facility
-    const DEVICE_NDPE    = 50 # nuclear driller & propulsion engine
+    const DEVICE_SPG     = 200  # solar power generator
+    const DEVICE_NPG     = 5000 # nuclear power generator
+    const DEVICE_FE_HARV = 200  # iron harvester
+    const DEVICE_AL_HARV = 400  # aluminum harvester
+    const DEVICE_CU_HARV = 600  # copper harvester
+    const DEVICE_SI_HARV = 800  # silicon harvester
+    const DEVICE_PU_HARV = 1000 # plutoniium harvester
+    const DEVICE_FE_REFN = 500  # iron refinery
+    const DEVICE_AL_REFN = 750  # aluminum refinery
+    const DEVICE_CU_REFN = 1000  # copper refinery
+    const DEVICE_SI_REFN = 1250  # silicon refinery
+    const DEVICE_PEF     = 1500 # plutonium enrichment facility
+    const DEVICE_UTB     = 15  # universal transportation belt
+    const DEVICE_UTL     = 15  # universal transmission line
+    const DEVICE_UPSF    = 2000 # universal production and storage facility
+    const DEVICE_NDPE    = 5000 # nuclear driller & propulsion engine
 end
 
 #
@@ -526,6 +538,24 @@ func harvester_device_type_to_element_type {} (device_type : felt) -> (element_t
     end
     return (0)
 
+end
+
+func pg_device_type_to_max_carry {} (device_type : felt) -> (max_carry : felt):
+    alloc_locals
+
+    if device_type == ns_device_types.DEVICE_SPG:
+        return (ns_pg_max_carry.DEVICE_SPG)
+    end
+
+    if device_type == ns_device_types.DEVICE_NPG:
+        return (ns_pg_max_carry.DEVICE_NPG)
+    end
+
+    local type = device_type
+    with_attr error_message ("not a pg device type; device_type = {type}"):
+        assert 1 = 0
+    end
+    return (0)
 end
 
 func harvester_element_type_to_max_carry {} (element_type : felt) -> (max_carry : felt):

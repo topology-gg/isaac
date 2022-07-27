@@ -114,7 +114,7 @@ end
 # Append-only
 #
 @storage_var
-func utx_deployed_index_to_grid_size (utx_device_type : felt) -> (size : felt):
+func utx_deployed_index (utx_device_type : felt) -> (size : felt):
 end
 
 @storage_var
@@ -222,9 +222,9 @@ namespace ns_micro_state_functions:
     end
 
     @view
-    func utx_deployed_index_to_grid_size_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func utx_deployed_index_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         utx_device_type : felt) -> (size : felt):
-        let (size) = utx_deployed_index_to_grid_size.read (utx_device_type)
+        let (size) = utx_deployed_index.read (utx_device_type)
         return (size)
     end
 
@@ -324,9 +324,9 @@ namespace ns_micro_state_functions:
         return ()
     end
 
-    func utx_deployed_index_to_grid_size_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func utx_deployed_index_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         utx_device_type : felt, size : felt) -> ():
-        utx_deployed_index_to_grid_size.write (utx_device_type, size)
+        utx_deployed_index.write (utx_device_type, size)
         return ()
     end
 

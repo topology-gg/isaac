@@ -75,23 +75,23 @@ func compute_impulse_in_micro_coord {range_check_ptr} (
     assert impulse_magnitude_fp = ns_ndpe_impulse_function.Y_OFFSET_1 + energy_consumed * ns_ndpe_impulse_function.SLOPE_1
 
     #
-    # Determine impulse directionality based on `face` in micro coordinate system
+    # Determine reverse-impulse directionality based on `face` in micro coordinate system
     #    2
     # 4     0
     #    5     ---> x
     #
     if face == 0:
-        return ( Vec2(impulse_magnitude_fp, 0) )
-    end
-
-    if face == 2:
-        return ( Vec2(0, impulse_magnitude_fp) )
-    end
-
-    if face == 4:
         return ( Vec2(-impulse_magnitude_fp, 0) )
     end
 
+    if face == 2:
+        return ( Vec2(0, -impulse_magnitude_fp) )
+    end
+
+    if face == 4:
+        return ( Vec2(impulse_magnitude_fp, 0) )
+    end
+
     ## face == 5
-    return ( Vec2(0, -impulse_magnitude_fp) )
+    return ( Vec2(0, impulse_magnitude_fp) )
 end

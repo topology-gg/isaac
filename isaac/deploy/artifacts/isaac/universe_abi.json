@@ -337,6 +337,17 @@
         "type": "event"
     },
     {
+        "data": [
+            {
+                "name": "impulse",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "impulse_applied_occurred",
+        "type": "event"
+    },
+    {
         "inputs": [
             {
                 "name": "civ_idx",
@@ -562,7 +573,7 @@
                 "type": "felt"
             }
         ],
-        "name": "utx_deployed_index_to_grid_size_read",
+        "name": "utx_deployed_index_read",
         "outputs": [
             {
                 "name": "size",
@@ -919,7 +930,7 @@
                 "type": "felt"
             },
             {
-                "name": "bool_destruction",
+                "name": "destruction_by_which_sun",
                 "type": "felt"
             },
             {
