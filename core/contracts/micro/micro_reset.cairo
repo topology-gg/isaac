@@ -40,8 +40,8 @@ namespace ns_micro_reset:
         ns_micro_state_functions.utx_set_deployed_emap_size_write (ns_device_types.DEVICE_UTB, 0)
         ns_micro_state_functions.utx_set_deployed_emap_size_write (ns_device_types.DEVICE_UTL, 0)
 
-        ns_micro_state_functions.utx_deployed_index_to_grid_size_write (ns_device_types.DEVICE_UTB, 0)
-        ns_micro_state_functions.utx_deployed_index_to_grid_size_write (ns_device_types.DEVICE_UTL, 0)
+        ns_micro_state_functions.utx_deployed_index_write (ns_device_types.DEVICE_UTB, 0)
+        ns_micro_state_functions.utx_deployed_index_write (ns_device_types.DEVICE_UTL, 0)
 
         return ()
     end

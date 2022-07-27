@@ -138,10 +138,10 @@ namespace ns_micro_utx:
         #
         # Recursively check for each locs's grid: (1) grid validity (2) grid unpopulated (3) grid is contiguous to previous grid
         #
-        let (utx_idx_start) = ns_micro_state_functions.utx_deployed_index_to_grid_size_read (utx_device_type)
+        let (utx_idx_start) = ns_micro_state_functions.utx_deployed_index_read (utx_device_type)
         let utx_idx_end = utx_idx_start + locs_len
         let (block_height) = get_block_number ()
-        tempvar data_ptr : felt* = new (4, block_height, caller, utx_idx_start, utx_idx_end)
+        tempvar data_ptr : felt* = new (5, block_height, caller, utx_device_type, utx_idx_start, utx_idx_end)
         let (new_label) = hash_chain {hash_ptr = pedersen_ptr} (data_ptr)
         recurse_utx_deploy (
             caller = caller,
@@ -160,9 +160,9 @@ namespace ns_micro_utx:
         ns_micro_state_functions.device_undeployed_ledger_write (caller, utx_device_type, owned_utx_amount - locs_len)
 
         #
-        # Update `utx_deployed_index_to_grid_size`
+        # Update `utx_deployed_index`
         #
-        ns_micro_state_functions.utx_deployed_index_to_grid_size_write (utx_device_type, utx_idx_end)
+        ns_micro_state_functions.utx_deployed_index_write (utx_device_type, utx_idx_end)
 
         #
         # Insert to utx_set_deployed_emap; increase emap size
