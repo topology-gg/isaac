@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 
 from pymongo import MongoClient
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 from apibara import NewEvents, IndexerRunner, NewBlock, Info, Client
 from apibara.indexer.runner import IndexerRunnerConfiguration
@@ -18,11 +18,11 @@ from s2m2_api.contract import (
     decode_success_occurred
 )
 
-load_dotenv()
+# load_dotenv()
 
-ORIGIN_BLOCK_TO_INDEX = 267_807 - 1
+ORIGIN_BLOCK_TO_INDEX = 279667 - 1
 INDEXER_ID = 's2m2'
-S2M2_ADDRESS = '0x02369dbd0ec5e3e152aef28d10042abdf7a22a316c667e2a880bd4c0978e448b'
+S2M2_ADDRESS = '0x039d38747fb62279cb5266261b01dce9bf369b53fe422e89fcb8153891e301f9'
 
 #
 # Handle events
@@ -94,10 +94,14 @@ async def handle_s2m_ended_occurred (info):
     #
     # Update collection
     #
-    await info.storage.find_one_and_update(
-        collection='status',
-        filter = {'active' : 1},
-        update = {'$set' : {'active' : 0}}
+    # await info.storage.find_one_and_update(
+    #     collection='status',
+    #     filter = {'active' : 1},
+    #     update = {'$set' : {'active' : 0}}
+    # )
+    await info.storage.insert_one (
+        'status',
+        {'active' : 0}
     )
 
 ########################
