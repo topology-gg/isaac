@@ -611,17 +611,23 @@ namespace ns_micro_devices:
         # Check if `caller` owns the device at `opsf_grid`
         #
         let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
-        assert grid_stat.populated = 1
-        assert grid_stat.deployed_device_owner = caller
+        with_attr error_message ("selected grid is not populated"):
+            assert grid_stat.populated = 1
+        end
+        with_attr error_message ("selected grid has deployed device whose owner is not the caller"):
+            assert grid_stat.deployed_device_owner = caller
+        end
 
         #
         # Check if an NDPE is deployed at `opsf_grid`
         #
-        assert grid_stat.deployed_device_type = ns_device_types.DEVICE_NDPE
+        with_attr error_message ("selected grid does not have NDPE deployed"):
+            assert grid_stat.deployed_device_type = ns_device_types.DEVICE_NDPE
+        end
         let ndpe_device_id = grid_stat.deployed_device_id
 
         #
-        # Recurse over all deployed devices to pick up NDPEs
+        # Recurse over all deployed devices to launch NDPEs
         # and compute aggregate impulse + deduct energy consumed
         # Note: we could have declared a dedicated storage mapping for NDPE devices;
         # given the relative infrequency of invoking this function,

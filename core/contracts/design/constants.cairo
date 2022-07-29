@@ -51,13 +51,12 @@ const G_MASS_SUN2 = 65536 * SCALE_FP_DIV_10000
 # const RADIUS_SUN0 = 1495 * SCALE_FP_DIV_1000 # 1.495
 # const RADIUS_SUN1 = 862 * SCALE_FP_DIV_1000 # 0.862
 # const RADIUS_SUN2 = 383 * SCALE_FP_DIV_1000 # 0.383
-const RADIUS_SUN0 = 950 * SCALE_FP_DIV_1000 # 0.95
-const RADIUS_SUN1 = 1340 * SCALE_FP_DIV_1000 # 1.34
-const RADIUS_SUN2 = 550 * SCALE_FP_DIV_1000 # 0.55
-
-const RADIUS_SUN0_SQ = 146689 * SCALE_FP_DIV_10_POW_6 # 0.146689
-const RADIUS_SUN1_SQ = 146689 * SCALE_FP_DIV_10_POW_6
-const RADIUS_SUN2_SQ = 146689 * SCALE_FP_DIV_10_POW_6
+const RADIUS_SUN0 = 95  * SCALE_FP_DIV_100 # 0.95
+const RADIUS_SUN1 = 134 * SCALE_FP_DIV_100 # 1.34
+const RADIUS_SUN2 = 55  * SCALE_FP_DIV_100 # 0.55
+const RADIUS_SUN0_SQ = 9025  * SCALE_FP_DIV_10000 # 0.95**2 = 0.9025
+const RADIUS_SUN1_SQ = 17956 * SCALE_FP_DIV_10000 # 1.34**2 = 1.7956
+const RADIUS_SUN2_SQ = 3025  * SCALE_FP_DIV_10000 # 0.55**2 = 0.3025
 
 ## Rotation
 # const OMEGA_DT_PLANET = 624 / 100 * 6 / 100 * SCALE_FP # unit: radiant; takes ~100 DT to complete 2*pi
@@ -317,6 +316,10 @@ namespace ns_transformer_max_carry:
     const ELEMENT_CU_RAW = 500 # copper raw
     const ELEMENT_SI_RAW = 500 # silicon raw
     const ELEMENT_PU_RAW = 200 # plutonium-241 raw
+end
+
+namespace ns_ndpe_max_carry:
+    const ENERGY = 2500
 end
 
 #

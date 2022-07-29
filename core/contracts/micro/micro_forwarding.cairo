@@ -14,7 +14,8 @@ from contracts.design.constants import (
     harvester_element_type_to_max_carry,
     transformer_element_type_to_max_carry,
     transformer_device_type_to_element_types,
-    get_device_dimension_ptr
+    get_device_dimension_ptr,
+    ns_ndpe_max_carry
 )
 from contracts.util.structs import (
     Vec2, Dynamic, Dynamics
@@ -677,8 +678,9 @@ namespace ns_micro_forwarding:
             let (emap_entry_src) = ns_micro_state_functions.device_deployed_emap_read (emap_index_src)
             let (emap_index_dst) = ns_micro_state_functions.device_deployed_id_to_emap_index_read (emap_entry.dst_device_id)
             let (emap_entry_dst) = ns_micro_state_functions.device_deployed_emap_read (emap_index_dst)
-            let src_device_id = emap_entry_src.id
-            let dst_device_id = emap_entry_dst.id
+            let src_device_id    = emap_entry_src.id
+            let dst_device_id    = emap_entry_dst.id
+            let dst_device_type  = emap_entry_dst.type
             let (src_device_energy) = ns_micro_state_functions.device_deployed_id_to_energy_balance_read (src_device_id)
             let (dst_device_energy) = ns_micro_state_functions.device_deployed_id_to_energy_balance_read (dst_device_id)
 
@@ -710,12 +712,30 @@ namespace ns_micro_forwarding:
             )
 
             #
+            # Consider max carry
+            # note: currently only NDPE has max-carry for energy
+            #
+            local new_dst_energy_balance
+            let candidate_energy_balance = dst_device_energy + energy_should_receive
+            let (bool_reached_max_carry) = is_le (ns_ndpe_max_carry.ENERGY, candidate_energy_balance)
+
+            if dst_device_type == ns_device_types.DEVICE_NDPE:
+                if bool_reached_max_carry == 1:
+                    assert new_dst_energy_balance = ns_ndpe_max_carry.ENERGY
+                else:
+                    assert new_dst_energy_balance = candidate_energy_balance
+                end
+            else:
+                assert new_dst_energy_balance = candidate_energy_balance
+            end
+
+            #
             # Effect energy update at destination
             # note: could have multi-fanin resulting higher energy boost
             #
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
                 dst_device_id,
-                dst_device_energy + energy_should_receive
+                new_dst_energy_balance
             )
 
             let (event_counter) = ns_universe_state_functions.event_counter_read ()
@@ -723,7 +743,7 @@ namespace ns_micro_forwarding:
             energy_update_at_device_occurred.emit (
                 event_counter = event_counter,
                 device_id = dst_device_id,
-                new_quantity = dst_device_energy + energy_should_receive
+                new_quantity = new_dst_energy_balance
             )
 
             tempvar syscall_ptr = syscall_ptr

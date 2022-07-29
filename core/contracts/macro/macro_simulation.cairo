@@ -298,7 +298,9 @@ func forward_world_macro {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, rang
     let (bool_impulse_nz) = is_not_zero (bool_impulse_x_nz + bool_impulse_y_nz)
 
     if bool_impulse_nz == 1:
-        impulse_applied_occurred.emit (impulse_aggregated)
+        impulse_applied_occurred.emit (
+            impulse_aggregated
+        )
 
         # boilerplate code go away!
         tempvar syscall_ptr = syscall_ptr
