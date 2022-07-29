@@ -55,24 +55,15 @@ func compute_impulse_in_micro_coord {range_check_ptr} (
         ns_ndpe_impulse_function.X_THRESH_2_3 - ns_ndpe_impulse_function.X_THRESH_1_2
     )
 
-    #
-    # If energy consumed lies in segment #3 of piecewise linear function
-    #
     if bool_3 == 1:
         assert impulse_magnitude_fp = ns_ndpe_impulse_function.Y_OFFSET_3 + (energy_consumed - ns_ndpe_impulse_function.X_THRESH_2_3) * ns_ndpe_impulse_function.SLOPE_3
+    else:
+        if bool_2 == 1:
+            assert impulse_magnitude_fp = ns_ndpe_impulse_function.Y_OFFSET_2 + (energy_consumed - ns_ndpe_impulse_function.X_THRESH_1_2) * ns_ndpe_impulse_function.SLOPE_2
+        else:
+            assert impulse_magnitude_fp = ns_ndpe_impulse_function.Y_OFFSET_1 + energy_consumed * ns_ndpe_impulse_function.SLOPE_1
+        end
     end
-
-    #
-    # If energy consumed lies in segment #2 of piecewise linear function
-    #
-    if bool_2 == 1:
-        assert impulse_magnitude_fp = ns_ndpe_impulse_function.Y_OFFSET_2 + (energy_consumed - ns_ndpe_impulse_function.X_THRESH_1_2) * ns_ndpe_impulse_function.SLOPE_2
-    end
-
-    #
-    # Energy consumed lies in segment #1 of piecewise linear function
-    #
-    assert impulse_magnitude_fp = ns_ndpe_impulse_function.Y_OFFSET_1 + energy_consumed * ns_ndpe_impulse_function.SLOPE_1
 
     #
     # Determine reverse-impulse directionality based on `face` in micro coordinate system
