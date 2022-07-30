@@ -14,7 +14,7 @@ function Home() {
                     <p style={{marginBottom:'0'}}>Earn your ticket to the Isaac Alpha reality.</p>
                     <p style={{marginTop:'0',marginBottom:'0'}}>Control: mouse down and drag to select path; ESC to reset</p>
                     <p style={{marginTop:'0',marginBottom:'0'}}>
-                        <a href="github.com/topology-gg/s2m2" style={{color:'#DDDDDD'}}>
+                        <a href="https://github.com/topology-gg/s2m2/tree/main/contracts" style={{color:'#DDDDDD'}} target="_blank" rel="noopener noreferrer">
                             Link to code
                         </a>
                     </p>
