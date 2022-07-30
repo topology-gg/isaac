@@ -12,23 +12,15 @@ from starkware.cairo.common.dict import (
 from starkware.cairo.common.dict_access import DictAccess
 
 from contracts.inventory import (
-    Circle, BLACK, WHITE, PUZZLE_COUNT, PUZZLE_DIM, _get_puzzle
+    Cir, CR, ST, PUZZLE_COUNT, PUZZLE_DIM, get_puzzle
 )
 
 # Puzzle checks:
 # - path closed (pairwise contiguity from start to end and between end-start)
 # - no revisit
-# - black condition met at all black circles
-# - white condition met at all white circles
+# - corner condition met at all corner circles
+# - straight condition met at all straight circles
 # - all circles visited
-
-##############################
-
-# TODO:
-# - think solver account checking - using custom storage, or using ~721 standard but made non transferrable
-# - think puzzle generation - we need at least 100 puzzles
-# - build frontend + indexer, where frontend is a simple html table where cell contains circle (circle is div with rounded corner);
-#   plus a popup window showing the list of solvers with the puzzle id they solved
 
 ##############################
 
@@ -53,19 +45,40 @@ end
 ##############################
 
 #
-# storages
+# storages and their public getters
 #
 
 @storage_var
-func s2m_puzzle_id () -> (id : felt):
+func s2m_is_puzzle_solved (id : felt) -> (solved : felt):
 end
 
 @storage_var
-func s2m_status () -> (status : felt):
+func s2m_puzzle_solved_count () -> (count : felt):
 end
 
 @storage_var
 func s2m_solver_record (address : felt) -> (record : Record):
+end
+
+@view
+func read_s2m_is_puzzle_solved {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    id : felt) -> (solved : felt):
+    let (solved) = s2m_is_puzzle_solved.read (id)
+    return (solved)
+end
+
+@view
+func read_s2m_puzzle_solved_count {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (count : felt):
+    let (count) = s2m_puzzle_solved_count.read ()
+    return (count)
+end
+
+@view
+func read_s2m_solver_record {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    address : felt) -> (record : Record):
+    let (record) = s2m_solver_record.read (address)
+    return (record)
 end
 
 ##############################
@@ -76,15 +89,18 @@ end
 
 @event
 func new_puzzle_occurred (
+        puzzle_id : felt,
         arr_circles_len : felt,
-        arr_circles : Circle*
+        arr_circles : Cir*
     ):
 end
 
 @event
 func success_occurred (
         solver : felt,
-        puzzle_id : felt
+        puzzle_id : felt,
+        arr_cell_indices_len : felt,
+        arr_cell_indices : felt*
     ):
 end
 
@@ -96,29 +112,46 @@ end
 
 @constructor
 func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
-
     alloc_locals
 
     #
-    # initialize puzzle_id and s2m_status
+    # Emit `new_puzzle` event for all puzzles for apibara ingestion
     #
-    s2m_puzzle_id.write (0)
-    s2m_status.write (1)
+    _recurse_emit_puzzles (
+        idx = 0,
+        len = PUZZLE_COUNT
+    )
 
-    #
-    # Emit `new_puzzle` event
-    #
+    return()
+end
+
+
+func _recurse_emit_puzzles {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        idx : felt,
+        len : felt
+    ) -> ():
+    alloc_locals
+
+    if idx == len:
+        return ()
+    end
+
     let (
         new_arr_circles_len : felt,
-        new_arr_circles : Circle*
-    ) = _get_puzzle (0)
+        new_arr_circles : Cir*
+    ) = get_puzzle (idx)
 
     new_puzzle_occurred.emit (
+        idx,
         new_arr_circles_len,
         new_arr_circles
     )
 
-    return()
+    _recurse_emit_puzzles (
+        idx + 1,
+        len
+    )
+    return ()
 end
 
 ##############################
@@ -129,17 +162,18 @@ end
 #
 @external
 func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        puzzle_id : felt,
         arr_cell_indices_len : felt,
         arr_cell_indices : felt*
     ) -> ():
     alloc_locals
 
     #
-    # if not active => revert
+    # if all puzzles have been solved => revert
     #
-    let (curr_s2m_tatus) = s2m_status.read ()
-    with_attr error_message ("this s2m is no longer active"):
-        assert curr_s2m_tatus = 1
+    let (bool_has_unsolved) = has_unsolved_puzzle ()
+    with_attr error_message ("all puzzles have been solved - this s2m is no longer active"):
+        assert bool_has_unsolved = 1
     end
 
     #
@@ -147,15 +181,30 @@ func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     #
     let (caller) = get_caller_address ()
     let (local record) = s2m_solver_record.read (caller)
-    with_attr error_message ("caller has solved puzzle #{record.puzzle_id}"):
+    with_attr error_message ("caller has solved a puzzle already (puzzle id: #{record.puzzle_id})"):
         assert record.success = 0
     end
 
     #
-    # get current puzzle and build dictionary
+    # if puzzle id is invalid => revert
     #
-    let (curr_puzzle_id) = s2m_puzzle_id.read ()
-    let (arr_circles_len, arr_circles) = _get_puzzle (curr_puzzle_id)
+    let (bool_puzzle_id_valid) = _is_puzzle_id_valid (puzzle_id)
+    with_attr error_message ("invalid puzzle id"):
+        assert bool_puzzle_id_valid = 1
+    end
+
+    #
+    # if the puzzle has been solved => revert
+    #
+    let (solved) = s2m_is_puzzle_solved.read (puzzle_id)
+    with_attr error_message ("puzzle solved already"):
+        assert solved = 0
+    end
+
+    #
+    # get puzzle and build dictionary
+    #
+    let (arr_circles_len, arr_circles) = get_puzzle (puzzle_id)
     let (puzzle_dict_ptr : DictAccess*) = _build_puzzle_dictionary (
         arr_circles_len,
         arr_circles
@@ -183,9 +232,9 @@ func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     end
 
     #
-    # check both white circle condition and black circle condition
+    # check both straight circle condition and corner circle condition
     #
-    _check_black_white_condition (
+    _check_corner_straight_condition (
         idx = 0,
         arr_cell_indices_len = arr_cell_indices_len,
         arr_cell_indices = arr_cell_indices,
@@ -198,41 +247,38 @@ func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     #
     success_occurred.emit (
         solver = caller,
-        puzzle_id = curr_puzzle_id
+        puzzle_id = puzzle_id,
+        arr_cell_indices_len = arr_cell_indices_len,
+        arr_cell_indices = arr_cell_indices
     )
 
     #
-    # record solver & puzzle id
+    # record solver, and mark puzzle solved
     #
     s2m_solver_record.write (
         caller,
         Record (
             success = 1,
-            puzzle_id = curr_puzzle_id
+            puzzle_id = puzzle_id
         )
+    )
+    s2m_is_puzzle_solved.write (
+        puzzle_id,
+        1
     )
 
     #
-    # emit ended event if all puzzles are solved; otherwise increment puzzle id and emit new puzzle event
+    # if all puzzles are solved => emit ended event
     #
-    if curr_puzzle_id == PUZZLE_COUNT - 1:
+    let (solved_count) = s2m_puzzle_solved_count.read ()
+    s2m_puzzle_solved_count.write (solved_count + 1)
+    if solved_count + 1 == PUZZLE_COUNT:
         s2m_ended_occurred.emit ()
-        s2m_status.write (0)
 
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
     else:
-        s2m_puzzle_id.write (curr_puzzle_id + 1)
-        let (
-            new_arr_circles_len : felt,
-            new_arr_circles : Circle*
-        ) = _get_puzzle (curr_puzzle_id + 1)
-        new_puzzle_occurred.emit (
-            new_arr_circles_len,
-            new_arr_circles
-        )
-
         tempvar syscall_ptr = syscall_ptr
         tempvar pedersen_ptr = pedersen_ptr
         tempvar range_check_ptr = range_check_ptr
@@ -242,7 +288,20 @@ func solve {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
 end
 
 
-func _check_black_white_condition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+@view
+func has_unsolved_puzzle {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    ) -> (bool : felt):
+    alloc_locals
+
+    let (solved_count) = s2m_puzzle_solved_count.read ()
+    let (bool_has_unsolved) = is_le (solved_count, PUZZLE_COUNT-1)
+
+    return (bool_has_unsolved)
+end
+
+##############################
+
+func _check_corner_straight_condition {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         idx : felt,
         arr_cell_indices_len : felt,
         arr_cell_indices : felt*,
@@ -286,7 +345,7 @@ func _check_black_white_condition {syscall_ptr : felt*, pedersen_ptr : HashBuilt
     let (is_curr_path_corner) = _is_path_corner (curr_path)
     let (is_prev_path_corner) = _is_path_corner (prev_path)
     let (is_next_path_corner) = _is_path_corner (next_path)
-    let (is_curr_path_straight) = is_zero (is_curr_path_corner) # inversion
+    let (is_curr_path_straight) = _is_zero (is_curr_path_corner) # inversion
 
     #
     # get cell types of self and neighbors
@@ -296,36 +355,36 @@ func _check_black_white_condition {syscall_ptr : felt*, pedersen_ptr : HashBuilt
     let (next_cell_type) = dict_read {dict_ptr = puzzle_dict_ptr} (next_cell_index)
 
     #
-    # check black circle condition
-    # "every square containing a black circle must be a corner not connected directly to another corner"
+    # check corner circle condition
+    # "every square containing a corner circle must be a corner not connected directly to another corner"
     #
-    if curr_cell_type == BLACK:
-        with_attr error_message ("black circle must be a corner; failed at cell index {curr_cell_index}"):
+    if curr_cell_type == CR:
+        with_attr error_message ("corner circle must be a corner; failed at cell index {curr_cell_index}"):
             assert is_curr_path_corner = 1
         end
 
-        with_attr error_message ("black circle must not be connected directly to another corner; failed at cell index {curr_cell_index}"):
+        with_attr error_message ("corner circle must not be connected directly to another corner; failed at cell index {curr_cell_index}"):
             assert is_prev_path_corner = 0
             assert is_next_path_corner = 0
         end
     end
 
     #
-    # check white circle condition
-    # "every square containing a white circle must be a straight which is connected to at least one corner"
+    # check straight circle condition
+    # "every square containing a straight circle must be a straight which is connected to at least one corner"
     #
-    if curr_cell_type == WHITE:
-        with_attr error_message ("white circle must be a straight; failed at cell index {curr_cell_index}"):
+    if curr_cell_type == ST:
+        with_attr error_message ("straight circle must be a straight; failed at cell index {curr_cell_index}"):
             assert is_curr_path_straight = 1
         end
 
         let sum_neighbor_cornerness = is_prev_path_corner + is_next_path_corner
-        with_attr error_message ("white circle must be connected to at least one corner; failed at cell index {curr_cell_index}"):
+        with_attr error_message ("straight circle must be connected to at least one corner; failed at cell index {curr_cell_index}"):
             assert_not_zero (sum_neighbor_cornerness)
         end
     end
 
-    _check_black_white_condition (
+    _check_corner_straight_condition (
         idx + 1,
         arr_cell_indices_len,
         arr_cell_indices,
@@ -338,7 +397,7 @@ end
 
 func _build_puzzle_dictionary {range_check_ptr} (
         arr_circles_len : felt,
-        arr_circles : Circle*
+        arr_circles : Cir*
     ) -> (
         dict_ptr : DictAccess*
     ):
@@ -369,7 +428,7 @@ end
 func _populate_puzzle_dictionary {range_check_ptr} (
         idx : felt,
         arr_circles_len : felt,
-        arr_circles : Circle*,
+        arr_circles : Cir*,
         dict_ptr : DictAccess*
     ) -> (
         dict_ptr_final : DictAccess*
@@ -554,15 +613,15 @@ func _compute_path_type {range_check_ptr} (
     ) -> (path_type : felt):
     alloc_locals
 
-    let (bool_prev_is_left)  = is_zero (curr_cell_index - prev_cell_index - 1)
-    let (bool_prev_is_right) = is_zero (prev_cell_index - curr_cell_index - 1)
-    let (bool_prev_is_down)  = is_zero (curr_cell_index - prev_cell_index - PUZZLE_DIM)
-    let (bool_prev_is_up)    = is_zero (prev_cell_index - curr_cell_index - PUZZLE_DIM)
+    let (bool_prev_is_left)  = _is_zero (curr_cell_index - prev_cell_index - 1)
+    let (bool_prev_is_right) = _is_zero (prev_cell_index - curr_cell_index - 1)
+    let (bool_prev_is_down)  = _is_zero (curr_cell_index - prev_cell_index - PUZZLE_DIM)
+    let (bool_prev_is_up)    = _is_zero (prev_cell_index - curr_cell_index - PUZZLE_DIM)
 
-    let (bool_next_is_left)  = is_zero (curr_cell_index - next_cell_index - 1)
-    let (bool_next_is_right) = is_zero (next_cell_index - curr_cell_index - 1)
-    let (bool_next_is_down)  = is_zero (curr_cell_index - next_cell_index - PUZZLE_DIM)
-    let (bool_next_is_up)    = is_zero (next_cell_index - curr_cell_index - PUZZLE_DIM)
+    let (bool_next_is_left)  = _is_zero (curr_cell_index - next_cell_index - 1)
+    let (bool_next_is_right) = _is_zero (next_cell_index - curr_cell_index - 1)
+    let (bool_next_is_down)  = _is_zero (curr_cell_index - next_cell_index - PUZZLE_DIM)
+    let (bool_next_is_up)    = _is_zero (next_cell_index - curr_cell_index - PUZZLE_DIM)
 
     if bool_prev_is_left * bool_next_is_right == 1:
         return (0)
@@ -612,13 +671,14 @@ func _compute_path_type {range_check_ptr} (
 end
 
 
-func is_zero {range_check_ptr} (x) -> (res):
+func _is_zero {range_check_ptr} (x) -> (res):
     let (bool_is_not_zero) = is_not_zero (x)
     if bool_is_not_zero == 1:
         return (0)
     end
     return (1)
 end
+
 
 func _is_path_corner {range_check_ptr} (
     path : Path) -> (bool):
@@ -634,4 +694,12 @@ func _is_path_corner {range_check_ptr} (
     end
 
     return (1)
+end
+
+
+func _is_puzzle_id_valid {range_check_ptr} (
+    puzzle_id : felt) -> (bool : felt):
+
+    let (bool) = is_le (puzzle_id, PUZZLE_COUNT-1)
+    return (bool)
 end

@@ -9,7 +9,7 @@ import logging
 
 LOGGER = logging.getLogger(__name__)
 
-NUM_SIGNING_ACCOUNTS = 0
+NUM_SIGNING_ACCOUNTS = 1
 DUMMY_PRIVATE = 9812304879503423120395
 users = []
 
@@ -49,15 +49,15 @@ async def account_factory():
     return starknet, accounts
 
 @pytest.mark.asyncio
-async def test_masyu (account_factory):
+async def test (account_factory):
 
-    # admin = users[0]
+    player = users[0]
 
     starknet, accounts = account_factory
 
-    LOGGER.info (f'> Deploying s2m.cairo ..')
+    LOGGER.info (f'> Deploying s2m2.cairo ..')
     contract = await starknet.deploy (
-        source = 'contracts/s2m.cairo',
+        source = 'contracts/s2m2.cairo',
         constructor_calldata = []
     )
 
@@ -77,22 +77,31 @@ async def test_masyu (account_factory):
         62,61,60,59,58,57,56,48,49,50,42,41,40,32,24,16,8
     ]
 
-    ret = await contract.solve (
-        correct_solution
-    ).invoke()
+    # ret = await contract.solve (
+    #     correct_solution
+    # ).invoke()
 
-    LOGGER.info (f'ret: {ret}')
+    # LOGGER.info (f'ret: {ret}')
     # LOGGER.info (f'ret.call_info.events: {ret.call_info.events}')
 
-    # await admin['signer'].send_transaction(
-    #     account = admin['account'], to = contract.contract_address,
-    #     selector_name = 'admin_give_undeployed_device',
-    #     calldata=[
-    #         user['account'].contract_address,
-    #         2, # DEVICE_FE_HARV
-    #         1
-    #     ]
-    # )
+    await player['signer'].send_transaction (
+        account = player['account'], to = contract.contract_address,
+        selector_name = 'solve',
+        calldata = [0] + [len(correct_solution)] + correct_solution
+    )
+
+    ret = await contract.has_unsolved_puzzle().call()
+    LOGGER.info (f'> has_unsolved_puzzle: {ret.result}')
+
+    ret = await contract.read_s2m_is_puzzle_solved(0).call()
+    LOGGER.info (f'> read_s2m_is_puzzle_solved(0): {ret.result}')
+
+    ret = await contract.read_s2m_puzzle_solved_count().call()
+    LOGGER.info (f'> read_s2m_puzzle_solved_count: {ret.result}')
+
+    ret = await contract.read_s2m_solver_record(player['account'].contract_address).call()
+    LOGGER.info (f'> read_s2m_solver_record(player account): {ret.result}')
+
 
 def list_a_to_b (a, b):
     if b>a:
