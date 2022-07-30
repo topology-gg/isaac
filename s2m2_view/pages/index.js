@@ -15,7 +15,7 @@ function Home() {
                     <p style={{marginTop:'0',marginBottom:'0'}}>Control: mouse down and drag to select path; ESC to reset</p>
                     <p style={{marginTop:'0',marginBottom:'0'}}>
                         <a href="https://github.com/topology-gg/s2m2/tree/main/contracts" style={{color:'#DDDDDD'}} target="_blank" rel="noopener noreferrer">
-                            Link to code
+                            Link to contracts
                         </a>
                     </p>
 
