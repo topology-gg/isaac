@@ -11,10 +11,13 @@ STARK_PRIME_HALF = (
     1809251394333065606848661391547535052811553607665798349986546028067936010240
 )
 
-def _felt_from_iter (it: Iterator[bytes]):
+def _felt_from_iter (it: Iterator[bytes], signed):
     fe = int.from_bytes(next(it), "big")
-    if fe > STARK_PRIME_HALF:
-        fe = fe - STARK_PRIME
+
+    if signed:
+        if fe > STARK_PRIME_HALF:
+            fe = fe - STARK_PRIME
+
     return fe
 
 
@@ -76,7 +79,7 @@ def decode_success_occurred (event: Event) -> Tuple[int, int, int, list]:
     # end
 
     solver               = _felt_from_iter (it)
-    puzzle_id            = _felt_from_iter (it)
+    puzzle_id            = _felt_from_iter (it, signed=True)
     arr_cell_indices_len = _felt_from_iter (it)
     arr_cell_indices     = [
         _felt_from_iter (it) for _ in range (arr_cell_indices_len)
