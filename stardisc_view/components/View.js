@@ -47,8 +47,20 @@ function Parent (props) {
 
     const CR = 1
     const ST = 2
-    const CR_COLOR = "#0066b2"
-    const ST_COLOR = "#F06105"
+    // const CR_COLOR = "#0066b2"
+    // const ST_COLOR = "#F06105"
+    const CR_COLOR = "#375E97"
+    const ST_COLOR = "#FB6542"
+    // const CR_COLOR = "#20948B"
+    // const ST_COLOR = "#DE7A22"
+    // const CR_COLOR = "#4B7447"
+    // const ST_COLOR = "#EB8A44"
+    // const CR_COLOR = "#FA6E59"
+    // const ST_COLOR = "#4897D8"
+    // const CR_COLOR = "#8F2F2A"
+    // const ST_COLOR = "#D38D02"
+
+
 
     //
     // References & States
