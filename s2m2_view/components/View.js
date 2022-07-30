@@ -60,7 +60,12 @@ function Parent (props) {
     // const CR_COLOR = "#8F2F2A"
     // const ST_COLOR = "#D38D02"
 
-
+    const OBJ_COLORS = [
+        {'CR' : '#375E97', 'ST' : '#FB6542'},
+        {'CR' : '#20948B', 'ST' : '#DE7A22'},
+        {'CR' : '#4B7447', 'ST' : '#EB8A44'},
+        {'CR' : '#8F2F2A', 'ST' : '#D38D02'}
+    ]
 
     //
     // References & States
@@ -319,19 +324,35 @@ function Parent (props) {
         for (var cell_idx=0; cell_idx<8*8; cell_idx++) {
             const coord = convertCellIdxToCoord (cell_idx)
 
-            var cr_circle = new fabric.Circle ({
+            // var cr_circle = new fabric.Circle ({
+            //     left: coord.left + GRID/2 - RADIUS,
+            //     top:  coord.top + GRID/2 - RADIUS,
+            //     radius: RADIUS,
+            //     stroke: '',
+            //     strokeWidth: 0,
+            //     fill: CR_COLOR,
+            //     selectable: false,
+            //     hoverCursor: "default",
+            //     visible: false
+            // });
+            // canvi.add (cr_circle)
+            // cr_circles.push (cr_circle)
+
+            var cr_circle = new fabric.Rect({ // a square pretends to be circle!
+                height: RADIUS*2,
+                width: RADIUS*2,
                 left: coord.left + GRID/2 - RADIUS,
-                top:  coord.top + GRID/2 - RADIUS,
-                radius: RADIUS,
-                stroke: '',
-                strokeWidth: 0,
-                fill: CR_COLOR,
+                top: coord.top + GRID/2 - RADIUS,
+                fill: '',
                 selectable: false,
-                hoverCursor: "default",
-                visible: false
+                hoverCursor: 'default',
+                visible: false,
+                strokeWidth: 0,
+                stroke: ''
             });
             canvi.add (cr_circle)
             cr_circles.push (cr_circle)
+
 
             var st_circle = new fabric.Circle ({
                 left: coord.left + GRID/2 - RADIUS,
@@ -339,7 +360,7 @@ function Parent (props) {
                 radius: RADIUS,
                 stroke: '',
                 strokeWidth: 0,
-                fill: ST_COLOR,
+                fill: '',
                 selectable: false,
                 hoverCursor: "default",
                 visible: false
@@ -415,7 +436,10 @@ function Parent (props) {
         //
         for (var cell_idx=0; cell_idx<64; cell_idx++) {
             _crCirclesRef.current [cell_idx].visible = false
+            _crCirclesRef.current [cell_idx].fill = ''
+
             _stCirclesRef.current [cell_idx].visible = false
+            _stCirclesRef.current [cell_idx].fill = ''
         }
 
         //
@@ -425,12 +449,17 @@ function Parent (props) {
         for (const c of circles) {
             const cell_idx = c.cell_idx
             const typ = c.typ
+            const color_idx = shownPuzzleId % OBJ_COLORS.length
 
             if (typ == CR) {
+                _crCirclesRef.current [cell_idx].fill = OBJ_COLORS [color_idx]['CR']
                 _crCirclesRef.current [cell_idx].visible = true
+                _crCirclesRef.current [cell_idx].dirty = true // must mark as dirty otherwise the old value in cache will be rendered
             }
             else if (typ == ST) {
+                _stCirclesRef.current [cell_idx].fill = OBJ_COLORS [color_idx]['ST']
                 _stCirclesRef.current [cell_idx].visible = true
+                _stCirclesRef.current [cell_idx].dirty = true // must mark as dirty otherwise the old value in cache will be rendered
             }
         }
         _canvasRef.current.renderAll();
