@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     const db = client.db('s2m2')
     const puzzles = await db
         .collection ('puzzles')
-        .find ()
+        .find ({'_chain.valid_to' : null})
         .sort ({ 'puzzle_id': 1 })
         .toArray ()
 
