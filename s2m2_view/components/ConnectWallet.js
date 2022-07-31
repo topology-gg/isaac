@@ -27,6 +27,6 @@ export function ConnectWallet() {
             }
             style={{padding:'0 15px',fontSize:'12px',height:'25px',border:'0',color:'#333333'}}
         >
-            Connect Argent X wallet
+            Connect wallet
         </button>
 }
