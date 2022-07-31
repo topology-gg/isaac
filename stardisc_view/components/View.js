@@ -186,6 +186,8 @@ function Parent (props) {
             setSelectedGrids (selectedGrids.concat({x:x, y:y}) )
 
             _gridAssistRectsRef.current [`(${x},${y})`].visible = true
+            _gridAssistRectsRef.current [`(${x},${y})`].fill = '#EEEEEECC'
+            _gridAssistRectsRef.current [`(${x},${y})`].dirty = true
         }
     }
 
@@ -221,6 +223,8 @@ function Parent (props) {
             setSelectedGrids (selectedGrids.concat({x:x, y:y}) )
 
             _gridAssistRectsRef.current [`(${x},${y})`].visible = true
+            _gridAssistRectsRef.current [`(${x},${y})`].fill = '#DDDDDD77'
+            _gridAssistRectsRef.current [`(${x},${y})`].dirty = true
         }
     }
 
@@ -397,7 +401,7 @@ function Parent (props) {
                     height: GRID, width: GRID,
                     left: x * GRID,
                     top:  y * GRID,
-                    fill: '#DDDDDD77',
+                    fill: '',
                     selectable: false,
                     hoverCursor: 'default',
                     visible: false,
@@ -541,6 +545,8 @@ function Parent (props) {
 
         for (const grid of _selectedGridsRef.current) {
             _gridAssistRectsRef.current [`(${grid.x},${grid.y})`].visible = false
+            _gridAssistRectsRef.current [`(${grid.x},${grid.y})`].fill = ''
+            _gridAssistRectsRef.current [`(${grid.x},${grid.y})`].dirty = true
         }
 
         setModalVisibility (false)
