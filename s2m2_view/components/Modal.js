@@ -72,7 +72,7 @@ export default function Modal (props) {
 
                     <p>Submitting: {display_grids}</p>
 
-                    <button onClick={onClick} style={{width:'fit-content'}} className='action-button'>
+                    <button onClick={onClick} style={{width:'fit-content',padding:'1px 15px'}} className='action-button'>
                         {button_string}
                     </button>
 
