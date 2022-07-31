@@ -20,7 +20,7 @@ export default function View () {
         <Record />
       </Parent>
     );
-  }
+}
 
 function Parent (props) {
 
