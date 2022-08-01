@@ -51,9 +51,9 @@ const G_MASS_SUN2 = 65536 * SCALE_FP_DIV_10000
 # const RADIUS_SUN0 = 1495 * SCALE_FP_DIV_1000 # 1.495
 # const RADIUS_SUN1 = 862 * SCALE_FP_DIV_1000 # 0.862
 # const RADIUS_SUN2 = 383 * SCALE_FP_DIV_1000 # 0.383
-const RADIUS_SUN0 = 95  * SCALE_FP_DIV_100 # 0.95
-const RADIUS_SUN1 = 134 * SCALE_FP_DIV_100 # 1.34
-const RADIUS_SUN2 = 55  * SCALE_FP_DIV_100 # 0.55
+const RADIUS_SUN0 = 89  * SCALE_FP_DIV_100 # 0.89
+const RADIUS_SUN1 = 136 * SCALE_FP_DIV_100 # 1.36
+const RADIUS_SUN2 = 61  * SCALE_FP_DIV_100 # 0.61
 const RADIUS_SUN0_SQ = 9025  * SCALE_FP_DIV_10000 # 0.95**2 = 0.9025
 const RADIUS_SUN1_SQ = 17956 * SCALE_FP_DIV_10000 # 1.34**2 = 1.7956
 const RADIUS_SUN2_SQ = 3025  * SCALE_FP_DIV_10000 # 0.55**2 = 0.3025
@@ -381,19 +381,19 @@ end
 namespace ns_energy_requirements:
     const DEVICE_SPG     = 200  # solar power generator
     const DEVICE_NPG     = 5000 # nuclear power generator
-    const DEVICE_FE_HARV = 200  # iron harvester
-    const DEVICE_AL_HARV = 400  # aluminum harvester
-    const DEVICE_CU_HARV = 600  # copper harvester
-    const DEVICE_SI_HARV = 800  # silicon harvester
-    const DEVICE_PU_HARV = 1000 # plutoniium harvester
+    const DEVICE_FE_HARV = 100  # iron harvester
+    const DEVICE_AL_HARV = 100  # aluminum harvester
+    const DEVICE_CU_HARV = 100  # copper harvester
+    const DEVICE_SI_HARV = 100  # silicon harvester
+    const DEVICE_PU_HARV = 100 # plutoniium harvester
     const DEVICE_FE_REFN = 500  # iron refinery
-    const DEVICE_AL_REFN = 750  # aluminum refinery
-    const DEVICE_CU_REFN = 1000  # copper refinery
-    const DEVICE_SI_REFN = 1250  # silicon refinery
-    const DEVICE_PEF     = 1500 # plutonium enrichment facility
-    const DEVICE_UTB     = 15  # universal transportation belt
-    const DEVICE_UTL     = 15  # universal transmission line
-    const DEVICE_UPSF    = 2000 # universal production and storage facility
+    const DEVICE_AL_REFN = 500  # aluminum refinery
+    const DEVICE_CU_REFN = 500  # copper refinery
+    const DEVICE_SI_REFN = 500  # silicon refinery
+    const DEVICE_PEF     = 1000 # plutonium enrichment facility
+    const DEVICE_UTB     = 25  # universal transportation belt
+    const DEVICE_UTL     = 25  # universal transmission line
+    const DEVICE_UPSF    = 5000 # universal production and storage facility
     const DEVICE_NDPE    = 5000 # nuclear driller & propulsion engine
 end
 

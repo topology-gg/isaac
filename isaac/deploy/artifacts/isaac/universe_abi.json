@@ -947,6 +947,29 @@
         "type": "event"
     },
     {
+        "data": [
+            {
+                "name": "src",
+                "type": "felt"
+            },
+            {
+                "name": "dst",
+                "type": "felt"
+            },
+            {
+                "name": "device_type",
+                "type": "felt"
+            },
+            {
+                "name": "device_amount",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "player_transfer_undeployed_device_occurred",
+        "type": "event"
+    },
+    {
         "inputs": [],
         "name": "probe_can_forward_universe",
         "outputs": [
@@ -1139,121 +1162,6 @@
             }
         ],
         "name": "player_transfer_undeployed_device",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "type",
-                "type": "felt"
-            },
-            {
-                "name": "grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "grid_y",
-                "type": "felt"
-            }
-        ],
-        "name": "flat_device_deploy",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "grid_y",
-                "type": "felt"
-            }
-        ],
-        "name": "flat_device_pickup_by_grid",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "utx_device_type",
-                "type": "felt"
-            },
-            {
-                "name": "src_device_grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "src_device_grid_y",
-                "type": "felt"
-            },
-            {
-                "name": "dst_device_grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "dst_device_grid_y",
-                "type": "felt"
-            },
-            {
-                "name": "locs_x_len",
-                "type": "felt"
-            },
-            {
-                "name": "locs_x",
-                "type": "felt*"
-            },
-            {
-                "name": "locs_y_len",
-                "type": "felt"
-            },
-            {
-                "name": "locs_y",
-                "type": "felt*"
-            }
-        ],
-        "name": "flat_utx_deploy",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "grid_y",
-                "type": "felt"
-            }
-        ],
-        "name": "flat_utx_pickup_by_grid",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "grid_y",
-                "type": "felt"
-            },
-            {
-                "name": "device_type",
-                "type": "felt"
-            },
-            {
-                "name": "device_count",
-                "type": "felt"
-            }
-        ],
-        "name": "flat_opsf_build_device",
         "outputs": [],
         "type": "function"
     },

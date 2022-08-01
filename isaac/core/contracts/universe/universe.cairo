@@ -119,6 +119,15 @@ func terminate_universe_occurred (
     ):
 end
 
+@event
+func player_transfer_undeployed_device_occurred (
+        src : felt,
+        dst : felt,
+        device_type : felt,
+        device_amount : felt
+    ):
+end
+
 ##############################
 
 #
@@ -833,128 +842,138 @@ func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : Hash
     ns_micro_state_functions.device_undeployed_ledger_write (caller, type, from_curr_amount - amount)
     ns_micro_state_functions.device_undeployed_ledger_write (to,     type, to_curr_amount + amount)
 
-    return ()
-end
-
-#
-# State-changing functions with input arguments flattened (no struct) for testing purposes
-#
-
-@external
-func flat_device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        type : felt,
-        grid_x : felt,
-        grid_y : felt
-    ) -> ():
-
-    player_deploy_device_by_grid (
-        type,
-        Vec2 (grid_x, grid_y)
+    #
+    # Apibara event emission
+    #
+    player_transfer_undeployed_device_occurred.emit (
+        src = caller,
+        dst = to,
+        device_type = type,
+        device_amount = amount
     )
 
     return ()
 end
 
+# #
+# # State-changing functions with input arguments flattened (no struct) for testing purposes
+# #
 
-@external
-func flat_device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        grid_x : felt,
-        grid_y : felt
-    ) -> ():
-    alloc_locals
+# @external
+# func flat_device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+#         type : felt,
+#         grid_x : felt,
+#         grid_y : felt
+#     ) -> ():
 
-    player_pickup_device_by_grid (
-        Vec2 (grid_x, grid_y)
-    )
+#     player_deploy_device_by_grid (
+#         type,
+#         Vec2 (grid_x, grid_y)
+#     )
 
-    return ()
-end
+#     return ()
+# end
 
 
-@external
-func flat_utx_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        utx_device_type : felt,
-        src_device_grid_x : felt,
-        src_device_grid_y : felt,
-        dst_device_grid_x : felt,
-        dst_device_grid_y : felt,
-        locs_x_len : felt,
-        locs_x : felt*,
-        locs_y_len : felt,
-        locs_y : felt*
-    ) -> ():
-    alloc_locals
+# @external
+# func flat_device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+#         grid_x : felt,
+#         grid_y : felt
+#     ) -> ():
+#     alloc_locals
 
-    assert locs_x_len = locs_y_len
-    let locs_len = locs_x_len
-    let (locs : Vec2*) = alloc ()
-    assemble_xy_arrays_into_vec2_array (
-        len = locs_x_len,
-        arr_x = locs_x,
-        arr_y = locs_y,
-        arr = locs,
-        idx = 0
-    )
+#     player_pickup_device_by_grid (
+#         Vec2 (grid_x, grid_y)
+#     )
 
-    player_deploy_utx_by_grids (
-        utx_device_type,
-        Vec2 (src_device_grid_x, src_device_grid_y),
-        Vec2 (dst_device_grid_x, dst_device_grid_y),
-        locs_len,
-        locs
-    )
+#     return ()
+# end
 
-    return ()
-end
 
-func assemble_xy_arrays_into_vec2_array {range_check_ptr} (
-        len : felt,
-        arr_x : felt*,
-        arr_y : felt*,
-        arr : Vec2*,
-        idx : felt
-    ) -> ():
-    if idx == len:
-        return ()
-    end
+# @external
+# func flat_utx_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+#         utx_device_type : felt,
+#         src_device_grid_x : felt,
+#         src_device_grid_y : felt,
+#         dst_device_grid_x : felt,
+#         dst_device_grid_y : felt,
+#         locs_x_len : felt,
+#         locs_x : felt*,
+#         locs_y_len : felt,
+#         locs_y : felt*
+#     ) -> ():
+#     alloc_locals
 
-    assert arr[idx] = Vec2 (arr_x[idx], arr_y[idx])
+#     assert locs_x_len = locs_y_len
+#     let locs_len = locs_x_len
+#     let (locs : Vec2*) = alloc ()
+#     assemble_xy_arrays_into_vec2_array (
+#         len = locs_x_len,
+#         arr_x = locs_x,
+#         arr_y = locs_y,
+#         arr = locs,
+#         idx = 0
+#     )
 
-    assemble_xy_arrays_into_vec2_array (
-        len, arr_x, arr_y, arr, idx + 1
-    )
-    return ()
-end
+#     player_deploy_utx_by_grids (
+#         utx_device_type,
+#         Vec2 (src_device_grid_x, src_device_grid_y),
+#         Vec2 (dst_device_grid_x, dst_device_grid_y),
+#         locs_len,
+#         locs
+#     )
 
-@external
-func flat_utx_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        grid_x : felt,
-        grid_y : felt
-    ) -> ():
+#     return ()
+# end
 
-    player_pickup_utx_by_grid (
-        Vec2 (grid_x, grid_y)
-    )
+# func assemble_xy_arrays_into_vec2_array {range_check_ptr} (
+#         len : felt,
+#         arr_x : felt*,
+#         arr_y : felt*,
+#         arr : Vec2*,
+#         idx : felt
+#     ) -> ():
+#     if idx == len:
+#         return ()
+#     end
 
-    return ()
-end
+#     assert arr[idx] = Vec2 (arr_x[idx], arr_y[idx])
 
-@external
-func flat_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        grid_x : felt,
-        grid_y : felt,
-        device_type : felt,
-        device_count : felt
-    ) -> ():
+#     assemble_xy_arrays_into_vec2_array (
+#         len, arr_x, arr_y, arr, idx + 1
+#     )
+#     return ()
+# end
 
-    player_opsf_build_device (
-        Vec2 (grid_x, grid_y),
-        device_type,
-        device_count
-    )
+# @external
+# func flat_utx_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+#         grid_x : felt,
+#         grid_y : felt
+#     ) -> ():
 
-    return ()
-end
+#     player_pickup_utx_by_grid (
+#         Vec2 (grid_x, grid_y)
+#     )
+
+#     return ()
+# end
+
+# @external
+# func flat_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+#         grid_x : felt,
+#         grid_y : felt,
+#         device_type : felt,
+#         device_count : felt
+#     ) -> ():
+
+#     player_opsf_build_device (
+#         Vec2 (grid_x, grid_y),
+#         device_type,
+#         device_count
+#     )
+
+#     return ()
+# end
 
 #
 # Exposing iterator functions for observing the micro world

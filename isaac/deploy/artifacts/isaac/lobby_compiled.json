@@ -73654,27 +73654,27 @@
             },
             "contracts.design.constants.RADIUS_SUN0": {
                 "type": "const",
-                "value": 95000000000000000000
+                "value": 89000000000000000000
             },
             "contracts.design.constants.RADIUS_SUN0_SQ": {
                 "type": "const",
-                "value": 14668900000000000000
+                "value": 90250000000000000000
             },
             "contracts.design.constants.RADIUS_SUN1": {
                 "type": "const",
-                "value": 134000000000000000000
+                "value": 136000000000000000000
             },
             "contracts.design.constants.RADIUS_SUN1_SQ": {
                 "type": "const",
-                "value": 14668900000000000000
+                "value": 179560000000000000000
             },
             "contracts.design.constants.RADIUS_SUN2": {
                 "type": "const",
-                "value": 55000000000000000000
+                "value": 61000000000000000000
             },
             "contracts.design.constants.RADIUS_SUN2_SQ": {
                 "type": "const",
-                "value": 14668900000000000000
+                "value": 30250000000000000000
             },
             "contracts.design.constants.RANGE_CHECK_BOUND": {
                 "type": "const",
@@ -74066,23 +74066,23 @@
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_AL_HARV": {
                 "type": "const",
-                "value": 400
+                "value": 100
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_AL_REFN": {
                 "type": "const",
-                "value": 750
+                "value": 500
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_CU_HARV": {
                 "type": "const",
-                "value": 600
+                "value": 100
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_CU_REFN": {
                 "type": "const",
-                "value": 1000
+                "value": 500
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_FE_HARV": {
                 "type": "const",
-                "value": 200
+                "value": 100
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_FE_REFN": {
                 "type": "const",
@@ -74098,19 +74098,19 @@
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_PEF": {
                 "type": "const",
-                "value": 1500
+                "value": 1000
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_PU_HARV": {
                 "type": "const",
-                "value": 1000
+                "value": 100
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_SI_HARV": {
                 "type": "const",
-                "value": 800
+                "value": 100
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_SI_REFN": {
                 "type": "const",
-                "value": 1250
+                "value": 500
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_SPG": {
                 "type": "const",
@@ -74118,15 +74118,15 @@
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_UPSF": {
                 "type": "const",
-                "value": 2000
+                "value": 5000
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_UTB": {
                 "type": "const",
-                "value": 15
+                "value": 25
             },
             "contracts.design.constants.ns_energy_requirements.DEVICE_UTL": {
                 "type": "const",
-                "value": 15
+                "value": 25
             },
             "contracts.design.constants.ns_energy_requirements.ImplicitArgs": {
                 "full_name": "contracts.design.constants.ns_energy_requirements.ImplicitArgs",
@@ -74377,6 +74377,33 @@
             "contracts.design.constants.ns_ndpe_impulse_function.Y_OFFSET_3": {
                 "type": "const",
                 "value": 100000000000000
+            },
+            "contracts.design.constants.ns_ndpe_max_carry": {
+                "type": "namespace"
+            },
+            "contracts.design.constants.ns_ndpe_max_carry.Args": {
+                "full_name": "contracts.design.constants.ns_ndpe_max_carry.Args",
+                "members": {},
+                "size": 0,
+                "type": "struct"
+            },
+            "contracts.design.constants.ns_ndpe_max_carry.ENERGY": {
+                "type": "const",
+                "value": 2500
+            },
+            "contracts.design.constants.ns_ndpe_max_carry.ImplicitArgs": {
+                "full_name": "contracts.design.constants.ns_ndpe_max_carry.ImplicitArgs",
+                "members": {},
+                "size": 0,
+                "type": "struct"
+            },
+            "contracts.design.constants.ns_ndpe_max_carry.Return": {
+                "cairo_type": "()",
+                "type": "type_definition"
+            },
+            "contracts.design.constants.ns_ndpe_max_carry.SIZEOF_LOCALS": {
+                "type": "const",
+                "value": 0
             },
             "contracts.design.constants.ns_nuclear_power": {
                 "type": "namespace"
