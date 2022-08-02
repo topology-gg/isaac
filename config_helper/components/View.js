@@ -82,7 +82,7 @@ export default function View () {
             setLobbyQueueLength (queue_length)
 
 
-            if (db_civ_state.civ_state.length == 0) {
+            if (!db_civ_state.civ_state || (db_civ_state.civ_state.length == 0)) {
                 //
                 // no universe launched ever
                 //
@@ -98,11 +98,13 @@ export default function View () {
                 console.log('ccc')
                 const civ_idx = db_civ_state.civ_state[0].civ_idx
                 const ticks_since_birth = db_macro_states.macro_states.length - 1 // at age 0 a macro state event is emitted
+                const population = db_player_balances.player_balances.length
 
                 const p_style = {textAlign:'center',marginTop:'0',marginBottom:'0'}
                 const info = [
                     <p key='civ-num' style={p_style}>Civilization number: {civ_idx}</p>,
-                    <p key='univ-age' style={p_style}>Universe age: {ticks_since_birth} / 2160 ticks</p>,
+                    <p key='population' style={p_style}>Population: {population}</p>,
+                    <p key='univ-age' style={p_style}>Universe age: {ticks_since_birth} / 2520 ticks</p>,
                     <p key='transport' style={p_style}>
                         <a href="" target="_blank" rel="noopener noreferrer">
                             Space View
@@ -121,7 +123,7 @@ export default function View () {
             }
             else if (queue_length == 0) {
                 setAccountQueueInfo ('queue is empty')
-                setQueueInfo ('waiting for 15 more players before dispatching')
+                setQueueInfo ('waiting for 15 more players before attempting dispatch')
                 setJoinButtonText ('join queue')
             }
             else {
@@ -129,11 +131,14 @@ export default function View () {
                 //
                 // check if all universes are active or if some is available
                 //
-                if (db_civ_state.civ_state[0].active == 1){
-                    setQueueInfo (`all universes are active`)
+                if (!db_civ_state.civ_state[0]) {
+                    setQueueInfo (`waiting for ${15-queue_length} more players before dispatching`)
+                }
+                else if (db_civ_state.civ_state[0].active == 0) {
+                    setQueueInfo (`waiting for ${15-queue_length} more players before dispatching`)
                 }
                 else {
-                    setQueueInfo (`waiting for ${15-queue_length} more players before dispatching`)
+                    setQueueInfo (`all universes are active`)
                 }
                 const account_int_str = toBN(account).toString(10)
 
