@@ -16,6 +16,7 @@ import {
     useStarknetInvoke
 } from '@starknet-react/core'
 
+const CIV_SIZE = 14
 
 export default function View () {
 
@@ -123,7 +124,7 @@ export default function View () {
             }
             else if (queue_length == 0) {
                 setAccountQueueInfo ('queue is empty')
-                setQueueInfo ('waiting for 15 more players before attempting dispatch')
+                setQueueInfo (`waiting for ${CIV_SIZE} more players before attempting dispatch`)
                 setJoinButtonText ('join queue')
             }
             else {
@@ -132,10 +133,10 @@ export default function View () {
                 // check if all universes are active or if some is available
                 //
                 if (!db_civ_state.civ_state[0]) {
-                    setQueueInfo (`waiting for ${15-queue_length} more players before dispatching`)
+                    setQueueInfo (`waiting for ${CIV_SIZE-queue_length} more players before dispatching`)
                 }
                 else if (db_civ_state.civ_state[0].active == 0) {
-                    setQueueInfo (`waiting for ${15-queue_length} more players before dispatching`)
+                    setQueueInfo (`waiting for ${CIV_SIZE-queue_length} more players before dispatching`)
                 }
                 else {
                     setQueueInfo (`all universes are active`)
