@@ -320,6 +320,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "macro_state",
                 "type": "Dynamics"
             },
@@ -330,6 +334,17 @@
         ],
         "keys": [],
         "name": "forward_world_macro_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "impulse",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "impulse_applied_occurred",
         "type": "event"
     },
     {
@@ -558,7 +573,7 @@
                 "type": "felt"
             }
         ],
-        "name": "utx_deployed_index_to_grid_size_read",
+        "name": "utx_deployed_index_read",
         "outputs": [
             {
                 "name": "size",
@@ -681,6 +696,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "device_id",
                 "type": "felt"
             },
@@ -695,6 +714,10 @@
     },
     {
         "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
             {
                 "name": "device_id",
                 "type": "felt"
@@ -715,6 +738,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "device_id",
                 "type": "felt"
             },
@@ -733,6 +760,10 @@
     },
     {
         "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
             {
                 "name": "device_id",
                 "type": "felt"
@@ -787,6 +818,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "owner",
                 "type": "felt"
             },
@@ -810,6 +845,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "owner",
                 "type": "felt"
             },
@@ -824,6 +863,10 @@
     },
     {
         "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
             {
                 "name": "owner",
                 "type": "felt"
@@ -860,6 +903,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "owner",
                 "type": "felt"
             },
@@ -875,11 +922,15 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "bool_universe_terminable",
                 "type": "felt"
             },
             {
-                "name": "bool_destruction",
+                "name": "destruction_by_which_sun",
                 "type": "felt"
             },
             {
@@ -898,6 +949,23 @@
     {
         "inputs": [],
         "name": "probe_can_forward_universe",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "check_address_in_civilization",
         "outputs": [
             {
                 "name": "bool",
