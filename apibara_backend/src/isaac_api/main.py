@@ -2,6 +2,7 @@
 
 import asyncio
 from functools import wraps
+import os
 
 import click
 
@@ -33,7 +34,7 @@ async def start(server_url, mongo_url, restart):
     if server_url is None:
         server_url = "localhost:7171"
     if mongo_url is None:
-        mongo_url = "mongodb://isaac:isaac@localhost:27017"
+        mongo_url = os.getenv("ISAAC_MONGO_URL", "mongodb://isaac:isaac@localhost:27017")
     await run_indexer(
         restart=restart,
         server_url=server_url,
