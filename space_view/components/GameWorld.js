@@ -10,7 +10,10 @@ import {
 } from '@starknet-react/core'
 
 import UniverseAbi from '../abi/universe_abi.json'
-import { useMacroStates } from '../lib/api'
+import {
+    useMacroStates,
+    useImpulses
+} from '../lib/api'
 
 
 const UNIVERSE_ADDR = '0x05538cf7d703fa3dccb61329d23598a6b31748c120c6fff0b7c48da2396ba104' // universe #0
@@ -25,7 +28,7 @@ function useUniverseContract() {
 const STARK_PRIME = new BigNumber('3618502788666131213697322783095070105623107215331596699973092056135872020481')
 const STARK_PRIME_HALF = new BigNumber('1809251394333065606848661391547535052811553607665798349986546028067936010240')
 
-function createSquare (x, y, d, rotation, fill, stroke, stroke_w, cursor, opacity)
+function createPlnt (x, y, d, rotation, fill, stroke, stroke_w, cursor, opacity)
 {
     var pos = fabric.util.rotatePoint(
         new fabric.Point(x, y),
@@ -83,6 +86,11 @@ function parse_phi_to_degree (phi)
 
 export default function GameWorld() {
 
+    const SUN0_RADIUS = 0.89 // from contract
+    const SUN1_RADIUS = 1.36 // from contract
+    const SUN2_RADIUS = 0.61 // from contract
+    const PLNT_RADIUS = 0.03 // arbitrary
+
     const CANVAS_BG_LIGHT = '#f9ffff'
     const SUN0_FILL_LIGHT = '#f0e3d0'
     const SUN1_FILL_LIGHT = '#e3bab4'
@@ -114,7 +122,8 @@ export default function GameWorld() {
     const { contract } = useUniverseContract()
     const { account } = useStarknet()
 
-    const { data: db_macro_states } = useMacroStates()
+    const { data: db_macro_states } = useMacroStates ()
+    const { data: db_impulses } = useImpulses ()
 
     //
     // Logic to initialize a Fabric canvas
@@ -161,17 +170,22 @@ export default function GameWorld() {
     }, []);
 
     useEffect (() => {
-        if (!db_macro_states) {
+        if (!db_macro_states || !db_impulses) {
             return
         }
         else if (timeLeft > 0) {
             return
         }
-        else if (!_hasDrawnRef.current) {
-            console.log ('lets draw world')
+        else {
+            // clear and redraw all objects on canvas
+            _canvasRef.current.remove(..._canvasRef.current.getObjects())
             drawWorld (_canvasRef.current)
         }
-    }, [db_macro_states, timeLeft]);
+        // else if (!_hasDrawnRef.current) {
+        //     console.log ('lets draw world')
+        //     drawWorld (_canvasRef.current)
+        // }
+    }, [db_macro_states, db_impulses, timeLeft]);
 
     useEffect(() => {
         function handleResize() {
@@ -183,7 +197,8 @@ export default function GameWorld() {
     }, []);
 
     const drawWorld = canvi => {
-        console.log (db_macro_states.macro_states)
+        console.log ('macro_states:', db_macro_states.macro_states)
+        console.log ('impulses:', db_impulses.impulses)
 
         if (db_macro_states.macro_states.length > 0) {
             console.log ("fetched", db_macro_states.macro_states.length, "macro_states in total.")
@@ -231,13 +246,6 @@ export default function GameWorld() {
 
         console.log ("window_dim", window_dim)
 
-        //
-        // Constants
-        //
-        const SUN0_RADIUS = 1.495 // from contract
-        const SUN1_RADIUS = 0.862 // from contract
-        const SUN2_RADIUS = 0.383 // from contract
-        const PLNT_RADIUS = 0.05 // arbitrary
         const ORIGIN_X = window_dim.width / 2
         const ORIGIN_Y = window_dim.height / 2
         const DISPLAY_SCALE = 60
@@ -356,7 +364,7 @@ export default function GameWorld() {
             width: TEXTBOX_WIDTH, height: TEXTBOX_HEIGHT
         });
         const tbox_sun0_text = new fabric.Text(
-            'BÖYÜK', {
+            'ORTA', {
             fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333', fontFamily: FONT_FAMILY
         });
         const tbox_sun0_coord_text = new fabric.Text(
@@ -376,7 +384,7 @@ export default function GameWorld() {
             width: TEXTBOX_WIDTH, height: TEXTBOX_HEIGHT
         });
         const tbox_sun1_text = new fabric.Text(
-            'ORTA', {
+            'BÖYÜK', {
             fontSize: FONT_SIZE_NAME, originX: 'center', originY: 'bottom', fill: '#333333', fontFamily: FONT_FAMILY
         });
         const tbox_sun1_coord_text = new fabric.Text(
@@ -443,19 +451,32 @@ export default function GameWorld() {
         if (db_macro_states.macro_states.length > 2){
             const history_len = db_macro_states.macro_states.length
             console.log("history_len", history_len)
-            for (var i = 1; i < history_len-1; i++){
+
+            const drawn_len = history_len > 300 ? 300 : history_len
+            for (var i = 1; i < drawn_len-1; i++){
 
                 // use variable power of recency to taper opacity and width
-                const ratio = (history_len-i) / history_len
-                const sun0_thickness = SUN0_RADIUS *DISPLAY_SCALE *2 * (ratio**1.2)
-                const sun1_thickness = SUN1_RADIUS *DISPLAY_SCALE *2 * (ratio**1.5)
-                const sun2_thickness = SUN2_RADIUS *DISPLAY_SCALE *2 * (ratio**1.5)
-                const plnt_thickness = PLNT_RADIUS *DISPLAY_SCALE *2 * (ratio**2)
+                const ratio = (drawn_len-i) / drawn_len
+                // console.log(`ratio: ${ratio}`)
+                // const sun0_thickness = SUN0_RADIUS *DISPLAY_SCALE *2 * (ratio**1.2)
+                // const sun1_thickness = SUN1_RADIUS *DISPLAY_SCALE *2 * (ratio**1.5)
+                // const sun2_thickness = SUN2_RADIUS *DISPLAY_SCALE *2 * (ratio**1.5)
+                // const plnt_thickness = PLNT_RADIUS *DISPLAY_SCALE *2 * (ratio**2)
 
-                const sun0_opacity = 0.03 + 0.5 * (ratio**5)
-                const sun1_opacity = 0.01 + 0.08 * (ratio**8)
-                const sun2_opacity = 0.05 * ratio
-                const plnt_opacity = 0.1 * (ratio**4)
+                const sun0_thickness = SUN0_RADIUS *DISPLAY_SCALE *2 * (ratio**0.3)
+                const sun1_thickness = SUN1_RADIUS *DISPLAY_SCALE *2 * (ratio**0.3)
+                const sun2_thickness = SUN2_RADIUS *DISPLAY_SCALE *2 * (ratio**0.3)
+                const plnt_thickness = PLNT_RADIUS *DISPLAY_SCALE *2 * (ratio**0.3)
+
+                // const sun0_opacity = 0.03 + 0.5 * (ratio**5)
+                // const sun1_opacity = 0.01 + 0.08 * (ratio**8)
+                // const sun2_opacity = 0.05 * ratio
+                // const plnt_opacity = 0.1 * (ratio**4)
+
+                const sun0_opacity = 0.1 * (ratio**1.5)
+                const sun1_opacity = 0.1 * (ratio**1.5)
+                const sun2_opacity = 0.1 * (ratio**1.5)
+                const plnt_opacity = 0.1 * (ratio**1.5)
 
                 // grab two consecutive states
                 const state_0 = db_macro_states.macro_states[i]
@@ -621,7 +642,57 @@ export default function GameWorld() {
         }
 
         //
-        // Draw the suns
+        // Draw NDPE launch traces
+        //
+        if (db_impulses.impulses.length > 0){
+            for (const impulse of db_impulses.impulses) {
+                const plnt_q_x = impulse.most_recent_planet_q.x
+                const plnt_q_y = impulse.most_recent_planet_q.y
+                const delta_vx = impulse.impulse_applied.x / (1e-4)
+                const delta_vy = impulse.impulse_applied.y / (1e-4)
+                const delta_v_abs = Math.sqrt (delta_vx**2 + delta_vy**2)
+                console.log ('delta_v_abs:', delta_v_abs)
+
+                // const ndpe_launch_trace = new fabric.Line(
+                //     [
+                //         ORIGIN_X + plnt_q_x *DISPLAY_SCALE,
+                //         ORIGIN_Y + plnt_q_y *DISPLAY_SCALE,
+                //         ORIGIN_X + (plnt_q_x + delta_vx*5) *DISPLAY_SCALE,
+                //         ORIGIN_Y + (plnt_q_y + delta_vy*5) *DISPLAY_SCALE
+                //     ],{
+                //         stroke: '#3333CC',
+                //         strokeWidth: 0.8,
+                //         strokeDashArray: [0.8, 1.65],
+                //         strokeLineCap: "round",
+                //         selectable: false
+                //     }
+                // );
+                // canvi.add (ndpe_launch_trace)
+
+                const N = 5
+                for (var i=0; i<N; i++) {
+                    // const radius = delta_v_abs * (i+1)
+                    const radius = 0.05 * (i+1)
+                    const stroke_color = '#3333CC'
+                    const ndpe_launch_circle = new fabric.Circle ({
+                        left: ORIGIN_X + (plnt_q_x-radius) *DISPLAY_SCALE,
+                        top:  ORIGIN_Y + (plnt_q_y-radius) *DISPLAY_SCALE,
+                        radius: radius * DISPLAY_SCALE,
+                        stroke: stroke_color,
+                        opacity: (N-i)/N,
+                        strokeWidth: 0.5,
+                        fill: '#00000000',
+                        selectable: false,
+                        // hoverCursor: "pointer"
+                    });
+                    canvi.add (ndpe_launch_circle)
+                }
+            }
+        }
+
+
+        //
+        // Draw the celestial bodies as geometries
         //
         const SUN0_STROKE_WIDTH = 2
         const SUN1_STROKE_WIDTH = 3
@@ -659,7 +730,7 @@ export default function GameWorld() {
             hoverCursor: "pointer"
         });
 
-        const plnt_square = createSquare (
+        const plnt_square = createPlnt (
             ORIGIN_X + (plnt_x.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
             ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE,
             PLNT_RADIUS * 2 * DISPLAY_SCALE,
@@ -675,26 +746,25 @@ export default function GameWorld() {
         canvi.add (sun1_circle)
         canvi.add (sun2_circle)
         canvi.add (plnt_square)
-        // canvi.add (plnt_circle)
 
         //
-        // Draw suns as images
+        // Draw the celestial bodies as images
         //
-        const sun0_scale = 0.134
-        const sun0_img_offset_x = 0 //0.6
-        const sun0_img_offset_y = 0 //0.38
+        const sun0_scale = 0.0798
+        const sun0_img_offset_x = 0
+        const sun0_img_offset_y = 0
         const sun0_img_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS-sun0_img_offset_x) *DISPLAY_SCALE +SUN0_STROKE_WIDTH/2
         const sun0_img_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS-sun0_img_offset_y) *DISPLAY_SCALE +SUN0_STROKE_WIDTH/2
 
-        const sun1_scale = 0.129
-        const sun1_img_offset_x = 0 //1.05
-        const sun1_img_offset_y = 0 //1.02
+        const sun1_scale = 0.2035
+        const sun1_img_offset_x = 0
+        const sun1_img_offset_y = 0
         const sun1_img_left = ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS-sun1_img_offset_x) *DISPLAY_SCALE +SUN1_STROKE_WIDTH/2
         const sun1_img_top  = ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS-sun1_img_offset_y) *DISPLAY_SCALE +SUN1_STROKE_WIDTH/2
 
-        const sun2_scale = 0.0787
-        const sun2_img_offset_x = 0 //0.723
-        const sun2_img_offset_y = 0 //0.683
+        const sun2_scale = 0.1255
+        const sun2_img_offset_x = 0
+        const sun2_img_offset_y = 0
         const sun2_img_left = ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS-sun2_img_offset_x) *DISPLAY_SCALE +SUN2_STROKE_WIDTH/2
         const sun2_img_top  = ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS-sun2_img_offset_y) *DISPLAY_SCALE +SUN2_STROKE_WIDTH/2
 
@@ -729,6 +799,40 @@ export default function GameWorld() {
         canvi.add(sun1_img_instance);
         canvi.add(sun2_img_instance);
 
+        //
+        // Draw planet orientation helper
+        //
+        console.log (`planet rotation in degree: ${phi_degree}`)
+        const plnt_face0_vec = new fabric.Line(
+            [
+                ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
+                ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
+                ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE + 30,
+                ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE
+            ],{
+                stroke: '#666666',
+                strokeWidth: 3,
+                strokeDashArray: [3, 3],
+                angle: phi_degree
+            }
+        );
+
+        const plnt_face1_vec = new fabric.Line(
+            [
+                ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
+                ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
+                ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
+                ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE + 30
+            ],{
+                stroke: '#BBBBBB',
+                strokeWidth: 2,
+                strokeDashArray: [2, 2],
+                angle: phi_degree
+            }
+        );
+
+        canvi.add (plnt_face0_vec)
+        canvi.add (plnt_face1_vec)
 
         //
         // Draw axis directionalities
