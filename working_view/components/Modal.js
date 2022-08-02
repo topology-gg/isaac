@@ -34,8 +34,8 @@ export function Modal (props) {
     const [hoverDevice, setHoverDevice] = useState ('-')
 
     var thead = [
-        <th style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
-        <th style={{textAlign:'left',paddingLeft:'3em'}}>Balance</th>
+        <th key='resource' style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
+        <th key='balance' style={{textAlign:'left',paddingLeft:'3em'}}>Balance</th>
     ]
 
     if (!info['grids']) {
@@ -128,9 +128,9 @@ export function Modal (props) {
                 if (['UPSF'].includes(typ)) {
 
                     var thead = [
-                        <th style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
-                        <th style={{textAlign:'left',paddingLeft:'3em'}}>Balance</th>,
-                        <th style={{textAlign:'left',paddingLeft:'3em'}}>Requirement</th>
+                        <th key='upsf-resource' style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
+                        <th key='upsf-balance' style={{textAlign:'left',paddingLeft:'3em'}}>Balance</th>,
+                        <th key='upsf-requirement' style={{textAlign:'left',paddingLeft:'3em'}}>Requirement</th>
                     ]
 
                     //

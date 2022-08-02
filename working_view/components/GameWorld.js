@@ -285,7 +285,7 @@ export default function GameWorld() {
             drawWorld (_canvasRef.current)
             setHudVisible (true)
         }
-    }, [db_macro_states, db_civ_state, db_player_balances, db_deployed_devices, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs, db_deployed_ndpes]);
+    }, [db_macro_states, db_civ_state, db_player_balances, db_deployed_devices, db_utx_sets, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs, db_deployed_ndpes]);
 
     //
     // useEffect to check if the signed in account is in current civilization
@@ -1161,7 +1161,7 @@ export default function GameWorld() {
         }, ANIM_UPDATE_INTERVAL_MS);
 
         return () => clearInterval(interval);
-    }, [hasDrawnState]);
+    }, [hasDrawnState, db_utx_sets]);
 
 
     const drawGrid = canvi => {
