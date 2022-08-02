@@ -1157,7 +1157,7 @@
                 "type": "felt"
             },
             {
-                "name": "to",
+                "name": "to_idx",
                 "type": "felt"
             }
         ],
