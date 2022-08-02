@@ -80,14 +80,28 @@ class Dynamics:
             "planet": self.planet.to_json(),
         }
 
+###
+
+#
+# Decode any event to extract event_counter, which is always the first member
+#
+def extract_counter_from_event (event: Event) -> Tuple [int]:
+    it = iter(event.data)
+    event_counter = _felt_from_iter(it, scale=False)
+
+    return event_counter
+
+###
+
 #
 # Decode event: universe::forward_world_macro_occurred
 #
 def decode_forward_world_event(event: Event) -> Tuple[Dynamic, int]:
-    data_iter = iter(event.data)
+    it = iter(event.data)
 
-    dynamics = Dynamics.from_iter(data_iter)
-    phi = _felt_from_iter(data_iter, scale=False)
+    event_counter = _felt_from_iter(it, scale=False)
+    dynamics = Dynamics.from_iter(it)
+    phi = _felt_from_iter(it, scale=False)
 
     return dynamics, phi
 
@@ -202,6 +216,7 @@ def decode_player_deploy_device_occurred_event (event: Event) -> Tuple [int, int
     #     ):
     # end
 
+    event_counter = _felt_from_iter(it, scale=False)
     owner       = _felt_from_iter (it, scale=False)
     device_id   = _felt_from_iter (it, scale=False, signed=False)
     device_type = _felt_from_iter (it, scale=False)
@@ -223,6 +238,7 @@ def decode_player_pickup_device_occurred_event (event: Event) -> Tuple [int, Vec
     #     ):
     # end
 
+    event_counter = _felt_from_iter(it, scale=False)
     owner = _felt_from_iter (it, scale=False)
     grid  = Vec2.from_iter  (it, scale=False)
 
@@ -238,18 +254,19 @@ def decode_terminate_universe_occurred_event (event: Event) -> Tuple [int, int, 
     # @event
     # func terminate_universe_occurred (
     #         bool_universe_terminable : felt,
-    #         bool_destruction : felt,
+    #         destruction_by_which_sun : felt,
     #         bool_universe_max_age_reached : felt,
     #         bool_universe_escape_condition_met : felt
     #     ):
     # end
 
+    event_counter = _felt_from_iter(it, scale=False)
     bool_universe_terminable           = _felt_from_iter (it, scale=False)
-    bool_destruction                   = _felt_from_iter (it, scale=False)
+    destruction_by_which_sun           = _felt_from_iter (it, scale=False)
     bool_universe_max_age_reached      = _felt_from_iter (it, scale=False)
     bool_universe_escape_condition_met = _felt_from_iter (it, scale=False)
 
-    return bool_universe_terminable, bool_destruction, bool_universe_max_age_reached, bool_universe_escape_condition_met
+    return bool_universe_terminable, destruction_by_which_sun, bool_universe_max_age_reached, bool_universe_escape_condition_met
 
 #
 # Decode event: universe::player_deploy_utx_occurred
@@ -269,6 +286,7 @@ def decode_player_deploy_utx_occurred_event (event: Event) -> Tuple [int, int, i
     #     ):
     # end
 
+    event_counter = _felt_from_iter(it, scale=False)
     owner           = _felt_from_iter (it, scale=False)
     utx_label       = _felt_from_iter (it, scale=False, signed=False)
     utx_device_type = _felt_from_iter (it, scale=False)
@@ -294,6 +312,7 @@ def decode_player_pickup_utx_occurred_event (event: Event) -> Tuple [int, Vec2]:
     #     ):
     # end
 
+    event_counter = _felt_from_iter(it, scale=False)
     owner = _felt_from_iter (it, scale=False)
     grid  = Vec2.from_iter  (it, scale=False)
 
@@ -312,6 +331,7 @@ def decode_resource_update_at_harvester_occurred_event (event: Event) -> Tuple [
     #     ):
     # end
 
+    event_counter = _felt_from_iter(it, scale=False)
     device_id    = _felt_from_iter (it, scale=False, signed=False)
     new_quantity = _felt_from_iter (it, scale=False)
 
@@ -331,6 +351,7 @@ def decode_resource_update_at_transformer_occurred_event (event: Event) -> Tuple
     #     ):
     # end
 
+    event_counter = _felt_from_iter(it, scale=False)
     device_id         = _felt_from_iter (it, scale=False, signed=False)
     new_quantity_pre  = _felt_from_iter (it, scale=False)
     new_quantity_post = _felt_from_iter (it, scale=False)
@@ -351,6 +372,7 @@ def decode_resource_update_at_upsf_occurred_event (event: Event) -> Tuple [int, 
     #     ):
     # end
 
+    event_counter = _felt_from_iter(it, scale=False)
     device_id    = _felt_from_iter (it, scale=False, signed=False)
     element_type = _felt_from_iter (it, scale=False)
     new_quantity = _felt_from_iter (it, scale=False)
@@ -370,7 +392,86 @@ def decode_energy_update_at_device_occurred_event (event: Event) -> Tuple [int, 
     #     ):
     # end
 
+    event_counter = _felt_from_iter(it, scale=False)
     device_id    = _felt_from_iter (it, scale=False, signed=False)
     new_quantity = _felt_from_iter (it, scale=False)
 
     return device_id, new_quantity
+
+
+#
+# Decode event: lobby::ask_to_queue_occurred
+#
+def decode_ask_to_queue_occurred_event (event: Event) -> Tuple [int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func ask_to_queue_occurred (
+    #     account : felt,
+    #     queue_idx : felt
+    #     ):
+    # end
+
+    event_counter = _felt_from_iter(it, scale=False)
+    account    = _felt_from_iter (it, scale=False, signed=False)
+    queue_idx  = _felt_from_iter (it, scale=False)
+
+    return account, queue_idx
+
+
+#
+# Decode event: lobby::give_invitation_occurred
+#
+def decode_give_invitation_occurred_event (event: Event) -> Tuple [int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func give_invitation_occurred (
+    #     event_counter : felt,
+    #     account : felt
+    # ):
+    # end
+
+    event_counter = _felt_from_iter(it, scale=False)
+    account = _felt_from_iter(it, scale=False)
+
+    return account
+
+
+#
+# Decode event: universe::impulse_applied_occurred
+#
+def decode_impulse_applied_occurred_event (event: Event) -> Tuple [Vec2]:
+    it = iter (event.data)
+
+    # @event
+    # func impulse_applied_occurred (
+    #     impulse : Vec2
+    # ):
+    # end
+
+    impulse = Vec2.from_iter (it, scale=True)
+
+    return impulse
+
+#
+# Decode event: universe::player_transfer_undeployed_device_occurred
+#
+def decode_player_transfer_undeployed_device_occurred_event (event: Event) -> Tuple [int, int, int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func player_transfer_undeployed_device_occurred (
+    #         src : felt,
+    #         dst : felt,
+    #         device_type : felt,
+    #         device_amount : felt
+    #     ):
+    # end
+
+    src_account   = _felt_from_iter (it, scale=False)
+    dst_account   = _felt_from_iter (it, scale=False)
+    device_type   = _felt_from_iter (it, scale=False)
+    device_amount = _felt_from_iter (it, scale=False)
+
+    return src_account, dst_account, device_type, device_amount
