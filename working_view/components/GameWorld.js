@@ -1035,7 +1035,7 @@ export default function GameWorld() {
         }
         else {
             prepare_grid_mapping ()
-            // drawPerlin (canvi)
+            drawPerlin (canvi)
             drawGrid (canvi)
             drawDevices (canvi)
             drawAssist (canvi) // draw assistance objects the last to be on top
