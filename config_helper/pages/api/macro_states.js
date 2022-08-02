@@ -7,7 +7,7 @@ const client = new MongoClient(MONGO_CONNECTION_STRING)
 export default async function handler(req, res) {
     await client.connect()
 
-    const db = client.db('isaac_alpha')
+    const db = client.db('isaac')
 
     // TODO: query the birth block_number of this civ, and use that to filter macro_states.
     //       because documents are immutable, we need to differentiate states of current civ from states of past civs
