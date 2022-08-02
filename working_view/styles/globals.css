@@ -7,6 +7,11 @@
     src: url("../styles/fonts/Poppins/Poppins-Light.ttf") format("truetype");
 }
 
+@font-face{
+    font-family: "Anoxic";
+    src: url("../styles/fonts/Anoxic/AnoxicLight-3zlK8.ttf") format("truetype");
+}
+
 html,
 body,
 #root {
@@ -14,7 +19,8 @@ body,
     height: 100%;
     margin: 0;
     padding: 0;
-    background-color: #282828;
+    /* background-color: #282828; */
+    background-color: #757575;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -22,6 +28,8 @@ body,
     -ms-user-select: none;
     user-select: none;
     overflow: hidden;
+
+    overscroll-behavior-x: none;
 }
 
 body {
@@ -68,6 +76,34 @@ button {
   touch-action: manipulation;
 }
 
+::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    color:  rgba(80, 80, 80, 0.4);
+}
+:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+   color:    #555;
+   opacity:  0.4;
+}
+::-moz-placeholder { /* Mozilla Firefox 19+ */
+   color:    #555;
+   opacity:  0.4;
+}
+:-ms-input-placeholder { /* Internet Explorer 10-11 */
+   color:   rgba(80, 80, 80, 0.4);
+}
+::-ms-input-placeholder { /* Microsoft Edge */
+   color:   rgba(80, 80, 80, 0.4);
+}
+::placeholder { /* Most modern browsers support this now. */
+   color:    #555;
+   opacity: 0.4;
+}
+
+.action-button:hover {
+    /* background-color:#CCCCCC; */
+    background-color:#FFFE71;
+    transition: 0.1s;
+}
+
 .mother-container {
     display: flex;
     background-color: #444444;
@@ -93,7 +129,7 @@ button {
 
 .right-child-bottom {
     overflow-y: auto;
-    height: 25em;
+    height: 23.5em;
     margin: 0;
 }
 
@@ -136,7 +172,7 @@ h5 {
 }
 
 .cover_art_back {
-    z-index: 1;
+    z-index: 2;
 	position: absolute;
     margin: 0;
     top: 0px;
