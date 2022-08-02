@@ -42,10 +42,10 @@ from isaac_api.contract import (
 
 # load_dotenv ()
 
-CIV_SIZE = 2
+CIV_SIZE = 12
 UNIVERSE_COUNT = 1
 DEVICE_TYPE_COUNT = 16
-ORIGIN_BLOCK_TO_INDEX = 283522 - 1
+ORIGIN_BLOCK_TO_INDEX = 284689 - 1
 INDEXER_ID = 'isaac-alpha'
 
 ISAAC_UNIVERSE_ADDRESSES = {
