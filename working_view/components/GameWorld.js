@@ -24,7 +24,8 @@ import {
     useMacroStates
 } from '../lib/api'
 
-import Modal from "./Modal";
+// import Modal from "./Modal";
+import { Modal } from "./Modal"
 import HUD from "./HUD"
 
 import {
@@ -62,19 +63,24 @@ import {
 // Dimensions
 //
 const SIDE = 40 // number of grids per size (planet dimension)
-const GRID = 200 / SIDE // grid size
+const GRID = Math.floor (200 / SIDE) // grid size
 const PAD_X = 160 // pad size
-const PAD_Y = 120 // pad size
+const PAD_Y = 90 // pad size
 const CANVAS_W = 1122
 const CANVAS_H = 900
 const TRIANGLE_W = 6
 const TRIANGLE_H = 10
 
+const COURSE_GRIDLINE_SPACING = 10
+const MEDIUM_GRIDLINE_SPACING = 1
+const FINEST_GRIDLINE_SPACING = 1
+const GRIDLINE_OBJECT_CACHE = false
+
 const DEVICE_DIM_MAP = new Map();
 DEVICE_DIM_MAP.set(0, 1);
 DEVICE_DIM_MAP.set(1, 3);
 DEVICE_DIM_MAP.set(2, 1);
-DEVICE_DIM_MAP.set(3, 2);
+DEVICE_DIM_MAP.set(3, 1);
 DEVICE_DIM_MAP.set(4, 1);
 DEVICE_DIM_MAP.set(5, 1);
 DEVICE_DIM_MAP.set(6, 1);
@@ -91,34 +97,38 @@ DEVICE_DIM_MAP.set(15, 5);
 //
 // Import pre-generated perlin values
 //
-const PERLIN_VALUES_FE_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_0.json`);
-const PERLIN_VALUES_AL_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_2.json`);
-const PERLIN_VALUES_CU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_4.json`);
-const PERLIN_VALUES_SI_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_6.json`);
-const PERLIN_VALUES_PU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_8.json`);
-const PERLIN_VALUES = {
-    'fe' : PERLIN_VALUES_FE_RAW,
-    'al' : PERLIN_VALUES_AL_RAW,
-    'cu' : PERLIN_VALUES_CU_RAW,
-    'si' : PERLIN_VALUES_SI_RAW,
-    'pu' : PERLIN_VALUES_PU_RAW
-}
+// const PERLIN_VALUES_FE_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_0.json`);
+// const PERLIN_VALUES_AL_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_2.json`);
+// const PERLIN_VALUES_CU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_4.json`);
+// const PERLIN_VALUES_SI_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_6.json`);
+// const PERLIN_VALUES_PU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_8.json`);
+// const PERLIN_VALUES = {
+//     'fe' : PERLIN_VALUES_FE_RAW,
+//     'al' : PERLIN_VALUES_AL_RAW,
+//     'cu' : PERLIN_VALUES_CU_RAW,
+//     'si' : PERLIN_VALUES_SI_RAW,
+//     'pu' : PERLIN_VALUES_PU_RAW
+// }
 
 //
 // Sizes
 //
-const STROKE_WIDTH_CURSOR_FACE = 2
+const STROKE_WIDTH_CURSOR_FACE = 1.0
 const STROKE_WIDTH_AXIS = 0.4
-const STROKE_WIDTH_GRID = 0.1
+
+const STROKE_WIDTH_GRID_COURSE = 0.2
+const STROKE_WIDTH_GRID_MEDIUM = 0.1
+const STROKE_WIDTH_GRID_FINEST = 0.02
+
 const STROKE_WIDTH_GRID_FACE = 0.4
 
 //
 // Styles
 //
 const PALETTE = 'DARK'
-const STROKE             = PALETTE === 'DARK' ? '#DDDDDD55' : '#BBBBBB' // grid stroke color
-const CANVAS_BG          = PALETTE === 'DARK' ? '#282828' : '#E3EDFF'
-const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#DDDDDD' : '#999999'
+const STROKE             = PALETTE === 'DARK' ? '#DDDDDD99' : '#BBBBBB' // grid stroke color
+const CANVAS_BG          = PALETTE === 'DARK' ? '#313131' : '#E3EDFF'
+const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#FFEFD5' : '#999999'
 const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const FILL_CURSOR_GRID            = PALETTE === 'DARK' ? '#AAAAAA55' : '#AAAAAA55'
@@ -162,6 +172,10 @@ function createTriangle(x, y, rotation)
 }
 
 export default function GameWorld() {
+
+
+    fabric.perfLimitSizeTotal = 4194304;
+    fabric.maxCacheSideLimit = 5000*2;
 
     // Credits:
     // https://aprilescobar.medium.com/part-1-fabric-js-on-react-fabric-canvas-e4094e4d0304
@@ -219,6 +233,12 @@ export default function GameWorld() {
 
     const _panStateRef = useRef({'panning':false, 'last_x':0, 'last_y':0});
 
+    const _currZoom = useRef();
+
+    const _courseGridLines = useRef();
+    const _mediumGridLines = useRef();
+    const _finestGridLines = useRef();
+
     //
     // React States
     //
@@ -232,6 +252,7 @@ export default function GameWorld() {
     const [selectedGrids, setSelectedGrids] = useState([])
     const [gridMapping, setGridMapping] = useState()
     const [accountInCiv, setAccountInCiv] = useState(false)
+    const [accountDeviceBalance, setAccountDeviceBalance] = useState({})
 
     const [hudLines, setHudLines] = useState([])
     const [hudVisible, setHudVisible] = useState (false)
@@ -242,16 +263,27 @@ export default function GameWorld() {
     // useEffect for checking if all database collections are loaded
     //
     useEffect (() => {
-        if (hasLoadedDB) {
+        // if (hasLoadedDB) {
+        //     return
+        // }
+        if (!_canvasRef.current) {
+            console.log ('canvas not created..')
             return
         }
+
         if (!db_macro_states || !db_civ_state || !db_player_balances || !db_deployed_devices || !db_utx_sets || !db_deployed_pgs || !db_deployed_harvesters || !db_deployed_transformers || !db_deployed_upsfs || !db_deployed_ndpes) {
-            console.log ('db not loaded..')
+            console.log ('db not fully loaded..')
             return
         }
         else {
-            console.log ('db loaded!')
-            setHasLoadedDB (true)
+            // console.log ('db fully loaded!')
+            // setHasLoadedDB (true)
+            console.log ('drawWorld()')
+
+            _currZoom.current = _canvasRef.current.getZoom();
+            _canvasRef.current.remove(..._canvasRef.current.getObjects())
+            drawWorld (_canvasRef.current)
+            setHudVisible (true)
         }
     }, [db_macro_states, db_civ_state, db_player_balances, db_deployed_devices, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs, db_deployed_ndpes]);
 
@@ -273,6 +305,12 @@ export default function GameWorld() {
         if (account_intstr_list.includes(account_intstr)) {
             console.log ('account is in this civilization')
             setAccountInCiv (true)
+
+            var entry = player_balances.filter(obj => {
+                return obj['account'] === account_intstr
+            })
+            setAccountDeviceBalance (entry[0])
+            console.log ('setAccountDeviceBalance', entry[0])
         }
         else {
             console.log ('account is not in this civilization')
@@ -334,17 +372,17 @@ export default function GameWorld() {
             deployed_upsf_mapping.set(
                 upsf['id'],
                 {
-                    'FE raw     ' : upsf['resource_0'],
-                    'AL raw     ' : upsf['resource_1'],
-                    'CU raw     ' : upsf['resource_2'],
-                    'SI raw     ' : upsf['resource_3'],
-                    'PU raw     ' : upsf['resource_4'],
-                    'FE refined ' : upsf['resource_5'],
-                    'AL refined ' : upsf['resource_6'],
-                    'CU refined ' : upsf['resource_7'],
-                    'SI refined ' : upsf['resource_8'],
+                    'FE raw'      : upsf['resource_0'],
+                    'AL raw'      : upsf['resource_1'],
+                    'CU raw'      : upsf['resource_2'],
+                    'SI raw'      : upsf['resource_3'],
+                    'PU raw'      : upsf['resource_4'],
+                    'FE refined'  : upsf['resource_5'],
+                    'AL refined'  : upsf['resource_6'],
+                    'CU refined'  : upsf['resource_7'],
+                    'SI refined'  : upsf['resource_8'],
                     'PU enriched' : upsf['resource_9'],
-                    'Energy     ' : upsf['energy']
+                    'Energy'      : upsf['energy']
                 }
             );
         }
@@ -589,22 +627,28 @@ export default function GameWorld() {
             return
         }
 
-        if (ev.key === 'c') {
-            resetZoom ()
-            // _canvasRef.current.setZoom(1)  // reset zoom so pan actions work as expected
-            // _canvasRef.current.absolutePan({
-            //     x: 0,
-            //     y: 0
-            // });
-            // _canvasRef.current.renderAll ()
-        }
-
-        if (ev.key === "Escape") {
-            if (modalVisibilityRef.current) {
+        if (modalVisibilityRef.current) {
+            // if modal is up, only handle ESC key
+            if (ev.key === "Escape") {
                 hidePopup ()
             }
+            return
         }
-        else if(ev.key === '1'){
+
+        if (ev.key === 'c') {
+            // _courseGridLines.current.visible = false
+            // _courseGridLines.current.dirty = true
+
+            // _mediumGridLines.current.visible = false
+            // _mediumGridLines.current.dirty = true
+
+            // _finestGridLines.current.visible = false
+            // _finestGridLines.current.dirty = true
+
+            resetZoom ()
+        }
+
+        if(ev.key === '1'){
             console.log('1')
             _displayModeRef.current = 'devices'
 
@@ -743,8 +787,7 @@ export default function GameWorld() {
         strokeWidth: STROKE_WIDTH_CURSOR_FACE,
         selectable: false,
         hoverCursor: 'default',
-        visible: false,
-        strokeWidth: 0
+        visible: false
     });
 
     //
@@ -865,29 +908,60 @@ export default function GameWorld() {
         })
 
         _canvasRef.current.on('mouse:wheel', function(opt) {
-            var delta = opt.e.deltaY;
-            var zoom = _canvasRef.current.getZoom();
-            zoom *= 0.999 ** delta;
-            if (zoom > 20) zoom = 20;
-            if (zoom < 1) zoom = 1;
 
-            _canvasRef.current.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, zoom);
-            // _canvasRef.current.setZoom(zoom);
+            const MIN_ZOOM = 1
+            const COURSE_ZOOM = 2
+            const MEDIUM_ZOOM = 5
+            const FINEST_ZOOM = 10
+            const MAX_ZOOM = 15
+
+            const delta = opt.e.deltaY;
+
+            const curr_zoom = _canvasRef.current.getZoom();
+            var new_zoom = curr_zoom * (0.99 ** delta);
+
+            if (new_zoom > MAX_ZOOM) new_zoom = MAX_ZOOM;
+            else if (new_zoom < MIN_ZOOM) new_zoom = MIN_ZOOM;
+
+            _canvasRef.current.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, new_zoom);
             opt.e.preventDefault();
             opt.e.stopPropagation();
 
-            // var vpt = this.viewportTransform;
-            // if (vpt[4] >= 0) {
-            //     vpt[4] = 0;
-            // } else if (vpt[4] < _canvasRef.current.getWidth() - 1000 * zoom) {
-            //     vpt[4] = _canvasRef.current.getWidth() - 1000 * zoom;
+            // if ( (new_zoom > COURSE_ZOOM) && (curr_zoom <= COURSE_ZOOM) ) { // going into COURSE_ZOOM
+            //     console.log (`zoom (${new_zoom}) > ${COURSE_ZOOM}`)
+            //     _courseGridLines.current.visible = true
+            //     // _courseGridLines.current.dirty = true
             // }
-            // if (vpt[5] >= 0) {
-            //     vpt[5] = 0;
-            // } else if (vpt[5] < _canvasRef.current.getHeight() - 1000 * zoom) {
-            //     vpt[5] = _canvasRef.current.getHeight() - 1000 * zoom;
+            // else if ( (new_zoom <= COURSE_ZOOM) && (curr_zoom > COURSE_ZOOM) ) { // leaving COURSE_ZOOM
+            //     console.log (`zoom (${new_zoom}) <= ${COURSE_ZOOM}`)
+            //     _courseGridLines.current.visible = false
+            //     // _courseGridLines.current.dirty = true
             // }
 
+            // if ( (new_zoom > MEDIUM_ZOOM) && (curr_zoom <= MEDIUM_ZOOM) ) { // going into MEDIUM_ZOOM
+            //     console.log (`zoom (${new_zoom}) > ${MEDIUM_ZOOM}`)
+            //     _mediumGridLines.current.visible = true
+            //     // _mediumGridLines.current.dirty = true
+            // }
+            // else if ( (new_zoom <= MEDIUM_ZOOM) && (curr_zoom > MEDIUM_ZOOM) ) { // leaving MEDIUM_ZOOM
+            //     console.log (`zoom (${new_zoom}) <= ${MEDIUM_ZOOM}`)
+            //     _mediumGridLines.current.visible = false
+            //     // _mediumGridLines.current.dirty = true
+            // }
+
+            // if ( (new_zoom > FINEST_ZOOM) && (curr_zoom <= FINEST_ZOOM) ) { // going into FINEST_ZOOM
+            //     console.log (`zoom (${new_zoom}) > ${FINEST_ZOOM}`)
+            //     _finestGridLines.current.visible = true
+            //     // _finestGridLines.current.dirty = true
+            // }
+            // else if ( (new_zoom <= FINEST_ZOOM) && (curr_zoom > FINEST_ZOOM) ) { // leaving FINEST_ZOOM
+            //     console.log (`zoom (${new_zoom}) <= ${FINEST_ZOOM}`)
+            //     _finestGridLines.current.visible = false
+            //     // _finestGridLines.current.dirty = true
+            // }
+
+            // _courseGridLines.current.dirty = true
+            // _mediumGridLines.current.dirty = true
         })
 
         _hasDrawnRef.current = false
@@ -899,12 +973,12 @@ export default function GameWorld() {
 
     }, []);
 
-    useEffect (() => {
-        if (!_hasDrawnRef.current) {
-            drawWorld (_canvasRef.current)
-            setHudVisible (true)
-        }
-    }, [hasLoadedDB]);
+    // useEffect (() => {
+    //     if (!_hasDrawnRef.current) {
+    //         drawWorld (_canvasRef.current)
+    //         setHudVisible (true)
+    //     }
+    // }, [hasLoadedDB]);
 
     const initializeGridAssistRectsRef = canvi => {
 
@@ -945,41 +1019,43 @@ export default function GameWorld() {
         _gridAssistRectsGroupRef.current = group
         canvi.add (group)
 
-        canvi.renderAll();
+        // canvi.renderAll();
     }
 
     const drawWorld = canvi => {
 
-        if (hasLoadedDB) {
+        // if (hasLoadedDB) {
 
-            if (db_macro_states.macro_states.length == 0) {
-                console.log ("This universe is not active.")
-                _universeActiveRef.current = false
-                setUniverseActive (false)
-                drawIdleMessage (canvi)
-                return
-            }
-            else {
-                prepare_grid_mapping ()
-                drawPerlin (canvi)
-                drawGrid (canvi)
-                drawDevices (canvi)
-                drawAssist (canvi) // draw assistance objects the last to be on top
-                drawUtxAnim (canvi)
-                initializeGridAssistRectsRef (canvi)
-                setHudLines ([
-                    'Face - / Grid (-,-)',
-                    'Display: devices'
-                ])
-
-                _hasDrawnRef.current = true
-                setHasDrawnState (1)
-                _universeActiveRef.current = true;
-                setUniverseActive (true)
-
-                document.getElementById('canvas_wrap').focus();
-            }
+        if (db_macro_states.macro_states.length == 0) {
+            console.log ("This universe is not active.")
+            _universeActiveRef.current = false
+            setUniverseActive (false)
+            drawIdleMessage (canvi)
+            return
         }
+        else {
+            prepare_grid_mapping ()
+            // drawPerlin (canvi)
+            drawGrid (canvi)
+            drawDevices (canvi)
+            drawAssist (canvi) // draw assistance objects the last to be on top
+            drawUtxAnim (canvi)
+            initializeGridAssistRectsRef (canvi)
+            setHudLines ([
+                'Face - / Grid (-,-)',
+                'Display: devices'
+            ])
+
+            _hasDrawnRef.current = true
+            setHasDrawnState (1)
+            _universeActiveRef.current = true;
+            setUniverseActive (true)
+
+            document.getElementById('canvas_wrap').focus();
+        }
+
+        canvi.renderAll ()
+        // }
     }
 
     const drawIdleMessage = canvi => {
@@ -1006,6 +1082,12 @@ export default function GameWorld() {
         if (!db_utx_sets) return
 
         for (const utx_set of db_utx_sets.utx_sets) {
+            //
+            // If not tethered, don't create animation
+            //
+            if (utx_set.tethered == 0) {
+                continue;
+            }
 
             //
             // For each utx set, create a rect for animation
@@ -1040,7 +1122,12 @@ export default function GameWorld() {
         if (hasDrawnState === 0) return;
         if (_canvasRef === null) return;
 
-        const n_utx_set = db_utx_sets.utx_sets.length
+        var n_utx_set = 0
+        for (const utx_set of db_utx_sets.utx_sets) {
+            if (utx_set.tethered == 1) {
+                n_utx_set += 1
+            }
+        }
 
         const interval = setInterval(() => {
 
@@ -1120,8 +1207,8 @@ export default function GameWorld() {
             const tbox_x = new fabric.Textbox(
                 'x', {
                     width: 100,
-                    left: PAD_X + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X + GRID*2.5,
-                    top:  PAD_Y + SIDE*GRID*2.9 + 1.3*GRID,
+                    left: PAD_X + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X + GRID*3.5,
+                    top:  PAD_Y + SIDE*GRID*2.9 + 2.3*GRID,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -1133,7 +1220,7 @@ export default function GameWorld() {
                 'y', {
                     width: 100,
                     left: PAD_X - 0.4*GRID,
-                    top:  PAD_Y - 11*GRID,
+                    top:  PAD_Y - 13*GRID,
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
@@ -1265,6 +1352,258 @@ export default function GameWorld() {
             canvi.add (tbox_x_4d)
         }
 
+        // //
+        // // Course grid lines
+        // //
+        // const DRAW_COURSE_GRID_LINES = true
+        // var course_grid_lines = []
+        // if (DRAW_COURSE_GRID_LINES) {
+        //     //
+        //     // Course grid lines parallel to Y-axis
+        //     //
+        //     for (var xi = 0; xi < SIDE; xi += COURSE_GRIDLINE_SPACING){
+        //         const line = new fabric.Line([
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID,
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID*2
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
+        //         course_grid_lines.push (line)
+        //     }
+        //     for (var xi = SIDE; xi < SIDE*2+1; xi += COURSE_GRIDLINE_SPACING){
+        //         const line = new fabric.Line([
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + 0,
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID*3
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
+        //         course_grid_lines.push (line)
+        //     }
+        //     for (var xi = 2*SIDE; xi < SIDE*4+1; xi += COURSE_GRIDLINE_SPACING){
+        //         const line = new fabric.Line([
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID,
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID*2
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
+        //         course_grid_lines.push (line)
+        //     }
+
+        //     //
+        //     // Course grid lines parallel to X-axis
+        //     //
+        //     for (var yi = 0; yi < SIDE; yi += COURSE_GRIDLINE_SPACING){
+        //         const line = new fabric.Line([
+        //             PAD_X + SIDE*GRID,
+        //             PAD_Y + yi*GRID,
+        //             PAD_X + SIDE*GRID*2,
+        //             PAD_Y + yi*GRID
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
+        //         course_grid_lines.push (line)
+        //     }
+        //     for (var yi = SIDE; yi < 2*SIDE+1; yi += COURSE_GRIDLINE_SPACING){
+        //         const line = new fabric.Line([
+        //             PAD_X + 0,
+        //             PAD_Y + yi*GRID,
+        //             PAD_X + SIDE*GRID*4,
+        //             PAD_Y + yi*GRID
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
+        //         course_grid_lines.push (line)
+        //     }
+        //     for (var yi = 2*SIDE; yi < 3*SIDE+1; yi += COURSE_GRIDLINE_SPACING){
+        //         const line = new fabric.Line([
+        //             PAD_X + SIDE*GRID,
+        //             PAD_Y + yi*GRID,
+        //             PAD_X + SIDE*GRID*2,
+        //             PAD_Y + yi*GRID
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
+        //         course_grid_lines.push (line)
+        //     }
+        //     const course_grid_lines_group = new fabric.Group (
+        //         course_grid_lines, {
+        //             visible: false,
+        //             selectable: false,
+        //             objectCaching: GRIDLINE_OBJECT_CACHE
+        //         });
+        //     canvi.add (course_grid_lines_group)
+        //     _courseGridLines.current = course_grid_lines_group
+        // }
+
+
+        // //
+        // // Draw medium grid line
+        // //
+        // const DRAW_MEDIUM_GRID_LINES = true
+        // var medium_grid_lines = []
+        // if (DRAW_MEDIUM_GRID_LINES) {
+        //     //
+        //     // Medium grid lines parallel to Y-axis
+        //     //
+        //     for (var xi = 0; xi < SIDE; xi += MEDIUM_GRIDLINE_SPACING){
+        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID,
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID*2
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
+        //         medium_grid_lines.push (line)
+        //     }
+        //     for (var xi = SIDE; xi < SIDE*2+1; xi += MEDIUM_GRIDLINE_SPACING){
+        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + 0,
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID*3
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
+        //         medium_grid_lines.push (line)
+        //     }
+        //     for (var xi = 2*SIDE; xi < SIDE*4+1; xi += MEDIUM_GRIDLINE_SPACING){
+        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID,
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID*2
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
+        //         medium_grid_lines.push (line)
+        //     }
+
+        //     //
+        //     // Course grid lines parallel to X-axis
+        //     //
+        //     for (var yi = 0; yi < SIDE; yi += MEDIUM_GRIDLINE_SPACING){
+        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + SIDE*GRID,
+        //             PAD_Y + yi*GRID,
+        //             PAD_X + SIDE*GRID*2,
+        //             PAD_Y + yi*GRID
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
+        //         medium_grid_lines.push (line)
+        //     }
+        //     for (var yi = SIDE; yi < 2*SIDE+1; yi += MEDIUM_GRIDLINE_SPACING){
+        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + 0,
+        //             PAD_Y + yi*GRID,
+        //             PAD_X + SIDE*GRID*4,
+        //             PAD_Y + yi*GRID
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
+        //         medium_grid_lines.push (line)
+        //     }
+        //     for (var yi = 2*SIDE; yi < 3*SIDE+1; yi += MEDIUM_GRIDLINE_SPACING){
+        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + SIDE*GRID,
+        //             PAD_Y + yi*GRID,
+        //             PAD_X + SIDE*GRID*2,
+        //             PAD_Y + yi*GRID
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
+        //         medium_grid_lines.push (line)
+        //     }
+        //     const medium_grid_lines_group = new fabric.Group (
+        //         medium_grid_lines, {
+        //             visible: false,
+        //             selectable: false,
+        //             objectCaching: GRIDLINE_OBJECT_CACHE
+        //         });
+        //     canvi.add (medium_grid_lines_group)
+        //     _mediumGridLines.current = medium_grid_lines_group
+        // }
+
+
+        // //
+        // // Draw finest grid line
+        // //
+        // const DRAW_FINEST_GRID_LINES = false
+        // var finest_grid_lines = []
+        // if (DRAW_FINEST_GRID_LINES) {
+        //     //
+        //     // Finest grid lines parallel to Y-axis
+        //     //
+        //     for (var xi = 0; xi < SIDE; xi += FINEST_GRIDLINE_SPACING){
+        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         if (xi % MEDIUM_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID,
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID*2
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
+        //         finest_grid_lines.push (line)
+        //     }
+        //     for (var xi = SIDE; xi < SIDE*2+1; xi += FINEST_GRIDLINE_SPACING){
+        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         if (xi % MEDIUM_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + 0,
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID*3
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
+        //         finest_grid_lines.push (line)
+        //     }
+        //     for (var xi = 2*SIDE; xi < SIDE*4+1; xi += FINEST_GRIDLINE_SPACING){
+        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         if (xi % MEDIUM_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID,
+        //             PAD_X + xi*GRID,
+        //             PAD_Y + SIDE*GRID*2
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
+        //         finest_grid_lines.push (line)
+        //     }
+
+        //     //
+        //     // Course grid lines parallel to X-axis
+        //     //
+        //     for (var yi = 0; yi < SIDE; yi += FINEST_GRIDLINE_SPACING){
+        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         if (yi % MEDIUM_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + SIDE*GRID,
+        //             PAD_Y + yi*GRID,
+        //             PAD_X + SIDE*GRID*2,
+        //             PAD_Y + yi*GRID
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
+        //         finest_grid_lines.push (line)
+        //     }
+        //     for (var yi = SIDE; yi < 2*SIDE+1; yi += FINEST_GRIDLINE_SPACING){
+        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         if (yi % MEDIUM_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + 0,
+        //             PAD_Y + yi*GRID,
+        //             PAD_X + SIDE*GRID*4,
+        //             PAD_Y + yi*GRID
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
+        //         finest_grid_lines.push (line)
+        //     }
+        //     for (var yi = 2*SIDE; yi < 3*SIDE+1; yi += FINEST_GRIDLINE_SPACING){
+        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
+        //         if (yi % MEDIUM_GRIDLINE_SPACING == 0) continue;
+        //         const line = new fabric.Line([
+        //             PAD_X + SIDE*GRID,
+        //             PAD_Y + yi*GRID,
+        //             PAD_X + SIDE*GRID*2,
+        //             PAD_Y + yi*GRID
+        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
+        //         finest_grid_lines.push (line)
+        //     }
+        //     const finest_grid_lines_group = new fabric.Group (
+        //         finest_grid_lines, {
+        //             visible: false,
+        //             selectable: false,
+        //             objectCaching: false
+        //         });
+        //     canvi.add (finest_grid_lines_group)
+        //     _finestGridLines.current = finest_grid_lines_group
+        // }
+
+
         //
         // Grid lines
         //
@@ -1279,7 +1618,7 @@ export default function GameWorld() {
                     PAD_Y + SIDE*GRID,
                     PAD_X + xi*GRID,
                     PAD_Y + SIDE*GRID*2
-                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
             for (var xi = SIDE; xi < SIDE*2+1; xi++){
                 canvi.add(new fabric.Line([
@@ -1287,7 +1626,7 @@ export default function GameWorld() {
                     PAD_Y + 0,
                     PAD_X + xi*GRID,
                     PAD_Y + SIDE*GRID*3
-                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
             for (var xi = 2*SIDE+1; xi < SIDE*4+1; xi++){
                 canvi.add(new fabric.Line([
@@ -1295,7 +1634,7 @@ export default function GameWorld() {
                     PAD_Y + SIDE*GRID,
                     PAD_X + xi*GRID,
                     PAD_Y + SIDE*GRID*2
-                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
 
             //
@@ -1307,7 +1646,7 @@ export default function GameWorld() {
                     PAD_Y + yi*GRID,
                     PAD_X + SIDE*GRID*2,
                     PAD_Y + yi*GRID
-                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
             for (var yi = SIDE; yi < 2*SIDE+1; yi++){
                 canvi.add(new fabric.Line([
@@ -1315,7 +1654,7 @@ export default function GameWorld() {
                     PAD_Y + yi*GRID,
                     PAD_X + SIDE*GRID*4,
                     PAD_Y + yi*GRID
-                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
             for (var yi = 2*SIDE+1; yi < 3*SIDE+1; yi++){
                 canvi.add(new fabric.Line([
@@ -1323,7 +1662,7 @@ export default function GameWorld() {
                     PAD_Y + yi*GRID,
                     PAD_X + SIDE*GRID*2,
                     PAD_Y + yi*GRID
-                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID, selectable: false, hoverCursor: 'default' }));
+                ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
         }
 
@@ -1417,14 +1756,14 @@ export default function GameWorld() {
             ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
         }
 
-        canvi.renderAll();
+        // canvi.renderAll();
     }
 
     const drawMode = canvi => {
         canvi.add (displayModeText)
         _displayModeTextRef.current = displayModeText
 
-        canvi.renderAll();
+        // canvi.renderAll();
     }
 
     // const updateMode = (canvi, mode) => {
@@ -1534,7 +1873,9 @@ export default function GameWorld() {
                         fill: '#FFFFFF',
                         selectable: false,
                         visible: false,
-                        strokeWidth: 0
+                        strokeWidth: 0,
+
+                        objectCaching: true
                     });
                     perlin_rects.push (rect)
                     perlin_rects_dict [`(${face},${row},${col})`] = rect
@@ -1555,9 +1896,8 @@ export default function GameWorld() {
         // canvi.add(perlin_rects_group)
         // _elementDisplayRef.current = perlin_rects_group
 
-        canvi.renderAll();
+        // canvi.renderAll();
     }
-
 
     const drawDevices = canvi => {
 
@@ -1577,20 +1917,25 @@ export default function GameWorld() {
             const y = entry.grid.y
             const typ = parseInt (entry.type)
 
-            const device_dim = DEVICE_DIM_MAP.get(typ)
+            // const device_dim = DEVICE_DIM_MAP.get(typ)
+            const device_dim = 1 // backend register the device footprint over every single grid occupied
             const device_color = DEVICE_COLOR_MAP.get(typ)
+
+            const stroke_width = 0.2
 
             const rect = new fabric.Rect({
                 height: device_dim*GRID,
                 width: device_dim*GRID,
-                left: PAD_X + x*GRID,
-                top:  PAD_Y + (SIDE*3-y-device_dim)*GRID,
+                left: PAD_X + x*GRID - stroke_width/2,
+                top:  PAD_Y + (SIDE*3-y-device_dim)*GRID - stroke_width/2,
                 fill: device_color,
                 selectable: false,
                 hoverCursor: 'pointer',
-                strokeWidth: 0
+                strokeWidth: stroke_width,
+                stroke: device_color
             });
             device_rects.push (rect)
+            // console.log (`>> Drawing device typ=${typ}, dim=${device_dim}, grid=(${x},${y})`)
         }
 
         var device_rect_face0_group = new fabric.Group(
@@ -1601,7 +1946,7 @@ export default function GameWorld() {
         canvi.add(device_rect_face0_group)
         _deviceDisplayRef.current = device_rect_face0_group
 
-        canvi.renderAll();
+        // canvi.renderAll();
     }
 
     //
@@ -1690,8 +2035,8 @@ export default function GameWorld() {
         }
         else { // face === 5
             return ({
-                left : x_transform_normalized_to_canvas (75),
-                top  : y_transform_normalized_to_canvas (50-1)
+                left : x_transform_normalized_to_canvas (3*SIDE),
+                top  : y_transform_normalized_to_canvas (2*SIDE-1)
             })
         }
 
@@ -1741,7 +2086,7 @@ export default function GameWorld() {
                 // _coordTextRef.current.text = 'Face ' + face.toString() + ' / Grid (' + mPosNorm.x.toString() + ', ' + mPosNorm.y.toString() + ')'
                 // _coordTextRef.current.dirty  = true
                 setHudLines ( arr => [
-                    'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')', arr[1]
+                    `Face ${face} / Grid (` + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')', arr[1]
                 ])
 
                 //
@@ -1757,6 +2102,7 @@ export default function GameWorld() {
                 _cursorFaceRectRef.current.left = ori.left
                 _cursorFaceRectRef.current.top  = ori.top
                 _cursorFaceRectRef.current.visible = true
+                console.log (`draw face assist square, face: ${face}`)
             }
             _cursorGridRectRef.current.dirty = true
             _cursorFaceRectRef.current.dirty = true
@@ -1838,6 +2184,7 @@ export default function GameWorld() {
                 gridMapping = {gridMapping}
                 account = {account}
                 in_civ = {accountInCiv}
+                device_balance = {accountDeviceBalance}
             />
 
             <HUD lines={hudLines} universeActive={universeActive}/>

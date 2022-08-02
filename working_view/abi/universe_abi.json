@@ -184,6 +184,18 @@
     },
     {
         "inputs": [],
+        "name": "number_of_ticks_since_genesis_read",
+        "outputs": [
+            {
+                "name": "value",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "civilization_index_read",
         "outputs": [
             {
@@ -259,6 +271,18 @@
     },
     {
         "inputs": [],
+        "name": "event_counter_read",
+        "outputs": [
+            {
+                "name": "val",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
         "name": "phi_curr_read",
         "outputs": [
             {
@@ -292,6 +316,36 @@
         ],
         "stateMutability": "view",
         "type": "function"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "macro_state",
+                "type": "Dynamics"
+            },
+            {
+                "name": "phi",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "forward_world_macro_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "impulse",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "impulse_applied_occurred",
+        "type": "event"
     },
     {
         "inputs": [
@@ -519,7 +573,7 @@
                 "type": "felt"
             }
         ],
-        "name": "utx_deployed_index_to_grid_size_read",
+        "name": "utx_deployed_index_read",
         "outputs": [
             {
                 "name": "size",
@@ -619,8 +673,299 @@
         "type": "event"
     },
     {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "element_type",
+                "type": "felt"
+            }
+        ],
+        "name": "get_concentration_at_grid_given_element_type",
+        "outputs": [
+            {
+                "name": "res",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "resource_update_at_harvester_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity_pre",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity_post",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "resource_update_at_transformer_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "element_type",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "resource_update_at_upsf_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "new_quantity",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "energy_update_at_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "to",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "give_undeployed_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "civ_idx",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "activate_universe_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "player_deploy_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "player_pickup_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "utx_label",
+                "type": "felt"
+            },
+            {
+                "name": "utx_device_type",
+                "type": "felt"
+            },
+            {
+                "name": "src_device_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "dst_device_grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "locs_len",
+                "type": "felt"
+            },
+            {
+                "name": "locs",
+                "type": "Vec2*"
+            }
+        ],
+        "keys": [],
+        "name": "player_deploy_utx_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            }
+        ],
+        "keys": [],
+        "name": "player_pickup_utx_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "bool_universe_terminable",
+                "type": "felt"
+            },
+            {
+                "name": "destruction_by_which_sun",
+                "type": "felt"
+            },
+            {
+                "name": "bool_universe_max_age_reached",
+                "type": "felt"
+            },
+            {
+                "name": "bool_universe_escape_condition_met",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "terminate_universe_occurred",
+        "type": "event"
+    },
+    {
         "inputs": [],
         "name": "probe_can_forward_universe",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "check_address_in_civilization",
         "outputs": [
             {
                 "name": "bool",
@@ -968,59 +1313,6 @@
             }
         ],
         "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "to",
-                "type": "felt"
-            },
-            {
-                "name": "type",
-                "type": "felt"
-            },
-            {
-                "name": "amount",
-                "type": "felt"
-            }
-        ],
-        "name": "admin_give_undeployed_device",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "id",
-                "type": "felt"
-            },
-            {
-                "name": "element_type",
-                "type": "felt"
-            },
-            {
-                "name": "balance",
-                "type": "felt"
-            }
-        ],
-        "name": "admin_write_opsf_deployed_id_to_resource_balances",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "id",
-                "type": "felt"
-            },
-            {
-                "name": "energy",
-                "type": "felt"
-            }
-        ],
-        "name": "admin_write_device_deployed_id_to_energy_balance",
-        "outputs": [],
         "type": "function"
     }
 ]

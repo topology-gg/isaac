@@ -41,7 +41,7 @@ export function TransferDeviceInterface (props) {
             const args = [
                 data['typeRequired'],
                 data['amountRequired'],
-                data['toRequired']
+                data['toIdxRequired']
             ]
             console.log('submit transfer device tx with args:', args)
             invoke ({ args: args })
@@ -57,10 +57,10 @@ export function TransferDeviceInterface (props) {
                 <input type="submit" value={'Transfer device'} style={BUTTON_LEFT_STYLE} className='action-button'/>
                 <input style={INPUT_MID_STYLE} placeholder="type"   {...registerTransferDevice("typeRequired", { required: true })} />
                 <input style={INPUT_MID_STYLE} placeholder="amount" {...registerTransferDevice("amountRequired", { required: true })} />
-                <input style={INPUT_END_STYLE} placeholder="to"     {...registerTransferDevice("toRequired", { required: true })} />
+                <input style={INPUT_END_STYLE} placeholder="to idx"     {...registerTransferDevice("toIdxRequired", { required: true })} />
                 {/* {errorsTransferDevice.typeRequired && <span> (This field is required) </span>}
                 {errorsTransferDevice.amountRequired && <span> (This field is required) </span>}
-                {errorsTransferDevice.toRequired && <span> (This field is required) </span>} */}
+                {errorsTransferDevice.toIdxRequired && <span> (This field is required) </span>} */}
                 {/* <p>Error: {error || 'No error'}</p> */}
             </form>
 
@@ -68,7 +68,7 @@ export function TransferDeviceInterface (props) {
                 {
                     data && (
                         <div>
-                            <a style={TX_HASH_STYLE} href={link_to_voyager}>view on voyager</a>
+                            <a style={TX_HASH_STYLE} href={link_to_voyager} target="_blank" rel="noopener noreferrer">view on voyager</a>
                         </div>
                     )
                 }

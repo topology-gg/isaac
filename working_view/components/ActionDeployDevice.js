@@ -6,7 +6,7 @@ import {
   useStarknetInvoke
 } from '@starknet-react/core'
 
-import { BUTTON_SINGLE_STYLE } from "./ActionStyles";
+import { BUTTON_SINGLE_STYLE, BUTTON_SINGLE_DISABLED_STYLE } from "./ActionStyles";
 import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 import { useUniverseContract } from "./UniverseContract";
 
@@ -32,11 +32,17 @@ export function DeployDeviceInterface (props) {
     const y = props.grid_y
 
     function onClick () {
-        console.log (`deploy device clicked! (x,y,type) = (${x},${y},${typ})`)
-        invoke ({ args: [
-            typ,
-            {x:x, y:y}
-        ] })
+
+        if (!props.have_nonzero_balance ) {
+            console.log ('cannot deploy because having 0 balance of this device type')
+        }
+        else {
+            console.log (`deploy device clicked! (x,y,type) = (${x},${y},${typ})`)
+            invoke ({ args: [
+                typ,
+                {x:x, y:y}
+            ] })
+        }
     }
 
     const link_to_voyager = `https://goerli.voyager.online/tx/${data}`
@@ -44,7 +50,8 @@ export function DeployDeviceInterface (props) {
     return (
         <div style={{display:'flex',flexDirection:'row'}}>
             <button
-                style = {BUTTON_SINGLE_STYLE}
+                style = {props.have_nonzero_balance ? BUTTON_SINGLE_STYLE : BUTTON_SINGLE_DISABLED_STYLE}
+                // style = {BUTTON_SINGLE_DISABLED_STYLE}
                 onClick = {onClick}
                 className = 'action-button'
             >
@@ -56,7 +63,7 @@ export function DeployDeviceInterface (props) {
                     data && (
                         <div>
                             {/* <p>Transaction Hash: {data}</p> */}
-                            <a style={{fontSize:'12px'}} href={link_to_voyager}>view on voyager</a>
+                            <a style={{fontSize:'12px'}} href={link_to_voyager} target="_blank" rel="noopener noreferrer">view on voyager</a>
                         </div>
                     )
                 }

@@ -1,7 +1,8 @@
-import React, { Component } from "react";
+import React, { Component, useState } from "react";
 import styles from "../styles/Modal.module.css";
 
 import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
+import { MANUFACTURING_REQUIREMENT } from './ConstantManufacturingRequirement'
 
 import { DeployDeviceInterface } from './ActionDeployDevice'
 import { PickupDeviceInterface } from './ActionPickupDevice'
@@ -17,20 +18,25 @@ import { TransferDeviceInterface } from './ActionTransferDevice'
 // https://stackoverflow.com/questions/24502898/show-or-hide-element-in-react
 // https://medium.com/@ralph1786/using-css-modules-in-react-app-c2079eadbb87
 
-class Modal extends Component {
-
-  render() {
+export function Modal (props) {
 
     //
     // Build information to be shown in popup window
     //
-    const info = this.props.info
+    const info = props.info
     var title = ""
     var grids = ""
     var display_left_top = null
     var display_left_bottom = null
     var options = []
     var bool_display_left_bottom = true
+
+    const [hoverDevice, setHoverDevice] = useState ('-')
+
+    var thead = [
+        <th style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
+        <th style={{textAlign:'left',paddingLeft:'3em'}}>Balance</th>
+    ]
 
     if (!info['grids']) {
         //
@@ -61,7 +67,7 @@ class Modal extends Component {
             title += "Selected 1 grid:"
             const grid = info['grids'][0]
             const grid_str = `(${grid.x},${grid.y})`
-            const grid_mapping = this.props.gridMapping
+            const grid_mapping = props.gridMapping
             grids += grid_str
 
             //
@@ -82,10 +88,28 @@ class Modal extends Component {
 
                 const CELL_HEIGHT = '2em'
                 var tbody = []
+                const requirement = MANUFACTURING_REQUIREMENT [hoverDevice]
                 for (var key of Object.keys(balances)) {
                     var cell = []
                     cell.push (<td style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0'}}>{key}</td>)
-                    cell.push (<td style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0.6em'}}>{balances[key]}</td>)
+                    cell.push (<td style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{balances[key]}</td>)
+
+                    if (hoverDevice == '-') {
+                        cell.push (<td style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{'-'}</td>)
+                    }
+                    else {
+                        //
+                        // use hoverDevice to pull in resource & energy requirement
+                        //
+                        const requirement_color = balances[key] >= requirement[key] ? '#333333' : '#C34723'
+                        cell.push (<td style={{
+                            height:CELL_HEIGHT,
+                            textAlign:'left',
+                            paddingLeft:'3em',
+                            color:requirement_color
+                        }}>{requirement[key]}</td>)
+                    }
+
                     tbody.push (<tr>{cell}</tr>)
                 }
 
@@ -102,11 +126,31 @@ class Modal extends Component {
                 }
 
                 if (['UPSF'].includes(typ)) {
-                    for (const i=0; i<16; i++) {
+
+                    var thead = [
+                        <th style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
+                        <th style={{textAlign:'left',paddingLeft:'3em'}}>Balance</th>,
+                        <th style={{textAlign:'left',paddingLeft:'3em'}}>Requirement</th>
+                    ]
+
+                    //
+                    // Construct can_build for each device type
+                    //
+                    for (const i=0; i<16; i++){ // iterate over all device types
+                        var can_build = true
+                        for (var key of Object.keys(balances)) {
+                            const have = balances[key]
+                            const need = MANUFACTURING_REQUIREMENT[i][key]
+                            if (have < need) {
+                                can_build = false
+                            }
+                        }
+
                         options.push (
-                            <BuildDeviceInterface typ={i} grid_x={grid.x} grid_y={grid.y} />
+                            <BuildDeviceInterface typ={i} grid_x={grid.x} grid_y={grid.y} can_build={can_build} setHoverDeviceCallback={setHoverDevice} />
                         )
                     }
+
                 }
                 else if (['NDPE'].includes(typ)) {
                     options.push (
@@ -120,8 +164,12 @@ class Modal extends Component {
 
                 for (const i=0; i<16; i++) {
                     if ([12,13].includes(i)) { continue; }
+
+                    const have_nonzero_balance = props.device_balance[i] > 0 ? true : false
+                    console.log (`device type ${i} have_nonzero_balance=${have_nonzero_balance}`)
+
                     options.push (
-                        <DeployDeviceInterface typ={i} grid_x={grid.x} grid_y={grid.y} />
+                        <DeployDeviceInterface typ={i} grid_x={grid.x} grid_y={grid.y} have_nonzero_balance={have_nonzero_balance}/>
                     )
                 }
             }
@@ -141,8 +189,7 @@ class Modal extends Component {
                         <table style={{fontSize:"0.9em"}}>
                             <thead>
                                 <tr>
-                                    <th style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>
-                                    <th>Balance</th>
+                                    {thead}
                                 </tr>
                             </thead>
                             <tbody>
@@ -156,10 +203,10 @@ class Modal extends Component {
     }
 
     var options_gated = []
-    if (!this.props.account) {
+    if (!props.account) {
         options_gated.push (<p>no account signed in</p>)
     }
-    else if (!this.props.in_civ) {
+    else if (!props.in_civ) {
         options_gated.push (<p>account not in this civilization</p>)
     }
     else {
@@ -183,7 +230,7 @@ class Modal extends Component {
 
     return (
         <div style={{display:'flex'}}>
-            { this.props.show ?
+            { props.show ?
 
             <div className={styles.modal}>
 
@@ -196,7 +243,7 @@ class Modal extends Component {
 
                     <span>.</span>
 
-                    <button onClick={this.props.onHide} style={{width:'fit-content'}} className='action-button'>
+                    <button onClick={props.onHide} style={{width:'fit-content'}} className='action-button'>
                         Esc
                     </button>
                 </div>
@@ -213,8 +260,4 @@ class Modal extends Component {
             : null }
         </div>
     );
-  }
 }
-
-
-export default Modal;

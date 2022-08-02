@@ -37,5 +37,5 @@ export function ConnectWallet() {
     return <p className="connected_account">Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}</p>
   }
 
-  return <button onClick={() => connect(new InjectedConnector())}>Connect Argent X wallet</button>
+  return <button onClick={() => connect(new InjectedConnector())}>Connect wallet</button>
 }

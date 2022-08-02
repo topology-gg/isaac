@@ -35,6 +35,8 @@ export function PickupDeviceInterface (props) {
         invoke ({ args: [{x:x, y:y}] })
     }
 
+    const link_to_voyager = `https://goerli.voyager.online/tx/${data}`
+
     return (
         <div style={{display:'flex',flexDirection:'row'}}>
             <button
@@ -50,7 +52,7 @@ export function PickupDeviceInterface (props) {
                     data && (
                         <div>
                             {/* <p>Transaction Hash: {data}</p> */}
-                            <a style={{fontSize:'12px'}} href={link_to_voyager}>view on voyager</a>
+                            <a style={{fontSize:'12px'}} href={link_to_voyager} target="_blank" rel="noopener noreferrer">view on voyager</a>
                         </div>
                     )
                 }

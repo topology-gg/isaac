@@ -67,7 +67,7 @@ export function DeployUtxInterface (props) {
                     data && (
                         <div>
                             {/* <p>Transaction Hash: {data}</p> */}
-                            <a style={{fontSize:'12px'}} href={link_to_voyager}>view on voyager</a>
+                            <a style={{fontSize:'12px'}} href={link_to_voyager} target="_blank" rel="noopener noreferrer">view on voyager</a>
                         </div>
                     )
                 }

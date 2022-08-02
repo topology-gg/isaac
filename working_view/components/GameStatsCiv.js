@@ -28,10 +28,12 @@ export default function GameStatsCiv() {
             const active = db_civ_state.civ_state[0].active
             const line = `Number: ${civ_idx}`
             const population = db_player_balances.player_balances.length
+            const ticks_since_birth = db_macro_states.macro_states.length - 1 // at age 0 a macro state event is emitted
 
             content.push (<h5>Civilization</h5>)
             content.push (<p>{line}</p>)
             content.push (<p>Population: {population}</p>)
+            content.push (<p>Universe age: {ticks_since_birth} / 2520 ticks</p>)
         }
     }
 
