@@ -4,6 +4,8 @@ import { StarknetProvider } from '@starknet-react/core'
 
 import View from "../components/View"
 import Panel from "../components/Panel"
+import CoverArt from "../components/CoverArt"
+import CoverArtBack from "../components/CoverArtBack"
 
 function Home() {
 
@@ -25,6 +27,9 @@ function Home() {
 
     return (
         <StarknetProvider>
+            <CoverArtBack />
+            <CoverArt />
+
             <div id="side-panel" className="side-panel">
                 <Panel />
             </div>

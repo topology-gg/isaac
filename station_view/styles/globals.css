@@ -182,3 +182,64 @@ h5 {
     /* background-size: contain */
     background-size: 350px 350px;
 }
+
+
+.cover_art {
+    z-index: 1000;
+	position: absolute;
+    margin: 0;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    background-color: #282828;
+    background-image: url("../public/cover-art.png");
+    background-position: center center;
+    background-repeat:no-repeat;
+    background-size: contain;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hide_slow {
+    -webkit-animation: fadeinout 0.7s linear forwards;
+    animation: fadeinout 0.7s linear forwards;
+    /* transition: all 1s; */
+}
+
+.hide_fast {
+    -webkit-animation: fadeinout 0.2s linear forwards;
+    animation: fadeinout 0.2s linear forwards;
+    /* transition: all 1s; */
+}
+
+@-webkit-keyframes fadeinout {
+    0% { opacity: 1.0; z-index: 1000}
+    50% { opacity: 0.5; z-index: 500}
+    100% { opacity: 0; z-index: -1}
+}
+
+@keyframes fadeinout {
+    0% { opacity: 1.0; z-index: 1000}
+    50% { opacity: 0.5; z-index: 500}
+    100% { opacity: 0; z-index: -1}
+}
+
+.show {
+    -webkit-animation: display .3s linear forwards;
+    animation: display .3s linear forwards;
+}
+
+@-webkit-keyframes display {
+    0% { opacity: 0.2; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+@keyframes display {
+    0% { opacity: 0.2; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
