@@ -1,7 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.math import assert_le, assert_not_equal
+from starkware.cairo.common.math import assert_le, assert_not_equal, assert_not_zero
 from starkware.cairo.common.math_cmp import is_le, is_not_zero
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
@@ -811,8 +811,16 @@ end
 func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         type : felt,
         amount : felt,
-        to : felt
+        to_idx : felt
     ) -> ():
+    #
+    # get player address at to_idx
+    #
+    let (to) = ns_universe_state_functions.civilization_player_idx_to_address_read (to_idx)
+    with_attr error_message ("invalid destination player index"):
+        assert_not_zero (to)
+    end
+
     #
     # Confirm caller & to are both in this civilization
     #

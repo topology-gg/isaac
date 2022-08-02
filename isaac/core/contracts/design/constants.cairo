@@ -17,7 +17,7 @@ const UNIVERSE_MAX_AGE_IN_TICKS = 2520 # ~7 days, given 2 blocks (4 minutes) per
 #
 # Capacity control - size of civilization per universe, and number of universes deployed
 #
-const CIV_SIZE = 2
+const CIV_SIZE = 14
 const UNIVERSE_COUNT = 1
 
 #
@@ -54,9 +54,9 @@ const G_MASS_SUN2 = 65536 * SCALE_FP_DIV_10000
 const RADIUS_SUN0 = 89  * SCALE_FP_DIV_100 # 0.89
 const RADIUS_SUN1 = 136 * SCALE_FP_DIV_100 # 1.36
 const RADIUS_SUN2 = 61  * SCALE_FP_DIV_100 # 0.61
-const RADIUS_SUN0_SQ = 9025  * SCALE_FP_DIV_10000 # 0.95**2 = 0.9025
-const RADIUS_SUN1_SQ = 17956 * SCALE_FP_DIV_10000 # 1.34**2 = 1.7956
-const RADIUS_SUN2_SQ = 3025  * SCALE_FP_DIV_10000 # 0.55**2 = 0.3025
+const RADIUS_SUN0_SQ = 89 * 89  * SCALE_FP_DIV_10000 # 0.89**2 = 0.7921
+const RADIUS_SUN1_SQ = 136 * 136 * SCALE_FP_DIV_10000 # 1.36**2 = 1.8496
+const RADIUS_SUN2_SQ = 61 * 61  * SCALE_FP_DIV_10000 # 0.61**2 = 0.3721
 
 ## Rotation
 # const OMEGA_DT_PLANET = 624 / 100 * 6 / 100 * SCALE_FP # unit: radiant; takes ~100 DT to complete 2*pi
@@ -118,9 +118,9 @@ const SCALE_FP_DIV_PLANET_DIM = SCALE_FP / PLANET_DIM
 # Constants for solar power generation parametrization
 #
 namespace ns_solar_power:
-    const BASE_RADIATION = 200 * SCALE_FP
-    const OBLIQUE_RADIATION = 50 * SCALE_FP
-    const MULT = 10
+    const BASE_RADIATION = 75 * SCALE_FP
+    const OBLIQUE_RADIATION = 15 * SCALE_FP
+    const MULT = 1
     const BOUND = 1
 end
 
