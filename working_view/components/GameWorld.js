@@ -1872,6 +1872,7 @@ export default function GameWorld() {
                         top: PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
                         fill: '#FFFFFF',
                         selectable: false,
+                        hoverCursor: 'default',
                         visible: false,
                         strokeWidth: 0,
 
