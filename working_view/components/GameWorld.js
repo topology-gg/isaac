@@ -72,11 +72,7 @@ const CANVAS_H = 900
 const TRIANGLE_W = 6
 const TRIANGLE_H = 10
 
-const COURSE_GRIDLINE_SPACING = 10
-const MEDIUM_GRIDLINE_SPACING = 1
-const FINEST_GRIDLINE_SPACING = 1
 const GRID_SPACING = 5
-const GRIDLINE_OBJECT_CACHE = false
 
 const DEVICE_DIM_MAP = new Map();
 DEVICE_DIM_MAP.set(0, 1);
@@ -129,7 +125,7 @@ const STROKE_WIDTH_GRID_FACE = 0.4
 //
 const PALETTE = 'DARK'
 const STROKE             = PALETTE === 'DARK' ? '#DDDDDD' : '#BBBBBB' // grid stroke color
-const CANVAS_BG          = PALETTE === 'DARK' ? '#313131' : '#E3EDFF'
+const CANVAS_BG          = PALETTE === 'DARK' ? '#181818' : '#E3EDFF'
 const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#FFEFD5' : '#999999'
 const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
@@ -191,10 +187,27 @@ function vec2_rotate_by_degree (vec, ang) {
     ang = -ang * (Math.PI/180);
     var cos = Math.cos(ang);
     var sin = Math.sin(ang);
-    return new [
+    return [
         Math.round(10000*(vec[0] * cos - vec[1] * sin))/10000,
         Math.round(10000*(vec[0] * sin + vec[1] * cos))/10000
     ]
+}
+
+//
+// Helper function to convert solar exposure value to face rect fill color
+//
+const FILL_MIN = [17, 26, 0]
+const FILL_MAX = [50, 77, 0]
+function convert_exposure_to_fill (exposure) {
+
+    const exposure_capped = exposure > 20 ? 20 : exposure
+    const ratio = exposure_capped / 20
+
+    const R = FILL_MIN[0] + (FILL_MAX[0]-FILL_MIN[0]) * ratio
+    const G = FILL_MIN[1] + (FILL_MAX[1]-FILL_MIN[1]) * ratio
+    const B = FILL_MIN[2] + (FILL_MAX[2]-FILL_MIN[2]) * ratio
+
+    return (`rgb(${R}, ${G}, ${B})`)
 }
 
 export default function GameWorld() {
@@ -304,7 +317,7 @@ export default function GameWorld() {
         else {
             // console.log ('db fully loaded!')
             // setHasLoadedDB (true)
-            console.log ('drawWorld()')
+            // console.log ('drawWorld()')
 
             _currZoom.current = _canvasRef.current.getZoom();
             _canvasRef.current.remove(..._canvasRef.current.getObjects())
@@ -1061,8 +1074,8 @@ export default function GameWorld() {
         }
         else {
             prepare_grid_mapping ()
-            drawPerlin (canvi)
             drawLandscape (canvi)
+            drawPerlin (canvi)
             drawDevices (canvi)
             drawAssist (canvi) // draw assistance objects the last to be on top
             drawUtxAnim (canvi)
@@ -1382,6 +1395,123 @@ export default function GameWorld() {
         }
 
         //
+        // Draw face rectangles
+        //
+        const DRAW_FACE_RECTS = true
+        if (DRAW_FACE_RECTS) {
+
+            if (!db_macro_states.macro_states[0]) {return;}
+
+            //
+            // Compute colors for each face according to (1) face number (2) distance to each suns (3) planet rotation
+            // following the exact way solar exposure is computed in smart contract.
+            //
+
+            // Compute distances and vectors
+            const sun0_q = db_macro_states.macro_states[0].dynamics.sun0.q
+            const sun1_q = db_macro_states.macro_states[0].dynamics.sun1.q
+            const sun2_q = db_macro_states.macro_states[0].dynamics.sun2.q
+            const plnt_q = db_macro_states.macro_states[0].dynamics.planet.q
+            const phi_degree = parse_phi_to_degree (db_macro_states.macro_states[0].phi)
+            const dist_sqs = {
+                0 : (sun0_q.x - plnt_q.x)**2 + (sun0_q.y - plnt_q.y)**2,
+                1 : (sun1_q.x - plnt_q.x)**2 + (sun1_q.y - plnt_q.y)**2,
+                2 : (sun2_q.x - plnt_q.x)**2 + (sun2_q.y - plnt_q.y)**2
+            }
+            const vec_suns = {
+                0 : [sun0_q.x - plnt_q.x, sun0_q.y - plnt_q.y],
+                1 : [sun1_q.x - plnt_q.x, sun1_q.y - plnt_q.y],
+                2 : [sun2_q.x - plnt_q.x, sun1_q.y - plnt_q.y]
+            }
+
+            const normal_0 = vec2_rotate_by_degree ([1,0], -phi_degree)
+            const normal_2 = vec2_rotate_by_degree (normal_0, -90)
+            const normal_4 = vec2_rotate_by_degree (normal_0, -180)
+            const normal_5 = vec2_rotate_by_degree (normal_0, -270)
+            const normals = {
+                0 : normal_0,
+                2 : normal_2,
+                4 : normal_4,
+                5 : normal_5
+            }
+            // console.log ('normals', normals)
+
+            // Compute radiation levels for top & bottom faces
+            const BASE_RADIATION = 75 // from contract
+            const OBLIQUE_RADIATION =  15 // from contract
+            const face_1_exposure = (OBLIQUE_RADIATION / dist_sqs[0]) + (OBLIQUE_RADIATION / dist_sqs[1]) + (OBLIQUE_RADIATION / dist_sqs[2])
+            const face_3_exposure = face_1_exposure
+
+            // Compute radiation levels for side faces; compute fill color; draw rect
+            for (const face of [0, 2, 4, 5]) {
+
+                var exposure = 0
+                for (const sun of [0,1,2]) {
+                    const dot = vec_suns[sun][0] * normals[face][0] + vec_suns[sun][1] * normals[face][1]
+                    if (dot <= 0) { exposure += 0 }
+                    else {
+                        const mag_normal = Math.sqrt ( normals[face][0]**2 + normals[face][1]**2 )
+                        const mag_vec_sun = Math.sqrt ( vec_suns[sun][0]**2 + vec_suns[sun][1]**2 )
+                        const cos = dot / (mag_normal * mag_vec_sun)
+                        exposure += BASE_RADIATION * cos / dist_sqs[sun]
+                    }
+                }
+                // const exposure_sides[face] = exposure
+
+                const face_fill = convert_exposure_to_fill (exposure)
+
+                const ori = map_face_to_left_top (face)
+
+                const rect = new fabric.Rect({
+                    height: GRID*SIDE,
+                    width: GRID*SIDE,
+                    left: ori.left,
+                    top: ori.top,
+                    fill: face_fill,
+                    selectable: false,
+                    hoverCursor: 'default',
+                    visible: true,
+                    strokeWidth: 0,
+                    objectCaching: true
+                });
+                canvi.add (rect)
+            }
+
+
+            // face 1
+            const face_nonside_fill = convert_exposure_to_fill (face_1_exposure)
+            const ori_1 = map_face_to_left_top (1)
+            const rect_1 = new fabric.Rect({
+                height: GRID*SIDE,
+                width: GRID*SIDE,
+                left: ori_1.left,
+                top: ori_1.top,
+                fill: face_nonside_fill,
+                selectable: false,
+                hoverCursor: 'default',
+                visible: true,
+                strokeWidth: 0,
+                objectCaching: true
+            });
+            canvi.add (rect_1)
+            const ori_3 = map_face_to_left_top (3)
+            const rect_3 = new fabric.Rect({
+                height: GRID*SIDE,
+                width: GRID*SIDE,
+                left: ori_3.left,
+                top: ori_3.top,
+                fill: face_nonside_fill,
+                selectable: false,
+                hoverCursor: 'default',
+                visible: true,
+                strokeWidth: 0,
+                objectCaching: true
+            });
+            canvi.add (rect_3)
+
+        }
+
+         //
         // Grid lines
         //
         const DRAW_GRID_LINES = true
@@ -1443,169 +1573,6 @@ export default function GameWorld() {
             }
         }
 
-        //
-        // Draw face rectangles
-        //
-        const DRAW_FACE_RECTS = true
-        if (DRAW_FACE_RECTS) {
-
-            if (!db_macro_states.macro_states[0]) {return;}
-
-            console.log('db_macro_states.macro_states[0].dynamics:', db_macro_states.macro_states[0].dynamics)
-
-            //
-            // Compute colors for each face according to (1) face number (2) distance to each suns (3) planet rotation
-            // following the exact way solar exposure is computed in smart contract.
-            //
-
-            // Compute distances and vectors
-            const sun0_q = db_macro_states.macro_states[0].dynamics.sun0.q
-            const sun1_q = db_macro_states.macro_states[0].dynamics.sun1.q
-            const sun2_q = db_macro_states.macro_states[0].dynamics.sun2.q
-            const plnt_q = db_macro_states.macro_states[0].dynamics.planet.q
-            const phi_degree = parse_phi_to_degree (db_macro_states.macro_states[0].phi)
-            const dist_sqs = {
-                0 : (sun0_q.x - plnt_q.x)**2 + (sun0_q.y - plnt_q.y)**2,
-                1 : (sun1_q.x - plnt_q.x)**2 + (sun1_q.y - plnt_q.y)**2,
-                2 : (sun2_q.x - plnt_q.x)**2 + (sun2_q.y - plnt_q.y)**2
-            }
-            const vec_suns = {
-                0 : [sun0_q.x - plnt_q.x, sun0_q.y - plnt_q.y],
-                1 : [sun1_q.x - plnt_q.x, sun1_q.y - plnt_q.y],
-                2 : [sun2_q.x - plnt_q.x, sun1_q.y - plnt_q.y]
-            }
-
-            const normal_0 = vec2_rotate_by_degree ([1,0], phi_degree)
-            const normals = {
-                0 : normal_0,
-                2 : vec2_rotate_by_degree (normal_0, 90),
-                4 : vec2_rotate_by_degree (normal_0, 180),
-                5 : vec2_rotate_by_degree (normal_0, 270)
-            }
-            console.log ('face0 normal:', normal_0)
-
-            // // Compute radiation levels for top & bottom faces
-            // const BASE_RADIATION = 75 // from contract
-            // const OBLIQUE_RADIATION =  15 // from contract
-            // const face_1_exposure = (OBLIQUE_RADIATION / dist_sqs[0]) + (OBLIQUE_RADIATION / dist_sqs[1]) + (OBLIQUE_RADIATION / dist_sqs[2])
-            // const face_3_exposure = face_1_exposure
-
-            // // Compute radiation levels for side faces
-            // var exposure_sides = {}
-            // for (const face of [0, 2, 4, 5]) {
-
-            //     var exposure = 0
-            //     for (const sun of [0,1,2]) {
-            //         const dot = vec_suns[sun][0] * normals[face][0] + vec_suns[sun][1] * normals[face][1]
-            //         if (dot <= 0) { exposure += 0 }
-            //         else {
-            //             const mag_normal = Math.sqrt ( normals[face][0]**2 + normals[face][1]**2 )
-            //             const mag_vec_sun = Math.sqrt ( vec_suns[sun][0]**2 + vec_suns[sun][1]**2 )
-            //             const cos = dot / (mag_normal * mag_vec_sun)
-            //             exposure += BASE_RADIATION * cos / dist_sqs[sun]
-            //         }
-            //     }
-            //     exposure_sides[face] = exposure
-
-            // }
-
-            // Compute fill colors based on exposure levels, using yellow
-
-            // Draw face rects using computed fill colors
-
-        }
-
-        //
-        // Grid lines for faces
-        //
-        // const DRAW_GRID_FACE = false
-        // if (DRAW_GRID_FACE) {
-        //     //
-        //     // Lines parallel to x-axis
-        //     //
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 0*GRID,    PAD_Y + SIDE*GRID,
-        //         PAD_X + SIDE*GRID, PAD_Y + SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 0*GRID,    PAD_Y + 2*SIDE*GRID,
-        //         PAD_X + SIDE*GRID, PAD_Y + 2*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + SIDE*GRID,   PAD_Y + 0*GRID,
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 0*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + SIDE*GRID,   PAD_Y + 3*SIDE*GRID,
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 3*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + SIDE*GRID,
-        //         PAD_X + 3*SIDE*GRID, PAD_Y + SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
-        //         PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 3*SIDE*GRID, PAD_Y + SIDE*GRID,
-        //         PAD_X + 4*SIDE*GRID, PAD_Y + SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
-        //         PAD_X + 4*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 1*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 1*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-
-        //     //
-        //     // Lines parallel to y-axis
-        //     //
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + SIDE*GRID, PAD_Y + 2*SIDE*GRID,
-        //         PAD_X + SIDE*GRID, PAD_Y + 3*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 3*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 0*GRID, PAD_Y + SIDE*GRID,
-        //         PAD_X + 0*GRID, PAD_Y + 2*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 4*SIDE*GRID, PAD_Y + SIDE*GRID,
-        //         PAD_X + 4*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + SIDE*GRID, PAD_Y + 0*SIDE*GRID,
-        //         PAD_X + SIDE*GRID, PAD_Y + 1*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 0*SIDE*GRID,
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 1*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
-        //         PAD_X + 1*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
-        //         PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        //     canvi.add(new fabric.Line([
-        //         PAD_X + 3*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
-        //         PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        // }
-
-        // canvi.renderAll();
     }
 
     const drawMode = canvi => {
@@ -1675,8 +1642,8 @@ export default function GameWorld() {
 
             var perlin_colors = {}
             const perlin_values = PERLIN_VALUES[element]
-            console.log (`${element} / max perline value: ${perlin_values['max']}`)
-            console.log (`${element} / min perline value: ${perlin_values['min']}`)
+            // console.log (`${element} / max perline value: ${perlin_values['max']}`)
+            // console.log (`${element} / min perline value: ${perlin_values['min']}`)
 
             for (var face=0; face<6; face++) {
 
@@ -1686,8 +1653,8 @@ export default function GameWorld() {
                         const perlin_value = perlin_values[face][row][col]
                         const perlin_value_normalized = (perlin_value - perlin_values['min']) / (perlin_values['max'] - perlin_values['min'])
 
-                        const hi = PERLIN_COLOR_MAP['fe']['hi']
-                        const lo = PERLIN_COLOR_MAP['fe']['lo']
+                        const hi = PERLIN_COLOR_MAP[element]['hi']
+                        const lo = PERLIN_COLOR_MAP[element]['lo']
                         const r = lerp (lo[0], hi[0], perlin_value_normalized)
                         const g = lerp (lo[1], hi[1], perlin_value_normalized)
                         const b = lerp (lo[2], hi[2], perlin_value_normalized)
@@ -1952,7 +1919,7 @@ export default function GameWorld() {
                 _cursorFaceRectRef.current.left = ori.left
                 _cursorFaceRectRef.current.top  = ori.top
                 _cursorFaceRectRef.current.visible = true
-                console.log (`draw face assist square, face: ${face}`)
+                // console.log (`draw face assist square, face: ${face}`)
             }
             _cursorGridRectRef.current.dirty = true
             _cursorFaceRectRef.current.dirty = true
