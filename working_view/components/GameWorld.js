@@ -1,6 +1,7 @@
 import React, { Component, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { fabric } from 'fabric';
 import { toBN } from 'starknet/dist/utils/number'
+import { BigNumber } from 'bignumber.js'
 
 import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
 import { DEVICE_RESOURCE_MAP } from './ConstantDeviceResources'
@@ -127,7 +128,7 @@ const STROKE_WIDTH_GRID_FACE = 0.4
 // Styles
 //
 const PALETTE = 'DARK'
-const STROKE             = PALETTE === 'DARK' ? '#DDDDDD99' : '#BBBBBB' // grid stroke color
+const STROKE             = PALETTE === 'DARK' ? '#DDDDDD' : '#BBBBBB' // grid stroke color
 const CANVAS_BG          = PALETTE === 'DARK' ? '#313131' : '#E3EDFF'
 const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#FFEFD5' : '#999999'
 const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
@@ -170,6 +171,30 @@ function createTriangle(x, y, rotation)
         angle: rotation,
         hoverCursor: 'default'
     });
+}
+
+//
+// Helper function to convert api-returned phi value into degree
+//
+function parse_phi_to_degree (phi)
+{
+    const phi_bn = new BigNumber(Buffer.from(phi, 'base64').toString('hex'), 16)
+    const phi_degree = (phi_bn / 10**20) / (Math.PI * 2) * 360
+
+    return phi_degree
+}
+
+//
+// Helper function to rotate 2d vector
+//
+function vec2_rotate_by_degree (vec, ang) {
+    ang = -ang * (Math.PI/180);
+    var cos = Math.cos(ang);
+    var sin = Math.sin(ang);
+    return new [
+        Math.round(10000*(vec[0] * cos - vec[1] * sin))/10000,
+        Math.round(10000*(vec[0] * sin + vec[1] * cos))/10000
+    ]
 }
 
 export default function GameWorld() {
@@ -1372,7 +1397,7 @@ export default function GameWorld() {
                     PAD_Y + SIDE*GRID*2
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
-            for (var xi = SIDE; xi < SIDE*2; xi += GRID_SPACING){
+            for (var xi = SIDE; xi <= SIDE*2; xi += GRID_SPACING){
                 canvi.add(new fabric.Line([
                     PAD_X + xi*GRID,
                     PAD_Y + 0,
@@ -1380,7 +1405,7 @@ export default function GameWorld() {
                     PAD_Y + SIDE*GRID*3
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
-            for (var xi = 2*SIDE+1; xi < SIDE*4+1; xi += GRID_SPACING){
+            for (var xi = 2*SIDE+GRID_SPACING; xi <= SIDE*4; xi += GRID_SPACING){
                 canvi.add(new fabric.Line([
                     PAD_X + xi*GRID,
                     PAD_Y + SIDE*GRID,
@@ -1408,7 +1433,7 @@ export default function GameWorld() {
                     PAD_Y + yi*GRID
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
-            for (var yi = 2*SIDE+1; yi < 3*SIDE+1; yi += GRID_SPACING){
+            for (var yi = 2*SIDE+GRID_SPACING; yi <= 3*SIDE; yi += GRID_SPACING){
                 canvi.add(new fabric.Line([
                     PAD_X + SIDE*GRID,
                     PAD_Y + yi*GRID,
@@ -1438,6 +1463,7 @@ export default function GameWorld() {
             const sun1_q = db_macro_states.macro_states[0].dynamics.sun1.q
             const sun2_q = db_macro_states.macro_states[0].dynamics.sun2.q
             const plnt_q = db_macro_states.macro_states[0].dynamics.planet.q
+            const phi_degree = parse_phi_to_degree (db_macro_states.macro_states[0].phi)
             const dist_sqs = {
                 0 : (sun0_q.x - plnt_q.x)**2 + (sun0_q.y - plnt_q.y)**2,
                 1 : (sun1_q.x - plnt_q.x)**2 + (sun1_q.y - plnt_q.y)**2,
@@ -1448,12 +1474,15 @@ export default function GameWorld() {
                 1 : [sun1_q.x - plnt_q.x, sun1_q.y - plnt_q.y],
                 2 : [sun2_q.x - plnt_q.x, sun1_q.y - plnt_q.y]
             }
+
+            const normal_0 = vec2_rotate_by_degree ([1,0], phi_degree)
             const normals = {
-                0 : [0, 0], //
-                2 : [0, 0], // ^ rotated by 90 deg
-                4 : [0, 0],
-                5 : [0, 0]
+                0 : normal_0,
+                2 : vec2_rotate_by_degree (normal_0, 90),
+                4 : vec2_rotate_by_degree (normal_0, 180),
+                5 : vec2_rotate_by_degree (normal_0, 270)
             }
+            console.log ('face0 normal:', normal_0)
 
             // // Compute radiation levels for top & bottom faces
             // const BASE_RADIATION = 75 // from contract
