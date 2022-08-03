@@ -23,7 +23,7 @@ export default function GameStatsCiv() {
             content.push (<p>{'** universe inactive **'}</p>)
         }
         else {
-            console.log ('got db_civ_state:', db_civ_state.civ_state[0])
+            // console.log ('got db_civ_state:', db_civ_state.civ_state[0])
             const civ_idx = db_civ_state.civ_state[0].civ_idx
             const active = db_civ_state.civ_state[0].active
             const line = `Number: ${civ_idx}`

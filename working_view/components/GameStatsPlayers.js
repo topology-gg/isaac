@@ -17,7 +17,7 @@ export default function GameStatsPlayers(props) {
     const { data: db_civ_state } = useCivState ()
     const { data: db_player_balances } = usePlayerBalances ()
     var rows = [];
-    console.log (db_player_balances)
+    // console.log (db_player_balances)
 
     if (db_player_balances) {
 
