@@ -74,6 +74,7 @@ const TRIANGLE_H = 10
 const COURSE_GRIDLINE_SPACING = 10
 const MEDIUM_GRIDLINE_SPACING = 1
 const FINEST_GRIDLINE_SPACING = 1
+const GRID_SPACING = 5
 const GRIDLINE_OBJECT_CACHE = false
 
 const DEVICE_DIM_MAP = new Map();
@@ -1036,7 +1037,7 @@ export default function GameWorld() {
         else {
             prepare_grid_mapping ()
             drawPerlin (canvi)
-            drawGrid (canvi)
+            drawLandscape (canvi)
             drawDevices (canvi)
             drawAssist (canvi) // draw assistance objects the last to be on top
             drawUtxAnim (canvi)
@@ -1164,7 +1165,7 @@ export default function GameWorld() {
     }, [hasDrawnState, db_utx_sets]);
 
 
-    const drawGrid = canvi => {
+    const drawLandscape = canvi => {
         const TBOX_FONT_FAMILY = "Poppins-Light"
         const TBOX_FONT_SIZE = 14
 
@@ -1202,7 +1203,7 @@ export default function GameWorld() {
         //
         // Axis ticks and labels
         //
-        const DRAW_AXIS_TICKS_AND_LABELS = true
+        const DRAW_AXIS_TICKS_AND_LABELS = false
         if (DRAW_AXIS_TICKS_AND_LABELS) {
             const tbox_x = new fabric.Textbox(
                 'x', {
@@ -1352,258 +1353,6 @@ export default function GameWorld() {
             canvi.add (tbox_x_4d)
         }
 
-        // //
-        // // Course grid lines
-        // //
-        // const DRAW_COURSE_GRID_LINES = true
-        // var course_grid_lines = []
-        // if (DRAW_COURSE_GRID_LINES) {
-        //     //
-        //     // Course grid lines parallel to Y-axis
-        //     //
-        //     for (var xi = 0; xi < SIDE; xi += COURSE_GRIDLINE_SPACING){
-        //         const line = new fabric.Line([
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID,
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID*2
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
-        //         course_grid_lines.push (line)
-        //     }
-        //     for (var xi = SIDE; xi < SIDE*2+1; xi += COURSE_GRIDLINE_SPACING){
-        //         const line = new fabric.Line([
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + 0,
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID*3
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
-        //         course_grid_lines.push (line)
-        //     }
-        //     for (var xi = 2*SIDE; xi < SIDE*4+1; xi += COURSE_GRIDLINE_SPACING){
-        //         const line = new fabric.Line([
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID,
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID*2
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
-        //         course_grid_lines.push (line)
-        //     }
-
-        //     //
-        //     // Course grid lines parallel to X-axis
-        //     //
-        //     for (var yi = 0; yi < SIDE; yi += COURSE_GRIDLINE_SPACING){
-        //         const line = new fabric.Line([
-        //             PAD_X + SIDE*GRID,
-        //             PAD_Y + yi*GRID,
-        //             PAD_X + SIDE*GRID*2,
-        //             PAD_Y + yi*GRID
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
-        //         course_grid_lines.push (line)
-        //     }
-        //     for (var yi = SIDE; yi < 2*SIDE+1; yi += COURSE_GRIDLINE_SPACING){
-        //         const line = new fabric.Line([
-        //             PAD_X + 0,
-        //             PAD_Y + yi*GRID,
-        //             PAD_X + SIDE*GRID*4,
-        //             PAD_Y + yi*GRID
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
-        //         course_grid_lines.push (line)
-        //     }
-        //     for (var yi = 2*SIDE; yi < 3*SIDE+1; yi += COURSE_GRIDLINE_SPACING){
-        //         const line = new fabric.Line([
-        //             PAD_X + SIDE*GRID,
-        //             PAD_Y + yi*GRID,
-        //             PAD_X + SIDE*GRID*2,
-        //             PAD_Y + yi*GRID
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_COURSE, selectable: false, hoverCursor: 'default' });
-        //         course_grid_lines.push (line)
-        //     }
-        //     const course_grid_lines_group = new fabric.Group (
-        //         course_grid_lines, {
-        //             visible: false,
-        //             selectable: false,
-        //             objectCaching: GRIDLINE_OBJECT_CACHE
-        //         });
-        //     canvi.add (course_grid_lines_group)
-        //     _courseGridLines.current = course_grid_lines_group
-        // }
-
-
-        // //
-        // // Draw medium grid line
-        // //
-        // const DRAW_MEDIUM_GRID_LINES = true
-        // var medium_grid_lines = []
-        // if (DRAW_MEDIUM_GRID_LINES) {
-        //     //
-        //     // Medium grid lines parallel to Y-axis
-        //     //
-        //     for (var xi = 0; xi < SIDE; xi += MEDIUM_GRIDLINE_SPACING){
-        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID,
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID*2
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
-        //         medium_grid_lines.push (line)
-        //     }
-        //     for (var xi = SIDE; xi < SIDE*2+1; xi += MEDIUM_GRIDLINE_SPACING){
-        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + 0,
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID*3
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
-        //         medium_grid_lines.push (line)
-        //     }
-        //     for (var xi = 2*SIDE; xi < SIDE*4+1; xi += MEDIUM_GRIDLINE_SPACING){
-        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID,
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID*2
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
-        //         medium_grid_lines.push (line)
-        //     }
-
-        //     //
-        //     // Course grid lines parallel to X-axis
-        //     //
-        //     for (var yi = 0; yi < SIDE; yi += MEDIUM_GRIDLINE_SPACING){
-        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + SIDE*GRID,
-        //             PAD_Y + yi*GRID,
-        //             PAD_X + SIDE*GRID*2,
-        //             PAD_Y + yi*GRID
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
-        //         medium_grid_lines.push (line)
-        //     }
-        //     for (var yi = SIDE; yi < 2*SIDE+1; yi += MEDIUM_GRIDLINE_SPACING){
-        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + 0,
-        //             PAD_Y + yi*GRID,
-        //             PAD_X + SIDE*GRID*4,
-        //             PAD_Y + yi*GRID
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
-        //         medium_grid_lines.push (line)
-        //     }
-        //     for (var yi = 2*SIDE; yi < 3*SIDE+1; yi += MEDIUM_GRIDLINE_SPACING){
-        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + SIDE*GRID,
-        //             PAD_Y + yi*GRID,
-        //             PAD_X + SIDE*GRID*2,
-        //             PAD_Y + yi*GRID
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' });
-        //         medium_grid_lines.push (line)
-        //     }
-        //     const medium_grid_lines_group = new fabric.Group (
-        //         medium_grid_lines, {
-        //             visible: false,
-        //             selectable: false,
-        //             objectCaching: GRIDLINE_OBJECT_CACHE
-        //         });
-        //     canvi.add (medium_grid_lines_group)
-        //     _mediumGridLines.current = medium_grid_lines_group
-        // }
-
-
-        // //
-        // // Draw finest grid line
-        // //
-        // const DRAW_FINEST_GRID_LINES = false
-        // var finest_grid_lines = []
-        // if (DRAW_FINEST_GRID_LINES) {
-        //     //
-        //     // Finest grid lines parallel to Y-axis
-        //     //
-        //     for (var xi = 0; xi < SIDE; xi += FINEST_GRIDLINE_SPACING){
-        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         if (xi % MEDIUM_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID,
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID*2
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
-        //         finest_grid_lines.push (line)
-        //     }
-        //     for (var xi = SIDE; xi < SIDE*2+1; xi += FINEST_GRIDLINE_SPACING){
-        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         if (xi % MEDIUM_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + 0,
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID*3
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
-        //         finest_grid_lines.push (line)
-        //     }
-        //     for (var xi = 2*SIDE; xi < SIDE*4+1; xi += FINEST_GRIDLINE_SPACING){
-        //         if (xi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         if (xi % MEDIUM_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID,
-        //             PAD_X + xi*GRID,
-        //             PAD_Y + SIDE*GRID*2
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
-        //         finest_grid_lines.push (line)
-        //     }
-
-        //     //
-        //     // Course grid lines parallel to X-axis
-        //     //
-        //     for (var yi = 0; yi < SIDE; yi += FINEST_GRIDLINE_SPACING){
-        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         if (yi % MEDIUM_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + SIDE*GRID,
-        //             PAD_Y + yi*GRID,
-        //             PAD_X + SIDE*GRID*2,
-        //             PAD_Y + yi*GRID
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
-        //         finest_grid_lines.push (line)
-        //     }
-        //     for (var yi = SIDE; yi < 2*SIDE+1; yi += FINEST_GRIDLINE_SPACING){
-        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         if (yi % MEDIUM_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + 0,
-        //             PAD_Y + yi*GRID,
-        //             PAD_X + SIDE*GRID*4,
-        //             PAD_Y + yi*GRID
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
-        //         finest_grid_lines.push (line)
-        //     }
-        //     for (var yi = 2*SIDE; yi < 3*SIDE+1; yi += FINEST_GRIDLINE_SPACING){
-        //         if (yi % COURSE_GRIDLINE_SPACING == 0) continue;
-        //         if (yi % MEDIUM_GRIDLINE_SPACING == 0) continue;
-        //         const line = new fabric.Line([
-        //             PAD_X + SIDE*GRID,
-        //             PAD_Y + yi*GRID,
-        //             PAD_X + SIDE*GRID*2,
-        //             PAD_Y + yi*GRID
-        //         ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_FINEST, selectable: false, hoverCursor: 'default' });
-        //         finest_grid_lines.push (line)
-        //     }
-        //     const finest_grid_lines_group = new fabric.Group (
-        //         finest_grid_lines, {
-        //             visible: false,
-        //             selectable: false,
-        //             objectCaching: false
-        //         });
-        //     canvi.add (finest_grid_lines_group)
-        //     _finestGridLines.current = finest_grid_lines_group
-        // }
-
-
         //
         // Grid lines
         //
@@ -1612,7 +1361,7 @@ export default function GameWorld() {
             //
             // Grid lines parallel to Y-axis
             //
-            for (var xi = 0; xi < SIDE; xi++){
+            for (var xi = 0; xi < SIDE; xi += GRID_SPACING){
                 canvi.add(new fabric.Line([
                     PAD_X + xi*GRID,
                     PAD_Y + SIDE*GRID,
@@ -1620,7 +1369,7 @@ export default function GameWorld() {
                     PAD_Y + SIDE*GRID*2
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
-            for (var xi = SIDE; xi < SIDE*2+1; xi++){
+            for (var xi = SIDE; xi < SIDE*2+1; xi += GRID_SPACING){
                 canvi.add(new fabric.Line([
                     PAD_X + xi*GRID,
                     PAD_Y + 0,
@@ -1628,7 +1377,7 @@ export default function GameWorld() {
                     PAD_Y + SIDE*GRID*3
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
-            for (var xi = 2*SIDE+1; xi < SIDE*4+1; xi++){
+            for (var xi = 2*SIDE+1; xi < SIDE*4+1; xi += GRID_SPACING){
                 canvi.add(new fabric.Line([
                     PAD_X + xi*GRID,
                     PAD_Y + SIDE*GRID,
@@ -1640,7 +1389,7 @@ export default function GameWorld() {
             //
             // Grid lines parallel to X-axis
             //
-            for (var yi = 0; yi < SIDE; yi++){
+            for (var yi = 0; yi < SIDE; yi += GRID_SPACING){
                 canvi.add(new fabric.Line([
                     PAD_X + SIDE*GRID,
                     PAD_Y + yi*GRID,
@@ -1648,7 +1397,7 @@ export default function GameWorld() {
                     PAD_Y + yi*GRID
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
-            for (var yi = SIDE; yi < 2*SIDE+1; yi++){
+            for (var yi = SIDE; yi < 2*SIDE+1; yi += GRID_SPACING){
                 canvi.add(new fabric.Line([
                     PAD_X + 0,
                     PAD_Y + yi*GRID,
@@ -1656,7 +1405,7 @@ export default function GameWorld() {
                     PAD_Y + yi*GRID
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
-            for (var yi = 2*SIDE+1; yi < 3*SIDE+1; yi++){
+            for (var yi = 2*SIDE+1; yi < 3*SIDE+1; yi += GRID_SPACING){
                 canvi.add(new fabric.Line([
                     PAD_X + SIDE*GRID,
                     PAD_Y + yi*GRID,
@@ -1667,94 +1416,157 @@ export default function GameWorld() {
         }
 
         //
+        // Draw face rectangles
+        //
+        const DRAW_FACE_RECTS = true
+        if (DRAW_FACE_RECTS) {
+            //
+            // Compute colors for each face according to (1) face number (2) distance to each suns (3) planet rotation
+            // following the exact way solar exposure is computed in smart contract.
+            //
+
+            // Compute distances and vectors
+            const sun0_q = db_macro_states.macro_states.dynamics.sun0.q
+            const sun1_q = db_macro_states.macro_states.dynamics.sun1.q
+            const sun2_q = db_macro_states.macro_states.dynamics.sun2.q
+            const plnt_q = db_macro_states.macro_states.dynamics.plnt.q
+            const dist_sqs = {
+                0 : (sun0_q.x - plnt_q.x)**2 + (sun0_q.y - plnt_q.y)**2,
+                1 : (sun1_q.x - plnt_q.x)**2 + (sun1_q.y - plnt_q.y)**2,
+                2 : (sun2_q.x - plnt_q.x)**2 + (sun2_q.y - plnt_q.y)**2
+            }
+            const vec_suns = {
+                0 : [sun0_q.x - plnt_q.x, sun0_q.y - plnt_q.y],
+                1 : [sun1_q.x - plnt_q.x, sun1_q.y - plnt_q.y],
+                2 : [sun2_q.x - plnt_q.x, sun1_q.y - plnt_q.y]
+            }
+            const normals = {
+                0 : [0, 0], //
+                2 : [0, 0], // ^ rotated by 90 deg
+                4 : [0, 0],
+                5 : [0, 0]
+            }
+
+            // Compute radiation levels for top & bottom faces
+            const BASE_RADIATION = 75 // from contract
+            const OBLIQUE_RADIATION =  15 // from contract
+            const face_1_exposure = (OBLIQUE_RADIATION / dist_sqs[0]) + (OBLIQUE_RADIATION / dist_sqs[1]) + (OBLIQUE_RADIATION / dist_sqs[2])
+            const face_3_exposure = face_1_exposure
+
+            // Compute radiation levels for side faces
+            var exposure_sides = {}
+            for (const face of [0, 2, 4, 5]) {
+
+                var exposure = 0
+                for (const sun of [0,1,2]) {
+                    const dot = vec_suns[sun][0] * normals[face][0] + vec_suns[sun][1] * normals[face][1]
+                    if (dot <= 0) { exposure += 0 }
+                    else {
+                        const mag_normal = Math.sqrt ( normals[face][0]**2 + normals[face][1]**2 )
+                        const mag_vec_sun = Math.sqrt ( vec_suns[sun][0]**2 + vec_suns[sun][1]**2 )
+                        const cos = dot / (mag_normal * mag_vec_sun)
+                        exposure += BASE_RADIATION * cos / dist_sqs[sun]
+                    }
+                }
+                exposure_sides[face] = exposure
+
+            }
+
+            // Compute fill colors based on exposure levels, using yellow
+
+            // Draw face rects using computed fill colors
+
+        }
+
+        //
         // Grid lines for faces
         //
-        const DRAW_GRID_FACE = true
-        if (DRAW_GRID_FACE) {
-            //
-            // Lines parallel to x-axis
-            //
-            canvi.add(new fabric.Line([
-                PAD_X + 0*GRID,    PAD_Y + SIDE*GRID,
-                PAD_X + SIDE*GRID, PAD_Y + SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 0*GRID,    PAD_Y + 2*SIDE*GRID,
-                PAD_X + SIDE*GRID, PAD_Y + 2*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + SIDE*GRID,   PAD_Y + 0*GRID,
-                PAD_X + 2*SIDE*GRID, PAD_Y + 0*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + SIDE*GRID,   PAD_Y + 3*SIDE*GRID,
-                PAD_X + 2*SIDE*GRID, PAD_Y + 3*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 2*SIDE*GRID, PAD_Y + SIDE*GRID,
-                PAD_X + 3*SIDE*GRID, PAD_Y + SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
-                PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 3*SIDE*GRID, PAD_Y + SIDE*GRID,
-                PAD_X + 4*SIDE*GRID, PAD_Y + SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
-                PAD_X + 4*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 1*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
-                PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 1*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
-                PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        // const DRAW_GRID_FACE = false
+        // if (DRAW_GRID_FACE) {
+        //     //
+        //     // Lines parallel to x-axis
+        //     //
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 0*GRID,    PAD_Y + SIDE*GRID,
+        //         PAD_X + SIDE*GRID, PAD_Y + SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 0*GRID,    PAD_Y + 2*SIDE*GRID,
+        //         PAD_X + SIDE*GRID, PAD_Y + 2*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + SIDE*GRID,   PAD_Y + 0*GRID,
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 0*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + SIDE*GRID,   PAD_Y + 3*SIDE*GRID,
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 3*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + SIDE*GRID,
+        //         PAD_X + 3*SIDE*GRID, PAD_Y + SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
+        //         PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 3*SIDE*GRID, PAD_Y + SIDE*GRID,
+        //         PAD_X + 4*SIDE*GRID, PAD_Y + SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
+        //         PAD_X + 4*SIDE*GRID, PAD_Y + 2*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 1*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 1*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
 
-            //
-            // Lines parallel to y-axis
-            //
-            canvi.add(new fabric.Line([
-                PAD_X + SIDE*GRID, PAD_Y + 2*SIDE*GRID,
-                PAD_X + SIDE*GRID, PAD_Y + 3*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
-                PAD_X + 2*SIDE*GRID, PAD_Y + 3*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 0*GRID, PAD_Y + SIDE*GRID,
-                PAD_X + 0*GRID, PAD_Y + 2*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 4*SIDE*GRID, PAD_Y + SIDE*GRID,
-                PAD_X + 4*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + SIDE*GRID, PAD_Y + 0*SIDE*GRID,
-                PAD_X + SIDE*GRID, PAD_Y + 1*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 2*SIDE*GRID, PAD_Y + 0*SIDE*GRID,
-                PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 1*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
-                PAD_X + 1*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
-                PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-            canvi.add(new fabric.Line([
-                PAD_X + 3*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
-                PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID
-            ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
-        }
+        //     //
+        //     // Lines parallel to y-axis
+        //     //
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + SIDE*GRID, PAD_Y + 2*SIDE*GRID,
+        //         PAD_X + SIDE*GRID, PAD_Y + 3*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID,
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 3*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 0*GRID, PAD_Y + SIDE*GRID,
+        //         PAD_X + 0*GRID, PAD_Y + 2*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 4*SIDE*GRID, PAD_Y + SIDE*GRID,
+        //         PAD_X + 4*SIDE*GRID, PAD_Y + 2*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + SIDE*GRID, PAD_Y + 0*SIDE*GRID,
+        //         PAD_X + SIDE*GRID, PAD_Y + 1*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 0*SIDE*GRID,
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 1*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
+        //         PAD_X + 1*SIDE*GRID, PAD_Y + 2*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
+        //         PAD_X + 2*SIDE*GRID, PAD_Y + 2*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        //     canvi.add(new fabric.Line([
+        //         PAD_X + 3*SIDE*GRID, PAD_Y + 1*SIDE*GRID,
+        //         PAD_X + 3*SIDE*GRID, PAD_Y + 2*SIDE*GRID
+        //     ], { stroke: STROKE_GRID_FACE, strokeWidth: STROKE_WIDTH_GRID_FACE, selectable: false, hoverCursor: 'default' }));
+        // }
 
         // canvi.renderAll();
     }
