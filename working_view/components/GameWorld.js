@@ -1738,7 +1738,7 @@ export default function GameWorld() {
             const device_dim = 1 // backend register the device footprint over every single grid occupied
             const device_color = DEVICE_COLOR_MAP.get(typ)
 
-            const stroke_width = 0.2
+            const stroke_width = 0
 
             const rect = new fabric.Rect({
                 height: device_dim*GRID,
