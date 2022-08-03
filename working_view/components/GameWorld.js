@@ -1172,33 +1172,36 @@ export default function GameWorld() {
         //
         // Axes for coordinate system
         //
+        const DRAW_AXIS = false
         const AXIS_EXTEND_GRID_MULTIPLE_X = 7
         const AXIS_EXTEND_GRID_MULTIPLE_Y = 6
-        canvi.add(new fabric.Line([
-            PAD_X + 0,
-            PAD_Y + 0 - GRID*AXIS_EXTEND_GRID_MULTIPLE_Y,
-            PAD_X + 0,
-            PAD_Y + SIDE*GRID*3
-        ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_AXIS, selectable: false, hoverCursor: 'default' }));
-        canvi.add(new fabric.Line([
-            PAD_X + 0,
-            PAD_Y + SIDE*GRID*3,
-            PAD_X + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X,
-            PAD_Y + SIDE*GRID*3
-        ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_AXIS, selectable: false, hoverCursor: 'default' }));
+        if (DRAW_AXIS) {
+            canvi.add(new fabric.Line([
+                PAD_X + 0,
+                PAD_Y + 0 - GRID*AXIS_EXTEND_GRID_MULTIPLE_Y,
+                PAD_X + 0,
+                PAD_Y + SIDE*GRID*3
+            ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_AXIS, selectable: false, hoverCursor: 'default' }));
+            canvi.add(new fabric.Line([
+                PAD_X + 0,
+                PAD_Y + SIDE*GRID*3,
+                PAD_X + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X,
+                PAD_Y + SIDE*GRID*3
+            ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_AXIS, selectable: false, hoverCursor: 'default' }));
 
-        const triangle_y_axis = createTriangle (
-            PAD_X -(TRIANGLE_W/2),
-            PAD_Y - GRID*AXIS_EXTEND_GRID_MULTIPLE_Y - TRIANGLE_H,
-            0
-        )
-        const triangle_x_axis = createTriangle (
-            PAD_X + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X,
-            PAD_Y + SIDE*GRID*3 - TRIANGLE_W,
-            90
-        )
-        canvi.add (triangle_y_axis);
-        canvi.add (triangle_x_axis);
+            const triangle_y_axis = createTriangle (
+                PAD_X -(TRIANGLE_W/2),
+                PAD_Y - GRID*AXIS_EXTEND_GRID_MULTIPLE_Y - TRIANGLE_H,
+                0
+            )
+            const triangle_x_axis = createTriangle (
+                PAD_X + SIDE*GRID*4 + GRID*AXIS_EXTEND_GRID_MULTIPLE_X,
+                PAD_Y + SIDE*GRID*3 - TRIANGLE_W,
+                90
+            )
+            canvi.add (triangle_y_axis);
+            canvi.add (triangle_x_axis);
+        }
 
         //
         // Axis ticks and labels
@@ -1369,7 +1372,7 @@ export default function GameWorld() {
                     PAD_Y + SIDE*GRID*2
                 ], { stroke: STROKE, strokeWidth: STROKE_WIDTH_GRID_MEDIUM, selectable: false, hoverCursor: 'default' }));
             }
-            for (var xi = SIDE; xi < SIDE*2+1; xi += GRID_SPACING){
+            for (var xi = SIDE; xi < SIDE*2; xi += GRID_SPACING){
                 canvi.add(new fabric.Line([
                     PAD_X + xi*GRID,
                     PAD_Y + 0,
@@ -1420,16 +1423,21 @@ export default function GameWorld() {
         //
         const DRAW_FACE_RECTS = true
         if (DRAW_FACE_RECTS) {
+
+            if (!db_macro_states.macro_states[0]) {return;}
+
+            console.log('db_macro_states.macro_states[0].dynamics:', db_macro_states.macro_states[0].dynamics)
+
             //
             // Compute colors for each face according to (1) face number (2) distance to each suns (3) planet rotation
             // following the exact way solar exposure is computed in smart contract.
             //
 
             // Compute distances and vectors
-            const sun0_q = db_macro_states.macro_states.dynamics.sun0.q
-            const sun1_q = db_macro_states.macro_states.dynamics.sun1.q
-            const sun2_q = db_macro_states.macro_states.dynamics.sun2.q
-            const plnt_q = db_macro_states.macro_states.dynamics.plnt.q
+            const sun0_q = db_macro_states.macro_states[0].dynamics.sun0.q
+            const sun1_q = db_macro_states.macro_states[0].dynamics.sun1.q
+            const sun2_q = db_macro_states.macro_states[0].dynamics.sun2.q
+            const plnt_q = db_macro_states.macro_states[0].dynamics.planet.q
             const dist_sqs = {
                 0 : (sun0_q.x - plnt_q.x)**2 + (sun0_q.y - plnt_q.y)**2,
                 1 : (sun1_q.x - plnt_q.x)**2 + (sun1_q.y - plnt_q.y)**2,
@@ -1447,30 +1455,30 @@ export default function GameWorld() {
                 5 : [0, 0]
             }
 
-            // Compute radiation levels for top & bottom faces
-            const BASE_RADIATION = 75 // from contract
-            const OBLIQUE_RADIATION =  15 // from contract
-            const face_1_exposure = (OBLIQUE_RADIATION / dist_sqs[0]) + (OBLIQUE_RADIATION / dist_sqs[1]) + (OBLIQUE_RADIATION / dist_sqs[2])
-            const face_3_exposure = face_1_exposure
+            // // Compute radiation levels for top & bottom faces
+            // const BASE_RADIATION = 75 // from contract
+            // const OBLIQUE_RADIATION =  15 // from contract
+            // const face_1_exposure = (OBLIQUE_RADIATION / dist_sqs[0]) + (OBLIQUE_RADIATION / dist_sqs[1]) + (OBLIQUE_RADIATION / dist_sqs[2])
+            // const face_3_exposure = face_1_exposure
 
-            // Compute radiation levels for side faces
-            var exposure_sides = {}
-            for (const face of [0, 2, 4, 5]) {
+            // // Compute radiation levels for side faces
+            // var exposure_sides = {}
+            // for (const face of [0, 2, 4, 5]) {
 
-                var exposure = 0
-                for (const sun of [0,1,2]) {
-                    const dot = vec_suns[sun][0] * normals[face][0] + vec_suns[sun][1] * normals[face][1]
-                    if (dot <= 0) { exposure += 0 }
-                    else {
-                        const mag_normal = Math.sqrt ( normals[face][0]**2 + normals[face][1]**2 )
-                        const mag_vec_sun = Math.sqrt ( vec_suns[sun][0]**2 + vec_suns[sun][1]**2 )
-                        const cos = dot / (mag_normal * mag_vec_sun)
-                        exposure += BASE_RADIATION * cos / dist_sqs[sun]
-                    }
-                }
-                exposure_sides[face] = exposure
+            //     var exposure = 0
+            //     for (const sun of [0,1,2]) {
+            //         const dot = vec_suns[sun][0] * normals[face][0] + vec_suns[sun][1] * normals[face][1]
+            //         if (dot <= 0) { exposure += 0 }
+            //         else {
+            //             const mag_normal = Math.sqrt ( normals[face][0]**2 + normals[face][1]**2 )
+            //             const mag_vec_sun = Math.sqrt ( vec_suns[sun][0]**2 + vec_suns[sun][1]**2 )
+            //             const cos = dot / (mag_normal * mag_vec_sun)
+            //             exposure += BASE_RADIATION * cos / dist_sqs[sun]
+            //         }
+            //     }
+            //     exposure_sides[face] = exposure
 
-            }
+            // }
 
             // Compute fill colors based on exposure levels, using yellow
 
