@@ -98,18 +98,18 @@ DEVICE_DIM_MAP.set(15, 5);
 //
 // Import pre-generated perlin values
 //
-// const PERLIN_VALUES_FE_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_0.json`);
-// const PERLIN_VALUES_AL_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_2.json`);
-// const PERLIN_VALUES_CU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_4.json`);
-// const PERLIN_VALUES_SI_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_6.json`);
-// const PERLIN_VALUES_PU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_8.json`);
-// const PERLIN_VALUES = {
-//     'fe' : PERLIN_VALUES_FE_RAW,
-//     'al' : PERLIN_VALUES_AL_RAW,
-//     'cu' : PERLIN_VALUES_CU_RAW,
-//     'si' : PERLIN_VALUES_SI_RAW,
-//     'pu' : PERLIN_VALUES_PU_RAW
-// }
+const PERLIN_VALUES_FE_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_0.json`);
+const PERLIN_VALUES_AL_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_2.json`);
+const PERLIN_VALUES_CU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_4.json`);
+const PERLIN_VALUES_SI_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_6.json`);
+const PERLIN_VALUES_PU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_8.json`);
+const PERLIN_VALUES = {
+    'fe' : PERLIN_VALUES_FE_RAW,
+    'al' : PERLIN_VALUES_AL_RAW,
+    'cu' : PERLIN_VALUES_CU_RAW,
+    'si' : PERLIN_VALUES_SI_RAW,
+    'pu' : PERLIN_VALUES_PU_RAW
+}
 
 //
 // Sizes
@@ -1684,6 +1684,7 @@ export default function GameWorld() {
                         top: PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
                         fill: '#FFFFFF',
                         selectable: false,
+                        hoverCursor: 'default',
                         visible: false,
                         strokeWidth: 0,
 

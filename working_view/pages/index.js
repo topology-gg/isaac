@@ -68,10 +68,12 @@ function Home() {
                 <div className="right-child-middle" >
                     <span>.</span>
                     <h4>Control</h4>
-                    <p>Key press 1~6: choose display mode</p>
-                    <p>Key press 7: transfer device</p>
-                    <p>Mouse click: select grid</p>
-                    <p>Mouse drag: select grids</p>
+                    <p>Choose display mode: press 1 to 6</p>
+                    <p>Transfer device: press 7</p>
+                    <p>Select grid(s): LMB click & drag</p>
+                    <p>Pan: RMB</p>
+                    <p>Zoom: mouse wheel / press c to reset zoom</p>
+
                     <span>.</span>
                 </div>
 

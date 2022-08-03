@@ -166,7 +166,7 @@ export function Modal (props) {
                     if ([12,13].includes(i)) { continue; }
 
                     const have_nonzero_balance = props.device_balance[i] > 0 ? true : false
-                    console.log (`device type ${i} have_nonzero_balance=${have_nonzero_balance}`)
+                    // console.log (`device type ${i} have_nonzero_balance=${have_nonzero_balance}`)
 
                     options.push (
                         <DeployDeviceInterface typ={i} grid_x={grid.x} grid_y={grid.y} have_nonzero_balance={have_nonzero_balance}/>
