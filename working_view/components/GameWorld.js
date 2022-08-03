@@ -801,6 +801,7 @@ export default function GameWorld() {
         borderRadius: '25px',
         hasRotatingPoint: true,
         selectable: false,
+        hoverCursor: 'default',
         fontFamily: "Poppins-Light"
     });
 
@@ -1108,6 +1109,7 @@ export default function GameWorld() {
                 fontSize: 17,
                 textAlign: 'left',
                 fill: "#CCCCCC",
+                selectable: false,
                 hoverCursor: 'default',
                 fontFamily: TBOX_FONT_FAMILY
             });
@@ -1254,9 +1256,9 @@ export default function GameWorld() {
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default',
                     fontFamily: TBOX_FONT_FAMILY,
-                    selectable: false
+                    selectable: false,
+                    hoverCursor: 'default'
                 });
             const tbox_y = new fabric.Textbox(
                 'y', {
@@ -1266,9 +1268,9 @@ export default function GameWorld() {
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default',
                     fontFamily: TBOX_FONT_FAMILY,
-                    selectable: false
+                    selectable: false,
+                    hoverCursor: 'default'
                 });
 
             const tbox_origin = new fabric.Textbox(
@@ -1279,9 +1281,9 @@ export default function GameWorld() {
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default',
                     fontFamily: TBOX_FONT_FAMILY,
-                    selectable: false
+                    selectable: false,
+                    hoverCursor: 'default'
                 });
 
             const text_y_d = '(0,' + SIDE.toString() + ')'
@@ -1293,9 +1295,9 @@ export default function GameWorld() {
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default',
                     fontFamily: TBOX_FONT_FAMILY,
-                    selectable: false
+                    selectable: false,
+                    hoverCursor: 'default'
                 });
 
             const text_y_2d = '(0,' + (2*SIDE).toString() + ')'
@@ -1307,9 +1309,9 @@ export default function GameWorld() {
                     fontSize: TBOX_FONT_SIZE,
                     textAlign: 'left',
                     fill: STROKE,
-                    hoverCursor: 'default',
                     fontFamily: TBOX_FONT_FAMILY,
-                    selectable: false
+                    selectable: false,
+                    hoverCursor: 'default'
                 });
 
             const text_y_3d = '(0,' + (3*SIDE).toString() + ')'
@@ -1758,7 +1760,8 @@ export default function GameWorld() {
         var device_rect_face0_group = new fabric.Group(
             device_rects, {
                 visible: true,
-                selectable: false
+                selectable: false,
+                hoverCursor: 'default'
             });
         canvi.add(device_rect_face0_group)
         _deviceDisplayRef.current = device_rect_face0_group
