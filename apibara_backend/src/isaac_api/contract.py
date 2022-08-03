@@ -122,7 +122,7 @@ def decode_give_undeployed_device_occurred_event (event: Event) -> Tuple [int, i
     it = iter (event.data)
 
     event_counter = _felt_from_iter (it, scale=False)
-    to_account    = _felt_from_iter (it, scale=False)
+    to_account    = _felt_from_iter (it, scale=False, signed=False)
     device_type   = _felt_from_iter (it, scale=False)
     device_amount = _felt_from_iter (it, scale=False)
 
@@ -166,10 +166,10 @@ def decode_universe_activation_occurred_event (event: Event) -> Tuple [int, int,
 
     event_counter      = _felt_from_iter (it, scale=False)
     universe_idx       = _felt_from_iter (it, scale=False)
-    universe_adr       = _felt_from_iter (it, scale=False)
+    universe_adr       = _felt_from_iter (it, scale=False, signed=False)
     arr_player_adr_len = _felt_from_iter (it, scale=False)
     arr_player_adr     = [
-        _felt_from_iter (it, scale=False) for _ in range (arr_player_adr_len)
+        _felt_from_iter (it, scale=False, signed=False) for _ in range (arr_player_adr_len)
     ]
 
     return event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr
@@ -193,10 +193,10 @@ def decode_universe_deactivation_occurred_event (event: Event) -> Tuple [int, in
 
     event_counter      = _felt_from_iter (it, scale=False)
     universe_idx       = _felt_from_iter (it, scale=False)
-    universe_adr       = _felt_from_iter (it, scale=False)
+    universe_adr       = _felt_from_iter (it, scale=False, signed=False)
     arr_player_adr_len = _felt_from_iter (it, scale=False)
     arr_player_adr     = [
-        _felt_from_iter (it, scale=False) for _ in range (arr_player_adr_len)
+        _felt_from_iter (it, scale=False, signed=False) for _ in range (arr_player_adr_len)
     ]
 
     return event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr
@@ -217,7 +217,7 @@ def decode_player_deploy_device_occurred_event (event: Event) -> Tuple [int, int
     # end
 
     event_counter = _felt_from_iter(it, scale=False)
-    owner       = _felt_from_iter (it, scale=False)
+    owner       = _felt_from_iter (it, scale=False, signed=False)
     device_id   = _felt_from_iter (it, scale=False, signed=False)
     device_type = _felt_from_iter (it, scale=False)
     grid        = Vec2.from_iter  (it, scale=False)
@@ -239,7 +239,7 @@ def decode_player_pickup_device_occurred_event (event: Event) -> Tuple [int, Vec
     # end
 
     event_counter = _felt_from_iter(it, scale=False)
-    owner = _felt_from_iter (it, scale=False)
+    owner = _felt_from_iter (it, scale=False, signed=False)
     grid  = Vec2.from_iter  (it, scale=False)
 
     return owner, grid
@@ -287,7 +287,7 @@ def decode_player_deploy_utx_occurred_event (event: Event) -> Tuple [int, int, i
     # end
 
     event_counter = _felt_from_iter(it, scale=False)
-    owner           = _felt_from_iter (it, scale=False)
+    owner           = _felt_from_iter (it, scale=False, signed=False)
     utx_label       = _felt_from_iter (it, scale=False, signed=False)
     utx_device_type = _felt_from_iter (it, scale=False)
     src_device_grid = Vec2.from_iter  (it, scale=False)
@@ -313,7 +313,7 @@ def decode_player_pickup_utx_occurred_event (event: Event) -> Tuple [int, Vec2]:
     # end
 
     event_counter = _felt_from_iter(it, scale=False)
-    owner = _felt_from_iter (it, scale=False)
+    owner = _felt_from_iter (it, scale=False, signed=False)
     grid  = Vec2.from_iter  (it, scale=False)
 
     return owner, grid
@@ -433,7 +433,7 @@ def decode_give_invitation_occurred_event (event: Event) -> Tuple [int, int]:
     # end
 
     event_counter = _felt_from_iter(it, scale=False)
-    account = _felt_from_iter(it, scale=False)
+    account = _felt_from_iter(it, scale=False, signed=False)
 
     return account
 
@@ -469,8 +469,8 @@ def decode_player_transfer_undeployed_device_occurred_event (event: Event) -> Tu
     #     ):
     # end
 
-    src_account   = _felt_from_iter (it, scale=False)
-    dst_account   = _felt_from_iter (it, scale=False)
+    src_account   = _felt_from_iter (it, scale=False, signed=False)
+    dst_account   = _felt_from_iter (it, scale=False, signed=False)
     device_type   = _felt_from_iter (it, scale=False)
     device_amount = _felt_from_iter (it, scale=False)
 
