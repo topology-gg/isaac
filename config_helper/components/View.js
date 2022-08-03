@@ -127,6 +127,11 @@ export default function View () {
                 setQueueInfo (`waiting for ${CIV_SIZE} more players before attempting dispatch`)
                 setJoinButtonText ('join queue')
             }
+            else if (queue_length == CIV_SIZE) {
+                setQueueInfo (`queue is full; ready for dispatch`)
+                setJoinButtonText ('queue full')
+                setJoinButtonColor ('#999999')
+            }
             else {
 
                 //
@@ -159,7 +164,7 @@ export default function View () {
                     const index = queue_accounts.indexOf (account_int_str)
                     console.log('index:',index)
                     const effective_queue_idx = db_lobby_queue.lobby_queue[index].queue_idx - head_idx
-                    setAccountQueueInfo (`account is in queue position ${effective_queue_idx}`)
+                    setAccountQueueInfo (`ALREADY IN QUEUE: account is at queue position ${effective_queue_idx}`)
                     setJoinButtonText ('already in queue')
                     setJoinButtonColor ('#999999')
                 }
@@ -172,11 +177,12 @@ export default function View () {
                         civ_accounts.push (balance.account)
                     }
                     if (civ_accounts.includes(account_int_str)) {
-                        setAccountQueueInfo ('account is in the civilization of the active universe #0')
+                        // setAccountQueueInfo ('account is in the civilization of the active universe #0')
+                        setAccountQueueInfo ('CANNOT QUEUE: account already in active universe #0')
                         setJoinButtonColor ('#999999')
                     }
                     else {
-                        setAccountQueueInfo ('account is not queue nor in the civilization of the active universe #0')
+                        setAccountQueueInfo ('CAN QUEUE')
                         setJoinButtonColor ('#333333')
                     }
 
