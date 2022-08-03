@@ -21,7 +21,7 @@ export default function GameStatsPlayers(props) {
 
     if (db_player_balances) {
 
-        console.log('GameStatsPlayers:', db_player_balances)
+        // console.log('GameStatsPlayers:', db_player_balances)
         const population = db_player_balances.player_balances.length
         for (var row_idx = 0; row_idx < population; row_idx ++){
             const account_str = toBN(db_player_balances.player_balances[row_idx]['account']).toString(16)
