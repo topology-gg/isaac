@@ -28,24 +28,24 @@ export default function GameStatsPlayers(props) {
             const account_str_abbrev = "0x" + account_str.slice(0,3) + "..." + account_str.slice(-4)
 
             var cell = []
-            cell.push (<td>{row_idx}</td>)
+            cell.push (<td key={`players-rowidx-${row_idx}`}>{row_idx}</td>)
 
             if (!account) {
-                cell.push (<td>{account_str_abbrev}</td>)
+                cell.push (<td key={'players-not-account'}>{account_str_abbrev}</td>)
             }
             else {
                 // check if signed-in account matches current row
                 const signed_in_account_str = toBN(account).toString(16)
                 // console.log (`account_str: ${account_str}; signed_in_account_str: ${signed_in_account_str}`)
                 if (account_str === signed_in_account_str) {
-                    cell.push (<td style={{color:'#00CCFF'}}>{account_str_abbrev}</td>)
+                    cell.push (<td key={'players-account-signedin'} style={{color:'#00CCFF'}}>{account_str_abbrev}</td>)
                 }
                 else {
-                    cell.push (<td>{account_str_abbrev}</td>)
+                    cell.push (<td key={'players-account-not-signedin'}>{account_str_abbrev}</td>)
                 }
             }
 
-            rows.push(<tr className="player_account">{cell}</tr>)
+            rows.push(<tr key={`players-row-${row_idx}`} className="player_account">{cell}</tr>)
         }
     }
 

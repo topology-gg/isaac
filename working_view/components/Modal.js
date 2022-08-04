@@ -91,18 +91,18 @@ export function Modal (props) {
                 const requirement = MANUFACTURING_REQUIREMENT [hoverDevice]
                 for (var key of Object.keys(balances)) {
                     var cell = []
-                    cell.push (<td style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0'}}>{key}</td>)
-                    cell.push (<td style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{balances[key]}</td>)
+                    cell.push (<td key={`manufacture-key-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0'}}>{key}</td>)
+                    cell.push (<td key={`manufacture-balance-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{balances[key]}</td>)
 
                     if (hoverDevice == '-') {
-                        cell.push (<td style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{'-'}</td>)
+                        cell.push (<td key={`dash-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{'-'}</td>)
                     }
                     else {
                         //
                         // use hoverDevice to pull in resource & energy requirement
                         //
                         const requirement_color = balances[key] >= requirement[key] ? '#333333' : '#C34723'
-                        cell.push (<td style={{
+                        cell.push (<td key={`manufacture-requirement-${key}`} style={{
                             height:CELL_HEIGHT,
                             textAlign:'left',
                             paddingLeft:'3em',
@@ -110,7 +110,7 @@ export function Modal (props) {
                         }}>{requirement[key]}</td>)
                     }
 
-                    tbody.push (<tr>{cell}</tr>)
+                    tbody.push (<tr key={key}>{cell}</tr>)
                 }
 
                 //
@@ -204,10 +204,10 @@ export function Modal (props) {
 
     var options_gated = []
     if (!props.account) {
-        options_gated.push (<p>no account signed in</p>)
+        options_gated.push (<p key='no-account-signed'>no account signed in</p>)
     }
     else if (!props.in_civ) {
-        options_gated.push (<p>account not in this civilization</p>)
+        options_gated.push (<p key='account-not-in-civ'>account not in this civilization</p>)
     }
     else {
         options_gated = options

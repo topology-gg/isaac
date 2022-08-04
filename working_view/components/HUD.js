@@ -9,9 +9,11 @@ class HUD extends Component {
         // Build information to be shown in popup window
         //
         var content = []
+        var i=0
         for (const line of this.props.lines) {
             if (line) {
-                content.push (<div>{line}</div>)
+                content.push (<div key={`hudLine${i}`}>{line}</div>)
+                i += 1
             }
         }
 

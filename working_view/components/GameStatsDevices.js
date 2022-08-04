@@ -64,12 +64,12 @@ export default function GameStatsDevices(props) {
         const index = indices [row_idx]
 
         const device_color = DEVICE_COLOR_MAP.get(index)
-        cell.push (<td><div style={{height:"1em",width:"1em",backgroundColor:device_color,margin:"auto"}}></div></td>)
-        cell.push (<td>{arr_types[index]}</td>)
-        cell.push (<td>{arr_footprints[index]}</td>)
-        cell.push (<td>{arr_values[index]}</td>)
+        cell.push (<td key={`devices-div-${row_idx}`}><div style={{height:"1em",width:"1em",backgroundColor:device_color,margin:"auto"}}></div></td>)
+        cell.push (<td key={`devices-cell-1-${row_idx}`}>{arr_types[index]}</td>)
+        cell.push (<td key={`devices-cell-2-${row_idx}`}>{arr_footprints[index]}</td>)
+        cell.push (<td key={`devices-cell-3-${row_idx}`}>{arr_values[index]}</td>)
 
-        rows.push(<tr>{cell}</tr>)
+        rows.push(<tr key={`devices-row-${row_idx}`}>{cell}</tr>)
     }
 
     //

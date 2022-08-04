@@ -20,7 +20,7 @@ export default function GameStatsCiv() {
     }
     else {
         if (db_macro_states.macro_states.length == 0) {
-            content.push (<p>{'** universe inactive **'}</p>)
+            content.push (<p key='stats-p-inactive'>{'** universe inactive **'}</p>)
         }
         else {
             // console.log ('got db_civ_state:', db_civ_state.civ_state[0])
@@ -30,10 +30,10 @@ export default function GameStatsCiv() {
             const population = db_player_balances.player_balances.length
             const ticks_since_birth = db_macro_states.macro_states.length - 1 // at age 0 a macro state event is emitted
 
-            content.push (<h5>Civilization</h5>)
-            content.push (<p>{line}</p>)
-            content.push (<p>Population: {population}</p>)
-            content.push (<p>Universe age: {ticks_since_birth} / 2520 ticks</p>)
+            content.push (<h5 key='stats-h5'>Civilization</h5>)
+            content.push (<p key='stats-p-1'>{line}</p>)
+            content.push (<p key='stats-p-2'>Population: {population}</p>)
+            content.push (<p key='stats-p-3'>Universe age: {ticks_since_birth} / 2520 ticks</p>)
         }
     }
 

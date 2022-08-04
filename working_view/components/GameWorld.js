@@ -950,9 +950,6 @@ export default function GameWorld() {
         _canvasRef.current.on('mouse:wheel', function(opt) {
 
             const MIN_ZOOM = 1
-            const COURSE_ZOOM = 2
-            const MEDIUM_ZOOM = 5
-            const FINEST_ZOOM = 10
             const MAX_ZOOM = 15
 
             const delta = opt.e.deltaY;
@@ -967,42 +964,21 @@ export default function GameWorld() {
             opt.e.preventDefault();
             opt.e.stopPropagation();
 
-            // if ( (new_zoom > COURSE_ZOOM) && (curr_zoom <= COURSE_ZOOM) ) { // going into COURSE_ZOOM
-            //     console.log (`zoom (${new_zoom}) > ${COURSE_ZOOM}`)
-            //     _courseGridLines.current.visible = true
-            //     // _courseGridLines.current.dirty = true
-            // }
-            // else if ( (new_zoom <= COURSE_ZOOM) && (curr_zoom > COURSE_ZOOM) ) { // leaving COURSE_ZOOM
-            //     console.log (`zoom (${new_zoom}) <= ${COURSE_ZOOM}`)
-            //     _courseGridLines.current.visible = false
-            //     // _courseGridLines.current.dirty = true
-            // }
-
-            // if ( (new_zoom > MEDIUM_ZOOM) && (curr_zoom <= MEDIUM_ZOOM) ) { // going into MEDIUM_ZOOM
-            //     console.log (`zoom (${new_zoom}) > ${MEDIUM_ZOOM}`)
-            //     _mediumGridLines.current.visible = true
-            //     // _mediumGridLines.current.dirty = true
-            // }
-            // else if ( (new_zoom <= MEDIUM_ZOOM) && (curr_zoom > MEDIUM_ZOOM) ) { // leaving MEDIUM_ZOOM
-            //     console.log (`zoom (${new_zoom}) <= ${MEDIUM_ZOOM}`)
-            //     _mediumGridLines.current.visible = false
-            //     // _mediumGridLines.current.dirty = true
-            // }
-
-            // if ( (new_zoom > FINEST_ZOOM) && (curr_zoom <= FINEST_ZOOM) ) { // going into FINEST_ZOOM
-            //     console.log (`zoom (${new_zoom}) > ${FINEST_ZOOM}`)
-            //     _finestGridLines.current.visible = true
-            //     // _finestGridLines.current.dirty = true
-            // }
-            // else if ( (new_zoom <= FINEST_ZOOM) && (curr_zoom > FINEST_ZOOM) ) { // leaving FINEST_ZOOM
-            //     console.log (`zoom (${new_zoom}) <= ${FINEST_ZOOM}`)
-            //     _finestGridLines.current.visible = false
-            //     // _finestGridLines.current.dirty = true
-            // }
-
-            // _courseGridLines.current.dirty = true
-            // _mediumGridLines.current.dirty = true
         })
+
+        // _canvasRef.current.on('object:over', function(evt) {
+        //     console.log ('object over')
+        //     var object = evt.target
+        //     if (isaac_class in object) {
+        //         console.log ('object:over a device!')
+        //     }
+        // })
+        // _canvasRef.current.on('object:out', function(evt) {
+        //     var object = evt.target
+        //     if (isaac_class in object) {
+        //         console.log ('object:out a device!')
+        //     }
+        // })
 
         _hasDrawnRef.current = false
 
@@ -1731,29 +1707,41 @@ export default function GameWorld() {
         // Draw devices
         //
         const device_rects = []
+        var base_grid_str_drawn = []
         for (const entry of db_deployed_devices.deployed_devices){
-            const x = entry.grid.x
-            const y = entry.grid.y
+
             const typ = parseInt (entry.type)
 
-            // const device_dim = DEVICE_DIM_MAP.get(typ)
-            const device_dim = 1 // backend register the device footprint over every single grid occupied
-            const device_color = DEVICE_COLOR_MAP.get(typ)
+            var base_grid
+            if ('base_grid' in entry) {
+                base_grid = entry.base_grid
+                const base_grid_str = `(${base_grid.x},${base_grid.y})`
+                if (base_grid_str_drawn.includes(base_grid_str)) { continue; }
+            }
+            else { // base_grid not a key => entry is a grid with deployed utx
+                base_grid = entry.grid
+            }
 
-            const stroke_width = 0
+            const device_dim = DEVICE_DIM_MAP.get(typ)
+            const device_color = DEVICE_COLOR_MAP.get(typ)
 
             const rect = new fabric.Rect({
                 height: device_dim*GRID,
                 width: device_dim*GRID,
-                left: PAD_X + x*GRID - stroke_width/2,
-                top:  PAD_Y + (SIDE*3-y-device_dim)*GRID - stroke_width/2,
+                left: PAD_X + base_grid.x*GRID,
+                top:  PAD_Y + (SIDE*3-base_grid.y-device_dim)*GRID,
                 fill: device_color,
                 selectable: false,
                 hoverCursor: 'pointer',
-                strokeWidth: stroke_width,
-                stroke: device_color
+                strokeWidth: 0,
+                stroke: device_color,
+                isaac_class: 'device'
             });
+            rect.on ('mouseover', function(evt){
+                console.log ('mouse over me!')
+            })
             device_rects.push (rect)
+            canvi.add (rect)
             // console.log (`>> Drawing device typ=${typ}, dim=${device_dim}, grid=(${x},${y})`)
         }
 
