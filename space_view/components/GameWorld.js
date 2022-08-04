@@ -683,7 +683,7 @@ export default function GameWorld() {
                         strokeWidth: 0.5,
                         fill: '#00000000',
                         selectable: false,
-                        // hoverCursor: "pointer"
+                        hoverCursor: "default"
                     });
                     canvi.add (ndpe_launch_circle)
                 }
@@ -774,7 +774,9 @@ export default function GameWorld() {
             top: sun0_img_top,
             scaleX: sun0_scale,
             scaleY: sun0_scale,
-            opacity: 1
+            opacity: 1,
+            selectable: false,
+            hoverCursor: "pointer"
         });
 
         const sun1_img_element = document.getElementById('sun1-img');
@@ -783,7 +785,9 @@ export default function GameWorld() {
             top: sun1_img_top,
             scaleX: sun1_scale,
             scaleY: sun1_scale,
-            opacity: 1
+            opacity: 1,
+            selectable: false,
+            hoverCursor: "pointer"
         });
 
         const sun2_img_element = document.getElementById('sun2-img');
@@ -792,7 +796,9 @@ export default function GameWorld() {
             top: sun2_img_top,
             scaleX: sun2_scale,
             scaleY: sun2_scale,
-            opacity: 1
+            opacity: 1,
+            selectable: false,
+            hoverCursor: "pointer"
         });
 
         canvi.add(sun0_img_instance);
@@ -813,7 +819,9 @@ export default function GameWorld() {
                 stroke: '#666666',
                 strokeWidth: 3,
                 strokeDashArray: [3, 3],
-                angle: phi_degree
+                angle: phi_degree,
+                selectable: false,
+                hoverCursor: "default"
             }
         );
 
@@ -827,7 +835,9 @@ export default function GameWorld() {
                 stroke: '#BBBBBB',
                 strokeWidth: 2,
                 strokeDashArray: [2, 2],
-                angle: phi_degree
+                angle: phi_degree,
+                selectable: false,
+                hoverCursor: "default"
             }
         );
 
@@ -881,67 +891,6 @@ export default function GameWorld() {
         canvi.add (axis_tri_y)
         canvi.add (tbox_axis_x)
         canvi.add (tbox_axis_y)
-    }
-
-    const drawGrid = canvi => {
-
-        //
-        // Grid lines parallel to Y-axis
-        //
-        for (var xi = 0; xi < SIDE; xi++){
-            canvi.add(new fabric.Line([
-                PAD + xi*GRID,
-                PAD + SIDE*GRID,
-                PAD + xi*GRID,
-                PAD + SIDE*GRID*2
-            ], { stroke: STROKE, selectable: false }));
-        }
-        for (var xi = SIDE; xi < SIDE*2+1; xi++){
-            canvi.add(new fabric.Line([
-                PAD + xi*GRID,
-                PAD + 0,
-                PAD + xi*GRID,
-                PAD + SIDE*GRID*3
-            ], { stroke: STROKE, selectable: false }));
-        }
-        for (var xi = 2*SIDE+1; xi < SIDE*4+1; xi++){
-            canvi.add(new fabric.Line([
-                PAD + xi*GRID,
-                PAD + SIDE*GRID,
-                PAD + xi*GRID,
-                PAD + SIDE*GRID*2
-            ], { stroke: STROKE, selectable: false }));
-        }
-
-        //
-        // Grid lines parallel to X-axis
-        //
-        for (var yi = 0; yi < SIDE; yi++){
-            canvi.add(new fabric.Line([
-                PAD + SIDE*GRID,
-                PAD + yi*GRID,
-                PAD + SIDE*GRID*2,
-                PAD + yi*GRID
-            ], { stroke: STROKE, selectable: false }));
-        }
-        for (var yi = SIDE; yi < 2*SIDE+1; yi++){
-            canvi.add(new fabric.Line([
-                PAD + 0,
-                PAD + yi*GRID,
-                PAD + SIDE*GRID*4,
-                PAD + yi*GRID
-            ], { stroke: STROKE, selectable: false }));
-        }
-        for (var yi = 2*SIDE+1; yi < 3*SIDE+1; yi++){
-            canvi.add(new fabric.Line([
-                PAD + SIDE*GRID,
-                PAD + yi*GRID,
-                PAD + SIDE*GRID*2,
-                PAD + yi*GRID
-            ], { stroke: STROKE, selectable: false }));
-        }
-
-        canvi.renderAll();
     }
 
     const info_style = {
