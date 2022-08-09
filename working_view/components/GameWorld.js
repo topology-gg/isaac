@@ -436,7 +436,7 @@ export default function GameWorld() {
             );
         }
 
-
+        var base_grid_str_drawn = []
         for (const entry of db_deployed_devices.deployed_devices){
             const x = entry.grid.x
             const y = entry.grid.y
@@ -468,16 +468,41 @@ export default function GameWorld() {
                 balances = {}
             }
 
-            // Use device dimension to insert entry into grid mapping (every device is a square)
+            var base_grid
+            if ('base_grid' in entry) {
+                // base_grid is a key => entry is a grid with deployed device of non-utx type
+                base_grid = entry.base_grid
+                const base_grid_str = `(${base_grid.x},${base_grid.y})`
+                if (base_grid_str_drawn.includes(base_grid_str)) {
+                    continue
+                }
+                base_grid_str_drawn.push (base_grid_str)
+            }
+            else {
+                // base_grid not a key => entry is a grid with deployed utx
+                base_grid = entry.grid
+            }
+
             for (const i=0; i<device_dim; i++) {
                 for (const j=0; j<device_dim; j++) {
-                    _gridMapping.current [`(${x+i},${y+j})`] = {
+                    _gridMapping.current [`(${base_grid.x+i},${base_grid.y+j})`] = {
                         'owner' : owner_hexstr_abbrev,
                         'type' : typ,
                         'balances' : balances
                     }
                 }
             }
+
+            // Use device dimension to insert entry into grid mapping (every device is a square)
+            // for (const i=0; i<device_dim; i++) {
+            //     for (const j=0; j<device_dim; j++) {
+            //         _gridMapping.current [`(${x+i},${y+j})`] = {
+            //             'owner' : owner_hexstr_abbrev,
+            //             'type' : typ,
+            //             'balances' : balances
+            //         }
+            //     }
+            // }
 
         }
 
@@ -1716,7 +1741,11 @@ export default function GameWorld() {
             if ('base_grid' in entry) {
                 base_grid = entry.base_grid
                 const base_grid_str = `(${base_grid.x},${base_grid.y})`
-                if (base_grid_str_drawn.includes(base_grid_str)) { continue; }
+                if (base_grid_str_drawn.includes(base_grid_str)) {
+                    continue
+                }
+                base_grid_str_drawn.push (base_grid_str)
+                console.log (`typ ${typ}, base_grid_str ${base_grid_str}`)
             }
             else { // base_grid not a key => entry is a grid with deployed utx
                 base_grid = entry.grid
