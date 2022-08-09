@@ -116,7 +116,7 @@ const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const FILL_CURSOR_GRID            = PALETTE === 'DARK' ? '#AAAAAA55' : '#AAAAAA55'
 const FILL_CURSOR_SELECTED_GRID   = PALETTE === 'DARK' ? '#DDDDDD55' : '#AAAAAA55'
-const HOVER_DEVICE_COLOR = PALETTE === 'DARK' ? '#67e8f9' : '#22d3ee'
+const HOVER_DEVICE_COLOR = PALETTE === 'DARK' ? '#a5f3fc' : '#22d3ee'
 
 //
 // Animation
@@ -862,7 +862,9 @@ export default function GameWorld() {
         hoverCursor: 'default',
         visible: true,
         stroke: HOVER_DEVICE_COLOR,
-        strokeWidth: STROKE_WIDTH_GRID_COURSE,
+        strokeLineJoin: 'round',
+        opacity: 0.5,
+        strokeWidth: 1,
     });
 
     //
@@ -1980,10 +1982,10 @@ export default function GameWorld() {
                 // Show device hover selection
                 const device = deviceFromGridCoord(mPosNorm.x, mPosNorm.y, db_deployed_devices.deployed_devices)
                 if (device) {
-                  _cursorHoverDeviceRectRef.current.left = PAD_X + device.device.base_grid.x * GRID
-                  _cursorHoverDeviceRectRef.current.top = PAD_Y + (SIDE * 3 - (device.device.base_grid.y + device.dimension)) * GRID
-                  _cursorHoverDeviceRectRef.current.width = GRID * device.dimension
-                  _cursorHoverDeviceRectRef.current.height = GRID * device.dimension
+                  _cursorHoverDeviceRectRef.current.left = PAD_X + device.device.base_grid.x * GRID - 1.5
+                  _cursorHoverDeviceRectRef.current.top = PAD_Y + (SIDE * 3 - (device.device.base_grid.y + device.dimension)) * GRID - 1.5
+                  _cursorHoverDeviceRectRef.current.width = GRID * device.dimension + 2
+                  _cursorHoverDeviceRectRef.current.height = GRID * device.dimension + 2
                   _cursorHoverDeviceRectRef.current.visible = true
                 } else {
                   _cursorHoverDeviceRectRef.current.visible = false
