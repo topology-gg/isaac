@@ -1,0 +1,19 @@
+const DEVICE_DIM_MAP = new Map();
+DEVICE_DIM_MAP.set(0, 1);
+DEVICE_DIM_MAP.set(1, 3);
+DEVICE_DIM_MAP.set(2, 1);
+DEVICE_DIM_MAP.set(3, 1);
+DEVICE_DIM_MAP.set(4, 1);
+DEVICE_DIM_MAP.set(5, 1);
+DEVICE_DIM_MAP.set(6, 1);
+DEVICE_DIM_MAP.set(7, 2);
+DEVICE_DIM_MAP.set(8, 2);
+DEVICE_DIM_MAP.set(9, 2);
+DEVICE_DIM_MAP.set(10, 2);
+DEVICE_DIM_MAP.set(11, 2);
+DEVICE_DIM_MAP.set(12, 1);
+DEVICE_DIM_MAP.set(13, 1);
+DEVICE_DIM_MAP.set(14, 5);
+DEVICE_DIM_MAP.set(15, 5);
+
+export default DEVICE_DIM_MAP;
