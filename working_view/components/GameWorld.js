@@ -319,8 +319,18 @@ export default function GameWorld() {
             // setHasLoadedDB (true)
             // console.log ('drawWorld()')
 
+            //
+            // reset references, states, and fabric canvas
+            //
             _currZoom.current = _canvasRef.current.getZoom();
             _canvasRef.current.remove(..._canvasRef.current.getObjects())
+            _utxAnimRectsRef.current = []
+            _utxAnimGridsRef.current = []
+            _utxAnimGridIndicesRef.current = []
+
+            //
+            // draw the world
+            //
             drawWorld (_canvasRef.current)
             setHudVisible (true)
         }
