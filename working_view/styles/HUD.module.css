@@ -4,8 +4,8 @@
     top: 0;
     left: 952px; /* 1122 - 150 */
     width: 170px;
-    height: 3em;
     padding-top: 0.5em;
+    padding-bottom: 0.5em;
 
     border-radius: 0px 0px 0px 20px;
     box-shadow: 0 10px 30px 0 rgba(127, 127, 127, 0.3);
