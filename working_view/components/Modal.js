@@ -75,7 +75,7 @@ export function Modal (props) {
             // construct option
             //
             var content1 = ''
-            var content2 = []
+            var content2 = ''
             if (grid_str in grid_mapping) {
                 const grid_info = grid_mapping [grid_str]
 
@@ -83,31 +83,40 @@ export function Modal (props) {
                 const typ   = DEVICE_TYPE_MAP [grid_info ['type']]
                 const balances = grid_info ['balances']
 
-                content1 += `Device type: ${typ}; `
-                content1 += `Owner: ${owner}`
+                content1 += `Device type: ${typ}\n`
+                content2 += `Owner: ${owner}`
 
                 const CELL_HEIGHT = '2em'
                 var tbody = []
                 const requirement = MANUFACTURING_REQUIREMENT [hoverDevice]
                 for (var key of Object.keys(balances)) {
+
+                    if (! ['SPG', 'NPG', 'UPSF', 'NDPE'].includes(typ)) { // only these types need to display energy balance
+                        if (key === 'energy') {
+                            continue;
+                        }
+                    }
+
                     var cell = []
                     cell.push (<td key={`manufacture-key-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0'}}>{key}</td>)
                     cell.push (<td key={`manufacture-balance-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{balances[key]}</td>)
 
-                    if (hoverDevice == '-') {
-                        cell.push (<td key={`dash-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{'-'}</td>)
-                    }
-                    else {
-                        //
-                        // use hoverDevice to pull in resource & energy requirement
-                        //
-                        const requirement_color = balances[key] >= requirement[key] ? '#333333' : '#C34723'
-                        cell.push (<td key={`manufacture-requirement-${key}`} style={{
-                            height:CELL_HEIGHT,
-                            textAlign:'left',
-                            paddingLeft:'3em',
-                            color:requirement_color
-                        }}>{requirement[key]}</td>)
+                    if (['UPSF'].includes(typ)) { // only UPSF needs to display manufacture requirement info
+                        if (hoverDevice == '-') {
+                            cell.push (<td key={`dash-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{'-'}</td>)
+                        }
+                        else {
+                            //
+                            // use hoverDevice to pull in resource & energy requirement
+                            //
+                            const requirement_color = balances[key] >= requirement[key] ? '#333333' : '#C34723'
+                            cell.push (<td key={`manufacture-requirement-${key}`} style={{
+                                height:CELL_HEIGHT,
+                                textAlign:'left',
+                                paddingLeft:'3em',
+                                color:requirement_color
+                            }}>{requirement[key]}</td>)
+                        }
                     }
 
                     tbody.push (<tr key={key}>{cell}</tr>)
@@ -181,6 +190,7 @@ export function Modal (props) {
                 <div>
                     <h3>Info</h3>
                     <p style={{fontSize:"0.9em"}}>{content1}</p>
+                    <p style={{fontSize:"0.9em"}}>{content2}</p>
                 </div>
 
             display_left_bottom =
