@@ -1,14 +1,14 @@
 .modal {
     z-index: 100;
     position: absolute;
-    top: 10%;
+    top: 7.5%;
     right: 25%;
-    bottom: 8.7%;
+    bottom: 7.5%;
     left: 11.1%;
     padding-top: 20px;
     padding-left: 40px;
     box-shadow: 0 10px 30px 0 rgba(127, 127, 127, 0.3);
-    background: rgba(200, 200, 200, 0.8);
+    background: rgba(200, 200, 200, 0.9);
     color: #333333;
 
     /* overflow-y: auto; */
