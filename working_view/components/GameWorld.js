@@ -35,6 +35,7 @@ import {
 import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 import DEVICE_DIM_MAP from './ConstantDeviceDimMap'
 import deviceFromGridCoord from '../lib/deviceFromGridCoord'
+import drawPendingDevices from "../lib/helpers/drawPendingDevices";
 
 //
 // Note: reading requirement (translated to Apibara integration design)
@@ -247,6 +248,8 @@ export default function GameWorld() {
     const _gridAssistRectsGroupRef = useRef();
     const _gridAssistRectsRef = useRef({});
 
+    const _pendingDevicesRef = useRef([]); // Devices pending deployment
+
     const _mouseStateRef = useRef('up'); // up => down => up
     const _selectStateRef = useRef('idle'); // idle => select => popup => idle
     const _selectedGridsRef = useRef([]);
@@ -283,6 +286,13 @@ export default function GameWorld() {
     const [hudLines, setHudLines] = useState([])
     const [hudVisible, setHudVisible] = useState (false)
 
+    const [pendingDevices, _setPendingDevices] = useState([])
+
+    const setPendingDevices = (setValueFn) => {
+        _pendingDevicesRef.current = setValueFn(_pendingDevicesRef.current)
+        _setPendingDevices(setValueFn)
+    }
+
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
 
     //
@@ -314,6 +324,9 @@ export default function GameWorld() {
             _utxAnimRectsRef.current = []
             _utxAnimGridsRef.current = []
             _utxAnimGridIndicesRef.current = []
+            // TODO: only clear the ones that were deployed successfully
+            // updatePendingDevices(db_deployed_devices)
+            clearPendingDevices()
 
             //
             // draw the world
@@ -1905,6 +1918,10 @@ export default function GameWorld() {
         }
     }
 
+    useEffect(() => {
+        drawPendingDevices(_canvasRef, _pendingDevicesRef)
+    }, [pendingDevices])
+
     function drawAssistObject (canvi, mPosNorm) {
 
         if (_cursorGridRectRef.current && _cursorFaceRectRef.current && _cursorHoverDeviceRectRef.current) {
@@ -2050,6 +2067,29 @@ export default function GameWorld() {
         }
     }
 
+    function handleDeployStarted ({x, y, typ, txid}) {
+        console.log(`handleDeployStarted() x: ${x}, y: ${y}, typ: ${typ}, txid: ${txid}`)
+        const device = {
+            x, y, type: typ,
+            dimension: DEVICE_DIM_MAP.get(typ),
+            color: DEVICE_COLOR_MAP.get(typ),
+            rectRef: React.createRef(),
+            txid
+        }
+        // Add the device to the list of pending devices
+        setPendingDevices ((pendingDevices) => {
+            if (pendingDevices.find(d => d.txid === txid)) {
+                console.warn('Cannot add device with the same txid')
+                return pendingDevices
+            }
+            return [...pendingDevices, device]
+        })
+    }
+
+    function clearPendingDevices () {
+        setPendingDevices((_prev) => [])
+    }
+
     //
     // Return component
     // Reference:
@@ -2072,6 +2112,7 @@ export default function GameWorld() {
                 account = {account}
                 in_civ = {accountInCiv}
                 device_balance = {accountDeviceBalance}
+                onDeployStarted = {handleDeployStarted}
             />
 
             <HUD lines={hudLines} universeActive={universeActive}/>

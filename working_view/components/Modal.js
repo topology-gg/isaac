@@ -178,7 +178,13 @@ export function Modal (props) {
                     // console.log (`device type ${i} have_nonzero_balance=${have_nonzero_balance}`)
 
                     options.push (
-                        <DeployDeviceInterface typ={i} grid_x={grid.x} grid_y={grid.y} have_nonzero_balance={have_nonzero_balance}/>
+                        <DeployDeviceInterface
+                            typ={i}
+                            grid_x={grid.x}
+                            grid_y={grid.y}
+                            have_nonzero_balance={have_nonzero_balance}
+                            onDeployStarted={props.onDeployStarted}
+                        />
                     )
                 }
             }
