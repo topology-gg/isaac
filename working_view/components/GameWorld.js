@@ -324,9 +324,7 @@ export default function GameWorld() {
             _utxAnimRectsRef.current = []
             _utxAnimGridsRef.current = []
             _utxAnimGridIndicesRef.current = []
-            // TODO: only clear the ones that were deployed successfully
-            // updatePendingDevices(db_deployed_devices)
-            clearPendingDevices()
+            updatePendingDevices(db_deployed_devices)
 
             //
             // draw the world
@@ -2086,8 +2084,15 @@ export default function GameWorld() {
         })
     }
 
-    function clearPendingDevices () {
-        setPendingDevices((_prev) => [])
+    function updatePendingDevices (db_deployed_devices) {
+        setPendingDevices((prev) => {
+            // Only keep pending devices that are not deployed
+            return prev.filter((d) =>
+                !db_deployed_devices.deployed_devices.find(
+                    (dd) => parseInt(dd.type) === d.type && dd.grid.x === d.x && dd.grid.y === d.y
+                )
+            )
+        })
     }
 
     //
