@@ -860,7 +860,7 @@ export default function GameWorld() {
         fill: '',
         selectable: false,
         hoverCursor: 'default',
-        visible: true,
+        visible: false,
         stroke: HOVER_DEVICE_COLOR,
         strokeWidth: STROKE_WIDTH_GRID_COURSE,
     });
