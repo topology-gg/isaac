@@ -98,12 +98,11 @@ const PERLIN_VALUES = {
 //
 const STROKE_WIDTH_CURSOR_FACE = 1.0
 const STROKE_WIDTH_AXIS = 0.4
-
 const STROKE_WIDTH_GRID_COURSE = 0.2
 const STROKE_WIDTH_GRID_MEDIUM = 0.1
 const STROKE_WIDTH_GRID_FINEST = 0.02
-
 const STROKE_WIDTH_GRID_FACE = 0.4
+const HOVER_DEVICE_STROKE_WIDTH = 1.4
 
 //
 // Styles
@@ -116,7 +115,8 @@ const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const FILL_CURSOR_GRID            = PALETTE === 'DARK' ? '#AAAAAA55' : '#AAAAAA55'
 const FILL_CURSOR_SELECTED_GRID   = PALETTE === 'DARK' ? '#DDDDDD55' : '#AAAAAA55'
-const HOVER_DEVICE_COLOR = PALETTE === 'DARK' ? '#a5f3fc' : '#22d3ee'
+// const HOVER_DEVICE_COLOR = PALETTE === 'DARK' ? '#a5f3fc' : '#22d3ee'
+const HOVER_DEVICE_COLOR = PALETTE === 'DARK' ? '#FFFFFF' : '#22d3ee'
 
 //
 // Animation
@@ -864,7 +864,7 @@ export default function GameWorld() {
         stroke: HOVER_DEVICE_COLOR,
         strokeLineJoin: 'round',
         opacity: 0.5,
-        strokeWidth: 1,
+        strokeWidth: HOVER_DEVICE_STROKE_WIDTH,
     });
 
     //
@@ -1970,7 +1970,6 @@ export default function GameWorld() {
                 _cursorGridRectRef.current.visible = true
 
 
-
                 //
                 // Show face assist square
                 //
@@ -1980,19 +1979,19 @@ export default function GameWorld() {
                 // console.log (`draw face assist square, face: ${face}`)
 
                 // Show device hover selection
-                const device = deviceFromGridCoord(mPosNorm.x, mPosNorm.y, db_deployed_devices.deployed_devices)
+                const device = deviceFromGridCoord (mPosNorm.x, mPosNorm.y, db_deployed_devices.deployed_devices)
                 if (device) {
-                  _cursorHoverDeviceRectRef.current.left = PAD_X + device.device.base_grid.x * GRID - 1.5
-                  _cursorHoverDeviceRectRef.current.top = PAD_Y + (SIDE * 3 - (device.device.base_grid.y + device.dimension)) * GRID - 1.5
-                  _cursorHoverDeviceRectRef.current.width = GRID * device.dimension + 2
-                  _cursorHoverDeviceRectRef.current.height = GRID * device.dimension + 2
-                  _cursorHoverDeviceRectRef.current.visible = true
+                    _cursorHoverDeviceRectRef.current.left    = PAD_X + device.device.base_grid.x * GRID - HOVER_DEVICE_STROKE_WIDTH
+                    _cursorHoverDeviceRectRef.current.top     = PAD_Y + (SIDE * 3 - (device.device.base_grid.y + device.dimension)) * GRID - HOVER_DEVICE_STROKE_WIDTH
+                    _cursorHoverDeviceRectRef.current.width   = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH
+                    _cursorHoverDeviceRectRef.current.height  = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH
+                    _cursorHoverDeviceRectRef.current.visible = true
                 } else {
-                  _cursorHoverDeviceRectRef.current.visible = false
+                    _cursorHoverDeviceRectRef.current.visible = false
                 }
             }
-            _cursorGridRectRef.current.dirty = true
-            _cursorFaceRectRef.current.dirty = true
+            _cursorGridRectRef.current.dirty        = true
+            _cursorFaceRectRef.current.dirty        = true
             _cursorHoverDeviceRectRef.current.dirty = true
 
             canvi.renderAll();
