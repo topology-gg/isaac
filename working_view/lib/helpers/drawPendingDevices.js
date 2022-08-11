@@ -1,4 +1,5 @@
 import { GRID, PAD_X, PAD_Y, SIDE } from "../constants/gameWorld";
+import animateGlow from "./animateGlow";
 
 export default function drawPendingDevices(canvasRef, pendingDevicesRef) {
     console.log("drawPendingDevices");
@@ -36,6 +37,8 @@ export default function drawPendingDevices(canvasRef, pendingDevicesRef) {
             });
             setRectProps(device, deviceRect);
             canvi.add(deviceRect);
+            animateGlow(canvi, deviceRect);
+
             device.rectRef.current = deviceRect;
         }
     })
