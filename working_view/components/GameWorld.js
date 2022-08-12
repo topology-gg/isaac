@@ -2066,10 +2066,11 @@ export default function GameWorld() {
         }
     }
 
-    function handleDeployStarted ({x, y, typ, txid}) {
+    function handleDeployStarted ({x, y, utxGrids, typ, txid}) {
         console.log(`handleDeployStarted() x: ${x}, y: ${y}, typ: ${typ}, txid: ${txid}`)
         const device = {
             x, y, type: typ,
+            utxGrids,
             dimension: DEVICE_DIM_MAP.get(typ),
             color: DEVICE_COLOR_MAP.get(typ),
             rectRef: React.createRef(),

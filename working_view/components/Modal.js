@@ -56,8 +56,8 @@ export function Modal (props) {
                 grids += `(${grid.x},${grid.y})`
             }
 
-            options.push (<DeployUtxInterface grids={info['grids']} type={12}/>)
-            options.push (<DeployUtxInterface grids={info['grids']} type={13}/>)
+            options.push (<DeployUtxInterface grids={info['grids']} type={12} onDeployStarted={props.onDeployStarted} />)
+            options.push (<DeployUtxInterface grids={info['grids']} type={13} onDeployStarted={props.onDeployStarted} />)
         }
 
         //

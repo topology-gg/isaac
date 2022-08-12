@@ -1,6 +1,17 @@
 import { GRID, PAD_X, PAD_Y, SIDE } from "../constants/gameWorld";
 import animateGlow from "./animateGlow";
 
+const newDeviceRect = () => {
+    return new fabric.Rect({
+        stroke: '',
+        strokeWidth: 0,
+        opacity: 0.5,
+        selectable: false,
+        hoverCursor: 'default',
+        visible: true
+    })
+}
+
 export default function drawPendingDevices(canvasRef, pendingDevicesRef) {
     console.log("drawPendingDevices");
     const canvi = canvasRef.current;
@@ -20,27 +31,21 @@ export default function drawPendingDevices(canvasRef, pendingDevicesRef) {
     }
 
     pendingDevices.forEach(device => {
-        // console.log("drawPendingDevices, device:", device);
-        // if (device.rectRef.current) {
-        //     console.log("already in canvas");
-        //     // The device is already in canvas, so we don't need to initialize it again
-        //     setRectProps(device, device.rectRef.current);
-        // } else {
         console.log("draw pending device indicator to canvas");
-        const deviceRect = new fabric.Rect({
-            stroke: '',
-            strokeWidth: 0,
-            opacity: 0.5,
-            selectable: false,
-            hoverCursor: 'default',
-            visible: true
-        });
-        setRectProps(device, deviceRect);
-        canvi.add(deviceRect);
-        animateGlow(canvi, deviceRect);
-
-        device.rectRef.current = deviceRect;
-        // }
+        if (device.utxGrids) {
+            device.utxGrids.forEach(grid => {
+                const rect = newDeviceRect();
+                setRectProps({x: grid.x, y: grid.y, dimension: 1, color: device.color}, rect);
+                canvi.add(rect);
+                animateGlow(canvi, rect);
+            })
+        } else {
+            const deviceRect = newDeviceRect();
+            setRectProps(device, deviceRect);
+            canvi.add(deviceRect);
+            animateGlow(canvi, deviceRect);
+            device.rectRef.current = deviceRect;
+        }
     })
 
     canvi.renderAll();
