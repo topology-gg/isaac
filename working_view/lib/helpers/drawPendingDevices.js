@@ -20,27 +20,27 @@ export default function drawPendingDevices(canvasRef, pendingDevicesRef) {
     }
 
     pendingDevices.forEach(device => {
-        console.log("drawPendingDevices, device:", device);
-        if (device.rectRef.current) {
-            console.log("already in canvas");
-            // The device is already in canvas, so we don't need to initialize it again
-            setRectProps(device, device.rectRef.current);
-        } else {
-            console.log("adding to canvas");
-            const deviceRect = new fabric.Rect({
-                stroke: '',
-                strokeWidth: 0,
-                opacity: 0.5,
-                selectable: false,
-                hoverCursor: 'default',
-                visible: true
-            });
-            setRectProps(device, deviceRect);
-            canvi.add(deviceRect);
-            animateGlow(canvi, deviceRect);
+        // console.log("drawPendingDevices, device:", device);
+        // if (device.rectRef.current) {
+        //     console.log("already in canvas");
+        //     // The device is already in canvas, so we don't need to initialize it again
+        //     setRectProps(device, device.rectRef.current);
+        // } else {
+        console.log("draw pending device indicator to canvas");
+        const deviceRect = new fabric.Rect({
+            stroke: '',
+            strokeWidth: 0,
+            opacity: 0.5,
+            selectable: false,
+            hoverCursor: 'default',
+            visible: true
+        });
+        setRectProps(device, deviceRect);
+        canvi.add(deviceRect);
+        animateGlow(canvi, deviceRect);
 
-            device.rectRef.current = deviceRect;
-        }
+        device.rectRef.current = deviceRect;
+        // }
     })
 
     canvi.renderAll();

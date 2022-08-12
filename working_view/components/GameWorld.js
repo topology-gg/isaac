@@ -1109,6 +1109,7 @@ export default function GameWorld() {
                 'Face - / Grid (-,-)',
                 'Display: devices'
             ])
+            drawPendingDevices(canvi, _pendingDevicesRef)
 
             _hasDrawnRef.current = true
             setHasDrawnState (1)
