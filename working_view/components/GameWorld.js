@@ -663,7 +663,7 @@ export default function GameWorld() {
             x: 0,
             y: 0
         });
-        _canvasRef.current.renderAll ()
+        _canvasRef.current.requestRenderAll ()
     }
 
 
@@ -1083,7 +1083,7 @@ export default function GameWorld() {
         _gridAssistRectsGroupRef.current = group
         canvi.add (group)
 
-        // canvi.renderAll();
+        // canvi.requestRenderAll();
     }
 
     const drawWorld = canvi => {
@@ -1119,7 +1119,7 @@ export default function GameWorld() {
             document.getElementById('canvas_wrap').focus();
         }
 
-        canvi.renderAll ()
+        canvi.requestRenderAll ()
         // }
     }
 
@@ -1222,7 +1222,7 @@ export default function GameWorld() {
 
                 // console.log (`ANIMATE: new grid (${x}, ${y})`)
             }
-            _canvasRef.current.renderAll ();
+            _canvasRef.current.requestRenderAll ();
 
         }, ANIM_UPDATE_INTERVAL_MS);
 
@@ -1606,7 +1606,7 @@ export default function GameWorld() {
         canvi.add (displayModeText)
         _displayModeTextRef.current = displayModeText
 
-        // canvi.renderAll();
+        // canvi.requestRenderAll();
     }
 
     // const updateMode = (canvi, mode) => {
@@ -1614,7 +1614,7 @@ export default function GameWorld() {
     //     _displayModeTextRef.current.text = 'Display: ' + mode
     //     _displayModeTextRef.current.dirty = true
 
-    //     canvi.renderAll();
+    //     canvi.requestRenderAll();
     // }
 
     const drawAssist = canvi => {
@@ -1633,7 +1633,7 @@ export default function GameWorld() {
         canvi.add (cursorHoverDeviceRect)
         _cursorHoverDeviceRectRef.current = cursorHoverDeviceRect
 
-        canvi.renderAll();
+        canvi.requestRenderAll();
     }
 
     function lerp (start, end, ratio){
@@ -1743,7 +1743,7 @@ export default function GameWorld() {
         // canvi.add(perlin_rects_group)
         // _elementDisplayRef.current = perlin_rects_group
 
-        // canvi.renderAll();
+        // canvi.requestRenderAll();
     }
 
     const drawDevices = canvi => {
@@ -1810,7 +1810,7 @@ export default function GameWorld() {
         canvi.add(device_rect_face0_group)
         _deviceDisplayRef.current = device_rect_face0_group
 
-        // canvi.renderAll();
+        // canvi.requestRenderAll();
     }
 
     //
@@ -2010,7 +2010,7 @@ export default function GameWorld() {
             _cursorFaceRectRef.current.dirty        = true
             _cursorHoverDeviceRectRef.current.dirty = true
 
-            canvi.renderAll();
+            canvi.requestRenderAll();
         }
     }
 
@@ -2030,7 +2030,7 @@ export default function GameWorld() {
             }
             _gridAssistRectsGroupRef.current.dirty = true
 
-            canvi.renderAll();
+            canvi.requestRenderAll();
         }
     }
 

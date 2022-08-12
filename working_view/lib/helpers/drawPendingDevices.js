@@ -49,5 +49,5 @@ export default function drawPendingDevices(canvasRef, pendingDevicesRef) {
         }
     })
 
-    canvi.renderAll();
+    canvi.requestRenderAll();
 }
