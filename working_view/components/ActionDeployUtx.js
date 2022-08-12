@@ -55,9 +55,9 @@ export function DeployUtxInterface (props) {
     */
     useEffect(() => {
         if (data) {
-            onDeployStarted({ x: src_grid.x, y: src_grid.y, utxGrids: utx_grids, typ: utx_type, txid: data })
+            onDeployStarted({ x: utx_grids[0].x, y: utx_grids[0].y, utxGrids: utx_grids, typ: utx_type, txid: data })
         }
-    } , [src_grid, utx_grids, utx_type, data])
+    } , [utx_grids, utx_type, data])
 
     const link_to_voyager = `https://goerli.voyager.online/tx/${data}`
 

@@ -37,7 +37,8 @@ export default function drawPendingDevices(canvasRef, pendingDevicesRef) {
                 const rect = newDeviceRect();
                 setRectProps({x: grid.x, y: grid.y, dimension: 1, color: device.color}, rect);
                 canvi.add(rect);
-                animateGlow(canvi, rect);
+                // Don't add glow yet on UTX for performance reasons
+                // animateGlow(canvi, rect);
             })
         } else {
             const deviceRect = newDeviceRect();
