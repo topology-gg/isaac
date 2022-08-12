@@ -1153,6 +1153,7 @@ export default function GameWorld() {
                 left: PAD_X + utx_set.grids[0].x*GRID,
                 top:  PAD_Y + (SIDE*3 - utx_set.grids[0].y - 1)*GRID,
                 fill: color,
+                opacity: 0.13,
                 selectable: false,
                 hoverCursor: 'default',
                 strokeWidth: 0
@@ -1160,10 +1161,11 @@ export default function GameWorld() {
             _utxAnimRectsRef.current.push (rect)
 
             //
-            // For each utx set, set the grids along its animation path;
+            // For each utx set, set the grids along its animation path, with first grid as redundant for full transparent rect (enable flashing effect for single-utx)
             // set animation index to 0
             //
-            _utxAnimGridsRef.current.push (utx_set.grids)
+            const grids = [ utx_set.grids[0] ].concat (utx_set.grids)
+            _utxAnimGridsRef.current.push (grids)
             _utxAnimGridIndicesRef.current.push (0)
 
             canvi.add (rect)
@@ -1207,6 +1209,16 @@ export default function GameWorld() {
                 //
                 const y = _utxAnimGridsRef.current[i][anim_idx].y
                 _utxAnimRectsRef.current[i].top = PAD_Y + (SIDE*3 - y - 1)*GRID
+
+                //
+                // animate opacity - make transparent at i=0
+                //
+                if (anim_idx==0) {
+                    _utxAnimRectsRef.current[i].opacity = 0
+                }
+                else {
+                    _utxAnimRectsRef.current[i].opacity = 0.13
+                }
 
                 // console.log (`ANIMATE: new grid (${x}, ${y})`)
             }
