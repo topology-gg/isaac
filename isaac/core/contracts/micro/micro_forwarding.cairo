@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash_chain import hash_chain
-from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le)
+from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le, unsigned_div_rem)
 from starkware.cairo.common.math_cmp import (is_le, is_nn_le, is_not_zero)
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
@@ -468,19 +468,22 @@ namespace ns_micro_forwarding:
             if bool_src_harvester == 1:
                 #
                 # Determine quantity to be sent from source
+                # distributed across number of connected utb paths
                 #
                 let (element_type_) = harvester_device_type_to_element_type (src_type)
                 assert element_type = element_type_
                 let (src_balance) = ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_read (emap_entry.src_device_id)
+                let (utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTB, emap_entry.src_device_id)
+                let (src_balance_divided, _) =  unsigned_div_rem (src_balance, utb_tether_count)
                 let (quantity_should_send) = ns_logistics_utb.utb_quantity_should_send_per_tick (
-                    src_balance
+                    src_balance_divided
                 )
 
                 #
                 # Determine quantity to be received at destination
                 #
                 let (quantity_should_receive) = ns_logistics_utb.utb_quantity_should_receive_per_tick (
-                    src_balance,
+                    quantity_should_send,
                     utb_set_length
                 )
                 assert quantity_received = quantity_should_receive
@@ -516,15 +519,17 @@ namespace ns_micro_forwarding:
                 assert element_type = element_type_
                 let (src_balances) = ns_micro_state_functions.transformers_deployed_id_to_resource_balances_read (emap_entry.src_device_id)
                 let src_balance = src_balances.balance_resource_after_transform
+                let (utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTB, emap_entry.src_device_id)
+                let (src_balance_divided, _) =  unsigned_div_rem (src_balance, utb_tether_count)
                 let (quantity_should_send) = ns_logistics_utb.utb_quantity_should_send_per_tick (
-                    src_balance
+                    src_balance_divided
                 )
 
                 #
                 # Determine quantity to be received at destination
                 #
                 let (quantity_should_receive) = ns_logistics_utb.utb_quantity_should_receive_per_tick (
-                    src_balance,
+                    quantity_should_send,
                     utb_set_length
                 )
                 assert quantity_received = quantity_should_receive
@@ -687,20 +692,23 @@ namespace ns_micro_forwarding:
             #
             # Determine energy should send and energy should receive
             #
+            let (utl_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTL, src_device_id)
+            let (src_device_energy_divided, _) = unsigned_div_rem (src_device_energy, utl_tether_count)
             let (energy_should_send) = ns_logistics_utl.utl_energy_should_send_per_tick (
-                src_device_energy
+                src_device_energy_divided
             )
             let (energy_should_receive) = ns_logistics_utl.utl_energy_should_receive_per_tick (
-                src_device_energy,
+                energy_should_send,
                 utl_set_length
             )
+            let new_src_energy_balance = src_device_energy - energy_should_send
 
             #
             # Effect energy update at source
             #
             ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
                 src_device_id,
-                src_device_energy - energy_should_send
+                new_src_energy_balance
             )
 
             let (event_counter) = ns_universe_state_functions.event_counter_read ()
@@ -708,7 +716,7 @@ namespace ns_micro_forwarding:
             energy_update_at_device_occurred.emit (
                 event_counter = event_counter,
                 device_id = src_device_id,
-                new_quantity = src_device_energy - energy_should_send
+                new_quantity = new_src_energy_balance
             )
 
             #

@@ -17,7 +17,7 @@ const UNIVERSE_MAX_AGE_IN_TICKS = 2520 # ~7 days, given 2 blocks (4 minutes) per
 #
 # Capacity control - size of civilization per universe, and number of universes deployed
 #
-const CIV_SIZE = 14
+const CIV_SIZE = 5
 const UNIVERSE_COUNT = 1
 
 #
@@ -110,9 +110,8 @@ end
 #
 # Constants for planet configuration
 #
-const PLANET_DIM = 40
+const PLANET_DIM = 80
 const SCALE_FP_DIV_PLANET_DIM = SCALE_FP / PLANET_DIM
-# TODO: params to control resource distribution via e.g. perlin noise
 
 #
 # Constants for solar power generation parametrization
