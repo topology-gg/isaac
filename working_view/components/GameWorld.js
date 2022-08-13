@@ -36,6 +36,7 @@ import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 import DEVICE_DIM_MAP from './ConstantDeviceDimMap'
 import deviceFromGridCoord from '../lib/deviceFromGridCoord'
 import drawPendingDevices from "../lib/helpers/drawPendingDevices";
+import drawPendingPickups from "../lib/helpers/drawPendingPickups";
 
 //
 // Note: reading requirement (translated to Apibara integration design)
@@ -241,6 +242,7 @@ export default function GameWorld() {
     const _displayModeTextRef = useRef('');
 
     const _deviceDisplayRef = useRef();
+    const _deviceRectsRef = useRef({});
     const _elementDisplayRef = useRef();
     const _elementDisplayRectsRef = useRef({});
     const _perlinColorsPerElementRef = useRef({});
@@ -249,6 +251,7 @@ export default function GameWorld() {
     const _gridAssistRectsRef = useRef({});
 
     const _pendingDevicesRef = useRef([]); // Devices pending deployment
+    const _pendingPickupsRef = useRef([]); // Devices pending pickup
 
     const _mouseStateRef = useRef('up'); // up => down => up
     const _selectStateRef = useRef('idle'); // idle => select => popup => idle
@@ -287,10 +290,16 @@ export default function GameWorld() {
     const [hudVisible, setHudVisible] = useState (false)
 
     const [pendingDevices, _setPendingDevices] = useState([])
+    const [pendingPickups, _setPendingPickups] = useState([])
 
     const setPendingDevices = (setValueFn) => {
         _pendingDevicesRef.current = setValueFn(_pendingDevicesRef.current)
         _setPendingDevices(setValueFn)
+    }
+
+    const setPendingPickups = (setValueFn) => {
+        _pendingPickupsRef.current = setValueFn(_pendingPickupsRef.current)
+        _setPendingPickups(setValueFn)
     }
 
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
@@ -495,6 +504,7 @@ export default function GameWorld() {
                 for (const j=0; j<device_dim; j++) {
                     _gridMapping.current [`(${base_grid.x+i},${base_grid.y+j})`] = {
                         'owner' : owner_hexstr_abbrev,
+                        'id' : id,
                         'type' : typ,
                         'balances' : balances
                     }
@@ -1088,6 +1098,8 @@ export default function GameWorld() {
 
     const drawWorld = canvi => {
 
+        console.log(`drawWorld. Canvi present: ${!!canvi}`)
+
         // if (hasLoadedDB) {
 
         if (db_macro_states.macro_states.length == 0) {
@@ -1109,7 +1121,8 @@ export default function GameWorld() {
                 'Face - / Grid (-,-)',
                 'Display: devices'
             ])
-            drawPendingDevices(canvi, _pendingDevicesRef)
+            drawPendingDevices({ current: canvi }, _pendingDevicesRef)
+            drawPendingPickups({ current: canvi }, _pendingPickupsRef, _deviceRectsRef)
 
             _hasDrawnRef.current = true
             setHasDrawnState (1)
@@ -1760,6 +1773,7 @@ export default function GameWorld() {
         //
         const device_rects = []
         var base_grid_str_drawn = []
+        _deviceRectsRef.current = {}
         for (const entry of db_deployed_devices.deployed_devices){
 
             const typ = parseInt (entry.type)
@@ -1796,6 +1810,7 @@ export default function GameWorld() {
             rect.on ('mouseover', function(evt){
                 console.log ('mouse over me!')
             })
+            _deviceRectsRef.current[entry.id] = rect
             device_rects.push (rect)
             canvi.add (rect)
             // console.log (`>> Drawing device typ=${typ}, dim=${device_dim}, grid=(${x},${y})`)
@@ -1920,6 +1935,10 @@ export default function GameWorld() {
     useEffect(() => {
         drawPendingDevices(_canvasRef, _pendingDevicesRef)
     }, [pendingDevices])
+
+    useEffect(() => {
+        drawPendingPickups(_canvasRef, _pendingPickupsRef, _deviceRectsRef)
+    }, [pendingPickups])
 
     function drawAssistObject (canvi, mPosNorm) {
 
@@ -2097,6 +2116,25 @@ export default function GameWorld() {
         })
     }
 
+    function handlePendingPickup({id, txid}) {
+        console.log(`handlePendingPickup() id: ${id}, txid: ${txid}`)
+
+        // Add the device to the list of pending pickups
+        setPendingPickups ((prev) => {
+            if (prev.find(d => d.txid === txid)) {
+                console.log('Cannot pickup device with the same txid')
+                return prev;
+            }
+            return [
+                ...prev,
+                {
+                    id,
+                    txid,
+                }
+            ]
+        })
+    }
+
     //
     // Return component
     // Reference:
@@ -2120,6 +2158,7 @@ export default function GameWorld() {
                 in_civ = {accountInCiv}
                 device_balance = {accountDeviceBalance}
                 onDeployStarted = {handleDeployStarted}
+                onPendingPickup = {handlePendingPickup}
             />
 
             <HUD lines={hudLines} universeActive={universeActive}/>

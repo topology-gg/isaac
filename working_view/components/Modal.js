@@ -33,6 +33,8 @@ export function Modal (props) {
 
     const [hoverDevice, setHoverDevice] = useState ('-')
 
+    if (!props.show) return;
+
     var thead = [
         <th key='resource' style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
         <th key='balance' style={{textAlign:'left',paddingLeft:'3em'}}>Balance</th>
@@ -82,6 +84,7 @@ export function Modal (props) {
                 const owner = grid_info ['owner']
                 const typ   = DEVICE_TYPE_MAP [grid_info ['type']]
                 const balances = grid_info ['balances']
+                const id = grid_info ['id']
 
                 content1 += `Device type: ${typ}\n`
                 content2 += `Owner: ${owner}`
@@ -128,10 +131,10 @@ export function Modal (props) {
 
                 if (['UTB', 'UTL'].includes(typ)) {
                     bool_display_left_bottom = false
-                    options.push (<PickupUtxInterface grid_x={grid.x} grid_y={grid.y} typ={typ}/>)
+                    options.push (<PickupUtxInterface grid_x={grid.x} grid_y={grid.y} typ={typ} onPendingPickup={props.onPendingPickup} />)
                 }
                 else {
-                    options.push (<PickupDeviceInterface grid_x={grid.x} grid_y={grid.y} typ={typ}/>)
+                    options.push (<PickupDeviceInterface id={id} grid_x={grid.x} grid_y={grid.y} typ={typ} onPendingPickup={props.onPendingPickup} />)
                 }
 
                 if (['UPSF'].includes(typ)) {
