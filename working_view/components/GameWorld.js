@@ -334,6 +334,7 @@ export default function GameWorld() {
             _utxAnimGridsRef.current = []
             _utxAnimGridIndicesRef.current = []
             updatePendingDevices(db_deployed_devices)
+            updatePendingPickups(db_deployed_devices)
 
             //
             // draw the world
@@ -2133,6 +2134,18 @@ export default function GameWorld() {
                 }
             ]
         })
+    }
+
+    function updatePendingPickups (db_deployed_devices) {
+        setPendingPickups((prev) => {
+            // Only keep pending pickups that still deployed
+            return prev.filter((d) =>
+                db_deployed_devices.deployed_devices.find(
+                    (dd) => d.id === dd.id
+                )
+            )
+        }
+        )
     }
 
     //
