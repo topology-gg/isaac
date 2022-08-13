@@ -168,10 +168,18 @@ namespace ns_micro_devices:
         is_valid_grid (grid)
 
         let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
-        assert grid_stat.populated = 0
 
-        let (face, _, _, _) = locate_face_and_edge_given_valid_grid (grid)
-        assert face = face_tgt
+        local gx = grid.x
+        local gy = grid.y
+        with_attr error_message ("grid ({gx},{gy}) already populated"):
+            assert grid_stat.populated = 0
+        end
+
+        let (local face, _, _, _) = locate_face_and_edge_given_valid_grid (grid)
+        local ftgt = face_tgt
+        with_attr error_message ("device straddling across face {ftgt} and face {face} which is illegal"):
+            assert face = face_tgt
+        end
 
         return ()
     end

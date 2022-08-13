@@ -270,18 +270,18 @@ namespace ns_logistics_utb:
     end
 
     func utb_quantity_should_receive_per_tick {range_check_ptr} (
-            quantity_source : felt,
+            quantity_should_send : felt,
             length : felt
         ) -> (
             quantity_should_receive : felt
         ):
         alloc_locals
 
-        let (local f) = utb_quantity_should_send_per_tick (quantity_source)
-        let (local g) = utb_set_length_to_decay_factor (length)
+        # let (local f) = utb_quantity_should_send_per_tick (quantity_source)
+        let (local decay_factor) = utb_set_length_to_decay_factor (length)
         local denominator = ns_decay_function.UTB_DECAY_SCALE
 
-        let (quantity_should_receive, _) = unsigned_div_rem (f*g, denominator)
+        let (quantity_should_receive, _) = unsigned_div_rem (quantity_should_send * decay_factor, denominator)
 
         return (quantity_should_receive)
     end
@@ -324,18 +324,18 @@ namespace ns_logistics_utl:
     end
 
     func utl_energy_should_receive_per_tick {range_check_ptr} (
-            energy_source : felt,
+            energy_should_send : felt,
             length : felt
         ) -> (
             energy_should_receive : felt
         ):
         alloc_locals
 
-        let (local f) = utl_energy_should_send_per_tick (energy_source)
-        let (local g) = utl_set_length_to_decay_factor (length)
+        # let (local f) = utl_energy_should_send_per_tick (energy_source)
+        let (local decay_factor) = utl_set_length_to_decay_factor (length)
         local denominator = ns_decay_function.UTL_DECAY_SCALE
 
-        let (energy_should_receive, _) = unsigned_div_rem (f*g, denominator)
+        let (energy_should_receive, _) = unsigned_div_rem (energy_should_send * decay_factor, denominator)
 
         return (energy_should_receive)
     end

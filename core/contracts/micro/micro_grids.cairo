@@ -28,8 +28,10 @@ namespace ns_micro_grids:
 
         let (grid_stat : GridStat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
         local g : Vec2 = grid
+        local gx = g.x
+        local gy = g.y
 
-        with_attr error_message ("grid ({g.x}, {g.y}) is already populated"):
+        with_attr error_message ("grid ({gx},{gy}) is already populated"):
             assert grid_stat.populated = 0
         end
 
