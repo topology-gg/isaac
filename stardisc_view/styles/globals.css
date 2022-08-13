@@ -7,6 +7,11 @@
     src: url("../styles/fonts/Poppins/Poppins-Light.ttf") format("truetype");
 }
 
+@font-face{
+    font-family: "RockSalt";
+    src: url("../styles/fonts/RockSalt/RockSalt-Regular.ttf") format("truetype");
+}
+
 html,
 body,
 #root {
@@ -68,7 +73,7 @@ button {
 
     align-items: center;
     justify-content: center;
-    padding-top: 13%;
+    padding-top: 10%;
 }
 
 .top-child-container {
@@ -137,10 +142,10 @@ h5 {
     outline: none;
 }
 
+/* ref: https://alvarotrigo.com/blog/css-highlight-text/ */
 strong {
     position: relative;
 }
-
 strong::before {
     /* Highlight color */
     /* background-color: #46b96c; */
