@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import styles from "../styles/Modal.module.css";
-import { useS2m2Contract } from "./S2m2Contract";
+import { useS2m2Contract } from "./SNSContract";
 
 import {
     useStarknetInvoke
