@@ -949,8 +949,6 @@ async def handle_universe_activation_occurred (info, event):
                 f'u{univ}_player_balances',
                 document
             )
-        # else:
-        #     print (f'yoyoyoyo {result}')
 
 
         # document = {'account' : str(account)}
@@ -980,7 +978,10 @@ async def handle_universe_activation_occurred (info, event):
     for account in arr_player_adr:
         result = await info.storage.find_one_and_update (
             collection = 'lobby_queue',
-            filter = {'account' : str(account)},
+            filter = {
+                'account' : str(account),
+                'expired' : 0
+            },
             update = {'$set' : {'expired' : 1}}
         )
 
