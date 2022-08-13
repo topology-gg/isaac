@@ -131,7 +131,7 @@ export function Modal (props) {
 
                 if (['UTB', 'UTL'].includes(typ)) {
                     bool_display_left_bottom = false
-                    options.push (<PickupUtxInterface grid_x={grid.x} grid_y={grid.y} typ={typ} onPendingPickup={props.onPendingPickup} />)
+                    options.push (<PickupUtxInterface id={id} grid_x={grid.x} grid_y={grid.y} typ={typ} onPendingPickup={props.onPendingPickup} />)
                 }
                 else {
                     options.push (<PickupDeviceInterface id={id} grid_x={grid.x} grid_y={grid.y} typ={typ} onPendingPickup={props.onPendingPickup} />)

@@ -1807,10 +1807,12 @@ export default function GameWorld() {
                 stroke: device_color,
                 isaac_class: 'device'
             });
-            rect.on ('mouseover', function(evt){
-                console.log ('mouse over me!')
-            })
-            _deviceRectsRef.current[entry.id] = rect
+            if ('base_grid' in entry) {
+                _deviceRectsRef.current[entry.id] = rect
+            } else {
+                // Add utx rects as array items to the same id
+                _deviceRectsRef.current[entry.id] = _deviceRectsRef.current[entry.id] ? [..._deviceRectsRef.current[entry.id], rect] : [rect]
+            }
             device_rects.push (rect)
             canvi.add (rect)
             // console.log (`>> Drawing device typ=${typ}, dim=${device_dim}, grid=(${x},${y})`)

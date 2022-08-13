@@ -15,24 +15,25 @@ export default function drawPendingPickups(canvasRef, pendingPickupsRef, deviceR
     // console.log('deviceRects', deviceRects, 'pendingPickups', pendingPickups);
 
     pendingPickups.forEach(device => {
-        if (device.utxGrids) {
-            // device.utxGrids.forEach(grid => {
-            //     const rect = newDeviceRect();
-            //     setRectProps({x: grid.x, y: grid.y, dimension: 1, color: device.color}, rect);
-            //     canvi.add(rect);
-            //     animateGlow(canvi, rect);
-            // })
+        if (device.rect) {
+            console.log("drawPendingPickups: already showing animation", device.id);
+            return;
+        }
+
+        if (Array.isArray(deviceRects[device.id])) {
+            // Picking up UTX grids
+            deviceRects[device.id].forEach(rect => {
+                rect.opacity = 0.5;
+                animateGlow(canvi, rect);
+                animatePulse(canvi, rect);
+                device.rect = rect;
+            });
         } else {
             const deviceRect = deviceRects[device.id];
             if (!deviceRect) {
                 console.log("drawPendingPickups: no deviceRect", device.id);
                 return;
             }
-            if (device.rect) {
-                console.log("drawPendingPickups: already showing animation", device.id);
-                return;
-            }
-            console.log('deviceRect', deviceRect);
             deviceRect.opacity = 0.5;
             animateGlow(canvi, deviceRect);
             animatePulse(canvi, deviceRect);
