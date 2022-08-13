@@ -11,7 +11,7 @@ export function ConnectWallet() {
     return (
         <p
             className="connected_account"
-            style={{padding:'0',margin:'0',height:'25px',verticalAlign:'middle'}}
+            style={{padding:'0',margin:'0',height:'50px',lineHeight:'50px',verticalAlign:'middle',fontSize:'20px'}}
         >
             Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}
         </p>
@@ -25,7 +25,7 @@ export function ConnectWallet() {
                     console.log ('connect')
                 }
             }
-            style={{padding:'0 15px',fontSize:'12px',height:'25px',border:'0',color:'#333333'}}
+            style={{padding:'0 30px',fontSize:'20px',height:'50px',border:'0',color:'#333333',border:'1px solid #333'}}
         >
             Connect wallet
         </button>

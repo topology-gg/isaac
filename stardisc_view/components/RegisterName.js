@@ -43,7 +43,8 @@ export function RegisterName (props) {
 
     const link_to_voyager = `https://goerli.voyager.online/tx/${data}`
 
-    const HEIGHT = '50px'
+    const HEIGHT = '70px'
+    const HEIGHT_BUTTON = '72px'
     const FORM_STYLE = {
         // height: '50px'
     }
@@ -51,46 +52,47 @@ export function RegisterName (props) {
         height: HEIGHT,
         paddingTop: '0',
         paddingBottom: '0',
-        border: '0',
         paddingLeft: '10px',
-        width: '160px'
-        // fontSize: '16px',
-        // lineHeight: '20px',
-        // height: '50px',
-        // paddingLeft: '5px',
-        // borderRadius: '8px, 0px, 0px, 8px',
-        // padding: '0',
-        // borderWidth: '0'
+        width: '250px',
+        fontSize: '20px',
+        backgroundColor: '#FFFFFF',
+        border: '1px solid #000',
+        borderRight: '0',
+        borderRadius: '12px 0px 0px 12px',
+        fontFamily: 'Poppins-Light'
     }
-    const TX_HASH_STYLE = {
 
+    const TX_HASH_STYLE = {
+        fontSize: '12px',
+        color: '#999',
+        lineHeight:'12px',
+        padding:'0',
+        margin:'0'
     }
     const BUTTON_STYLE = {
-        height: HEIGHT,
-        width: '40px',
+        height: HEIGHT_BUTTON,
+        width: '70px',
         padding: '0 0',
-        border: '0',
-        cursor: 'pointer'
-        // padding  : '0 15px',
-        // padding: '0',
-        // fontSize : '12px',
-        // height   : '50px',
-        // border   : '0',
-        // color    : '#333333',
-        // borderRadius : '0px 8px 8px 0px',
+        cursor: 'pointer',
+        fontSize : '20px',
+        borderRadius : '0px 12px 12px 0px',
+        border: '1px solid #000',
+        fontFamily: 'Poppins-Light'
 
     }
 
     return (
-        <div style={{display:'flex',flexDirection:'row',marginTop: '20px'}}>
+        <div style={{display:'flex',flexDirection:'column',marginTop: '20px'}}>
 
-            <form onSubmit={handleSubmit(onSubmitSnsRegister)} style={FORM_STYLE}>
-                <input style={INPUT_STYLE} placeholder="gnocchi#6789" {...register("nameRequired", { required: true })} />
-                <input type="submit" value={'Go'} style={BUTTON_STYLE}/>
-                {/* <p>Error: {error || 'No error'}</p> */}
-            </form>
+            <div style={{display:'flex',flexDirection:'row'}}>
+                <form onSubmit={handleSubmit(onSubmitSnsRegister)} style={FORM_STYLE}>
+                    <input style={INPUT_STYLE} placeholder="gnocchi#6789" {...register("nameRequired", { required: true })} />
+                    <input type="submit" value={'Go'} style={BUTTON_STYLE}/>
+                    {/* <p>Error: {error || 'No error'}</p> */}
+                </form>
+            </div>
 
-            {/* <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0',verticalAlign:'center'}}>
+            <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0',verticalAlign:'center'}}>
                 {
                     data && (
                         <div>
@@ -98,7 +100,7 @@ export function RegisterName (props) {
                         </div>
                     )
                 }
-            </div> */}
+            </div>
         </div>
     );
 }

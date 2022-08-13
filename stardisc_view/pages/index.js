@@ -11,11 +11,15 @@ function Home() {
         <StarknetProvider>
             <div className="mother-container">
                 <div className="top-child-container">
-                    <h2>Starknet Name Service - Discord handle registry</h2>
+                    <h1 style={{marginBottom:'1px'}}>StarDisc</h1>
+                    <h4>Register dat Discord handle on Starknet</h4>
                     {/* <p style={{marginBottom:'0'}}>Register your Discord handle to coordinate better with your Isaac peers</p> */}
                     {/* <p style={{marginTop:'0',marginBottom:'0'}}>Control: mouse down and drag to select path; ESC to reset</p> */}
 
                     <span>.</span>
+                    <span>.</span>
+                    <span>.</span>
+
                     <ConnectWallet />
 
                     <SnsPoll />

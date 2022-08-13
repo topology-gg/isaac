@@ -14,7 +14,7 @@ body,
     height: 100%;
     margin: 0;
     /* padding: 0; */
-    background-color: #282828;
+    background-color: #ffffff;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -khtml-user-select: none;
@@ -31,7 +31,7 @@ body {
     font-family: Poppins-Light;
     /* , -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif; */
     /* color: #2e76c8; */
-    color: #DDDDDD;
+    color: #333;
 }
 
 
@@ -68,7 +68,7 @@ button {
 
     align-items: center;
     justify-content: center;
-    padding-top: 3em;
+    padding-top: 13%;
 }
 
 .top-child-container {
@@ -135,4 +135,27 @@ h5 {
 
 *:focus {
     outline: none;
+}
+
+strong {
+    position: relative;
+}
+
+strong::before {
+    /* Highlight color */
+    /* background-color: #46b96c; */
+    background-color: #ffd500;
+
+    content: "";
+    position: absolute;
+    width: calc(100% + 4px);
+    height: 60%;
+    left: -2px;
+    bottom: 0;
+    z-index: -1;
+    transform: rotate(-5deg);
+}
+
+input::placeholder {
+    opacity: .5;
 }
