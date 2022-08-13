@@ -1098,8 +1098,6 @@ export default function GameWorld() {
 
     const drawWorld = canvi => {
 
-        console.log(`drawWorld. Canvi present: ${!!canvi}`)
-
         // if (hasLoadedDB) {
 
         if (db_macro_states.macro_states.length == 0) {
@@ -1977,14 +1975,14 @@ export default function GameWorld() {
                 const gridDataLines = gridData
                   ? [
                       DEVICE_TYPE_MAP[gridData.type],
+                      _pendingPickupsRef.current && _pendingPickupsRef.current.find(({id}) => id === gridData.id) ? 'Pending pick-up' : null,
                       ...Object.keys(gridData.balances)
                         .map(
                           (key) =>
                             gridData.balances[key] &&
                             key + ': ' + gridData.balances[key]
-                        )
-                        .filter((x) => x),
-                    ]
+                        ),
+                    ].filter((x) => x)
                   : []
 
                 //
