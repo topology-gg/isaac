@@ -98,7 +98,7 @@ const PERLIN_VALUES = {
 //
 // Sizes
 //
-const STROKE_WIDTH_CURSOR_FACE = 1.0
+const STROKE_WIDTH_CURSOR_FACE = 2.5
 const STROKE_WIDTH_AXIS = 0.4
 const STROKE_WIDTH_GRID_COURSE = 0.2
 const STROKE_WIDTH_GRID_MEDIUM = 0.1
@@ -267,9 +267,9 @@ export default function GameWorld() {
 
     const _currZoom = useRef();
 
-    const _courseGridLines = useRef();
-    const _mediumGridLines = useRef();
-    const _finestGridLines = useRef();
+    const _textureRef = useRef({});
+
+    const imageLeftToBeDrawnRef = useRef(6*5);
 
     //
     // React States
@@ -277,6 +277,7 @@ export default function GameWorld() {
     const [hasLoadedDB, setHasLoadedDB] = useState(false)
     const [universeActive, setUniverseActive] = useState (false)
     const [hasDrawnState, setHasDrawnState] = useState(0)
+    const [imageAllDrawnState, setImageAllDrawnState] = useState(false)
     const [ClickPositionNorm, setClickPositionNorm] = useState({left: 0, top: 0})
     const [MousePositionNorm, setMousePositionNorm] = useState({x: 0, y: 0})
     const [modalVisibility, setModalVisibility] = useState(false)
@@ -336,10 +337,13 @@ export default function GameWorld() {
             updatePendingDevices(db_deployed_devices)
             updatePendingPickups(db_deployed_devices)
 
+            imageLeftToBeDrawnRef.current = 6*5
+            setImageAllDrawnState (false)
+
             //
             // draw the world
             //
-            drawWorld (_canvasRef.current)
+            drawWorldUpToImages (_canvasRef.current)
             setHudVisible (true)
         }
     }, [db_macro_states, db_civ_state, db_player_balances, db_deployed_devices, db_utx_sets, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs, db_deployed_ndpes]);
@@ -680,21 +684,38 @@ export default function GameWorld() {
 
     function handleElementDisplayVisibility (visible, element) {
         console.log (`handleElementDisplayVisibility element=${element}`)
-        for (var face=0; face<6; face++) {
-            for (var row=0; row<SIDE; row++) {
-                for (var col=0; col<SIDE; col++) {
-                    const idx = `(${face},${row},${col})`
-                    const fill = !visible ? '#000000' : _perlinColorsPerElementRef.current [element][idx]
-                    _elementDisplayRectsRef.current [idx].fill = fill
-                    _elementDisplayRectsRef.current [idx].visible = visible
-                    _elementDisplayRectsRef.current [idx].dirty = true
 
-                    if ( row==10 && col==10 && face==1 ) {
-                        console.log (`fill at row=10, col=10, face=1: ${fill}`)
-                    }
+        for (var e of [0,2,4,6,8]) {
+            if (e == element) {
+                for (var face of [0,1,2,3,4,5]) {
+                    _textureRef.current[e][face].visible = visible
+                    _textureRef.current[e][face].dirty = true
+                }
+            }
+            else {
+                for (var face of [0,1,2,3,4,5]) {
+                    _textureRef.current[e][face].visible = false
+                    _textureRef.current[e][face].dirty = true
                 }
             }
         }
+
+        // for (var face=0; face<6; face++) {
+
+        //     for (var row=0; row<SIDE; row++) {
+        //         for (var col=0; col<SIDE; col++) {
+        //             const idx = `(${face},${row},${col})`
+        //             const fill = !visible ? '#000000' : _perlinColorsPerElementRef.current [element][idx]
+        //             _elementDisplayRectsRef.current [idx].fill = fill
+        //             _elementDisplayRectsRef.current [idx].visible = visible
+        //             _elementDisplayRectsRef.current [idx].dirty = true
+
+        //             if ( row==10 && col==10 && face==1 ) {
+        //                 console.log (`fill at row=10, col=10, face=1: ${fill}`)
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     //
@@ -747,10 +768,10 @@ export default function GameWorld() {
             _displayModeRef.current = 'fe'
 
             change_working_view_visibility (false)
-            handleElementDisplayVisibility (true, 'fe')
+            handleElementDisplayVisibility (true, 0) // raw fe
 
             setHudLines ( arr => [
-                arr[0], `Display: FE distribution`
+                arr[0], `Display: Raw Fe distribution`
             ])
         }
         else if(ev.key === '3'){
@@ -758,10 +779,10 @@ export default function GameWorld() {
             _displayModeRef.current = 'al'
 
             change_working_view_visibility (false)
-            handleElementDisplayVisibility (true, 'al')
+            handleElementDisplayVisibility (true, 2) // raw al
 
             setHudLines ( arr => [
-                arr[0], `Display: AL distribution`
+                arr[0], `Display: Raw Al distribution`
             ])
         }
         else if(ev.key === '4'){
@@ -769,10 +790,10 @@ export default function GameWorld() {
             _displayModeRef.current = 'cu'
 
             change_working_view_visibility (false)
-            handleElementDisplayVisibility (true, 'cu')
+            handleElementDisplayVisibility (true, 4) // raw cu
 
             setHudLines ( arr => [
-                arr[0], `Display: CU distribution`
+                arr[0], `Display: Raw Cu distribution`
             ])
         }
         else if(ev.key === '5'){
@@ -780,10 +801,10 @@ export default function GameWorld() {
             _displayModeRef.current = 'si'
 
             change_working_view_visibility (false)
-            handleElementDisplayVisibility (true, 'si')
+            handleElementDisplayVisibility (true, 6) // raw si
 
             setHudLines ( arr => [
-                arr[0], `Display: SI distribution`
+                arr[0], `Display: Raw Si distribution`
             ])
         }
         else if(ev.key === '6'){
@@ -791,10 +812,10 @@ export default function GameWorld() {
             _displayModeRef.current = 'pu'
 
             change_working_view_visibility (false)
-            handleElementDisplayVisibility (true, 'pu')
+            handleElementDisplayVisibility (true, 8) // raw pu
 
             setHudLines ( arr => [
-                arr[0], `Display: PU distribution`
+                arr[0], `Display: Raw Pu distribution`
             ])
         }
 
@@ -1097,7 +1118,7 @@ export default function GameWorld() {
         // canvi.requestRenderAll();
     }
 
-    const drawWorld = canvi => {
+    const drawWorldUpToImages = canvi => {
 
         // if (hasLoadedDB) {
 
@@ -1111,11 +1132,8 @@ export default function GameWorld() {
         else {
             prepare_grid_mapping ()
             drawLandscape (canvi)
-            drawPerlin (canvi)
             drawDevices (canvi)
-            drawAssist (canvi) // draw assistance objects the last to be on top
             drawUtxAnim (canvi)
-            initializeGridAssistRectsRef (canvi)
             setHudLines ([
                 'Face - / Grid (-,-)',
                 'Display: devices'
@@ -1123,17 +1141,36 @@ export default function GameWorld() {
             drawPendingDevices({ current: canvi }, _pendingDevicesRef)
             drawPendingPickups({ current: canvi }, _pendingPickupsRef, _deviceRectsRef)
 
-            _hasDrawnRef.current = true
-            setHasDrawnState (1)
-            _universeActiveRef.current = true;
-            setUniverseActive (true)
+            drawPerlinImage (canvi)
 
-            document.getElementById('canvas_wrap').focus();
+            // _hasDrawnRef.current = true
+            // setHasDrawnState (1)
+            // _universeActiveRef.current = true;
+            // setUniverseActive (true)
+
+            // document.getElementById('canvas_wrap').focus();
         }
-
-        canvi.requestRenderAll ()
         // }
     }
+    useEffect(() => { // the second part of drawWorld - after all images are loaded and drawn, to ensure draw order (z-index)
+        if (!imageAllDrawnState) return;
+
+        const canvi = _canvasRef.current
+
+        initializeGridAssistRectsRef (canvi)
+        drawAssist (canvi)
+
+        _hasDrawnRef.current = true
+        setHasDrawnState (1)
+        _universeActiveRef.current = true;
+        setUniverseActive (true)
+
+        document.getElementById('canvas_wrap').focus();
+
+        canvi.requestRenderAll()
+
+    }, [imageAllDrawnState])
+
 
     const drawIdleMessage = canvi => {
         const TBOX_FONT_FAMILY = 'Poppins-Light'
@@ -1177,6 +1214,7 @@ export default function GameWorld() {
                 left: PAD_X + utx_set.grids[0].x*GRID,
                 top:  PAD_Y + (SIDE*3 - utx_set.grids[0].y - 1)*GRID,
                 fill: color,
+                opacity: 0.4,
                 selectable: false,
                 hoverCursor: 'default',
                 strokeWidth: 0
@@ -1673,6 +1711,46 @@ export default function GameWorld() {
         }
     }
 
+    const drawPerlinImage = canvi => {
+
+        for (var element of [0,2,4,6,8]) {
+
+            var collection = {}
+            for (var face of [0,1,2,3,4,5]) {
+
+                const face_ori = find_face_ori (face)
+                const left = PAD_X + face_ori[0] * GRID
+                const top = PAD_Y + (SIDE*3 - face_ori[1] - SIDE) * GRID
+
+                fabric.Image.fromURL(
+                    `texture_element${element}_face${face}.png`,
+
+                    function (myImg) { // callback function once image is loaded
+                        var img = myImg.set({
+                            left: left,
+                            top: top,
+                            cropX: 0,
+                            cropY: 0,
+                            visible: false
+                        });
+                        img.scaleToHeight (SIDE*GRID-1)
+                        img.scaleToWidth (SIDE*GRID-1)
+                        canvi.add(img)
+                        collection[face] = img
+
+                        imageLeftToBeDrawnRef.current -= 1
+
+                        if (imageLeftToBeDrawnRef.current == 0) {
+                            setImageAllDrawnState (true)
+                        }
+                });
+            }
+
+            _textureRef.current[element] = collection
+        }
+
+    }
+
     // PERLIN_VALUES
     const drawPerlin = canvi => {
 
@@ -2009,8 +2087,8 @@ export default function GameWorld() {
                 //
                 // Show face assist square
                 //
-                _cursorFaceRectRef.current.left = ori.left
-                _cursorFaceRectRef.current.top  = ori.top
+                _cursorFaceRectRef.current.left = ori.left - STROKE_WIDTH_CURSOR_FACE/2
+                _cursorFaceRectRef.current.top  = ori.top - STROKE_WIDTH_CURSOR_FACE/2
                 _cursorFaceRectRef.current.visible = true
                 // console.log (`draw face assist square, face: ${face}`)
 
