@@ -1,4 +1,4 @@
-export default function animatePulse(canvi, shape, scaleFactor = 0.9) {
+export default function animatePulse(canvi, shape, scaleFactor = 0.75) {
     const originalLeft = shape.left;
     const originalTop = shape.top;
     const originalWidth = shape.width;
