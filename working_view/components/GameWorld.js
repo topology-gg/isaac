@@ -1733,8 +1733,8 @@ export default function GameWorld() {
                             cropY: 0,
                             visible: false
                         });
-                        img.scaleToHeight (SIDE*GRID-1)
-                        img.scaleToWidth (SIDE*GRID-1)
+                        img.scaleToHeight (SIDE*GRID)
+                        img.scaleToWidth (SIDE*GRID)
                         canvi.add(img)
                         collection[face] = img
 
