@@ -2215,6 +2215,10 @@ export default function GameWorld() {
     }
 
     function updatePendingPickups (db_deployed_devices) {
+        // Clear the rect refs for the pending pickups so they can be redrawn again
+        _pendingPickupsRef.current.forEach((p) => {
+            p.rect = null
+        });
         setPendingPickups((prev) => {
             // Only keep pending pickups that still deployed
             return prev.filter((d) =>
@@ -2222,8 +2226,7 @@ export default function GameWorld() {
                     (dd) => d.id === dd.id
                 )
             )
-        }
-        )
+        })
     }
 
     //
@@ -2248,6 +2251,7 @@ export default function GameWorld() {
                 account = {account}
                 in_civ = {accountInCiv}
                 device_balance = {accountDeviceBalance}
+                pendingPickups = {pendingPickups}
                 onDeployStarted = {handleDeployStarted}
                 onPendingPickup = {handlePendingPickup}
             />

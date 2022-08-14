@@ -7,7 +7,7 @@ import {
 } from '@starknet-react/core'
 
 import { useUniverseContract } from "./UniverseContract";
-import { BUTTON_SINGLE_STYLE } from "./ActionStyles";
+import { BUTTON_SINGLE_DISABLED_STYLE, BUTTON_SINGLE_STYLE } from "./ActionStyles";
 
 const button_style = {
     fontSize:'12px',
@@ -26,7 +26,7 @@ export function PickupDeviceInterface (props) {
         contract,
         method: 'player_pickup_device_by_grid'
     })
-    const { id, grid_x: x, grid_y: y, typ, onPendingPickup } = props
+    const { id, grid_x: x, grid_y: y, typ, onPendingPickup, isPendingPickup } = props
 
     function onClick () {
         console.log (`pickup device button clicked! (x,y,typ)=(${x}, ${y}, ${typ})`)
@@ -46,11 +46,12 @@ export function PickupDeviceInterface (props) {
     return (
         <div style={{display:'flex',flexDirection:'row'}}>
             <button
-                style = {BUTTON_SINGLE_STYLE}
+                style = {isPendingPickup ? BUTTON_SINGLE_DISABLED_STYLE : BUTTON_SINGLE_STYLE}
                 onClick = {onClick}
                 className = 'action-button'
+                disabled = {isPendingPickup}
             >
-                Pick up {typ}
+                {isPendingPickup ? 'Pending pick-up' : `Pick up ${typ}`}
             </button>
 
             <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0',verticalAlign:'center'}}>
