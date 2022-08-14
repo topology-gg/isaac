@@ -93,37 +93,39 @@ export function Modal (props) {
                 const CELL_HEIGHT = '2em'
                 var tbody = []
                 const requirement = MANUFACTURING_REQUIREMENT [hoverDevice]
-                for (var key of Object.keys(balances)) {
+                if (balances) {
+                    for (var key of Object.keys(balances)) {
 
-                    if (! ['SPG', 'NPG', 'UPSF', 'NDPE'].includes(typ)) { // only these types need to display energy balance
-                        if (key === 'energy') {
-                            continue;
+                        if (! ['SPG', 'NPG', 'UPSF', 'NDPE'].includes(typ)) { // only these types need to display energy balance
+                            if (key === 'energy') {
+                                continue;
+                            }
                         }
+
+                        var cell = []
+                        cell.push (<td key={`manufacture-key-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0'}}>{key}</td>)
+                        cell.push (<td key={`manufacture-balance-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{balances[key]}</td>)
+
+                        if (['UPSF'].includes(typ)) { // only UPSF needs to display manufacture requirement info
+                            if (hoverDevice == '-') {
+                                cell.push (<td key={`dash-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{'-'}</td>)
+                            }
+                            else {
+                                //
+                                // use hoverDevice to pull in resource & energy requirement
+                                //
+                                const requirement_color = balances[key] >= requirement[key] ? '#333333' : '#C34723'
+                                cell.push (<td key={`manufacture-requirement-${key}`} style={{
+                                    height:CELL_HEIGHT,
+                                    textAlign:'left',
+                                    paddingLeft:'3em',
+                                    color:requirement_color
+                                }}>{requirement[key]}</td>)
+                            }
+                        }
+
+                        tbody.push (<tr key={key}>{cell}</tr>)
                     }
-
-                    var cell = []
-                    cell.push (<td key={`manufacture-key-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0'}}>{key}</td>)
-                    cell.push (<td key={`manufacture-balance-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{balances[key]}</td>)
-
-                    if (['UPSF'].includes(typ)) { // only UPSF needs to display manufacture requirement info
-                        if (hoverDevice == '-') {
-                            cell.push (<td key={`dash-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{'-'}</td>)
-                        }
-                        else {
-                            //
-                            // use hoverDevice to pull in resource & energy requirement
-                            //
-                            const requirement_color = balances[key] >= requirement[key] ? '#333333' : '#C34723'
-                            cell.push (<td key={`manufacture-requirement-${key}`} style={{
-                                height:CELL_HEIGHT,
-                                textAlign:'left',
-                                paddingLeft:'3em',
-                                color:requirement_color
-                            }}>{requirement[key]}</td>)
-                        }
-                    }
-
-                    tbody.push (<tr key={key}>{cell}</tr>)
                 }
 
                 //
@@ -156,7 +158,7 @@ export function Modal (props) {
                     )
                 }
 
-                if (['UPSF'].includes(typ)) {
+                if (balances && ['UPSF'].includes(typ)) {
 
                     var thead = [
                         <th key='upsf-resource' style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
