@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 
 import {
     StarknetProvider,
@@ -27,7 +27,7 @@ export function DeployDeviceInterface (props) {
         contract,
         method: 'player_deploy_device_by_grid'
     })
-    const typ = props.typ
+    const { typ, onDeployStarted } = props
     const x = props.grid_x
     const y = props.grid_y
 
@@ -44,6 +44,20 @@ export function DeployDeviceInterface (props) {
             ] })
         }
     }
+
+    /**
+     * Trigger onDeployStarted when the transaction is sent
+     *
+     * onDeployStarted is deliberately not in the dependencies for this effect
+     * Because we only want to trigger this once when `data` becomes available,
+     * not when onDeployStarted changes.
+     */
+    useEffect(() => {
+        if (data) {
+            console.log (`deploy device transaction broadcasted! (x,y,type) = (${x},${y},${typ},${data})`)
+            onDeployStarted({ x, y, typ, txid: data })
+        }
+    } , [x, y, typ, data])
 
     const link_to_voyager = `https://goerli.voyager.online/tx/${data}`
 

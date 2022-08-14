@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 
 import {
     StarknetProvider,
@@ -7,7 +7,7 @@ import {
 } from '@starknet-react/core'
 
 import { useUniverseContract } from "./UniverseContract";
-import { BUTTON_SINGLE_STYLE } from "./ActionStyles";
+import { BUTTON_SINGLE_DISABLED_STYLE, BUTTON_SINGLE_STYLE } from "./ActionStyles";
 
 const button_style = {
     fontSize:'12px',
@@ -26,25 +26,32 @@ export function PickupUtxInterface (props) {
         contract,
         method: 'player_pickup_utx_by_grid'
     })
-    const x = props.grid_x
-    const y = props.grid_y
-    const typ = props.typ
+    const { id, grid_x: x, grid_y: y, typ, onPendingPickup, isPendingPickup } = props
 
     function onClick () {
         console.log (`pickup utx button clicked! (x,y,typ)=(${x}, ${y}, ${typ})`)
+        // onPendingPickup({ id, txid: `faketxid${id}` })
         invoke ({ args: [{x:x, y:y}] })
     }
+
+    useEffect(() => {
+        if (data) {
+            console.log (`deploy device transaction broadcasted! (id,x,y,type) = (${id},${x},${y},${typ},${data})`)
+            onPendingPickup({ id, txid: data })
+        }
+    } , [id, data])
 
     const link_to_voyager = `https://goerli.voyager.online/tx/${data}`
 
     return (
         <div style={{display:'flex',flexDirection:'row'}}>
             <button
-                style = {BUTTON_SINGLE_STYLE}
+                style = {isPendingPickup ? BUTTON_SINGLE_DISABLED_STYLE : BUTTON_SINGLE_STYLE}
                 onClick = {onClick}
                 className = 'action-button'
+                disabled = {isPendingPickup}
             >
-                Pick up {typ}
+                {isPendingPickup ? 'Pending pick-up' : `Pick up ${typ}`}
             </button>
 
             <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0',verticalAlign:'center'}}>
