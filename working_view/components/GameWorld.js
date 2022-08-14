@@ -1278,7 +1278,7 @@ export default function GameWorld() {
                     _utxAnimRectsRef.current[i].opacity = 0
                 }
                 else {
-                    _utxAnimRectsRef.current[i].opacity = 0.13
+                    _utxAnimRectsRef.current[i].opacity = 0.2
                 }
 
                 // console.log (`ANIMATE: new grid (${x}, ${y})`)
