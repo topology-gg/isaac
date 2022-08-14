@@ -23,7 +23,7 @@ export function Modal (props) {
     //
     // Build information to be shown in popup window
     //
-    const info = props.info
+    const { info, pendingPickups } = props
     var title = ""
     var grids = ""
     var display_left_top = null
@@ -85,6 +85,7 @@ export function Modal (props) {
                 const typ   = DEVICE_TYPE_MAP [grid_info ['type']]
                 const balances = grid_info ['balances']
                 const id = grid_info ['id']
+                const isPendingPickup = pendingPickups.some (p => p.id === id)
 
                 content1 += `Device type: ${typ}\n`
                 content2 += `Owner: ${owner}`
@@ -131,10 +132,28 @@ export function Modal (props) {
 
                 if (['UTB', 'UTL'].includes(typ)) {
                     bool_display_left_bottom = false
-                    options.push (<PickupUtxInterface id={id} grid_x={grid.x} grid_y={grid.y} typ={typ} onPendingPickup={props.onPendingPickup} />)
+                    options.push(
+                        <PickupUtxInterface
+                            id={id}
+                            grid_x={grid.x}
+                            grid_y={grid.y}
+                            typ={typ}
+                            isPendingPickup={isPendingPickup}
+                            onPendingPickup={props.onPendingPickup}
+                        />
+                    )
                 }
                 else {
-                    options.push (<PickupDeviceInterface id={id} grid_x={grid.x} grid_y={grid.y} typ={typ} onPendingPickup={props.onPendingPickup} />)
+                    options.push (
+                        <PickupDeviceInterface
+                            id={id}
+                            grid_x={grid.x}
+                            grid_y={grid.y}
+                            typ={typ}
+                            isPendingPickup={isPendingPickup}
+                            onPendingPickup={props.onPendingPickup}
+                        />
+                    )
                 }
 
                 if (['UPSF'].includes(typ)) {

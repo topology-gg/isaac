@@ -2173,6 +2173,7 @@ export default function GameWorld() {
                 account = {account}
                 in_civ = {accountInCiv}
                 device_balance = {accountDeviceBalance}
+                pendingPickups = {pendingPickups}
                 onDeployStarted = {handleDeployStarted}
                 onPendingPickup = {handlePendingPickup}
             />
