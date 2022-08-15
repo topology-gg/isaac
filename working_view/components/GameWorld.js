@@ -68,7 +68,7 @@ import drawPendingPickups from "../lib/helpers/drawPendingPickups";
 //
 // Dimensions
 //
-const SIDE = 40 // number of grids per size (planet dimension)
+const SIDE = 100 // number of grids per size (planet dimension)
 const GRID = Math.floor (200 / SIDE) // grid size
 const PAD_X = 160 // pad size
 const PAD_Y = 90 // pad size
