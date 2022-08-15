@@ -3,7 +3,7 @@ import {
 } from '@starknet-react/core'
 
 import LobbyAbi from '../abi/lobby_abi.json'
-const LOBBY_ADDR = '0x07ac955f749c88226c169f642934ee3c6adea0f5f11c3ba97b2c89b879c4a177'
+const LOBBY_ADDR = '0x05b26ace786dc2476c181f5bb3dce8b12073c57072c48b6037d7d67b2d749894'
 
 export function useLobbyContract () {
     return useContract ({ abi: LobbyAbi, address: LOBBY_ADDR })
