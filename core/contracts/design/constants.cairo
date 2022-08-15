@@ -110,7 +110,7 @@ end
 #
 # Constants for planet configuration
 #
-const PLANET_DIM = 80
+const PLANET_DIM = 100
 const SCALE_FP_DIV_PLANET_DIM = SCALE_FP / PLANET_DIM
 
 #
