@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
     const client = await clientPromise
 
-    const db = client.db('isaac')
+    const db = client.db('isaac_10ce37b')
 
     // TODO: query the birth block_number of this civ, and use that to filter macro_states.
     //       because documents are immutable, we need to differentiate states of current civ from states of past civs
