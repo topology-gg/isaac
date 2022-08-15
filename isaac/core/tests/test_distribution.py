@@ -17,7 +17,7 @@ LOGGER = logging.getLogger(__name__)
 TEST_NUM_PER_CASE = 200
 PRIME = 3618502788666131213697322783095070105623107215331596699973092056135872020481
 PRIME_HALF = PRIME//2
-PLANET_DIM = 40
+PLANET_DIM = 100
 SCALE_FP = 10**20
 
 ## Note to test logging:
@@ -57,7 +57,7 @@ async def test_perlin ():
     #
     N = 50
 
-    TEST_CONTRACT = True
+    TEST_CONTRACT = False
     if TEST_CONTRACT:
 
         LOGGER.info (f'> Deploying mock_distribution.cairo ..')
@@ -127,7 +127,6 @@ async def test_perlin ():
 
             # LOGGER.info (f'> Face {face}, min {min(log)}, max {max(log)}')
 
-
     #
     # Generate expected values for the entire face 0
     # and export to JSON
@@ -151,6 +150,7 @@ async def test_perlin ():
 
             gen['min'] = min_val
             gen['max'] = max_val
+            LOGGER.info (f'element {element}: max {max_val}, min {min_val}')
 
             with open(f'perlin_planet_dim_{PLANET_DIM}_element_{element}.json', 'w') as file:
                 json.dump(gen, file)
