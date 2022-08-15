@@ -42,17 +42,17 @@ from isaac_api.contract import (
 
 # load_dotenv ()
 
-CIV_SIZE = 14
+CIV_SIZE = 5
 UNIVERSE_COUNT = 1
 DEVICE_TYPE_COUNT = 16
 
-ORIGIN_BLOCK_TO_INDEX = 284845 - 1
+ORIGIN_BLOCK_TO_INDEX = 298347 - 1
 INDEXER_ID = 'isaac'
 
 ISAAC_UNIVERSE_ADDRESSES = {
-    0 : '0x0164c3f00e90457c270853248d4905e7f345eb323c49156755ffb28d65e308ee'
+    0 : '0x02b1a7651d9d0d3a434330a0dc14be766b190a588be29f3864f32e2fb3c3e21a'
 }
-ISAAC_LOBBY_ADDRESS = '0x07ac955f749c88226c169f642934ee3c6adea0f5f11c3ba97b2c89b879c4a177'
+ISAAC_LOBBY_ADDRESS = '0x05b26ace786dc2476c181f5bb3dce8b12073c57072c48b6037d7d67b2d749894'
 
 PG_TYPES = [0,1]
 HARVESTER_TYPES = [2,3,4,5,6]
@@ -713,7 +713,7 @@ async def handle_player_pickup_device_occurred (info, event, univ):
     for x in range (dim):
         for y in range (dim):
             search_x = device_base_grid['x'] + x
-            search_y = device_base_grid['x'] + y
+            search_y = device_base_grid['y'] + y
             search_grid = {
                 'x' : search_x,
                 'y' : search_y
