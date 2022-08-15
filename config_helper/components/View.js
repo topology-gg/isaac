@@ -16,7 +16,7 @@ import {
     useStarknetInvoke
 } from '@starknet-react/core'
 
-const CIV_SIZE = 14
+const CIV_SIZE = 5
 
 export default function View () {
 
