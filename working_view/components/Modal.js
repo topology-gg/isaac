@@ -23,7 +23,7 @@ export function Modal (props) {
     //
     // Build information to be shown in popup window
     //
-    const info = props.info
+    const { info, pendingPickups } = props
     var title = ""
     var grids = ""
     var display_left_top = null
@@ -32,6 +32,8 @@ export function Modal (props) {
     var bool_display_left_bottom = true
 
     const [hoverDevice, setHoverDevice] = useState ('-')
+
+    if (!props.show) return;
 
     var thead = [
         <th key='resource' style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
@@ -56,8 +58,8 @@ export function Modal (props) {
                 grids += `(${grid.x},${grid.y})`
             }
 
-            options.push (<DeployUtxInterface grids={info['grids']} type={12}/>)
-            options.push (<DeployUtxInterface grids={info['grids']} type={13}/>)
+            options.push (<DeployUtxInterface grids={info['grids']} type={12} onDeployStarted={props.onDeployStarted} />)
+            options.push (<DeployUtxInterface grids={info['grids']} type={13} onDeployStarted={props.onDeployStarted} />)
         }
 
         //
@@ -82,6 +84,8 @@ export function Modal (props) {
                 const owner = grid_info ['owner']
                 const typ   = DEVICE_TYPE_MAP [grid_info ['type']]
                 const balances = grid_info ['balances']
+                const id = grid_info ['id']
+                const isPendingPickup = pendingPickups.some (p => p.id === id)
 
                 content1 += `Device type: ${typ}\n`
                 content2 += `Owner: ${owner}`
@@ -89,37 +93,39 @@ export function Modal (props) {
                 const CELL_HEIGHT = '2em'
                 var tbody = []
                 const requirement = MANUFACTURING_REQUIREMENT [hoverDevice]
-                for (var key of Object.keys(balances)) {
+                if (balances) {
+                    for (var key of Object.keys(balances)) {
 
-                    if (! ['SPG', 'NPG', 'UPSF', 'NDPE'].includes(typ)) { // only these types need to display energy balance
-                        if (key === 'energy') {
-                            continue;
+                        if (! ['SPG', 'NPG', 'UPSF', 'NDPE'].includes(typ)) { // only these types need to display energy balance
+                            if (key === 'energy') {
+                                continue;
+                            }
                         }
+
+                        var cell = []
+                        cell.push (<td key={`manufacture-key-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0'}}>{key}</td>)
+                        cell.push (<td key={`manufacture-balance-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{balances[key]}</td>)
+
+                        if (['UPSF'].includes(typ)) { // only UPSF needs to display manufacture requirement info
+                            if (hoverDevice == '-') {
+                                cell.push (<td key={`dash-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{'-'}</td>)
+                            }
+                            else {
+                                //
+                                // use hoverDevice to pull in resource & energy requirement
+                                //
+                                const requirement_color = balances[key] >= requirement[key] ? '#333333' : '#C34723'
+                                cell.push (<td key={`manufacture-requirement-${key}`} style={{
+                                    height:CELL_HEIGHT,
+                                    textAlign:'left',
+                                    paddingLeft:'3em',
+                                    color:requirement_color
+                                }}>{requirement[key]}</td>)
+                            }
+                        }
+
+                        tbody.push (<tr key={key}>{cell}</tr>)
                     }
-
-                    var cell = []
-                    cell.push (<td key={`manufacture-key-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0'}}>{key}</td>)
-                    cell.push (<td key={`manufacture-balance-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{balances[key]}</td>)
-
-                    if (['UPSF'].includes(typ)) { // only UPSF needs to display manufacture requirement info
-                        if (hoverDevice == '-') {
-                            cell.push (<td key={`dash-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{'-'}</td>)
-                        }
-                        else {
-                            //
-                            // use hoverDevice to pull in resource & energy requirement
-                            //
-                            const requirement_color = balances[key] >= requirement[key] ? '#333333' : '#C34723'
-                            cell.push (<td key={`manufacture-requirement-${key}`} style={{
-                                height:CELL_HEIGHT,
-                                textAlign:'left',
-                                paddingLeft:'3em',
-                                color:requirement_color
-                            }}>{requirement[key]}</td>)
-                        }
-                    }
-
-                    tbody.push (<tr key={key}>{cell}</tr>)
                 }
 
                 //
@@ -128,13 +134,31 @@ export function Modal (props) {
 
                 if (['UTB', 'UTL'].includes(typ)) {
                     bool_display_left_bottom = false
-                    options.push (<PickupUtxInterface grid_x={grid.x} grid_y={grid.y} typ={typ}/>)
+                    options.push(
+                        <PickupUtxInterface
+                            id={id}
+                            grid_x={grid.x}
+                            grid_y={grid.y}
+                            typ={typ}
+                            isPendingPickup={isPendingPickup}
+                            onPendingPickup={props.onPendingPickup}
+                        />
+                    )
                 }
                 else {
-                    options.push (<PickupDeviceInterface grid_x={grid.x} grid_y={grid.y} typ={typ}/>)
+                    options.push (
+                        <PickupDeviceInterface
+                            id={id}
+                            grid_x={grid.x}
+                            grid_y={grid.y}
+                            typ={typ}
+                            isPendingPickup={isPendingPickup}
+                            onPendingPickup={props.onPendingPickup}
+                        />
+                    )
                 }
 
-                if (['UPSF'].includes(typ)) {
+                if (balances && ['UPSF'].includes(typ)) {
 
                     var thead = [
                         <th key='upsf-resource' style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
@@ -178,7 +202,13 @@ export function Modal (props) {
                     // console.log (`device type ${i} have_nonzero_balance=${have_nonzero_balance}`)
 
                     options.push (
-                        <DeployDeviceInterface typ={i} grid_x={grid.x} grid_y={grid.y} have_nonzero_balance={have_nonzero_balance}/>
+                        <DeployDeviceInterface
+                            typ={i}
+                            grid_x={grid.x}
+                            grid_y={grid.y}
+                            have_nonzero_balance={have_nonzero_balance}
+                            onDeployStarted={props.onDeployStarted}
+                        />
                     )
                 }
             }

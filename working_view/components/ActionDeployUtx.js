@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useEffect } from "react";
 
 import {
     StarknetProvider,
@@ -27,7 +27,7 @@ export function DeployUtxInterface (props) {
         contract,
         method: 'player_deploy_utx_by_grids'
     })
-    const utx_type = props.type
+    const { type: utx_type, onDeployStarted } = props
 
     // const x = props.grid_x
     // const y = props.grid_y
@@ -49,6 +49,15 @@ export function DeployUtxInterface (props) {
             utx_grids
         ] })
     }
+
+    /**
+     * Trigger onDeployStarted when the transaction is sent
+    */
+    useEffect(() => {
+        if (data) {
+            onDeployStarted({ x: utx_grids[0].x, y: utx_grids[0].y, utxGrids: utx_grids, typ: utx_type, txid: data })
+        }
+    } , [utx_grids, utx_type, data])
 
     const link_to_voyager = `https://goerli.voyager.online/tx/${data}`
 
