@@ -22,31 +22,40 @@ export default function GameStatsPlayers(props) {
     const { contract: snsContract } = useSNSContract ()
     const { data: db_civ_state } = useCivState ()
     const { data: db_player_balances } = usePlayerBalances ()
-    var rows = [];
-    // console.log (db_player_balances)
 
-    // make the starknet calls
-    const [loadedPlayerAddresses, setLoadedPlayerAddresses] = useState([])
+    const empty_addr_array = []
+    const empty_result_array = []
+    for (var i=0; i<CIV_SIZE; i++){
+        empty_addr_array.push ('0')
+        empty_result_array.push (null)
+    }
+    const [accountStringsState, setAccountStringsState] = useState(empty_addr_array)
+    const [snsResults, setSnsResults] = useState()
+    const [rowsState, setRowsState] = useState([])
 
-    useEffect(() => {
-        const { data : result, loading, error, refresh} = useStarknetCall ({
-            contract: snsContract,
-            method: 'sns_lookup_adr_to_name',
-            args: [account_str]
-        })
-    }, [loadedPlayerAddresses])
+    // for (var i=0; i<CIV_SIZE; i++) {
+    //     const { data, loading, error, refresh} = useStarknetCall ({
+    //         contract: snsContract,
+    //         method: 'sns_lookup_adr_to_name',
+    //         args: [accountStringsState[i]]
+    //     })
+    // }
 
-    if (db_player_balances) {
+    useEffect (() => {
+        if (!db_player_balances) return;
+        if (!db_player_balances.player_balances) return;
 
-        // console.log('GameStatsPlayers:', db_player_balances)
+        console.log('GameStatsPlayers:', db_player_balances)
         // const population = db_player_balances.player_balances.length
 
+        var rows = []
         for (var row_idx = 0; row_idx < CIV_SIZE; row_idx ++){
             const account_str = toBN(db_player_balances.player_balances[row_idx]['account']).toString(16)
-            setLoadedPlayerAddresses( loadedPlayerAddresses.concat([account_str]) )
+            // setAccountStringsState( accountStringsState.concat([account_str]) )
             const account_str_abbrev = "0x" + account_str.slice(0,3) + "..." + account_str.slice(-4)
 
             //const [exist, name_string] = parse_call_result (...)
+            const exist = 0
             const display_account_str = exist == 0 ? account_str_abbrev : name_string
 
             var cell = []
@@ -69,7 +78,10 @@ export default function GameStatsPlayers(props) {
 
             rows.push(<tr key={`players-row-${row_idx}`} className="player_account">{cell}</tr>)
         }
-    }
+        setRowsState (rows)
+
+    }, [db_player_balances, account])
+
 
     //
     // Return component
@@ -86,7 +98,8 @@ export default function GameStatsPlayers(props) {
                     </tr>
                 </thead>
                 <tbody>
-                    {rows}
+                    {/* {rows} */}
+                    {rowsState}
                 </tbody>
             </table>
 
@@ -94,11 +107,11 @@ export default function GameStatsPlayers(props) {
     );
 }
 
-function parse_call_result (result) {
+function parse_call_result (res) {
 
-    if (result && result.length > 0) {
-        const exist = toBN(result.exist).toString(10)
-        const name = toBN(result.name).toString(10)
+    if (res && res.length > 0) {
+        const exist = toBN(res.exist).toString(10)
+        const name = toBN(res.name).toString(10)
         const name_string = felt_literal_to_string (name)
 
         console.log ('exist:', exist)
