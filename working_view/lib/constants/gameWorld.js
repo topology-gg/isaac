@@ -1,4 +1,4 @@
-export const SIDE = 40 // number of grids per size (planet dimension)
+export const SIDE = 100 // number of grids per size (planet dimension)
 export const GRID = Math.floor (200 / SIDE) // grid size
 export const PAD_X = 160 // pad size
 export const PAD_Y = 90 // pad size

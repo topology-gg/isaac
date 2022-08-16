@@ -34,6 +34,7 @@ import {
 } from '@starknet-react/core'
 import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 import DEVICE_DIM_MAP from './ConstantDeviceDimMap'
+import { SIDE, GRID, PAD_X, PAD_Y, CANVAS_W, CANVAS_H, TRIANGLE_W, TRIANGLE_H, GRID_SPACING } from '../lib/constants/gameWorld';
 import deviceFromGridCoord from '../lib/deviceFromGridCoord'
 import drawPendingDevices from "../lib/helpers/drawPendingDevices";
 import drawPendingPickups from "../lib/helpers/drawPendingPickups";
@@ -66,20 +67,6 @@ import drawPendingPickups from "../lib/helpers/drawPendingPickups";
 // UX: multi call
 
 //
-// Dimensions
-//
-const SIDE = 100 // number of grids per size (planet dimension)
-const GRID = Math.floor (200 / SIDE) // grid size
-const PAD_X = 160 // pad size
-const PAD_Y = 90 // pad size
-const CANVAS_W = 1122
-const CANVAS_H = 900
-const TRIANGLE_W = 6
-const TRIANGLE_H = 10
-
-const GRID_SPACING = 5
-
-//
 // Import pre-generated perlin values
 //
 // const PERLIN_VALUES_FE_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_0.json`);
@@ -98,13 +85,13 @@ const GRID_SPACING = 5
 //
 // Sizes
 //
-const STROKE_WIDTH_CURSOR_FACE = 2.5
+const STROKE_WIDTH_CURSOR_FACE = 0.75
 const STROKE_WIDTH_AXIS = 0.4
 const STROKE_WIDTH_GRID_COURSE = 0.2
 const STROKE_WIDTH_GRID_MEDIUM = 0.1
 const STROKE_WIDTH_GRID_FINEST = 0.02
 const STROKE_WIDTH_GRID_FACE = 0.4
-const HOVER_DEVICE_STROKE_WIDTH = 1.4
+const HOVER_DEVICE_STROKE_WIDTH = 0.6
 
 //
 // Styles
@@ -434,14 +421,14 @@ export default function GameWorld() {
                 upsf['id'],
                 {
                     'FE raw'      : upsf['resource_0'],
-                    'AL raw'      : upsf['resource_1'],
-                    'CU raw'      : upsf['resource_2'],
-                    'SI raw'      : upsf['resource_3'],
-                    'PU raw'      : upsf['resource_4'],
-                    'FE refined'  : upsf['resource_5'],
-                    'AL refined'  : upsf['resource_6'],
-                    'CU refined'  : upsf['resource_7'],
-                    'SI refined'  : upsf['resource_8'],
+                    'AL raw'      : upsf['resource_2'],
+                    'CU raw'      : upsf['resource_4'],
+                    'SI raw'      : upsf['resource_6'],
+                    'PU raw'      : upsf['resource_8'],
+                    'FE refined'  : upsf['resource_1'],
+                    'AL refined'  : upsf['resource_3'],
+                    'CU refined'  : upsf['resource_5'],
+                    'SI refined'  : upsf['resource_7'],
                     'PU enriched' : upsf['resource_9'],
                     'Energy'      : upsf['energy']
                 }

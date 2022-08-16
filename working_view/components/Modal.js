@@ -11,6 +11,8 @@ import { DeployUtxInterface } from './ActionDeployUtx'
 import { BuildDeviceInterface } from './ActionBuildDevice'
 import { LaunchNdpeInterface } from './ActionLaunchNdpe'
 import { TransferDeviceInterface } from './ActionTransferDevice'
+import Image from "next/image";
+import closeSvg from "../public/close.svg"
 
 // Refs:
 // https://stackoverflow.com/questions/54880669/react-domexception-failed-to-execute-removechild-on-node-the-node-to-be-re
@@ -273,6 +275,9 @@ export function Modal (props) {
             { props.show ?
 
             <div className={styles.modal}>
+                <div className={styles.modalClose} onClick={props.onHide}>
+                    <Image src={closeSvg} alt="close modal" />
+                </div>
 
                 <div style={modal_left_child_style}>
                     <h3>{title}</h3>
@@ -282,10 +287,6 @@ export function Modal (props) {
                     {display_left_bottom}
 
                     <span>.</span>
-
-                    <button onClick={props.onHide} style={{width:'fit-content'}} className='action-button'>
-                        Esc
-                    </button>
                 </div>
 
                 <div style={modal_right_child_style}>

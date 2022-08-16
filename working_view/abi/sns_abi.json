@@ -1,0 +1,55 @@
+[
+    {
+        "inputs": [
+            {
+                "name": "adr",
+                "type": "felt"
+            }
+        ],
+        "name": "sns_lookup_adr_to_name",
+        "outputs": [
+            {
+                "name": "exist",
+                "type": "felt"
+            },
+            {
+                "name": "name",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "name",
+                "type": "felt"
+            }
+        ],
+        "name": "sns_lookup_name_to_adr",
+        "outputs": [
+            {
+                "name": "exist",
+                "type": "felt"
+            },
+            {
+                "name": "adr",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "name_to_be_registered",
+                "type": "felt"
+            }
+        ],
+        "name": "sns_register",
+        "outputs": [],
+        "type": "function"
+    }
+]
