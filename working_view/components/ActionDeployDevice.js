@@ -38,6 +38,8 @@ export function DeployDeviceInterface (props) {
         }
         else {
             console.log (`deploy device clicked! (x,y,type) = (${x},${y},${typ})`)
+            // To test without submitting transaction
+            // onDeployStarted({ x, y, typ, txid: `faketxid${typ}${x}${y}` })
             invoke ({ args: [
                 typ,
                 {x:x, y:y}

@@ -34,6 +34,7 @@ import {
 } from '@starknet-react/core'
 import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 import DEVICE_DIM_MAP from './ConstantDeviceDimMap'
+import { SIDE, GRID, PAD_X, PAD_Y, CANVAS_W, CANVAS_H, TRIANGLE_W, TRIANGLE_H, GRID_SPACING } from '../lib/constants/gameWorld';
 import deviceFromGridCoord from '../lib/deviceFromGridCoord'
 import drawPendingDevices from "../lib/helpers/drawPendingDevices";
 import drawPendingPickups from "../lib/helpers/drawPendingPickups";
@@ -64,20 +65,6 @@ import drawPendingPickups from "../lib/helpers/drawPendingPickups";
 // 6. launch NDPE
 // 7. transfer undeployed device
 // UX: multi call
-
-//
-// Dimensions
-//
-const SIDE = 100 // number of grids per size (planet dimension)
-const GRID = Math.floor (200 / SIDE) // grid size
-const PAD_X = 160 // pad size
-const PAD_Y = 90 // pad size
-const CANVAS_W = 1122
-const CANVAS_H = 900
-const TRIANGLE_W = 6
-const TRIANGLE_H = 10
-
-const GRID_SPACING = 5
 
 //
 // Import pre-generated perlin values
