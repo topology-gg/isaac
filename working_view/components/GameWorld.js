@@ -35,6 +35,8 @@ import {
 import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 import DEVICE_DIM_MAP from './ConstantDeviceDimMap'
 import deviceFromGridCoord from '../lib/deviceFromGridCoord'
+import drawPendingDevices from "../lib/helpers/drawPendingDevices";
+import drawPendingPickups from "../lib/helpers/drawPendingPickups";
 
 //
 // Note: reading requirement (translated to Apibara integration design)
@@ -66,7 +68,7 @@ import deviceFromGridCoord from '../lib/deviceFromGridCoord'
 //
 // Dimensions
 //
-const SIDE = 40 // number of grids per size (planet dimension)
+const SIDE = 100 // number of grids per size (planet dimension)
 const GRID = Math.floor (200 / SIDE) // grid size
 const PAD_X = 160 // pad size
 const PAD_Y = 90 // pad size
@@ -80,23 +82,23 @@ const GRID_SPACING = 5
 //
 // Import pre-generated perlin values
 //
-const PERLIN_VALUES_FE_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_0.json`);
-const PERLIN_VALUES_AL_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_2.json`);
-const PERLIN_VALUES_CU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_4.json`);
-const PERLIN_VALUES_SI_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_6.json`);
-const PERLIN_VALUES_PU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_8.json`);
-const PERLIN_VALUES = {
-    'fe' : PERLIN_VALUES_FE_RAW,
-    'al' : PERLIN_VALUES_AL_RAW,
-    'cu' : PERLIN_VALUES_CU_RAW,
-    'si' : PERLIN_VALUES_SI_RAW,
-    'pu' : PERLIN_VALUES_PU_RAW
-}
+// const PERLIN_VALUES_FE_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_0.json`);
+// const PERLIN_VALUES_AL_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_2.json`);
+// const PERLIN_VALUES_CU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_4.json`);
+// const PERLIN_VALUES_SI_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_6.json`);
+// const PERLIN_VALUES_PU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_8.json`);
+// const PERLIN_VALUES = {
+//     'fe' : PERLIN_VALUES_FE_RAW,
+//     'al' : PERLIN_VALUES_AL_RAW,
+//     'cu' : PERLIN_VALUES_CU_RAW,
+//     'si' : PERLIN_VALUES_SI_RAW,
+//     'pu' : PERLIN_VALUES_PU_RAW
+// }
 
 //
 // Sizes
 //
-const STROKE_WIDTH_CURSOR_FACE = 1.0
+const STROKE_WIDTH_CURSOR_FACE = 2.5
 const STROKE_WIDTH_AXIS = 0.4
 const STROKE_WIDTH_GRID_COURSE = 0.2
 const STROKE_WIDTH_GRID_MEDIUM = 0.1
@@ -240,12 +242,16 @@ export default function GameWorld() {
     const _displayModeTextRef = useRef('');
 
     const _deviceDisplayRef = useRef();
+    const _deviceRectsRef = useRef({});
     const _elementDisplayRef = useRef();
     const _elementDisplayRectsRef = useRef({});
     const _perlinColorsPerElementRef = useRef({});
 
     const _gridAssistRectsGroupRef = useRef();
     const _gridAssistRectsRef = useRef({});
+
+    const _pendingDevicesRef = useRef([]); // Devices pending deployment
+    const _pendingPickupsRef = useRef([]); // Devices pending pickup
 
     const _mouseStateRef = useRef('up'); // up => down => up
     const _selectStateRef = useRef('idle'); // idle => select => popup => idle
@@ -261,9 +267,9 @@ export default function GameWorld() {
 
     const _currZoom = useRef();
 
-    const _courseGridLines = useRef();
-    const _mediumGridLines = useRef();
-    const _finestGridLines = useRef();
+    const _textureRef = useRef({});
+
+    const imageLeftToBeDrawnRef = useRef(6*5);
 
     //
     // React States
@@ -271,6 +277,7 @@ export default function GameWorld() {
     const [hasLoadedDB, setHasLoadedDB] = useState(false)
     const [universeActive, setUniverseActive] = useState (false)
     const [hasDrawnState, setHasDrawnState] = useState(0)
+    const [imageAllDrawnState, setImageAllDrawnState] = useState(false)
     const [ClickPositionNorm, setClickPositionNorm] = useState({left: 0, top: 0})
     const [MousePositionNorm, setMousePositionNorm] = useState({x: 0, y: 0})
     const [modalVisibility, setModalVisibility] = useState(false)
@@ -282,6 +289,19 @@ export default function GameWorld() {
 
     const [hudLines, setHudLines] = useState([])
     const [hudVisible, setHudVisible] = useState (false)
+
+    const [pendingDevices, _setPendingDevices] = useState([])
+    const [pendingPickups, _setPendingPickups] = useState([])
+
+    const setPendingDevices = (setValueFn) => {
+        _pendingDevicesRef.current = setValueFn(_pendingDevicesRef.current)
+        _setPendingDevices(setValueFn)
+    }
+
+    const setPendingPickups = (setValueFn) => {
+        _pendingPickupsRef.current = setValueFn(_pendingPickupsRef.current)
+        _setPendingPickups(setValueFn)
+    }
 
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
 
@@ -314,11 +334,16 @@ export default function GameWorld() {
             _utxAnimRectsRef.current = []
             _utxAnimGridsRef.current = []
             _utxAnimGridIndicesRef.current = []
+            updatePendingDevices(db_deployed_devices)
+            updatePendingPickups(db_deployed_devices)
+
+            imageLeftToBeDrawnRef.current = 6*5
+            setImageAllDrawnState (false)
 
             //
             // draw the world
             //
-            drawWorld (_canvasRef.current)
+            drawWorldUpToImages (_canvasRef.current)
             setHudVisible (true)
         }
     }, [db_macro_states, db_civ_state, db_player_balances, db_deployed_devices, db_utx_sets, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs, db_deployed_ndpes]);
@@ -484,6 +509,7 @@ export default function GameWorld() {
                 for (const j=0; j<device_dim; j++) {
                     _gridMapping.current [`(${base_grid.x+i},${base_grid.y+j})`] = {
                         'owner' : owner_hexstr_abbrev,
+                        'id' : id,
                         'type' : typ,
                         'balances' : balances
                     }
@@ -652,27 +678,44 @@ export default function GameWorld() {
             x: 0,
             y: 0
         });
-        _canvasRef.current.renderAll ()
+        _canvasRef.current.requestRenderAll ()
     }
 
 
     function handleElementDisplayVisibility (visible, element) {
         console.log (`handleElementDisplayVisibility element=${element}`)
-        for (var face=0; face<6; face++) {
-            for (var row=0; row<SIDE; row++) {
-                for (var col=0; col<SIDE; col++) {
-                    const idx = `(${face},${row},${col})`
-                    const fill = !visible ? '#000000' : _perlinColorsPerElementRef.current [element][idx]
-                    _elementDisplayRectsRef.current [idx].fill = fill
-                    _elementDisplayRectsRef.current [idx].visible = visible
-                    _elementDisplayRectsRef.current [idx].dirty = true
 
-                    if ( row==10 && col==10 && face==1 ) {
-                        console.log (`fill at row=10, col=10, face=1: ${fill}`)
-                    }
+        for (var e of [0,2,4,6,8]) {
+            if (e == element) {
+                for (var face of [0,1,2,3,4,5]) {
+                    _textureRef.current[e][face].visible = visible
+                    _textureRef.current[e][face].dirty = true
+                }
+            }
+            else {
+                for (var face of [0,1,2,3,4,5]) {
+                    _textureRef.current[e][face].visible = false
+                    _textureRef.current[e][face].dirty = true
                 }
             }
         }
+
+        // for (var face=0; face<6; face++) {
+
+        //     for (var row=0; row<SIDE; row++) {
+        //         for (var col=0; col<SIDE; col++) {
+        //             const idx = `(${face},${row},${col})`
+        //             const fill = !visible ? '#000000' : _perlinColorsPerElementRef.current [element][idx]
+        //             _elementDisplayRectsRef.current [idx].fill = fill
+        //             _elementDisplayRectsRef.current [idx].visible = visible
+        //             _elementDisplayRectsRef.current [idx].dirty = true
+
+        //             if ( row==10 && col==10 && face==1 ) {
+        //                 console.log (`fill at row=10, col=10, face=1: ${fill}`)
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     //
@@ -725,10 +768,10 @@ export default function GameWorld() {
             _displayModeRef.current = 'fe'
 
             change_working_view_visibility (false)
-            handleElementDisplayVisibility (true, 'fe')
+            handleElementDisplayVisibility (true, 0) // raw fe
 
             setHudLines ( arr => [
-                arr[0], `Display: FE distribution`
+                arr[0], `Display: Raw Fe distribution`
             ])
         }
         else if(ev.key === '3'){
@@ -736,10 +779,10 @@ export default function GameWorld() {
             _displayModeRef.current = 'al'
 
             change_working_view_visibility (false)
-            handleElementDisplayVisibility (true, 'al')
+            handleElementDisplayVisibility (true, 2) // raw al
 
             setHudLines ( arr => [
-                arr[0], `Display: AL distribution`
+                arr[0], `Display: Raw Al distribution`
             ])
         }
         else if(ev.key === '4'){
@@ -747,10 +790,10 @@ export default function GameWorld() {
             _displayModeRef.current = 'cu'
 
             change_working_view_visibility (false)
-            handleElementDisplayVisibility (true, 'cu')
+            handleElementDisplayVisibility (true, 4) // raw cu
 
             setHudLines ( arr => [
-                arr[0], `Display: CU distribution`
+                arr[0], `Display: Raw Cu distribution`
             ])
         }
         else if(ev.key === '5'){
@@ -758,10 +801,10 @@ export default function GameWorld() {
             _displayModeRef.current = 'si'
 
             change_working_view_visibility (false)
-            handleElementDisplayVisibility (true, 'si')
+            handleElementDisplayVisibility (true, 6) // raw si
 
             setHudLines ( arr => [
-                arr[0], `Display: SI distribution`
+                arr[0], `Display: Raw Si distribution`
             ])
         }
         else if(ev.key === '6'){
@@ -769,10 +812,10 @@ export default function GameWorld() {
             _displayModeRef.current = 'pu'
 
             change_working_view_visibility (false)
-            handleElementDisplayVisibility (true, 'pu')
+            handleElementDisplayVisibility (true, 8) // raw pu
 
             setHudLines ( arr => [
-                arr[0], `Display: PU distribution`
+                arr[0], `Display: Raw Pu distribution`
             ])
         }
 
@@ -1072,10 +1115,10 @@ export default function GameWorld() {
         _gridAssistRectsGroupRef.current = group
         canvi.add (group)
 
-        // canvi.renderAll();
+        // canvi.requestRenderAll();
     }
 
-    const drawWorld = canvi => {
+    const drawWorldUpToImages = canvi => {
 
         // if (hasLoadedDB) {
 
@@ -1089,27 +1132,45 @@ export default function GameWorld() {
         else {
             prepare_grid_mapping ()
             drawLandscape (canvi)
-            drawPerlin (canvi)
             drawDevices (canvi)
-            drawAssist (canvi) // draw assistance objects the last to be on top
             drawUtxAnim (canvi)
-            initializeGridAssistRectsRef (canvi)
             setHudLines ([
                 'Face - / Grid (-,-)',
                 'Display: devices'
             ])
+            drawPendingDevices({ current: canvi }, _pendingDevicesRef)
+            drawPendingPickups({ current: canvi }, _pendingPickupsRef, _deviceRectsRef)
 
-            _hasDrawnRef.current = true
-            setHasDrawnState (1)
-            _universeActiveRef.current = true;
-            setUniverseActive (true)
+            drawPerlinImage (canvi)
 
-            document.getElementById('canvas_wrap').focus();
+            // _hasDrawnRef.current = true
+            // setHasDrawnState (1)
+            // _universeActiveRef.current = true;
+            // setUniverseActive (true)
+
+            // document.getElementById('canvas_wrap').focus();
         }
-
-        canvi.renderAll ()
         // }
     }
+    useEffect(() => { // the second part of drawWorld - after all images are loaded and drawn, to ensure draw order (z-index)
+        if (!imageAllDrawnState) return;
+
+        const canvi = _canvasRef.current
+
+        initializeGridAssistRectsRef (canvi)
+        drawAssist (canvi)
+
+        _hasDrawnRef.current = true
+        setHasDrawnState (1)
+        _universeActiveRef.current = true;
+        setUniverseActive (true)
+
+        document.getElementById('canvas_wrap').focus();
+
+        canvi.requestRenderAll()
+
+    }, [imageAllDrawnState])
+
 
     const drawIdleMessage = canvi => {
         const TBOX_FONT_FAMILY = 'Poppins-Light'
@@ -1153,7 +1214,7 @@ export default function GameWorld() {
                 left: PAD_X + utx_set.grids[0].x*GRID,
                 top:  PAD_Y + (SIDE*3 - utx_set.grids[0].y - 1)*GRID,
                 fill: color,
-                opacity: 0.13,
+                opacity: 0.2,
                 selectable: false,
                 hoverCursor: 'default',
                 strokeWidth: 0
@@ -1217,12 +1278,12 @@ export default function GameWorld() {
                     _utxAnimRectsRef.current[i].opacity = 0
                 }
                 else {
-                    _utxAnimRectsRef.current[i].opacity = 0.13
+                    _utxAnimRectsRef.current[i].opacity = 0.2
                 }
 
                 // console.log (`ANIMATE: new grid (${x}, ${y})`)
             }
-            _canvasRef.current.renderAll ();
+            _canvasRef.current.requestRenderAll ();
 
         }, ANIM_UPDATE_INTERVAL_MS);
 
@@ -1606,7 +1667,7 @@ export default function GameWorld() {
         canvi.add (displayModeText)
         _displayModeTextRef.current = displayModeText
 
-        // canvi.renderAll();
+        // canvi.requestRenderAll();
     }
 
     // const updateMode = (canvi, mode) => {
@@ -1614,7 +1675,7 @@ export default function GameWorld() {
     //     _displayModeTextRef.current.text = 'Display: ' + mode
     //     _displayModeTextRef.current.dirty = true
 
-    //     canvi.renderAll();
+    //     canvi.requestRenderAll();
     // }
 
     const drawAssist = canvi => {
@@ -1633,7 +1694,7 @@ export default function GameWorld() {
         canvi.add (cursorHoverDeviceRect)
         _cursorHoverDeviceRectRef.current = cursorHoverDeviceRect
 
-        canvi.renderAll();
+        canvi.requestRenderAll();
     }
 
     function lerp (start, end, ratio){
@@ -1659,6 +1720,46 @@ export default function GameWorld() {
         else { // face === 5
             return [3*SIDE, SIDE]
         }
+    }
+
+    const drawPerlinImage = canvi => {
+
+        for (var element of [0,2,4,6,8]) {
+
+            var collection = {}
+            for (var face of [0,1,2,3,4,5]) {
+
+                const face_ori = find_face_ori (face)
+                const left = PAD_X + face_ori[0] * GRID
+                const top = PAD_Y + (SIDE*3 - face_ori[1] - SIDE) * GRID
+
+                fabric.Image.fromURL(
+                    `texture_element${element}_face${face}.png`,
+
+                    function (myImg) { // callback function once image is loaded
+                        var img = myImg.set({
+                            left: left,
+                            top: top,
+                            cropX: 0,
+                            cropY: 0,
+                            visible: false
+                        });
+                        img.scaleToHeight (SIDE*GRID)
+                        img.scaleToWidth (SIDE*GRID)
+                        canvi.add(img)
+                        collection[face] = img
+
+                        imageLeftToBeDrawnRef.current -= 1
+
+                        if (imageLeftToBeDrawnRef.current == 0) {
+                            setImageAllDrawnState (true)
+                        }
+                });
+            }
+
+            _textureRef.current[element] = collection
+        }
+
     }
 
     // PERLIN_VALUES
@@ -1743,7 +1844,7 @@ export default function GameWorld() {
         // canvi.add(perlin_rects_group)
         // _elementDisplayRef.current = perlin_rects_group
 
-        // canvi.renderAll();
+        // canvi.requestRenderAll();
     }
 
     const drawDevices = canvi => {
@@ -1760,6 +1861,7 @@ export default function GameWorld() {
         //
         const device_rects = []
         var base_grid_str_drawn = []
+        _deviceRectsRef.current = {}
         for (const entry of db_deployed_devices.deployed_devices){
 
             const typ = parseInt (entry.type)
@@ -1793,9 +1895,12 @@ export default function GameWorld() {
                 stroke: device_color,
                 isaac_class: 'device'
             });
-            rect.on ('mouseover', function(evt){
-                console.log ('mouse over me!')
-            })
+            if ('base_grid' in entry) {
+                _deviceRectsRef.current[entry.id] = rect
+            } else {
+                // Add utx rects as array items to the same id
+                _deviceRectsRef.current[entry.id] = _deviceRectsRef.current[entry.id] ? [..._deviceRectsRef.current[entry.id], rect] : [rect]
+            }
             device_rects.push (rect)
             canvi.add (rect)
             // console.log (`>> Drawing device typ=${typ}, dim=${device_dim}, grid=(${x},${y})`)
@@ -1810,7 +1915,7 @@ export default function GameWorld() {
         canvi.add(device_rect_face0_group)
         _deviceDisplayRef.current = device_rect_face0_group
 
-        // canvi.renderAll();
+        // canvi.requestRenderAll();
     }
 
     //
@@ -1917,6 +2022,14 @@ export default function GameWorld() {
         }
     }
 
+    useEffect(() => {
+        drawPendingDevices(_canvasRef, _pendingDevicesRef)
+    }, [pendingDevices])
+
+    useEffect(() => {
+        drawPendingPickups(_canvasRef, _pendingPickupsRef, _deviceRectsRef)
+    }, [pendingPickups])
+
     function drawAssistObject (canvi, mPosNorm) {
 
         if (_cursorGridRectRef.current && _cursorFaceRectRef.current && _cursorHoverDeviceRectRef.current) {
@@ -1952,14 +2065,14 @@ export default function GameWorld() {
                 const gridDataLines = gridData
                   ? [
                       DEVICE_TYPE_MAP[gridData.type],
+                      _pendingPickupsRef.current && _pendingPickupsRef.current.find(({id}) => id === gridData.id) ? 'Pending pick-up' : null,
                       ...Object.keys(gridData.balances)
                         .map(
                           (key) =>
                             gridData.balances[key] &&
                             key + ': ' + gridData.balances[key]
-                        )
-                        .filter((x) => x),
-                    ]
+                        ),
+                    ].filter((x) => x)
                   : []
 
                 //
@@ -1985,8 +2098,8 @@ export default function GameWorld() {
                 //
                 // Show face assist square
                 //
-                _cursorFaceRectRef.current.left = ori.left
-                _cursorFaceRectRef.current.top  = ori.top
+                _cursorFaceRectRef.current.left = ori.left - STROKE_WIDTH_CURSOR_FACE/2
+                _cursorFaceRectRef.current.top  = ori.top - STROKE_WIDTH_CURSOR_FACE/2
                 _cursorFaceRectRef.current.visible = true
                 // console.log (`draw face assist square, face: ${face}`)
 
@@ -2006,7 +2119,7 @@ export default function GameWorld() {
             _cursorFaceRectRef.current.dirty        = true
             _cursorHoverDeviceRectRef.current.dirty = true
 
-            canvi.renderAll();
+            canvi.requestRenderAll();
         }
     }
 
@@ -2026,7 +2139,7 @@ export default function GameWorld() {
             }
             _gridAssistRectsGroupRef.current.dirty = true
 
-            canvi.renderAll();
+            canvi.requestRenderAll();
         }
     }
 
@@ -2062,6 +2175,71 @@ export default function GameWorld() {
         }
     }
 
+    function handleDeployStarted ({x, y, utxGrids, typ, txid}) {
+        console.log(`handleDeployStarted() x: ${x}, y: ${y}, typ: ${typ}, txid: ${txid}`)
+        const device = {
+            x, y, type: typ,
+            utxGrids,
+            dimension: DEVICE_DIM_MAP.get(typ),
+            color: DEVICE_COLOR_MAP.get(typ),
+            rectRef: React.createRef(),
+            txid
+        }
+        // Add the device to the list of pending devices
+        setPendingDevices ((pendingDevices) => {
+            if (pendingDevices.find(d => d.txid === txid)) {
+                console.warn('Cannot add device with the same txid')
+                return pendingDevices
+            }
+            return [...pendingDevices, device]
+        })
+    }
+
+    function updatePendingDevices (db_deployed_devices) {
+        setPendingDevices((prev) => {
+            // Only keep pending devices that are not deployed
+            return prev.filter((d) =>
+                !db_deployed_devices.deployed_devices.find(
+                    (dd) => parseInt(dd.type) === d.type && dd.grid.x === d.x && dd.grid.y === d.y
+                )
+            )
+        })
+    }
+
+    function handlePendingPickup({id, txid}) {
+        console.log(`handlePendingPickup() id: ${id}, txid: ${txid}`)
+
+        // Add the device to the list of pending pickups
+        setPendingPickups ((prev) => {
+            if (prev.find(d => d.txid === txid)) {
+                console.log('Cannot pickup device with the same txid')
+                return prev;
+            }
+            return [
+                ...prev,
+                {
+                    id,
+                    txid,
+                }
+            ]
+        })
+    }
+
+    function updatePendingPickups (db_deployed_devices) {
+        // Clear the rect refs for the pending pickups so they can be redrawn again
+        _pendingPickupsRef.current.forEach((p) => {
+            p.rect = null
+        });
+        setPendingPickups((prev) => {
+            // Only keep pending pickups that still deployed
+            return prev.filter((d) =>
+                db_deployed_devices.deployed_devices.find(
+                    (dd) => d.id === dd.id
+                )
+            )
+        })
+    }
+
     //
     // Return component
     // Reference:
@@ -2084,6 +2262,9 @@ export default function GameWorld() {
                 account = {account}
                 in_civ = {accountInCiv}
                 device_balance = {accountDeviceBalance}
+                pendingPickups = {pendingPickups}
+                onDeployStarted = {handleDeployStarted}
+                onPendingPickup = {handlePendingPickup}
             />
 
             <HUD lines={hudLines} universeActive={universeActive}/>

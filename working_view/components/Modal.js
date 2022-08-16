@@ -25,7 +25,7 @@ export function Modal (props) {
     //
     // Build information to be shown in popup window
     //
-    const info = props.info
+    const { info, pendingPickups } = props
     var title = ""
     var grids = ""
     var display_left_top = null
@@ -34,6 +34,8 @@ export function Modal (props) {
     var bool_display_left_bottom = true
 
     const [hoverDevice, setHoverDevice] = useState ('-')
+
+    if (!props.show) return;
 
     var thead = [
         <th key='resource' style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
@@ -58,8 +60,8 @@ export function Modal (props) {
                 grids += `(${grid.x},${grid.y})`
             }
 
-            options.push (<DeployUtxInterface grids={info['grids']} type={12}/>)
-            options.push (<DeployUtxInterface grids={info['grids']} type={13}/>)
+            options.push (<DeployUtxInterface grids={info['grids']} type={12} onDeployStarted={props.onDeployStarted} />)
+            options.push (<DeployUtxInterface grids={info['grids']} type={13} onDeployStarted={props.onDeployStarted} />)
         }
 
         //
@@ -84,6 +86,8 @@ export function Modal (props) {
                 const owner = grid_info ['owner']
                 const typ   = DEVICE_TYPE_MAP [grid_info ['type']]
                 const balances = grid_info ['balances']
+                const id = grid_info ['id']
+                const isPendingPickup = pendingPickups.some (p => p.id === id)
 
                 content1 += `Device type: ${typ}\n`
                 content2 += `Owner: ${owner}`
@@ -132,10 +136,28 @@ export function Modal (props) {
 
                 if (['UTB', 'UTL'].includes(typ)) {
                     bool_display_left_bottom = false
-                    options.push (<PickupUtxInterface grid_x={grid.x} grid_y={grid.y} typ={typ}/>)
+                    options.push(
+                        <PickupUtxInterface
+                            id={id}
+                            grid_x={grid.x}
+                            grid_y={grid.y}
+                            typ={typ}
+                            isPendingPickup={isPendingPickup}
+                            onPendingPickup={props.onPendingPickup}
+                        />
+                    )
                 }
                 else {
-                    options.push (<PickupDeviceInterface grid_x={grid.x} grid_y={grid.y} typ={typ}/>)
+                    options.push (
+                        <PickupDeviceInterface
+                            id={id}
+                            grid_x={grid.x}
+                            grid_y={grid.y}
+                            typ={typ}
+                            isPendingPickup={isPendingPickup}
+                            onPendingPickup={props.onPendingPickup}
+                        />
+                    )
                 }
 
                 if (balances && ['UPSF'].includes(typ)) {
@@ -182,7 +204,13 @@ export function Modal (props) {
                     // console.log (`device type ${i} have_nonzero_balance=${have_nonzero_balance}`)
 
                     options.push (
-                        <DeployDeviceInterface typ={i} grid_x={grid.x} grid_y={grid.y} have_nonzero_balance={have_nonzero_balance}/>
+                        <DeployDeviceInterface
+                            typ={i}
+                            grid_x={grid.x}
+                            grid_y={grid.y}
+                            have_nonzero_balance={have_nonzero_balance}
+                            onDeployStarted={props.onDeployStarted}
+                        />
                     )
                 }
             }
