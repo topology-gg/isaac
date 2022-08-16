@@ -15,7 +15,6 @@ function feltLiteralToString (felt) {
     for (let i = 0; i < tester.length; i++) {
         currentChar += tester[i];
         if (parseInt(currentChar) > minVal) {
-            console.log(currentChar, String.fromCharCode(currentChar));
             result += String.fromCharCode(currentChar);
             currentChar = "";
         }
@@ -48,7 +47,7 @@ const GameStatsPlayer = ({ accountString }) => {
     const { account } = useStarknet()
     const { contract: snsContract } = useSNSContract ()
 
-    const signed_in_account_str = toBN(account).toString(16)
+    const signedInAccountStr = toBN(account).toString(16)
 
     const { data } = useStarknetCall ({
         contract: snsContract,
@@ -58,16 +57,16 @@ const GameStatsPlayer = ({ accountString }) => {
 
     const [_exist, name] = data ? parseCallResult (data) : [null, null]
 
-    const display_account_str = name || abbrevAccountString(accountString)
+    const displayAccountStr = name || abbrevAccountString(accountString)
 
     return (
         <>
-            {accountString === signed_in_account_str ? (
+            {accountString === signedInAccountStr ? (
                 <td style={{ color: '#00CCFF' }}>
-                    {display_account_str}
+                    {displayAccountStr}
                 </td>
             ) : (
-                <td>{display_account_str}</td>
+                <td>{displayAccountStr}</td>
             )}
         </>
     )
