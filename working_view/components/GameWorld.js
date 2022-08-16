@@ -111,8 +111,7 @@ const HOVER_DEVICE_STROKE_WIDTH = 1.4
 //
 const PALETTE = 'DARK'
 const STROKE             = PALETTE === 'DARK' ? '#DDDDDD' : '#BBBBBB' // grid stroke color
-// const CANVAS_BG          = PALETTE === 'DARK' ? '#181818' : '#E3EDFF'
-const CANVAS_BG          = '#FDF5E6'
+const CANVAS_BG          = PALETTE === 'DARK' ? '#181818' : '#E3EDFF'
 const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#FFEFD5' : '#999999'
 const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
