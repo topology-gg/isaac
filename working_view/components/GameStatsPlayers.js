@@ -1,53 +1,39 @@
-import React, { Component, useState, useEffect, useRef, useMemo, Table } from "react";
-import { fabric } from 'fabric';
+import React, { Component, useState, useEffect } from "react";
 import { toBN } from 'starknet/dist/utils/number'
 
 import {
-    useStarknet,
-} from '@starknet-react/core'
-
-import {
-    useCivState,
     usePlayerBalances
 } from '../lib/api'
+import GameStatsPlayer from "./GameStatsPlayer";
+
+const CIV_SIZE = 5
 
 export default function GameStatsPlayers(props) {
 
-    const { account } = useStarknet()
-    const { data: db_civ_state } = useCivState ()
     const { data: db_player_balances } = usePlayerBalances ()
-    var rows = [];
-    // console.log (db_player_balances)
 
-    if (db_player_balances) {
-
-        // console.log('GameStatsPlayers:', db_player_balances)
-        const population = db_player_balances.player_balances.length
-        for (var row_idx = 0; row_idx < population; row_idx ++){
-            const account_str = toBN(db_player_balances.player_balances[row_idx]['account']).toString(16)
-            const account_str_abbrev = "0x" + account_str.slice(0,3) + "..." + account_str.slice(-4)
-
-            var cell = []
-            cell.push (<td key={`players-rowidx-${row_idx}`}>{row_idx}</td>)
-
-            if (!account) {
-                cell.push (<td key={'players-not-account'}>{account_str_abbrev}</td>)
-            }
-            else {
-                // check if signed-in account matches current row
-                const signed_in_account_str = toBN(account).toString(16)
-                // console.log (`account_str: ${account_str}; signed_in_account_str: ${signed_in_account_str}`)
-                if (account_str === signed_in_account_str) {
-                    cell.push (<td key={'players-account-signedin'} style={{color:'#00CCFF'}}>{account_str_abbrev}</td>)
-                }
-                else {
-                    cell.push (<td key={'players-account-not-signedin'}>{account_str_abbrev}</td>)
-                }
-            }
-
-            rows.push(<tr key={`players-row-${row_idx}`} className="player_account">{cell}</tr>)
-        }
+    const empty_addr_array = []
+    const empty_result_array = []
+    for (var i=0; i<CIV_SIZE; i++){
+        empty_addr_array.push ('0')
+        empty_result_array.push (null)
     }
+    const [accountStringsState, setAccountStringsState] = useState(empty_addr_array)
+
+    useEffect (() => {
+        if (!db_player_balances) return;
+        if (!db_player_balances.player_balances) return;
+
+        setAccountStringsState ((prev) =>
+            prev.map((account_str, idx) => {
+                if (account_str !== '0') return account_str
+
+                return toBN(db_player_balances.player_balances[idx]['account']).toString(16)
+            })
+        )
+
+    }, [db_player_balances])
+
 
     //
     // Return component
@@ -64,7 +50,12 @@ export default function GameStatsPlayers(props) {
                     </tr>
                 </thead>
                 <tbody>
-                    {rows}
+                    {accountStringsState.map((accountString, idx) =>
+                        <tr key={`players-row-${idx}`} className="player_account">
+                            <td key={`players-rowidx-${idx}`}>{idx}</td>
+                            <GameStatsPlayer accountString={accountString} />
+                        </tr>
+                    )}
                 </tbody>
             </table>
 
