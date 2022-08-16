@@ -5,7 +5,7 @@ export default async function handler(req, res) {
 
     const client = await clientPromise
 
-    const db = client.db('isaac')
+    const db = client.db('isaac_10ce37b')
     const deployed_upsfs = await db
         .collection('u0' + '_deployed_upsfs')
         .find({'_chain.valid_to' : null})
