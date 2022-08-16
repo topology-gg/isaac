@@ -85,13 +85,13 @@ import drawPendingPickups from "../lib/helpers/drawPendingPickups";
 //
 // Sizes
 //
-const STROKE_WIDTH_CURSOR_FACE = 2.5
+const STROKE_WIDTH_CURSOR_FACE = 0.75
 const STROKE_WIDTH_AXIS = 0.4
 const STROKE_WIDTH_GRID_COURSE = 0.2
 const STROKE_WIDTH_GRID_MEDIUM = 0.1
 const STROKE_WIDTH_GRID_FINEST = 0.02
 const STROKE_WIDTH_GRID_FACE = 0.4
-const HOVER_DEVICE_STROKE_WIDTH = 1.4
+const HOVER_DEVICE_STROKE_WIDTH = 0.6
 
 //
 // Styles
@@ -421,14 +421,14 @@ export default function GameWorld() {
                 upsf['id'],
                 {
                     'FE raw'      : upsf['resource_0'],
-                    'AL raw'      : upsf['resource_1'],
-                    'CU raw'      : upsf['resource_2'],
-                    'SI raw'      : upsf['resource_3'],
-                    'PU raw'      : upsf['resource_4'],
-                    'FE refined'  : upsf['resource_5'],
-                    'AL refined'  : upsf['resource_6'],
-                    'CU refined'  : upsf['resource_7'],
-                    'SI refined'  : upsf['resource_8'],
+                    'AL raw'      : upsf['resource_2'],
+                    'CU raw'      : upsf['resource_4'],
+                    'SI raw'      : upsf['resource_6'],
+                    'PU raw'      : upsf['resource_8'],
+                    'FE refined'  : upsf['resource_1'],
+                    'AL refined'  : upsf['resource_3'],
+                    'CU refined'  : upsf['resource_5'],
+                    'SI refined'  : upsf['resource_7'],
                     'PU enriched' : upsf['resource_9'],
                     'Energy'      : upsf['energy']
                 }
