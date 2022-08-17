@@ -547,7 +547,7 @@ async def handle_terminate_universe_occurred (info, event, univ):
     #
     # Update collection 'u{}_civ_state'
     #
-    suns = ['BÖYÜK', 'ORTA', 'BALACA']
+    suns = ['ORTA', 'BÖYÜK', 'BALACA']
     if destruction_by_which_sun != 0:
         crashed_sun = suns [destruction_by_which_sun-1]
         fate = f"Ev crashed into {crashed_sun}."
@@ -936,13 +936,13 @@ async def handle_universe_activation_occurred (info, event):
     # Record in player_balances ~ {account, 0, 1, 2, ..., 15}, where 0-15 is the enumeration of device types
     #
     assert arr_player_adr_len == CIV_SIZE
-    for account in arr_player_adr:
+    for player_index, account in enumerate (arr_player_adr):
         result = await info.storage.find_one (
             f'u{univ}_player_balances',
             {'account' : str(account)}
         )
         if result is None:
-            document = {'account' : str(account)}
+            document = {'account' : str(account), 'player_index' : player_index}
             for i in range(DEVICE_TYPE_COUNT):
                 document [str(i)] = 0
             await info.storage.insert_one (
