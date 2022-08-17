@@ -59,11 +59,11 @@ export default function View () {
             return
         }
         if (!db_lobby_queue || !db_civ_state || !db_player_balances || !db_macro_states) {
-            console.log ('db loading ...')
+            console.log ('View: db loading ...')
             return
         }
         else {
-            console.log ('db loaded!')
+            console.log ('> View: db loaded!')
             setHasLoadedDB (true)
         }
     }, [hasLoadedDB, db_lobby_queue, db_civ_state, db_player_balances, db_macro_states]);
@@ -73,8 +73,8 @@ export default function View () {
     //
     useEffect (() => {
         if (hasLoadedDB) {
-            console.log (db_civ_state)
-            console.log (db_lobby_queue)
+            // console.log (db_civ_state)
+            // console.log (db_lobby_queue)
 
             //
             // set display queue length
@@ -88,15 +88,15 @@ export default function View () {
                 // no universe launched ever
                 //
                 setUniverseStatus ('idle')
-                console.log('aaa')
+                // console.log('aaa')
             }
             else if (db_civ_state.civ_state[0].active == 0) {
                 setUniverseStatus ('idle')
-                console.log('bbb')
+                // console.log('bbb')
             }
             else {
                 setUniverseStatus ('active')
-                console.log('ccc')
+                // console.log('ccc')
                 const civ_idx = db_civ_state.civ_state[0].civ_idx
                 const ticks_since_birth = db_macro_states.macro_states.length - 1 // at age 0 a macro state event is emitted
                 const population = db_player_balances.player_balances.length
@@ -199,7 +199,7 @@ export default function View () {
     // Handler for button click
     //
     function onClick () {
-        console.log ('Join queue button clicked')
+        // console.log ('Join queue button clicked')
         if (joinButtonColor==='#333333') {
             invoke ({ args: [] })
         }
@@ -207,7 +207,7 @@ export default function View () {
 
     const join_button_color = {color:joinButtonColor}
     const join_button_style = {
-        ...{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',fontFamily:'Poppins-Light'},
+        ...{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',fontFamily:'Poppins-Light', borderRadius: '10px'},
         ...join_button_color
     }
 

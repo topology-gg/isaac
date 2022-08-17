@@ -25,7 +25,11 @@ export function ConnectWallet() {
                     console.log ('connect')
                 }
             }
-            style={{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',color:'#333333',fontSize:'12px',fontFamily:'Poppins-Light'}}
+            style={{
+                padding:'0',margin:'0',height:'25px',border:'0',width:'160px',
+                color:'#333333',fontSize:'12px',fontFamily:'Poppins-Light',
+                borderRadius: '10px'
+            }}
         >
             Connect wallet
         </button>

@@ -17,6 +17,11 @@
     src: url("../styles/fonts/Anoxic/AnoxicLight-3zlK8.ttf") format("truetype");
 }
 
+@font-face{
+    font-family: "RockSalt";
+    src: url("../styles/fonts/RockSalt/RockSalt-Regular.ttf") format("truetype");
+}
+
 html,
 body,
 #root {
@@ -95,6 +100,20 @@ body {
     white-space: nowrap;
     transition: 0.5s;
     padding-top: 40px;
+}
+
+.replay-window {
+    height: 90%;
+    width: 0;
+    position: fixed;
+    z-index: 3;
+    top: 5%;
+    left: 15%;
+    background-color: #FFF8DC;
+    opacity: 0.95;
+    overflow-x: hidden;
+    white-space: nowrap;
+    transition: 0.2s;
 }
 
 h2 {
