@@ -937,38 +937,24 @@ async def handle_universe_activation_occurred (info, event):
     #
     assert arr_player_adr_len == CIV_SIZE
     for player_index, account in enumerate (arr_player_adr):
-        result = await info.storage.find_one (
+
+        await info.storage.find_one_and_update (
             f'u{univ}_player_balances',
-            {'account' : str(account)}
+            {'account' : str(account)},
+            {'player_index' : player_index}
         )
-        if result is None:
-            document = {'account' : str(account), 'player_index' : player_index}
-            for i in range(DEVICE_TYPE_COUNT):
-                document [str(i)] = 0
-            await info.storage.insert_one (
-                f'u{univ}_player_balances',
-                document
-            )
 
-
-        # document = {'account' : str(account)}
-        # for i in range(DEVICE_TYPE_COUNT):
-        #     document [str(i)] = 0
-
-        # print (f"  INSERT_ONE {document} to {f'u{univ}_player_balances'}")
-        # await info.storage.insert_one (
+        # result = await info.storage.find_one (
         #     f'u{univ}_player_balances',
-        #     document
+        #     {'account' : str(account)}
         # )
-
-        # for i in range(DEVICE_TYPE_COUNT):
-        #     await info.storage.find_one_and_update (
-        #         collection = f'u{univ}_player_balances',
-        #         filter = {
-        #             'account' : str(account),
-        #             str(i) : {'$exists' : False}
-        #         },
-        #         update = {'$set' : {str(i) : 0}}
+        # if result is None:
+        #     document = {'account' : str(account), 'player_index' : player_index}
+        #     for i in range(DEVICE_TYPE_COUNT):
+        #         document [str(i)] = 0
+        #     await info.storage.insert_one (
+        #         f'u{univ}_player_balances',
+        #         document
         #     )
 
     #
