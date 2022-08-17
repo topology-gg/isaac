@@ -4,6 +4,7 @@ import { StarknetProvider } from '@starknet-react/core'
 
 import View from "../components/View"
 import Panel from "../components/Panel"
+import ReplayWindow from "../components/ReplayWindow"
 import CoverArt from "../components/CoverArt"
 import CoverArtBack from "../components/CoverArtBack"
 
@@ -11,6 +12,9 @@ function Home() {
 
     const [panelButtonText, setPanelButtonText] = useState ('open history')
     const [panelOpen, setPanelOpen] = useState (false)
+    const [replayWindowOpen, setReplayWindowOpen] = useState (false)
+
+    const [dbStatesReplayWindow, setDbStatesReplayWindow] = useState({})
 
     function handlePanel() {
         if (panelOpen) {
@@ -25,13 +29,27 @@ function Home() {
         }
     }
 
+    function toggleReplayWindow () {
+        if (replayWindowOpen) {
+            document.getElementById("replay-window").style.width = "0";
+            setReplayWindowOpen (false)
+        }
+        else {
+            document.getElementById("replay-window").style.width = "70%";
+            setReplayWindowOpen (true)
+        }
+    }
+
     return (
         <StarknetProvider>
             <CoverArtBack />
             <CoverArt />
 
+            <div id="replay-window" className="replay-window">
+                <ReplayWindow toggleReplayWindow={toggleReplayWindow} dbStatesReplayWindow={dbStatesReplayWindow}/>
+            </div>
             <div id="side-panel" className="side-panel">
-                <Panel />
+                <Panel toggleReplayWindow={toggleReplayWindow} setDbStatesReplayWindow={setDbStatesReplayWindow} />
             </div>
             <div className="mother-container">
                 <div className="top-child-container">
@@ -39,7 +57,11 @@ function Home() {
 
                     <button
                         onClick={handlePanel}
-                        style={{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',color:'#333333',fontSize:'13.33px',fontFamily:'Poppins-Light'}}
+                        style={{
+                            padding:'0',margin:'0',height:'25px',border:'0',width:'160px',
+                            color:'#333333',fontSize:'13.33px',fontFamily:'Poppins-Light',
+                            borderRadius: '10px'
+                        }}
                     >
                         {panelButtonText}
                     </button>

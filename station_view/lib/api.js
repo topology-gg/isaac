@@ -21,3 +21,7 @@ export function useLobbyQueue () {
 export function useMacroStates () {
     return useSWR('/api/macro_states', fetcher)
 }
+
+export function useMacroStatesAll () {
+    return useSWR('/api/macro_states_all', fetcher)
+}
