@@ -28,12 +28,13 @@ export default function GameStatsPlayers(props) {
             prev.map((account_str, idx) => {
                 if (account_str !== '0') return account_str
 
-                return toBN(db_player_balances.player_balances[idx]['account']).toString(16)
+                const player_account = db_player_balances.player_balances.find(e => e.player_index === idx).account;
+
+                return toBN(player_account).toString(16)
             })
         )
 
     }, [db_player_balances])
-
 
     //
     // Return component
