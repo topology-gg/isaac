@@ -135,11 +135,11 @@ export default function View () {
             else if (queue_length == 0) {
                 setAccountQueueInfo ('queue is empty')
                 setQueueInfo (`waiting for ${CIV_SIZE} more players before attempting dispatch`)
-                setJoinButtonText ('join queue')
+                setJoinButtonText ('Join queue')
             }
             else if (queue_length == CIV_SIZE) {
                 setQueueInfo (`queue is full; ready for dispatch`)
-                setJoinButtonText ('dispatch')
+                setJoinButtonText ('Dispatch')
                 setJoinButtonColor ('#555555')
                 setJoinButtonBgColor ('#ffd500')
             }
@@ -197,7 +197,7 @@ export default function View () {
                         setJoinButtonColor ('#333333')
                     }
 
-                    setJoinButtonText ('join queue')
+                    setJoinButtonText ('Join queue')
                 }
 
             }

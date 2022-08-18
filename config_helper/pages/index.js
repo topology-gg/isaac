@@ -13,7 +13,7 @@ function Home() {
 
     const connectors = getInstalledInjectedConnectors()
 
-    const [panelButtonText, setPanelButtonText] = useState ('open history')
+    const [panelButtonText, setPanelButtonText] = useState ('Open history')
     const [panelOpen, setPanelOpen] = useState (false)
     const [replayWindowOpen, setReplayWindowOpen] = useState (false)
 
@@ -23,12 +23,12 @@ function Home() {
         if (panelOpen) {
             document.getElementById("side-panel").style.width = "0";
             setPanelOpen (false)
-            setPanelButtonText ('open history')
+            setPanelButtonText ('Open history')
         }
         else {
             document.getElementById("side-panel").style.width = "500px";
             setPanelOpen (true)
-            setPanelButtonText ('close history')
+            setPanelButtonText ('Close history')
         }
     }
 
