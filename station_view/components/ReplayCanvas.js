@@ -36,6 +36,12 @@ export default function ReplayCanvas (props) {
     const _plntRef = useRef()
 
     useEffect(() => {
+        if (!props.open) {
+            setSlideBlockHeightRel (0) // reset slide at window close
+        }
+    }, [props.open])
+
+    useEffect(() => {
         if (!props.macro_states) return;
 
         setMacroStatesLen (props.macro_states.length)

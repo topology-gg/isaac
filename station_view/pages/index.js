@@ -49,7 +49,7 @@ function Home() {
             <CoverArt />
 
             <div id="replay-window" className="replay-window">
-                <ReplayWindow toggleReplayWindow={toggleReplayWindow} dbStatesReplayWindow={dbStatesReplayWindow}/>
+                <ReplayWindow toggleReplayWindow={toggleReplayWindow} dbStatesReplayWindow={dbStatesReplayWindow} open={replayWindowOpen}/>
             </div>
             <div id="side-panel" className="side-panel">
                 <Panel toggleReplayWindow={toggleReplayWindow} setDbStatesReplayWindow={setDbStatesReplayWindow} />
