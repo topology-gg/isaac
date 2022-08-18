@@ -6,6 +6,7 @@ export default async function handler(req, res) {
     const client = await clientPromise
 
     const db = client.db('isaac_10ce37b')
+    // const db = client.db('isaac') // old db for debug
     const lobby_queue = await db
         .collection ('lobby_queue')
         .find ({
