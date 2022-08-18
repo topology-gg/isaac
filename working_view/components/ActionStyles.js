@@ -28,8 +28,8 @@ export const BUTTON_SINGLE_STYLE = {
 export const BUTTON_SINGLE_DISABLED_STYLE = {
     ...BUTTON_BASE_STYLE,
     borderRadius: '8px',
-    color: '#999999',
-    backgroundColor: '#BBBBBB'
+    color: '#99999966',
+    backgroundColor: '#CCCCCC66'
 }
 
 export const BUTTON_LEFT_STYLE = {
