@@ -1016,7 +1016,7 @@ export default function GameWorld() {
 
         _canvasRef.current.on('mouse:wheel', function(opt) {
 
-            const MIN_ZOOM = 1
+            const MIN_ZOOM = 0.6
             const MAX_ZOOM = 15
 
             const delta = opt.e.deltaY;
