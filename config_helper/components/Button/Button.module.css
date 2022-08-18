@@ -7,4 +7,7 @@
     color: #333333;
     font-size: 13.33px;
     font-family: Poppins-Light;
+    display: block;
+    width: 170px;
+    margin-bottom: 7px;
 }

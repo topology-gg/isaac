@@ -187,8 +187,8 @@ h5 {
 
 .sun {
     margin-top: 10px;
-    width: 300px;
-    height: 300px;
+    width: 280px;
+    height: 280px;
     /* border: 1px #333333 solid */
     border: none !important;
     margin-left: auto;
@@ -208,7 +208,7 @@ h5 {
     background-position: center center;
     background-repeat: no-repeat;
     /* background-size: contain */
-    background-size: 350px 350px;
+    background-size: 330px 330px;
 }
 
 
