@@ -11,7 +11,7 @@ export function ConnectWallet() {
     const { available, connect, disconnect } = useConnectors()
     const [connectors, setConnectors] = useState([])
 
-    // Connectors  are not available server-side hterefore we 
+    // Connectors  are not available server-side therefore we
     // set the state in a useEffect hook
     useEffect(() => {
       if (available) setConnectors(available)
