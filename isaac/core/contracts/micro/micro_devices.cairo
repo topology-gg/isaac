@@ -381,8 +381,14 @@ namespace ns_micro_devices:
         # Check if caller owns the device on `grid`
         #
         let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
-        assert grid_stat.populated = 1
-        assert grid_stat.deployed_device_owner = caller
+
+        with_attr error_message ("this grid is not populated; pickup is invalid"):
+            assert grid_stat.populated = 1
+        end
+
+        with_attr error_message ("the deployed device at this grid is not owned by the caller"):
+            assert grid_stat.deployed_device_owner = caller
+        end
 
         #
         # Update `device_deployed_emap`
