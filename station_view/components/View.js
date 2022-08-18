@@ -31,6 +31,15 @@ export default function View () {
         method: 'anyone_ask_to_queue'
     })
 
+    const {
+        data: data_dispatch, loading : loading_dispatch,
+        error: error_dispatch, reset: reset_dispatch,
+        invoke: invoke_dispatch
+    } = useStarknetInvoke ({
+        contract: lobby_contract,
+        method: 'anyone_dispatch_player_to_universe'
+    })
+
     //
     // Data fetched from backend on Apibara
     //
@@ -50,6 +59,7 @@ export default function View () {
     const [queueInfo, setQueueInfo] = useState ('')
     const [joinButtonText, setJoinButtonText] = useState ('')
     const [joinButtonColor, setJoinButtonColor] = useState ('#333333')
+    const [joinButtonBgColor, setJoinButtonBgColor] = useState ('#EFEFEF')
 
     //
     // Check if all db collections are loaded
@@ -129,8 +139,9 @@ export default function View () {
             }
             else if (queue_length == CIV_SIZE) {
                 setQueueInfo (`queue is full; ready for dispatch`)
-                setJoinButtonText ('queue full')
-                setJoinButtonColor ('#999999')
+                setJoinButtonText ('dispatch')
+                setJoinButtonColor ('#555555')
+                setJoinButtonBgColor ('#ffd500')
             }
             else {
 
@@ -199,17 +210,45 @@ export default function View () {
     // Handler for button click
     //
     function onClick () {
+<<<<<<< HEAD
         // console.log ('Join queue button clicked')
         if (joinButtonColor==='#333333') {
+=======
+        console.log ('Join queue button clicked')
+        if (joinButtonColor==='#333333') { // join queue
+>>>>>>> main
             invoke ({ args: [] })
+        }
+        else if (joinButtonColor==='#555555') { // dispatch
+            invoke_dispatch ({ args: [] })
         }
     }
 
-    const join_button_color = {color:joinButtonColor}
+    function handleJoinButtonMouseOver () {
+        if (joinButtonColor==='#333333') { // join queue
+            setJoinButtonBgColor ('#FFFD74')
+        }
+        else if (joinButtonColor==='#555555') { // dispatch
+            setJoinButtonBgColor ('#FFFD74')
+        }
+    }
+
+    function handleJoinButtonMouseOut () {
+        if (joinButtonColor==='#333333') { // join queue
+            setJoinButtonBgColor ('#EFEFEF')
+        }
+        else if (joinButtonColor==='#555555') { // dispatch
+            setJoinButtonBgColor ('#ffd500')
+        }
+    }
+
+    const join_button_color = {color:joinButtonColor, backgroundColor:joinButtonBgColor}
     const join_button_style = {
         ...{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',fontFamily:'Poppins-Light', borderRadius: '10px'},
         ...join_button_color
     }
+
+    //background-color: #FFFD74;
 
     return (
         <div style={{display:'flex',flexDirection:'column'}}>
@@ -225,6 +264,8 @@ export default function View () {
                             <button
                                 style = {join_button_style}
                                 onClick = {onClick}
+                                onMouseOver = {() => handleJoinButtonMouseOver()}
+                                onMouseOut = {() => handleJoinButtonMouseOut()}
                                 className = 'action-button'
                             >
                                 {joinButtonText}

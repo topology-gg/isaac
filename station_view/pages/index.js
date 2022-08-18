@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { ConnectWallet } from "../components/ConnectWallet.js"
-import { StarknetProvider } from '@starknet-react/core'
+import { getInstalledInjectedConnectors, StarknetProvider } from '@starknet-react/core'
 
 import View from "../components/View"
 import Panel from "../components/Panel"
 import ReplayWindow from "../components/ReplayWindow"
 import CoverArt from "../components/CoverArt"
 import CoverArtBack from "../components/CoverArtBack"
+import Button from "../components/Button/index.js";
 
 function Home() {
+
+    const connectors = getInstalledInjectedConnectors()
 
     const [panelButtonText, setPanelButtonText] = useState ('open history')
     const [panelOpen, setPanelOpen] = useState (false)
@@ -41,7 +44,7 @@ function Home() {
     }
 
     return (
-        <StarknetProvider>
+        <StarknetProvider connectors={connectors}>
             <CoverArtBack />
             <CoverArt />
 
@@ -55,7 +58,7 @@ function Home() {
                 <div className="top-child-container">
                     <h1 style={{fontFamily:'Anoxic',fontSize:'4em',marginTop:'0.2em',marginBottom:'0.2em'}}>ISAAC</h1>
 
-                    <button
+                    <Button
                         onClick={handlePanel}
                         style={{
                             padding:'0',margin:'0',height:'25px',border:'0',width:'160px',
@@ -64,7 +67,7 @@ function Home() {
                         }}
                     >
                         {panelButtonText}
-                    </button>
+                    </Button>
 
                     <span>.</span>
 
