@@ -137,6 +137,10 @@ button {
     width: 170px;
     margin-bottom: 10px;
 }
+.wallet-button:hover {
+    background-color:#FFFE71;
+    transition: 0.1s;
+}
 
 p {
     font-size: 0.75em;
