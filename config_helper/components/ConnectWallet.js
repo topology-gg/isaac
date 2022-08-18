@@ -2,12 +2,20 @@ import {
   useStarknet,
   useConnectors
 } from '@starknet-react/core'
+import { useEffect, useState } from 'react'
 
 
 export function ConnectWallet() {
 
     const { account } = useStarknet()
     const { available, connect, disconnect } = useConnectors()
+    const [connectors, setConnectors] = useState([])
+
+    // Connectors  are not available server-side hterefore we 
+    // set the state in a useEffect hook
+    useEffect(() => {
+      if (available) setConnectors(available)
+    }, [available])
 
     const BUTTON_STYLE = {padding:'0',margin:'0',height:'25px',border:'0',width:'160px',color:'#333333',fontSize:'13.33px',fontFamily:'Poppins-Light'}
 
@@ -29,7 +37,7 @@ export function ConnectWallet() {
 
     return (
         <div>
-            {available.map((connector) => (
+            {connectors.map((connector) => (
                 <button
                     style={BUTTON_STYLE}
                     key={connector.id()} onClick={() => connect(connector)}>
