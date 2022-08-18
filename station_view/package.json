@@ -13,7 +13,7 @@
     "@react-three/cannon": "^6.1.0",
     "@react-three/drei": "^9.0.1",
     "@react-three/fiber": "^8.0.7",
-    "@starknet-react/core": "^0.6.3",
+    "@starknet-react/core": "^0.13.0",
     "fabric": "^5.2.1",
     "mongodb": "^4.7.0",
     "next": "12.1.4",

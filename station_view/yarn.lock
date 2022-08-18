@@ -1561,10 +1561,10 @@
   resolved "https://registry.yarnpkg.com/@sideway/pinpoint/-/pinpoint-2.0.0.tgz#cff8ffadc372ad29fd3f78277aeb29e632cc70df"
   integrity sha512-RNiOoTPkptFtSVzQevY/yWtZwf/RxyVnPy/OcA9HBM3MlGDnBEYL5B41H0MTn0Uec8Hi+2qUtTfG2WWZBmMejQ==
 
-"@starknet-react/core@^0.6.3":
-  version "0.6.3"
-  resolved "https://registry.npmjs.org/@starknet-react/core/-/core-0.6.3.tgz"
-  integrity sha512-fh4ud44hPs/uWy6RVMSTE+/Bazcr6nZm3lmiYse8A1HkjrGcm9rbn4IdRcKhzPB+hCz/5CVZkQs/Fukh01va9Q==
+"@starknet-react/core@^0.13.0":
+  version "0.13.2"
+  resolved "https://registry.yarnpkg.com/@starknet-react/core/-/core-0.13.2.tgz#0af7e0c882125d05bee7912ecdde03cd72348b26"
+  integrity sha512-SimSePRVVk4EtbSFzuohgOSUmPZ1Q049ky00togG8kdjCWklh4ZlI2SLkHH1AoMIge0BzdyT8qjxvU5k791Q5Q==
   dependencies:
     immutable "^4.0.0"
 
