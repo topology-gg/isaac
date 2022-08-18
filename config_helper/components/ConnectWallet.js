@@ -1,32 +1,65 @@
 import {
   useStarknet,
-  InjectedConnector
+  useConnectors
 } from '@starknet-react/core'
 
 
 export function ConnectWallet() {
-  const { account, connect } = useStarknet()
 
-  if (account) {
+    const { account } = useStarknet()
+    const { available, connect, disconnect } = useConnectors()
+
+    const BUTTON_STYLE = {padding:'0',margin:'0',height:'25px',border:'0',width:'160px',color:'#333333',fontSize:'13.33px',fontFamily:'Poppins-Light'}
+
+    if (account) {
+        return (
+            <div>
+                <p className="connected_account"
+                    style={{padding:'0',margin:'0',height:'25px',verticalAlign:'middle',fontSize:'12px'}}
+                >
+                    Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}
+                </p>
+                <button style={BUTTON_STYLE}
+                    onClick={() => disconnect()}>
+                        Disconnect
+                </button>
+            </div>
+      )
+    }
+
     return (
-        <p
-            className="connected_account"
-            style={{padding:'0',margin:'0',height:'25px',verticalAlign:'middle',fontSize:'12px'}}
-        >
-            Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}
-        </p>
+        <div>
+            {available.map((connector) => (
+                <button
+                    style={BUTTON_STYLE}
+                    key={connector.id()} onClick={() => connect(connector)}>
+                    {`Connect ${connector.name()}`}
+                </button>
+            ))}
+        </div>
     )
-  }
 
-  return <button
-            onClick = {
-                () => {
-                    connect(new InjectedConnector())
-                    console.log ('connect')
-                }
-            }
-            style={{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',color:'#333333',fontSize:'12px',fontFamily:'Poppins-Light'}}
-        >
-            Connect wallet
-        </button>
+    // const { account } = useStarknet()
+    // const { available, connect, disconnect } = useConnectors()
+
+    // if (account) {
+    //     return (
+    //         <p
+    //             className="connected_account"
+    //             style={{padding:'0',margin:'0',height:'25px',verticalAlign:'middle',fontSize:'12px'}}
+    //         >
+    //             Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}
+    //         </p>
+    //     )
+    // }
+
+    // return (
+    //     <div>
+    //       {available.map((connector) => (
+    //         <button key={connector.id()} onClick={() => connect(connector)}>
+    //           {`Connect ${connector.name()}`}
+    //         </button>
+    //       ))}
+    //     </div>
+    //   )
 }
