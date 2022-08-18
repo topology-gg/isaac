@@ -54,6 +54,30 @@ body {
         0 0/30px 30px;
 }
 
+button {
+    color: #333333;
+    border-radius: 8px;
+    border-width: 0;
+    cursor: pointer;
+    display: inline-block;
+    font-family: "Poppins-Light";
+    font-size: 0.8em;
+    font-weight: 500;
+    line-height: 20px;
+    list-style: none;
+    margin: 0;
+    text-align: center;
+    transition: all 200ms;
+    vertical-align: baseline;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+button:hover {
+    background-color: #FFFD74;
+}
 
 .mother-container {
     display: flex;
@@ -114,6 +138,10 @@ body {
     overflow-x: hidden;
     white-space: nowrap;
     transition: 0.2s;
+}
+
+.error-text {
+    color: #E92E2E;
 }
 
 h2 {
@@ -178,8 +206,8 @@ h5 {
 
 .sun {
     margin-top: 10px;
-    width: 300px;
-    height: 300px;
+    width: 280px;
+    height: 280px;
     /* border: 1px #333333 solid */
     border: none !important;
     margin-left: auto;
@@ -199,7 +227,7 @@ h5 {
     background-position: center center;
     background-repeat: no-repeat;
     /* background-size: contain */
-    background-size: 350px 350px;
+    background-size: 330px 330px;
 }
 
 
