@@ -22,7 +22,7 @@ export default function GameStatsPlayers(props) {
 
     useEffect (() => {
         if (!db_player_balances) return;
-        if (!db_player_balances.player_balances) return;
+        if (db_player_balances.player_balances.length == 0) return;
 
         setAccountStringsState ((prev) =>
             prev.map((account_str, idx) => {
