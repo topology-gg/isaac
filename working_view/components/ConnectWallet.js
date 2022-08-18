@@ -42,7 +42,7 @@ export function ConnectWallet() {
     <>
         {available.length > 0 ? (
             available.map((connector) => (
-                <button key={connector.id()} onClick={() => connect(connector)}>
+                <button className='wallet-button' key={connector.id()} onClick={() => connect(connector)}>
                     Connect {connector.name()}
                 </button>
             ))

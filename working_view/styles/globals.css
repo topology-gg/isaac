@@ -123,7 +123,6 @@ button {
 }
 
 .right-child-title {
-    height: 8em;
     margin: 0;
 }
 
@@ -131,6 +130,12 @@ button {
     overflow-y: auto;
     height: 20em;
     margin: 0;
+}
+
+.wallet-button {
+    display: block;
+    width: 170px;
+    margin-bottom: 10px;
 }
 
 p {
