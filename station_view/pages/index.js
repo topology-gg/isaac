@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ConnectWallet } from "../components/ConnectWallet.js"
-import { StarknetProvider } from '@starknet-react/core'
+import { getInstalledInjectedConnectors, StarknetProvider } from '@starknet-react/core'
 
 import View from "../components/View"
 import Panel from "../components/Panel"
@@ -8,6 +8,8 @@ import CoverArt from "../components/CoverArt"
 import CoverArtBack from "../components/CoverArtBack"
 
 function Home() {
+
+    const connectors = getInstalledInjectedConnectors()
 
     const [panelButtonText, setPanelButtonText] = useState ('open history')
     const [panelOpen, setPanelOpen] = useState (false)
@@ -26,7 +28,7 @@ function Home() {
     }
 
     return (
-        <StarknetProvider>
+        <StarknetProvider connectors={connectors}>
             <CoverArtBack />
             <CoverArt />
 

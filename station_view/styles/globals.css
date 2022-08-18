@@ -49,6 +49,30 @@ body {
         0 0/30px 30px;
 }
 
+button {
+    color: #333333;
+    border-radius: 8px;
+    border-width: 0;
+    cursor: pointer;
+    display: inline-block;
+    font-family: "Poppins-Light";
+    font-size: 0.8em;
+    font-weight: 500;
+    line-height: 20px;
+    list-style: none;
+    margin: 0;
+    text-align: center;
+    transition: all 200ms;
+    vertical-align: baseline;
+    white-space: nowrap;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+}
+
+button:hover {
+    background-color: #FFFD74;
+}
 
 .mother-container {
     display: flex;
