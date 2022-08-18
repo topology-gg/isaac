@@ -133,7 +133,8 @@ button:hover {
     z-index: 3;
     top: 5%;
     left: 15%;
-    background-color: #FFF8DC;
+    /* background-color: #FFF8DC; */
+    background-color: #FFFFE0;
     opacity: 0.95;
     overflow-x: hidden;
     white-space: nowrap;

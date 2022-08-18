@@ -210,13 +210,8 @@ export default function View () {
     // Handler for button click
     //
     function onClick () {
-<<<<<<< HEAD
-        // console.log ('Join queue button clicked')
-        if (joinButtonColor==='#333333') {
-=======
         console.log ('Join queue button clicked')
         if (joinButtonColor==='#333333') { // join queue
->>>>>>> main
             invoke ({ args: [] })
         }
         else if (joinButtonColor==='#555555') { // dispatch
