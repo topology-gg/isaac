@@ -6,6 +6,7 @@ import View from "../components/View"
 import Panel from "../components/Panel"
 import CoverArt from "../components/CoverArt"
 import CoverArtBack from "../components/CoverArtBack"
+import Button from "../components/Button/index.js";
 
 function Home() {
 
@@ -39,12 +40,11 @@ function Home() {
                 <div className="top-child-container">
                     <h1 style={{fontFamily:'Anoxic',fontSize:'4em',marginTop:'0.2em',marginBottom:'0.2em'}}>ISAAC</h1>
 
-                    <button
+                    <Button
                         onClick={handlePanel}
-                        style={{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',color:'#333333',fontSize:'13.33px',fontFamily:'Poppins-Light'}}
                     >
                         {panelButtonText}
-                    </button>
+                    </Button>
 
                     <span>.</span>
 

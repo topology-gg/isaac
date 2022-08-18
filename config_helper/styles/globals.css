@@ -121,6 +121,10 @@ button:hover {
     padding-top: 40px;
 }
 
+.error-text {
+    color: #E92E2E;
+}
+
 h2 {
     margin-top: 1em;
     margin-bottom: 0.5em;
