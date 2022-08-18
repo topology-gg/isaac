@@ -18,6 +18,7 @@ import {
   useContract,
   useStarknetCall,
   useStarknetInvoke,
+  getInstalledInjectedConnectors,
   StarknetProvider,
 } from '@starknet-react/core'
 
@@ -25,6 +26,13 @@ function Home() {
 
     const [universeActive, setUniverseActive] = useState (false)
     const { data: db_macro_states } = useMacroStates ()
+    const [connectors, setConnectors] = useState ([])
+
+    // Connectors are not available server side, so use an effect hook
+    useEffect (() => {
+        setConnectors (getInstalledInjectedConnectors())
+    } , [])
+
 
     useEffect ( () => {
         if (!db_macro_states) {
@@ -41,7 +49,7 @@ function Home() {
     }, [db_macro_states])
 
     return (
-    <StarknetProvider>
+    <StarknetProvider connectors={connectors} >
         <CoverArtBack />
         <CoverArt />
 

@@ -1,6 +1,6 @@
 import {
   useStarknet,
-  InjectedConnector
+  useConnectors,
 } from '@starknet-react/core'
 
 // export function ConnectWallet() {
@@ -31,11 +31,26 @@ import {
 
 
 export function ConnectWallet() {
-  const { account, connect } = useStarknet()
+  const { account } = useStarknet()
+  const { available, connect } = useConnectors()
 
   if (account) {
     return <p className="connected_account">Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}</p>
   }
 
-  return <button onClick={() => connect(new InjectedConnector())}>Connect wallet</button>
+  return (
+    <>
+        {available.length > 0 ? (
+            available.map((connector) => (
+                <button key={connector.id()} onClick={() => connect(connector)}>
+                    Connect {connector.name()}
+                </button>
+            ))
+        ) : (
+            <p className="no_connectors">
+                Wallet not found. Please install ArgentX or Braavos.
+            </p>
+        )}
+    </>
+  )
 }
