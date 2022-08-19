@@ -5,7 +5,8 @@ export default async function handler(req, res) {
 
     const client = await clientPromise
 
-    const db = client.db('isaac_10ce37b')
+    const db = client.db('isaac_dfbc16')
+    // const db = client.db('isaac_10ce37b')
     // const db = client.db('isaac') // old db for debug
 
     // TODO: query the birth block_number of this civ, and use that to filter macro_states.
