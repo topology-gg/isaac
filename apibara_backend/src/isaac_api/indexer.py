@@ -42,17 +42,17 @@ from isaac_api.contract import (
 
 # load_dotenv ()
 
-CIV_SIZE = 5
+CIV_SIZE = 20
 UNIVERSE_COUNT = 1
 DEVICE_TYPE_COUNT = 16
 
-ORIGIN_BLOCK_TO_INDEX = 298347 - 1
+ORIGIN_BLOCK_TO_INDEX = 303261 - 1
 INDEXER_ID = os.getenv('ISAAC_INDEXER_ID', 'isaac')
 
 ISAAC_UNIVERSE_ADDRESSES = {
-    0 : '0x02b1a7651d9d0d3a434330a0dc14be766b190a588be29f3864f32e2fb3c3e21a'
+    0 : '0x03df9fa61c7f69d0b9e5da0ed94ceafed7c6f9ffa56b3828d515768ef861bb56'
 }
-ISAAC_LOBBY_ADDRESS = '0x05b26ace786dc2476c181f5bb3dce8b12073c57072c48b6037d7d67b2d749894'
+ISAAC_LOBBY_ADDRESS = '0x06ea0fc5dcf98f2cb9f4b97fc355cd1f92e0ee83fde75c0f6117602a54cf6bda'
 
 PG_TYPES = [0,1]
 HARVESTER_TYPES = [2,3,4,5,6]
@@ -917,7 +917,7 @@ async def handle_activate_universe_occurred (info, event, univ, block_number):
             "active"  : 1,
             "most_recent" : 1,
             "birth_block_number" : block_number,
-            "fate" : "undetermined"
+            "fate" : "Undetermined"
         }
     )
 
