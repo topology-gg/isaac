@@ -12,13 +12,17 @@
 2. **Dispatch to universe**: Once the queue is full, dispatch all queued players to Universe#0.
 (anyone can submit this transaction once queue is full)
 
+3. **Examine past civilization**: Select open history, and click on civilization's fate to open civilization replay window. Use slide bar to navigate block numbers relative to civilization birth.
+
 ### Space View
 
-**Check the whereabouts of Böyük, Orta, Balaca, and Ev**.
+**Check the whereabouts of Böyük, Orta, Balaca, and Ev**: Visit [Isaac Space View](https://isaac-space-view.netlify.app/).
 
 <img src="/assets/images/space-view-screenshot.png"/>
 
 ### Working View
+
+**Inspect and participate in strategic manufacturing activites**: Visit [Isaac Working View](https://isaac-working-view.netlify.app/).
 
 ##### **Connect wallet**
 Connect wallet, and find your registered Discord handle shown under *Player accounts in this universe*. Also examine the civilization stats as well as your starting loadout - the balance of each device type at the birth of civilization.
