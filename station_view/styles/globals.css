@@ -56,7 +56,7 @@ body {
 
 button {
     color: #333333;
-    border-radius: 8px;
+    border-radius: 10px;
     border-width: 0;
     cursor: pointer;
     display: inline-block;
@@ -152,6 +152,8 @@ h2 {
 
 p {
     font-size: 0.75em;
+    margin: 0;
+    padding: 0;
 }
 
 table, th, td {
@@ -169,7 +171,6 @@ td {
 }
 
 span {
-    color: transparent;
     height: 10px;
 }
 
