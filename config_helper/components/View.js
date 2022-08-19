@@ -256,12 +256,13 @@ export default function View () {
                         : lobbyQueueLength > 0
                         ? 'Queuing up...'
                         : 'Queue is empty'}
+                    {' '}
+                    {positionInQueue > 0 ? <span>You are no. {positionInQueue} in queue</span> : accountAlreadyActive ? <span>Account already in active universe #0</span> : null}
                 </p>
-                {positionInQueue > 0 ? <p>You are no. {positionInQueue} in queue</p> : accountAlreadyActive ? <p>Account already in active universe #0</p> : null}
             </div>
             <QueueVisualization queueLength={lobbyQueueLength} civSize={CIV_SIZE} />
 
-            <div style={{height:'3em'}}>
+            <div style={{marginBottom: '2em'}}>
                 {
                     account && (
                         <div style={{textAlign:'center'}}>
