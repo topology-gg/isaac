@@ -1,0 +1,22 @@
+.qVis {
+    text-align: center;
+    width: 300px;
+    position: relative;
+    border: 1px solid #33333330;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.full {
+    position: absolute;
+    background-color: #FFFD74;
+    top: 0;
+    bottom: 0;
+    z-index: 0;
+}
+
+.text {
+    font-size: 13.33px;
+    position: relative;
+    z-index: 1;
+}
