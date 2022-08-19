@@ -5,6 +5,8 @@ import {
 import { useEffect, useState } from 'react'
 import Button from './Button'
 
+import styles from './ConnectWallet.module.css'
+
 
 export function ConnectWallet() {
 
@@ -21,21 +23,19 @@ export function ConnectWallet() {
 
     if (account) {
         return (
-            <>
-                <p className="connected_account"
-                    style={{padding:'0',margin:'0',height:'25px',verticalAlign:'middle',fontSize:'12px'}}
-                >
+            <div className={styles.wrapper}>
+                <p className={styles.text}>
                     Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}
                 </p>
-                <Button onClick={() => disconnect()}>
+                <Button className={styles.button} onClick={() => disconnect()}>
                     Disconnect
                 </Button>
-            </>
+            </div>
       )
     }
 
     return (
-        <>
+      <div className={`${styles.wrapper} ${styles.wrapperConnectButtons}`}>
             {connectors.length > 0 ? connectors.map((connector) => (
                 <Button
                     key={connector.id()}
@@ -49,6 +49,6 @@ export function ConnectWallet() {
                     {walletNotFound && <p className='error-text'>Wallet not found. Please install ArgentX or Braavos.</p>}
                 </>
             )}
-        </>
+      </div>
     )
 }
