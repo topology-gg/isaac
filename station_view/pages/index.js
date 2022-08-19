@@ -62,8 +62,7 @@ function Home() {
                         onClick={handlePanel}
                         style={{
                             padding:'0',margin:'0',height:'25px',border:'0',width:'160px',
-                            color:'#333333',fontSize:'13.33px',fontFamily:'Poppins-Light',
-                            borderRadius: '10px'
+                            color:'#333333',fontSize:'13.33px',fontFamily:'Poppins-Light'
                         }}
                     >
                         {panelButtonText}

@@ -15,6 +15,7 @@ import {
     useStarknet,
     useStarknetInvoke
 } from '@starknet-react/core'
+import QueueVisualization from "./QueueVisualization";
 
 const CIV_SIZE = 20
 
@@ -51,12 +52,12 @@ export default function View () {
     //
     // React states and references
     //
-    const [lobbyQueueLength, setLobbyQueueLength] = useState ('loading ...')
+    const [lobbyQueueLength, setLobbyQueueLength] = useState (0)
     const [hasLoadedDB, setHasLoadedDB] = useState (false)
     const [universeStatus, setUniverseStatus] = useState ('loading ...')
     const [universeInfo, setUniverseInfo] = useState ([])
-    const [accountQueueInfo, setAccountQueueInfo] = useState ('')
-    const [queueInfo, setQueueInfo] = useState ('')
+    const [positionInQueue, setPositionInQueue] = useState (0)
+    const [accountAlreadyActive, setAccountAlreadyActive] = useState (false)
     const [joinButtonText, setJoinButtonText] = useState ('')
     const [joinButtonColor, setJoinButtonColor] = useState ('#333333')
     const [joinButtonBgColor, setJoinButtonBgColor] = useState ('#EFEFEF')
@@ -90,6 +91,7 @@ export default function View () {
             // set display queue length
             //
             const queue_length = db_lobby_queue.lobby_queue.length
+            // const queue_length = 20
             setLobbyQueueLength (queue_length)
 
 
@@ -128,17 +130,13 @@ export default function View () {
                 ]
                 setUniverseInfo (info)
             }
-
             if (!account) {
-                setAccountQueueInfo ('no account connected')
+                // Don't set anything
             }
             else if (queue_length == 0) {
-                setAccountQueueInfo ('queue is empty')
-                setQueueInfo (`waiting for ${CIV_SIZE} more players before attempting dispatch`)
                 setJoinButtonText ('Join queue')
             }
             else if (queue_length == CIV_SIZE) {
-                setQueueInfo (`queue is full; ready for dispatch`)
                 setJoinButtonText ('Dispatch')
                 setJoinButtonColor ('#555555')
                 setJoinButtonBgColor ('#ffd500')
@@ -148,15 +146,15 @@ export default function View () {
                 //
                 // check if all universes are active or if some is available
                 //
-                if (!db_civ_state.civ_state[0]) {
-                    setQueueInfo (`waiting for ${CIV_SIZE-queue_length} more players before dispatching`)
-                }
-                else if (db_civ_state.civ_state[0].active == 0) {
-                    setQueueInfo (`waiting for ${CIV_SIZE-queue_length} more players before dispatching`)
-                }
-                else {
-                    setQueueInfo (`all universes are active`)
-                }
+                // if (!db_civ_state.civ_state[0]) {
+                //     setQueueInfo (`waiting for ${CIV_SIZE-queue_length} more players before dispatching`)
+                // }
+                // else if (db_civ_state.civ_state[0].active == 0) {
+                //     setQueueInfo (`waiting for ${CIV_SIZE-queue_length} more players before dispatching`)
+                // }
+                // else {
+                //     setQueueInfo (`all universes are active`)
+                // }
                 const account_int_str = toBN(account).toString(10)
 
                 //
@@ -171,11 +169,12 @@ export default function View () {
                 for (const entry of db_lobby_queue.lobby_queue) {
                     queue_accounts.push (entry.account)
                 }
+                // if (false) {
                 if (queue_accounts.includes(account_int_str)) {
                     const index = queue_accounts.indexOf (account_int_str)
-                    console.log('index:',index)
+                    // console.log('index:',index)
                     const effective_queue_idx = db_lobby_queue.lobby_queue[index].queue_idx - head_idx
-                    setAccountQueueInfo (`ALREADY IN QUEUE: account is at queue position ${effective_queue_idx}`)
+                    setPositionInQueue (effective_queue_idx)
                     setJoinButtonText ('already in queue')
                     setJoinButtonColor ('#999999')
                 }
@@ -187,13 +186,13 @@ export default function View () {
                     for (const balance of db_player_balances.player_balances) {
                         civ_accounts.push (balance.account)
                     }
+                    // if (true) {
                     if (civ_accounts.includes(account_int_str)) {
-                        // setAccountQueueInfo ('account is in the civilization of the active universe #0')
-                        setAccountQueueInfo ('CANNOT QUEUE: account already in active universe #0')
+                        setAccountAlreadyActive (true)
                         setJoinButtonColor ('#999999')
                     }
                     else {
-                        setAccountQueueInfo ('CAN QUEUE')
+                        setAccountAlreadyActive (false)
                         setJoinButtonColor ('#333333')
                     }
 
@@ -239,18 +238,28 @@ export default function View () {
 
     const join_button_color = {color:joinButtonColor, backgroundColor:joinButtonBgColor}
     const join_button_style = {
-        ...{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',fontFamily:'Poppins-Light', borderRadius: '10px'},
+        ...{padding:'0',margin:'0',height:'25px',border:'0',width:'160px',fontFamily:'Poppins-Light'},
         ...join_button_color
     }
 
     //background-color: #FFFD74;
 
+    // const allUniversesActive = !db_civ_state?.civ_state[0] || db_civ_state.civ_state[0].active == 0
+
     return (
-        <div style={{display:'flex',flexDirection:'column'}}>
+        <div style={{paddingTop: '10px', display:'flex',flexDirection:'column', alignItems: 'center', gap: '1em'}}>
 
             <div style={{textAlign:'center'}}>
-                <p style={{marginTop:'0.5em'}}>Queue length: {lobbyQueueLength} / {accountQueueInfo} / {queueInfo}</p>
+                <p>
+                    {lobbyQueueLength === CIV_SIZE
+                        ? 'Queue is full. Dispatch is imminent!'
+                        : lobbyQueueLength > 0
+                        ? 'Queuing up...'
+                        : 'Queue is empty'}
+                </p>
+                {positionInQueue > 0 ? <p>You are no. {positionInQueue} in queue</p> : accountAlreadyActive ? <p>Account already in active universe #0</p> : null}
             </div>
+            <QueueVisualization queueLength={lobbyQueueLength} civSize={CIV_SIZE} />
 
             <div style={{height:'3em'}}>
                 {
