@@ -117,11 +117,11 @@ export default function View () {
                     <p key='population' style={p_style}>Population: {population}</p>,
                     <p key='univ-age' style={p_style}>Universe age: {ticks_since_birth} / 2520 ticks</p>,
                     <p key='transport' style={p_style}>
-                        <a href="" target="_blank" rel="noopener noreferrer">
+                        <a href="https://isaac-space-view.netlify.app" target="_blank" rel="noopener noreferrer">
                             Space View
                         </a>
                         /
-                        <a href="" target="_blank" rel="noopener noreferrer">
+                        <a href="https://isaac-working-view.netlify.app" target="_blank" rel="noopener noreferrer">
                             Working View
                         </a>
                     </p>
