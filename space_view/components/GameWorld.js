@@ -922,7 +922,7 @@ export default function GameWorld() {
             <img src="/sun1_crop.png" id="sun1-img" style={{visibility:imgVisibility}} />
             <img src="/sun2_crop.png" id="sun2-img" style={{visibility:imgVisibility}} />
             <div style={info_style}>
-                Age of universe: {universeAge} / 2160 ticks
+                Age of universe: {universeAge} / 2520 ticks
             </div>
         </div>
     );
