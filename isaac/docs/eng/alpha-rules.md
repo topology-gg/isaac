@@ -1,9 +1,9 @@
 # Open Alpha: Rules
 
 ### Three Views
-1. [Station](https://isaac-station.netlify.app/): Join queue, dispatch to universe, replay current & past civilizations.
-2. [Space View](https://isaac-space-view.netlify.app/): Examine the state of the universe at macro level.
-3. [Working View](https://isaac-working-view.netlify.app/): Examine and initiate strategic construction activities on Ev.
+1. [Station](https://isaac-station.netlify.app/): Join queue, dispatch to universe, replay current & past civilizations. [Github](https://github.com/topology-gg/isaac-station-view)
+2. [Space View](https://isaac-space-view.netlify.app/): Examine the state of the universe at macro level. [Github](https://github.com/topology-gg/isaac-space-view)
+3. [Working View](https://isaac-working-view.netlify.app/): Examine and initiate strategic construction activities on Ev. [Github](https://github.com/topology-gg/isaac-working-view)
 
 ### Entry qualification
 - Account addresses that have solved one [Solve2Mint 2.0](https://s2m2.netlify.app/) puzzle can join the queue at Station.
