@@ -1,5 +1,9 @@
 # Open Alpha: Rules
 
+### Discord server
+
+[Invite link](https://discord.com/invite/XqKr9pqZky)
+
 ### Three Views
 1. [Station](https://isaac-station.netlify.app/): Join queue, dispatch to universe, replay current & past civilizations. [Github](https://github.com/topology-gg/isaac-station-view)
 2. [Space View](https://isaac-space-view.netlify.app/): Examine the state of the universe at macro level. [Github](https://github.com/topology-gg/isaac-space-view)
