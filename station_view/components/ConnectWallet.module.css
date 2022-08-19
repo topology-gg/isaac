@@ -1,0 +1,27 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #33333330;
+  border-radius: 10px;
+}
+
+.wrapperConnectButtons {
+  border: 0px transparent;
+}
+
+.text {
+  padding: 0;
+  margin: 0;
+  margin-left: 10px;
+  vertical-align: middle;
+  font-size: 12px
+}
+
+.button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  margin-bottom: 0;
+  width: auto;
+  padding: 0 10px;
+}

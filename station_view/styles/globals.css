@@ -36,13 +36,13 @@ body,
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 body {
-    position: fixed;
-    overflow: hidden;
-    overscroll-behavior-y: none;
+    /* position: fixed; */
+    /* overflow: hidden; */
+    /* overscroll-behavior-y: none; */
     font-family: Poppins-Light;
     /* , -apple-system, BlinkMacSystemFont, avenir next, avenir, helvetica neue, helvetica, ubuntu, roboto, noto, segoe ui, arial, sans-serif; */
     /* color: #2e76c8; */
