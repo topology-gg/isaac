@@ -68,7 +68,7 @@ function Home() {
                         {panelButtonText}
                     </Button>
 
-                    <span>.</span>
+                    <span>&nbsp;</span>
 
                     <ConnectWallet />
 
