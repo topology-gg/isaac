@@ -262,7 +262,7 @@ export default function View () {
             </div>
             <QueueVisualization queueLength={lobbyQueueLength} civSize={CIV_SIZE} />
 
-            <div style={{marginBottom: '2em'}}>
+            <div style={{marginBottom: '0'}}>
                 {
                     account && (
                         <div style={{textAlign:'center'}}>
@@ -286,7 +286,7 @@ export default function View () {
             </div>
 
             <div>
-                <h3 style={{textAlign:'center',marginBottom:'0'}}>
+                <h3 style={{textAlign:'center',marginBottom:'0',marginTop:'0'}}>
                     Universe #0
                 </h3>
                 <h4 style={{textAlign:'center'}}>
