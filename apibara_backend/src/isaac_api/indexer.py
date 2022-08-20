@@ -958,7 +958,7 @@ async def handle_universe_activation_occurred (info, event):
         await info.storage.find_one_and_update (
             f'u{univ}_player_balances',
             {'account' : str(account)},
-            {'player_index' : player_index}
+            {'$set': {'player_index' : player_index}}
         )
 
         # result = await info.storage.find_one (
