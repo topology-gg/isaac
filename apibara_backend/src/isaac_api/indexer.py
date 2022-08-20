@@ -485,6 +485,13 @@ async def handle_player_pickup_utx_occurred (info, event, univ):
             'grid'  : grid.to_json ()
         }
     )
+    ## SAFEGUARD: if for some reason the result is None, don't continue
+    ## (experienced once with Open Alpha Civ#1 with a tx attempted to pickup something that was already picked up,
+    ##  yet the tx didn't revert and event was still emitted)
+    if not result:
+        print(f'>>> Exception: errorneous event encountered; this result should not have been None')
+        return
+
     utx_label_str = result ['id']
     utx_device_type = result ['type']
 
