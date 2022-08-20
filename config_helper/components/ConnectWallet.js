@@ -34,16 +34,24 @@ export function ConnectWallet() {
       )
     }
 
+    const buttons_sorted = [].concat(connectors)
+                    .sort ((a,b) => {
+                        if(a.name() < b.name()) { return -1; }
+                        if(a.name() > b.name()) { return 1; }
+                        return 0;
+                    })
+                    .map ((connector) => (
+                        <Button
+                            key={connector.id()}
+                            onClick={() => connect(connector)}
+                        >
+                            {`Connect ${connector.name()}`}
+                        </Button>
+                    ))
+
     return (
       <div className={`${styles.wrapper} ${styles.wrapperConnectButtons}`}>
-            {connectors.length > 0 ? connectors.map((connector) => (
-                <Button
-                    key={connector.id()}
-                    onClick={() => connect(connector)}
-                >
-                    {`Connect ${connector.name()}`}
-                </Button>
-            )) : (
+            {connectors.length > 0 ? buttons_sorted : (
                 <>
                     <Button onClick={() => setWalletNotFound(true)}>Connect</Button>
                     {walletNotFound && <p className='error-text'>Wallet not found. Please install ArgentX or Braavos.</p>}
