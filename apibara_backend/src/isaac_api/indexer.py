@@ -207,6 +207,7 @@ async def handle_player_transfer_undeployed_device_occurred (info, event, univ):
     # Decode event
     #
     src_account, dst_account, device_type, device_amount = decode_player_transfer_undeployed_device_occurred_event (event)
+    print (f'> src_account={src_account}, dst_account={dst_account}, device_type={device_type}, device_amount={device_amount}\n')
 
     #
     # Update collection 'u{}_player_balances'
@@ -223,7 +224,6 @@ async def handle_player_transfer_undeployed_device_occurred (info, event, univ):
     )
 
 
-
 async def handle_impulse_applied_occurred (info, event, univ, block_number):
     #
     # Decode event
@@ -231,6 +231,7 @@ async def handle_impulse_applied_occurred (info, event, univ, block_number):
     # impulse, plnt_q_before_impulse = decode_impulse_applied_occurred_event (event)
     impulse = decode_impulse_applied_occurred_event (event)
     impulse_json = impulse.to_json ()
+    print(f'> impulse_json={impulse_json}\n')
     # plnt_q_before_impulse_json = plnt_q_before_impulse.to_json ()
 
     #
@@ -265,6 +266,7 @@ async def handle_ask_to_queue_occurred (info, event):
     # Decode event
     #
     account, queue_idx = decode_ask_to_queue_occurred_event (event)
+    print(f'account={account}, queue_idx={queue_idx}\n')
 
     #
     # Update collection `lobby_queue`
@@ -285,6 +287,8 @@ async def handle_give_invitation_occurred (info, event):
     # Decode event
     #
     account = decode_give_invitation_occurred_event (event)
+    print(f'> account={account}\n')
+
     return
 
 
@@ -294,6 +298,7 @@ async def handle_resource_update_at_harvester_occurred (info, event, univ):
     # Decode event
     #
     device_id, new_quantity = decode_resource_update_at_harvester_occurred_event (event)
+    print(f'> device_id={device_id}, new_quantity={new_quantity}\n')
     # print (f'    -- resource update at harvester: device_id={device_id}, new_quantity={new_quantity}')
 
     #
@@ -315,6 +320,7 @@ async def handle_resource_update_at_transformer_occurred (info, event, univ):
     # Decode event
     #
     device_id, new_quantity_pre, new_quantity_post = decode_resource_update_at_transformer_occurred_event (event)
+    print(f'> device_id={device_id}, new_quantity_pre={new_quantity_pre}, new_quantity_post={new_quantity_post}\n')
     # print (f'    -- resource update at transformer: device_id={device_id}, new_quantity_pre={new_quantity_pre}, new_quantity_post={new_quantity_post}')
 
     #
@@ -337,6 +343,7 @@ async def handle_resource_update_at_upsf_occurred (info, event, univ):
     # Decode event
     #
     device_id, element_type, new_quantity = decode_resource_update_at_upsf_occurred_event (event)
+    print(f'> device_id={device_id}, element_type={element_type}, new_quantity={new_quantity}\n')
     # print (f'    -- resource update at upsf: device_id={device_id}, element_type={element_type}, new_quantity={new_quantity}')
 
     #
@@ -358,6 +365,7 @@ async def handle_energy_update_at_device_occurred (info, event, univ):
     # Decode event
     #
     device_id, new_quantity = decode_energy_update_at_device_occurred_event (event)
+    print(f'> device_id={device_id}, new_quantity={new_quantity}\n')
 
     #
     # Find device type and determine if harvester / transformer / upsf / ndpe
@@ -416,6 +424,7 @@ async def handle_player_deploy_utx_occurred (info, event, univ):
     # Decode event
     #
     owner, utx_label, utx_device_type, src_device_grid, dst_device_grid, locs_len, locs = decode_player_deploy_utx_occurred_event (event)
+    print(f'> owner={owner}, utx_label={utx_label}, utx_device_type={utx_device_type}, src_device_grid={src_device_grid}, dst_device_grid={dst_device_grid}, locs_len={locs_len}, locs={locs}\n')
     # print (f'    owner={owner}, utx_label={utx_label}, utx_device_type={utx_device_type}, src_device_grid={src_device_grid}, dst_device_grid={dst_device_grid}, locs_len={locs_len}, locs={locs}')
 
     #
@@ -464,6 +473,7 @@ async def handle_player_pickup_utx_occurred (info, event, univ):
     # Decode event
     #
     owner, grid = decode_player_pickup_utx_occurred_event (event)
+    print(f'> owner={owner}, grid={grid}\n')
 
     #
     # Update collection 'u{}_deployed_devices'
@@ -542,6 +552,7 @@ async def handle_terminate_universe_occurred (info, event, univ):
     # Decode event
     #
     bool_universe_terminable, destruction_by_which_sun, bool_universe_max_age_reached, bool_universe_escape_condition_met = decode_terminate_universe_occurred_event (event)
+    print(f'> bool_universe_terminable={bool_universe_terminable}, destruction_by_which_sun={destruction_by_which_sun}, bool_universe_max_age_reached={bool_universe_max_age_reached}, bool_universe_escape_condition_met={bool_universe_escape_condition_met}\n')
     # print (f'    terminable={bool_universe_terminable}, destruction_by_which_sun={destruction_by_which_sun}, max_age_reached={bool_universe_max_age_reached}, escaped={bool_universe_escape_condition_met}')
 
     #
@@ -570,6 +581,7 @@ async def handle_player_deploy_device_occurred (info, event, univ):
     # Decode event
     #
     owner, device_id, device_type, grid = decode_player_deploy_device_occurred_event (event)
+    print(f'> owner={owner}, device_id={device_id}, device_type={device_type}, grid={grid}\n')
 
     #
     # Get device footprint
@@ -676,6 +688,7 @@ async def handle_player_pickup_device_occurred (info, event, univ):
     # Decode event
     #
     owner, grid = decode_player_pickup_device_occurred_event (event)
+    print(f'> owner={owner}, grid={grid}\n')
 
     #
     # Update collection 'u{}_deployed_devices'
@@ -805,6 +818,7 @@ async def handle_forward_world_macro_occurred (info, event, univ, block_number):
     # Decode event
     #
     dynamics, phi = decode_forward_world_event (event)
+    print(f'> dynamics={dynamics}, phi={phi}\n')
 
     #
     # Update database
@@ -857,6 +871,7 @@ async def handle_give_undeployed_device_occurred (info, event, univ, block_numbe
     # Decode event
     #
     event_counter, to_account, device_type, device_amount = decode_give_undeployed_device_occurred_event (event)
+    print(f'> event_counter={event_counter}, to_account={to_account}, device_type={device_type}, device_amount={device_amount}\n')
     # print (f"    -- event_counter={event_counter}, to_account={to_account}, device_type={device_type}, device_amount={device_amount}")
 
     #
@@ -898,6 +913,7 @@ async def handle_activate_universe_occurred (info, event, univ, block_number):
     # Decode event
     #
     event_counter, civ_idx = decode_activate_universe_occurred_event (event)
+    print(f'> event_counter={event_counter}, civ_idx={civ_idx}\n')
     # print (f"    -- event_counter={event_counter}, civ_idx={civ_idx}")
 
     #
@@ -928,6 +944,7 @@ async def handle_universe_activation_occurred (info, event):
     # Decode event
     #
     event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr = decode_universe_activation_occurred_event (event)
+    print(f'> event_counter={event_counter}, universe_idx={universe_idx}, universe_adr={universe_adr}, arr_player_adr_len={arr_player_adr_len}, arr_player_adr={arr_player_adr}\n')
     # print (f"    -- event_counter={event_counter}, universe_idx={universe_idx}, universe_adr={universe_adr}, arr_player_adr_len={arr_player_adr_len}, arr_player_adr={arr_player_adr}")
     univ = universe_idx-777
 
@@ -977,7 +994,7 @@ async def handle_universe_deactivation_occurred (info, event):
     # Decode event
     #
     event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr = decode_universe_deactivation_occurred_event (event)
-    # print (f"    -- event_counter={event_counter}, universe_idx={universe_idx}, universe_adr={universe_adr}, arr_player_adr_len={arr_player_adr_len}, arr_player_adr={arr_player_adr}")
+    print (f"> event_counter={event_counter}, universe_idx={universe_idx}, universe_adr={universe_adr}, arr_player_adr_len={arr_player_adr_len}, arr_player_adr={arr_player_adr}\n")
     univ = universe_idx-777
 
     #
