@@ -86,6 +86,7 @@ export function Modal (props) {
                 const owner = grid_info ['owner']
                 const typ   = DEVICE_TYPE_MAP [grid_info ['type']]
                 const balances = grid_info ['balances']
+
                 const id = grid_info ['id']
                 const isPendingPickup = pendingPickups.some (p => p.id === id)
 

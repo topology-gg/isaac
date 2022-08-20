@@ -458,13 +458,13 @@ export default function GameWorld() {
             const device_dim = DEVICE_DIM_MAP.get (typ)
 
             var balances
-            if (typ in [0, 1]) {
+            if ([0,1].includes(typ)) {
                 balances = deployed_pg_mapping.get (id)
             }
-            else if (typ in [2,3,4,5,6]) {
+            else if ([2,3,4,5,6].includes(typ)) {
                 balances = deployed_harvester_mapping.get (id)
             }
-            else if (typ in [7,8,9,10,11]) {
+            else if ([7,8,9,10,11].includes(typ)) {
                 balances = deployed_transformer_mapping.get (id)
             }
             else if (typ == 14) {
@@ -1861,7 +1861,7 @@ export default function GameWorld() {
                     continue
                 }
                 base_grid_str_drawn.push (base_grid_str)
-                console.log (`typ ${typ}, base_grid_str ${base_grid_str}`)
+                // console.log (`typ ${typ}, base_grid_str ${base_grid_str}`)
             }
             else { // base_grid not a key => entry is a grid with deployed utx
                 base_grid = entry.grid
