@@ -326,7 +326,9 @@ export default function GameWorld (props) {
             updatePendingPickups(db_deployed_devices)
 
             imageLeftToBeDrawnRef.current = 6*5
-            setImageAllDrawnState (false)
+            requestAnimationFrame(() => {
+                setImageAllDrawnState (false)
+            })
 
             //
             // draw the world
@@ -1756,7 +1758,9 @@ export default function GameWorld (props) {
                         imageLeftToBeDrawnRef.current -= 1
 
                         if (imageLeftToBeDrawnRef.current == 0) {
-                            setImageAllDrawnState (true)
+                            requestAnimationFrame(() => {
+                                setImageAllDrawnState (true)
+                            })
                         }
                 });
             }
