@@ -75,12 +75,13 @@ function Home() {
 
                 <div className="right-child-middle" >
                     <span>.</span>
-                    <h4>Control</h4>
-                    <p>Choose display mode: press 1 to 6</p>
-                    <p>Transfer device: press 7</p>
-                    <p>Select grid(s): LMB click & drag</p>
-                    <p>Pan: RMB</p>
-                    <p>Zoom: mouse wheel / press c to reset zoom</p>
+                    <h4>Controls</h4>
+                    <p>Choose display mode: press <kbd>1</kbd> to <kbd>6</kbd></p>
+                    <p>Transfer device: press <kbd>7</kbd></p>
+                    <p>Select grid(s): <kbd>LMB</kbd> click & drag</p>
+                    <p>Pan: <kbd>RMB</kbd></p>
+                    <p>Zoom: mouse wheel / press <kbd>c</kbd> to reset zoom</p>
+                    <p>Hold <kbd>q</kbd> to highlight your own devices</p>
 
                     <span>.</span>
                 </div>

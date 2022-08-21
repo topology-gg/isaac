@@ -76,6 +76,11 @@ button {
   touch-action: manipulation;
 }
 
+kbd {
+    border: 1px solid currentColor;
+    padding: 2px 4px;
+}
+
 ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
     color:  rgba(80, 80, 80, 0.4);
 }
