@@ -547,97 +547,6 @@ export default function GameWorld() {
                         strokeLineCap: 'round', selectable: false }
                 ));
 
-
-
-                // const historical_state = db_macro_states.macro_states[i]
-                // const historical_dynamics = historical_state.dynamics
-                // const historical_phi = historical_state.phi
-                // const historical_phi_degree = parse_phi_to_degree (historical_phi)
-
-                // const plnt_x = historical_dynamics.planet.q.x
-                // const plnt_y = historical_dynamics.planet.q.y
-                // const sun0_x = historical_dynamics.sun0.q.x
-                // const sun0_y = historical_dynamics.sun0.q.y
-                // const sun1_x = historical_dynamics.sun1.q.x
-                // const sun1_y = historical_dynamics.sun1.q.y
-                // const sun2_x = historical_dynamics.sun2.q.x
-                // const sun2_y = historical_dynamics.sun2.q.y
-
-                // const sun0_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
-                // const sun0_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
-
-                // const sun1_left = ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
-                // const sun1_top  = ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
-
-                // const sun2_left = ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
-                // const sun2_top  = ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
-
-                // const plnt_left = ORIGIN_X + (plnt_x.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE
-                // const plnt_top  = ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE
-
-                // const historical_sun0_circle = new fabric.Circle ({
-                //     left: sun0_left,
-                //     top:  sun0_top,
-                //     radius: SUN0_RADIUS * DISPLAY_SCALE,
-                //     stroke: '',
-                //     strokeWidth: 0.1,
-                //     fill: SUN0_TRAIL_FILL_LIGHT,
-                //     opacity: 0.027,
-                //     selectable: false,
-                //     hoverCursor: "pointer"
-                // });
-
-                // const historical_sun1_circle = new fabric.Circle ({
-                //     left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
-                //     top:  ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
-                //     radius: SUN1_RADIUS * DISPLAY_SCALE,
-                //     stroke: '',
-                //     strokeWidth: 0.1,
-                //     fill: SUN1_TRAIL_FILL_LIGHT,
-                //     opacity: 0.01,
-                //     selectable: false,
-                //     hoverCursor: "pointer"
-                // });
-
-                // const historical_sun2_circle = new fabric.Circle ({
-                //     left: ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
-                //     top:  ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
-                //     radius: SUN2_RADIUS * DISPLAY_SCALE,
-                //     stroke: '',
-                //     strokeWidth: 0.1,
-                //     fill: SUN2_TRAIL_FILL_LIGHT,
-                //     opacity: 0.01,
-                //     selectable: false,
-                //     hoverCursor: "pointer"
-                // });
-
-                // const historical_plnt_circle = new fabric.Circle ({
-                //     left: plnt_left,
-                //     top:  plnt_top,
-                //     radius: PLNT_RADIUS * DISPLAY_SCALE,
-                //     stroke: '',
-                //     strokeWidth: 0.1,
-                //     fill: '#8E8E8E10',
-                //     selectable: false,
-                //     hoverCursor: "pointer"
-                // });
-
-                // const historical_plnt_square = createSquare (
-                //     plnt_left,
-                //     plnt_top,
-                //     PLNT_RADIUS * 2 * DISPLAY_SCALE,
-                //     historical_phi_degree,
-                //     EV_FILL_LIGHT,
-                //     '',
-                //     0.03,
-                //     'default',
-                //     0.01
-                // )
-
-                // canvi.add (historical_sun0_circle)
-                // canvi.add (historical_sun1_circle)
-                // canvi.add (historical_sun2_circle)
-                // canvi.add (historical_plnt_square)
             }
         }
 
@@ -707,6 +616,9 @@ export default function GameWorld() {
             selectable: false,
             hoverCursor: "pointer"
         });
+        sun0_circle.on("mouse:over", function(opt){
+            console.log("> sun0 mouse:over")
+        })
 
         const sun1_circle = new fabric.Circle ({
             left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
@@ -778,6 +690,9 @@ export default function GameWorld() {
             selectable: false,
             hoverCursor: "pointer"
         });
+        sun0_img_instance.on("mouse:over", function(opt){
+            console.log("> sun0_img_instance mouse:over")
+        })
 
         const sun1_img_element = document.getElementById('sun1-img');
         const sun1_img_instance = new fabric.Image(sun1_img_element, {
@@ -911,11 +826,22 @@ export default function GameWorld() {
         verticalAlign:'middle'
     }
 
+    function handleMouseMove(ev) {
+
+        var pointer = _canvasRef.current.getPointer(ev);
+        var x = pointer.x;
+        var y = pointer.y;
+        // console.log (`> mouse move: (${x},${y})`)
+
+    }
+
     //
     // Return component
     //
     return(
-        <div>
+        <div
+            onMouseMove = { (ev) => handleMouseMove(ev) }
+        >
             <div style={{fontFamily:'Poppins-Light',height:'0',fontColor:'#00000000'}}>{timeLeft}s</div>
             <canvas id="c" />
             <img src='/sun0_crop.png' id="sun0-img" style={{visibility:imgVisibility}} />
