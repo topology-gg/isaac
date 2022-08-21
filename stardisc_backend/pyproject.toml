@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "indexer"
+version = "0.1.0"
+description = "Web3 indexer with Apibara"
+authors = []
+
+[tool.poetry.scripts]
+indexer = "indexer.main:cli"
+
+[tool.poetry.dependencies]
+python = ">3.7.2,<3.10"
+apibara = "^0.4.3"
+click = "^8.1.3"
+"starknet.py" = "^0.4.4a0"
+pymongo = {extras = ["srv"], version = "^4.1.1"}
+
+[tool.poetry.dev-dependencies]
+black = "^22.6.0"
+isort = "^5.10.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
