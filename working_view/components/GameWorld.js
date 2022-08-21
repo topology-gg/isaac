@@ -273,6 +273,8 @@ export default function GameWorld() {
     const [gridMapping, setGridMapping] = useState()
     const [accountInCiv, setAccountInCiv] = useState(false)
     const [accountDeviceBalance, setAccountDeviceBalance] = useState({})
+    /** Whether your own devices are highlighted, making it easier to tell them apart from other players' */
+    const [highlightOwnDevices, setHighlightOwnDevices] = useState(false)
 
     const [hudLines, setHudLines] = useState([])
     const [hudVisible, setHudVisible] = useState (false)
@@ -830,7 +832,17 @@ export default function GameWorld() {
             setModalInfo (info)
         }
 
+        else if(ev.key === 'q') {
+            setHighlightOwnDevices (true);
+        }
+
       }, [modalVisibility]);
+
+    const handleKeyUp = useCallback((ev) => {
+        if (ev.key === "q") {
+            setHighlightOwnDevices(false);
+        }
+    }, []);
 
     function change_working_view_visibility (visibility) {
 
@@ -1050,8 +1062,10 @@ export default function GameWorld() {
         _hasDrawnRef.current = false
 
         document.addEventListener("keydown", handleKeyDown, false);
+        document.addEventListener("keyup", handleKeyUp, false);
         return () => {
             document.removeEventListener("keydown", handleKeyDown, false);
+            document.removeEventListener("keyup", handleKeyUp, false);
         };
 
     }, []);
@@ -2226,6 +2240,44 @@ export default function GameWorld() {
             )
         })
     }
+
+    // Set the display style of the player's own devices (based on highlight mode)
+    useEffect(() => {
+        if (!db_deployed_devices || !account || !_deviceDisplayRef.current) return;
+
+        const accountHexStr = toBN(account).toString(16);
+
+        Object.keys(_deviceRectsRef.current).forEach((id) => {
+            let rects = _deviceRectsRef.current[id];
+            if (!Array.isArray(rects)) {
+                rects = [rects];
+            }
+            if (highlightOwnDevices) {
+                const deviceData = db_deployed_devices.deployed_devices.find(
+                    (d) => d.id === id
+                );
+                const ownerHexStr = toBN(deviceData.owner).toString(16);
+                if (ownerHexStr !== accountHexStr) {
+                    rects.forEach((rect) => {
+                        rect.opacity = 0.1;
+                        rect.dirty = true;
+                    });
+                    // TODO: set the UTX animation opacity as well
+                }
+            } else {
+                // Reset opacity to 1 for all devices
+                rects.forEach((rect) => {
+                    rect.opacity = 1;
+                    rect.dirty = true;
+                });
+            }
+        });
+
+        // Set the group dirty flag so it can redraw after we change the invidual rects
+        _deviceDisplayRef.current.dirty = true;
+
+        _canvasRef.current.requestRenderAll();
+    }, [highlightOwnDevices, db_deployed_devices, account]);
 
     //
     // Return component
