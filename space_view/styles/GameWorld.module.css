@@ -1,3 +1,11 @@
 .canvas {
     height:150px;
 }
+
+.tooltip {
+    position: absolute;
+    color: #555555;
+    background-color: #AAAAAA55;
+    top: 100px;
+    left: 100px;
+}

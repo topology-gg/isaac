@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect, useRef, useMemo } from "react";
+import React, { Component, useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { fabric } from 'fabric';
 import { BigNumber } from 'bignumber.js'
 
@@ -14,6 +14,7 @@ import {
     useMacroStates,
     useImpulses
 } from '../lib/api'
+import styles from "../styles/GameWorld.module.css"
 
 
 const UNIVERSE_ADDR = '0x05538cf7d703fa3dccb61329d23598a6b31748c120c6fff0b7c48da2396ba104' // universe #0
@@ -132,6 +133,7 @@ export default function GameWorld() {
     const [hasDrawn, _] = useState([]);
     const [universeAge, setUniverseAge] = useState ();
     const [windowDimensions, setWindowDimensions] = useState (getWindowDimensions());
+    const [tooltip, setTooltip] = useState (false);
 
     const _canvasRef = useRef()
     const _hasDrawnRef = useRef(false)
@@ -156,10 +158,22 @@ export default function GameWorld() {
         }
     }, [timeLeft]);
 
+    const handleMouseOverTarget = useCallback((target) => {
+        // TODO: only show tooltip if the target is relevant
+        if (target && target !== _canvasRef.current) {
+          setTooltip (true)
+        }
+    }, []);
+
+    const handleMouseOutTarget = useCallback((target) => {
+        setTooltip (false)
+    }, []);
+
     //
     // main hooks to initialize canvas and draw everything conditioned on db loaded and font-loading timer expired
     //
     useEffect (() => {
+        console.log ('canvas init')
         _canvasRef.current = new fabric.Canvas('c', {
             height: 1500,
             width: 1500,
@@ -167,7 +181,20 @@ export default function GameWorld() {
             selection: false
         })
         _hasDrawnRef.current = false
-    }, []);
+
+        _canvasRef.current.on("mouse:over", function(e) {
+            console.log("mouse:over", e.target)
+            handleMouseOverTarget(e.target)
+        })
+        _canvasRef.current.on("mouse:out", function(e) {
+            console.log("mouse:out", e.target)
+            handleMouseOutTarget(e.target)
+        })
+
+        return () => {
+            _canvasRef.current.dispose()
+        }
+    }, [handleMouseOverTarget, handleMouseOutTarget]);
 
     useEffect (() => {
         if (!db_macro_states || !db_impulses) {
@@ -850,6 +877,7 @@ export default function GameWorld() {
             <div style={info_style}>
                 Age of universe: {universeAge} / 2520 ticks
             </div>
+            {tooltip && <div className={styles.tooltip}>Tooltip</div>}
         </div>
     );
 }
