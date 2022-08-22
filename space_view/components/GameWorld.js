@@ -86,6 +86,11 @@ function parse_phi_to_degree (phi)
     return phi_degree
 }
 
+// Renders a number to exponential notation in HTML
+function renderExponential (num) {
+    return num.toExponential(2).split('e').map((v, i) => i === 1 ? (<sup>{v}</sup>) : `${v}×10`)
+}
+
 export default function GameWorld() {
 
     const SUN0_RADIUS = 0.89 // from contract
@@ -166,14 +171,28 @@ export default function GameWorld() {
     }, [timeLeft]);
 
     // When hovering over an NDPE impulse, calculate deltas to display
-    let hoveredImpulseDelta
-    let hoveredImpulseIndex
+    let hoveredImpulseDelta, hoveredImpulseIndex, planetV, planetVRelChange
     if (tooltip && tooltip.startsWith('ndpeImpulse') && db_impulses.impulses.length) {
         hoveredImpulseIndex = parseInt(tooltip.split(',')[1])
         const impulse = db_impulses.impulses[hoveredImpulseIndex]
         const delta_vx = impulse.impulse_applied.x / (1e-4)
         const delta_vy = impulse.impulse_applied.y / (1e-4)
         hoveredImpulseDelta = { x: delta_vx, y: delta_vy }
+
+        // Grab 2 macro states just before the impulse and calculate velocity
+        if (db_macro_states.macro_states.length) {
+            const closestIndex = db_macro_states.macro_states.findIndex((state) => state.block_number === impulse.block_number)
+            const state0 = db_macro_states.macro_states[closestIndex]
+            const state1 = db_macro_states.macro_states[closestIndex - 1]
+            planetV = {
+                x: state0.dynamics.planet.q.x - state1.dynamics.planet.q.x,
+                y: state0.dynamics.planet.q.y - state1.dynamics.planet.q.y,
+            }
+            planetVRelChange = {
+                x: delta_vx / planetV.x,
+                y: delta_vy / planetV.y,
+            }
+        }
     }
 
     const handleMouseOverTarget = useCallback((target) => {
@@ -185,7 +204,7 @@ export default function GameWorld() {
             } else if (target === sun2ImgRef.current) {
                 setTooltip("sun2")
             } else {
-                const ndpeIndex = ndpeLaunchGroupsRef.current.indexOf(target)
+                const ndpeIndex = ndpeLaunchGroupsRef.current?.indexOf(target)
                 if (ndpeIndex !== -1) {
                     setTooltip(`ndpeImpulse,${ndpeIndex}`)
                 }
@@ -201,7 +220,6 @@ export default function GameWorld() {
     // main hooks to initialize canvas and draw everything conditioned on db loaded and font-loading timer expired
     //
     useEffect (() => {
-        console.log ('canvas init')
         _canvasRef.current = new fabric.Canvas('c', {
             height: 1500,
             width: 1500,
@@ -211,11 +229,9 @@ export default function GameWorld() {
         _hasDrawnRef.current = false
 
         _canvasRef.current.on("mouse:over", function(e) {
-            console.log("mouse:over", e.target)
             handleMouseOverTarget(e.target)
         })
         _canvasRef.current.on("mouse:out", function(e) {
-            console.log("mouse:out", e.target)
             handleMouseOutTarget(e.target)
         })
 
@@ -300,6 +316,10 @@ export default function GameWorld() {
         // const dynamics = macro_state.dynamics
 
         console.log ("window_dim", window_dim)
+
+        // Set canvas dimensions on every draw
+        canvi.setWidth(window_dim.width)
+        canvi.setHeight(window_dim.height)
 
         const ORIGIN_X = window_dim.width / 2
         const ORIGIN_Y = window_dim.height / 2
@@ -658,6 +678,7 @@ export default function GameWorld() {
                 const group = new fabric.Group (ndpeCircles, {
                     left: ORIGIN_X + (plnt_q_x - 0.25) * DISPLAY_SCALE,
                     top: ORIGIN_Y + (plnt_q_y - 0.25) * DISPLAY_SCALE,
+                    hoverCursor: "pointer",
                 })
                 ndpeLaunchGroupsRef.current.push(group)
                 canvi.add (group)
@@ -907,8 +928,9 @@ export default function GameWorld() {
         // Set the tooltip position to follow mouse cursor
         if (tooltipRef.current) {
             const height = tooltipRef.current.clientHeight
-            tooltipRef.current.style.left = `${ev.clientX}px`
-            tooltipRef.current.style.top = `${ev.clientY - 15 - height}px`
+            const width = tooltipRef.current.clientWidth
+            tooltipRef.current.style.left = `${ev.clientX - width / 2}px`
+            tooltipRef.current.style.top = `${ev.clientY - 10 - height}px`
         }
 
     }
@@ -946,13 +968,14 @@ export default function GameWorld() {
             {tooltip && (
                 <div ref={tooltipRef} className={styles.tooltip}>
                     {tooltip.startsWith('ndpeImpulse') ? (
-                        <p style={{fontFamily:'Courier'}}>
+                        <>
                             Engine Launch #{hoveredImpulseIndex + 1}
-                            <br />
-                            |ΔV<sub>x</sub>| = {Math.abs(hoveredImpulseDelta.x/DT).toExponential(2)} tick<sup>-1</sup>, {hoveredImpulseDelta.x == 0 ? '' : 'Direction = ' + velocity_change_to_arrow_sign(hoveredImpulseDelta.x, true)}
-                            <br />
-                            |ΔV<sub>y</sub>| = {Math.abs(hoveredImpulseDelta.y/DT).toExponential(2)} tick<sup>-1</sup>, {hoveredImpulseDelta.y == 0 ? '' : 'Direction = ' + velocity_change_to_arrow_sign(hoveredImpulseDelta.y, false)}
-                        </p>
+                            <div className={styles.tooltipInfo}>
+                                |ΔV<sub>x</sub>| = {(planetVRelChange.x * 100).toFixed(3)}%, {hoveredImpulseDelta.x == 0 ? '' : 'Direction = ' + velocity_change_to_arrow_sign(hoveredImpulseDelta.x, true)}
+                                <br />
+                                |ΔV<sub>y</sub>| = {(planetVRelChange.y * 100).toFixed(3)}%, {hoveredImpulseDelta.y == 0 ? '' : 'Direction = ' + velocity_change_to_arrow_sign(hoveredImpulseDelta.y, false)}
+                            </div>
+                        </>
                     ) : tooltip}
                 </div>
             )}

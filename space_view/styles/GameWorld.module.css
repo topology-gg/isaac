@@ -3,7 +3,13 @@
 }
 
 .tooltip {
+    padding: 8px 10px;
     position: absolute;
     color: #555555;
     background-color: #AAAAAA55;
+}
+
+.tooltipInfo {
+    font-size: 12px;
+    font-family: monospace;
 }
