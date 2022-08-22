@@ -89,7 +89,8 @@ namespace ns_micro_utx:
         end
 
         #
-        # Check if caller owns src and dst device
+        # Check if src grid & dst grid are both populated
+        # Note: not enforcing "caller owns src & dst devices" anymore
         #
         let (src_grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, src_device_grid)
         let (dst_grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, dst_device_grid)
@@ -99,12 +100,12 @@ namespace ns_micro_utx:
         with_attr error_message ("destination-device grid is not populated"):
             assert dst_grid_stat.populated = 1
         end
-        with_attr error_message ("source-device is not owned by caller"):
-            assert src_grid_stat.deployed_device_owner = caller
-        end
-        with_attr error_message ("destination-device is not owned by caller"):
-            assert dst_grid_stat.deployed_device_owner = caller
-        end
+        # with_attr error_message ("source-device is not owned by caller"):
+        #     assert src_grid_stat.deployed_device_owner = caller
+        # end
+        # with_attr error_message ("destination-device is not owned by caller"):
+        #     assert dst_grid_stat.deployed_device_owner = caller
+        # end
 
         #
         # Retrieve emap entry for src & dst devices
