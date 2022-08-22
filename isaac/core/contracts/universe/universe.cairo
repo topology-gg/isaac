@@ -417,11 +417,10 @@ func recurse_populate_civilization_player_states {syscall_ptr : felt*, pedersen_
     _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_AL_HARV, amount = 1)
     _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_CU_HARV, amount = 1)
     _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SI_HARV, amount = 1)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTB,     amount = 20)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTL,     amount = 20)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_PU_HARV, amount = 1)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTB,     amount = 50)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTL,     amount = 50)
     _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UPSF,    amount = 1)
-
-    ## for testing: give 1 x NDPE
     _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_NDPE,    amount = 1)
 
     #
