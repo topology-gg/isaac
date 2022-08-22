@@ -137,6 +137,12 @@ export default function GameWorld() {
 
     const _canvasRef = useRef()
     const _hasDrawnRef = useRef(false)
+    const tooltipRef = useRef(null)
+    const sun0ImgRef = useRef(null)
+    const sun1ImgRef = useRef(null)
+    const sun2ImgRef = useRef(null)
+    /** Refs for all the NDPE launch impulses */
+    const ndpeLaunchGroupsRef = useRef(null)
 
     //
     // timer trick to tackle the font loading issue
@@ -158,10 +164,31 @@ export default function GameWorld() {
         }
     }, [timeLeft]);
 
+    // When hovering over an NDPE impulse, calculate deltas to display
+    let hoveredImpulseDelta
+    let hoveredImpulseIndex
+    if (tooltip && tooltip.startsWith('ndpeImpulse') && db_impulses.impulses.length) {
+        hoveredImpulseIndex = parseInt(tooltip.split(',')[1])
+        const impulse = db_impulses.impulses[hoveredImpulseIndex]
+        const delta_vx = impulse.impulse_applied.x / (1e-4)
+        const delta_vy = impulse.impulse_applied.y / (1e-4)
+        hoveredImpulseDelta = { x: delta_vx, y: delta_vy }
+    }
+
     const handleMouseOverTarget = useCallback((target) => {
-        // TODO: only show tooltip if the target is relevant
         if (target && target !== _canvasRef.current) {
-          setTooltip (true)
+            if (target === sun0ImgRef.current) {
+                setTooltip("sun0")
+            } else if (target === sun1ImgRef.current) {
+                setTooltip("sun1")
+            } else if (target === sun2ImgRef.current) {
+                setTooltip("sun2")
+            } else {
+                const ndpeIndex = ndpeLaunchGroupsRef.current.indexOf(target)
+                if (ndpeIndex !== -1) {
+                    setTooltip(`ndpeImpulse,${ndpeIndex}`)
+                }
+            }
         }
     }, []);
 
@@ -581,7 +608,8 @@ export default function GameWorld() {
         // Draw NDPE launch traces
         //
         if (db_impulses.impulses.length > 0){
-            for (const impulse of db_impulses.impulses) {
+            ndpeLaunchGroupsRef.current = []
+            db_impulses.impulses.forEach((impulse) => {
                 const plnt_q_x = impulse.most_recent_planet_q.x
                 const plnt_q_y = impulse.most_recent_planet_q.y
                 const delta_vx = impulse.impulse_applied.x / (1e-4)
@@ -606,24 +634,33 @@ export default function GameWorld() {
                 // canvi.add (ndpe_launch_trace)
 
                 const N = 5
+                const ndpeCircles = []
                 for (var i=0; i<N; i++) {
                     // const radius = delta_v_abs * (i+1)
                     const radius = 0.05 * (i+1)
                     const stroke_color = '#3333CC'
                     const ndpe_launch_circle = new fabric.Circle ({
-                        left: ORIGIN_X + (plnt_q_x-radius) *DISPLAY_SCALE,
-                        top:  ORIGIN_Y + (plnt_q_y-radius) *DISPLAY_SCALE,
+                        // left: radius * DISPLAY_SCALE,
+                        // top:  radius * DISPLAY_SCALE,
                         radius: radius * DISPLAY_SCALE,
                         stroke: stroke_color,
                         opacity: (N-i)/N,
                         strokeWidth: 0.5,
                         fill: '#00000000',
                         selectable: false,
-                        hoverCursor: "default"
+                        hoverCursor: "default",
+                        originX: "center",
+                        originY: "center",
                     });
-                    canvi.add (ndpe_launch_circle)
+                    ndpeCircles.push (ndpe_launch_circle)
                 }
-            }
+                const group = new fabric.Group (ndpeCircles, {
+                    left: ORIGIN_X + (plnt_q_x - 0.25) * DISPLAY_SCALE,
+                    top: ORIGIN_Y + (plnt_q_y - 0.25) * DISPLAY_SCALE,
+                })
+                ndpeLaunchGroupsRef.current.push(group)
+                canvi.add (group)
+            })
         }
 
 
@@ -721,6 +758,8 @@ export default function GameWorld() {
             console.log("> sun0_img_instance mouse:over")
         })
 
+        sun0ImgRef.current = sun0_img_instance
+
         const sun1_img_element = document.getElementById('sun1-img');
         const sun1_img_instance = new fabric.Image(sun1_img_element, {
             left: sun1_img_left,
@@ -732,6 +771,8 @@ export default function GameWorld() {
             hoverCursor: "pointer"
         });
 
+        sun1ImgRef.current = sun1_img_instance
+
         const sun2_img_element = document.getElementById('sun2-img');
         const sun2_img_instance = new fabric.Image(sun2_img_element, {
             left: sun2_img_left,
@@ -742,6 +783,8 @@ export default function GameWorld() {
             selectable: false,
             hoverCursor: "pointer"
         });
+
+        sun2ImgRef.current = sun2_img_instance
 
         canvi.add(sun0_img_instance);
         canvi.add(sun1_img_instance);
@@ -860,6 +903,13 @@ export default function GameWorld() {
         var y = pointer.y;
         // console.log (`> mouse move: (${x},${y})`)
 
+        // Set the tooltip position to follow mouse cursor
+        if (tooltipRef.current) {
+            const height = tooltipRef.current.clientHeight
+            tooltipRef.current.style.left = `${ev.clientX}px`
+            tooltipRef.current.style.top = `${ev.clientY - 15 - height}px`
+        }
+
     }
 
     //
@@ -877,7 +927,19 @@ export default function GameWorld() {
             <div style={info_style}>
                 Age of universe: {universeAge} / 2520 ticks
             </div>
-            {tooltip && <div className={styles.tooltip}>Tooltip</div>}
+            {tooltip && (
+                <div ref={tooltipRef} className={styles.tooltip}>
+                    {tooltip.startsWith('ndpeImpulse') ? (
+                        <>
+                            NDPE Launch #{hoveredImpulseIndex + 1}
+                            <br />
+                            Delta Vx: {hoveredImpulseDelta.x}
+                            <br />
+                            Delta Vy: {hoveredImpulseDelta.y}
+                        </>
+                    ) : tooltip}
+                </div>
+            )}
         </div>
     );
 }
