@@ -28,6 +28,7 @@ function useUniverseContract() {
 //
 const STARK_PRIME = new BigNumber('3618502788666131213697322783095070105623107215331596699973092056135872020481')
 const STARK_PRIME_HALF = new BigNumber('1809251394333065606848661391547535052811553607665798349986546028067936010240')
+const DT = 0.005 // from contract: DT = 5 * SCALE_FP_DIV_1000
 
 function createPlnt (x, y, d, rotation, fill, stroke, stroke_w, cursor, opacity)
 {
@@ -912,6 +913,21 @@ export default function GameWorld() {
 
     }
 
+    function velocity_change_to_arrow_sign (val, is_x=true) {
+        const sign = Math.sign (val)
+
+        if (is_x) {
+            if (sign == 1) return '→'
+            else if (sign == -1) return '←'
+            else return ''
+        }
+        else {
+            if (sign == 1) return '↓'
+            else if (sign == -1) return '↑'
+            else return ''
+        }
+    }
+
     //
     // Return component
     //
@@ -930,13 +946,13 @@ export default function GameWorld() {
             {tooltip && (
                 <div ref={tooltipRef} className={styles.tooltip}>
                     {tooltip.startsWith('ndpeImpulse') ? (
-                        <>
-                            NDPE Launch #{hoveredImpulseIndex + 1}
+                        <p style={{fontFamily:'Courier'}}>
+                            Engine Launch #{hoveredImpulseIndex + 1}
                             <br />
-                            Delta Vx: {hoveredImpulseDelta.x}
+                            |ΔV<sub>x</sub>| = {Math.abs(hoveredImpulseDelta.x/DT).toExponential(2)} tick<sup>-1</sup>, {hoveredImpulseDelta.x == 0 ? '' : 'Direction = ' + velocity_change_to_arrow_sign(hoveredImpulseDelta.x, true)}
                             <br />
-                            Delta Vy: {hoveredImpulseDelta.y}
-                        </>
+                            |ΔV<sub>y</sub>| = {Math.abs(hoveredImpulseDelta.y/DT).toExponential(2)} tick<sup>-1</sup>, {hoveredImpulseDelta.y == 0 ? '' : 'Direction = ' + velocity_change_to_arrow_sign(hoveredImpulseDelta.y, false)}
+                        </p>
                     ) : tooltip}
                 </div>
             )}
