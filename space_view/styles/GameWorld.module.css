@@ -3,13 +3,17 @@
 }
 
 .tooltip {
-    padding: 8px 10px;
+    padding: 12px 15px;
     position: absolute;
     color: #555555;
-    background-color: #AAAAAA55;
+    /* background-color: #AAAAAA55; */
+    background: rgba(250, 249, 245, 0.8);
+    -webkit-backdrop-filter: blur(1.5px);  /* Safari 9+ */
+    backdrop-filter: blur(1.5px); /* Chrome and Opera */
 }
 
 .tooltipInfo {
+    margin-top: 8px;
     font-size: 12px;
     font-family: monospace;
 }

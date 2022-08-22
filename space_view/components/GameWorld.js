@@ -185,8 +185,8 @@ export default function GameWorld() {
             const state0 = db_macro_states.macro_states[closestIndex]
             const state1 = db_macro_states.macro_states[closestIndex - 1]
             planetV = {
-                x: state0.dynamics.planet.q.x - state1.dynamics.planet.q.x,
-                y: state0.dynamics.planet.q.y - state1.dynamics.planet.q.y,
+                x: (state0.dynamics.planet.q.x - state1.dynamics.planet.q.x)/DT, // divided by DT to get velocity component
+                y: (state0.dynamics.planet.q.y - state1.dynamics.planet.q.y)/DT,
             }
             planetVRelChange = {
                 x: delta_vx / planetV.x,
@@ -198,11 +198,11 @@ export default function GameWorld() {
     const handleMouseOverTarget = useCallback((target) => {
         if (target && target !== _canvasRef.current) {
             if (target === sun0ImgRef.current) {
-                setTooltip("sun0")
+                setTooltip("ORTA")
             } else if (target === sun1ImgRef.current) {
-                setTooltip("sun1")
+                setTooltip("BÖYÜK")
             } else if (target === sun2ImgRef.current) {
-                setTooltip("sun2")
+                setTooltip("BALACA")
             } else {
                 const ndpeIndex = ndpeLaunchGroupsRef.current?.indexOf(target)
                 if (ndpeIndex !== -1) {
@@ -966,14 +966,14 @@ export default function GameWorld() {
                 Age of universe: {universeAge} / 2520 ticks
             </div>
             {tooltip && (
-                <div ref={tooltipRef} className={styles.tooltip}>
+                <div ref={tooltipRef} className={styles.tooltip} style={{borderRadius:'10px 10px 10px 10px'}}>
                     {tooltip.startsWith('ndpeImpulse') ? (
                         <>
                             Engine Launch #{hoveredImpulseIndex + 1}
                             <div className={styles.tooltipInfo}>
-                                |ΔV<sub>x</sub>| = {(planetVRelChange.x * 100).toFixed(3)}%, {hoveredImpulseDelta.x == 0 ? '' : 'Direction = ' + velocity_change_to_arrow_sign(hoveredImpulseDelta.x, true)}
+                                |ΔV<sub>x</sub>| = {hoveredImpulseDelta.x == 0 ? '' : velocity_change_to_arrow_sign(hoveredImpulseDelta.x, true)} {(planetVRelChange.x * 100).toFixed(3)}%
                                 <br />
-                                |ΔV<sub>y</sub>| = {(planetVRelChange.y * 100).toFixed(3)}%, {hoveredImpulseDelta.y == 0 ? '' : 'Direction = ' + velocity_change_to_arrow_sign(hoveredImpulseDelta.y, false)}
+                                |ΔV<sub>y</sub>| = {hoveredImpulseDelta.y == 0 ? '' : velocity_change_to_arrow_sign(hoveredImpulseDelta.y, false)} {(planetVRelChange.y * 100).toFixed(3)}%
                             </div>
                         </>
                     ) : tooltip}
