@@ -148,6 +148,7 @@ export default function GameWorld() {
     const sun0ImgRef = useRef(null)
     const sun1ImgRef = useRef(null)
     const sun2ImgRef = useRef(null)
+    const plntRectRef = useRef(null)
     const ndpeLaunchGroupsRef = useRef(null) //  Refs for all the NDPE launch impulses
     const faceAssistObjsRef = useRef(null)
     const showFaceAssistRef = useRef (false)
@@ -207,6 +208,8 @@ export default function GameWorld() {
                 setTooltip("BÖYÜK")
             } else if (target === sun2ImgRef.current) {
                 setTooltip("BALACA")
+            } else if (target === plntRectRef.current) {
+                setTooltip("Ev")
             } else {
                 const ndpeIndex = ndpeLaunchGroupsRef.current?.indexOf(target)
                 if (ndpeIndex !== -1) {
@@ -723,9 +726,6 @@ export default function GameWorld() {
             selectable: false,
             hoverCursor: "pointer"
         });
-        sun0_circle.on("mouse:over", function(opt){
-            console.log("> sun0 mouse:over")
-        })
 
         const sun1_circle = new fabric.Circle ({
             left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
@@ -760,6 +760,8 @@ export default function GameWorld() {
             "pointer",
             1.0
         )
+
+        plntRectRef.current = plnt_square
 
         canvi.add (sun0_circle)
         canvi.add (sun1_circle)
@@ -797,9 +799,6 @@ export default function GameWorld() {
             selectable: false,
             hoverCursor: "pointer"
         });
-        sun0_img_instance.on("mouse:over", function(opt){
-            console.log("> sun0_img_instance mouse:over")
-        })
 
         sun0ImgRef.current = sun0_img_instance
 
@@ -1017,14 +1016,24 @@ export default function GameWorld() {
                 <div ref={tooltipRef} className={styles.tooltip} style={{borderRadius:'10px 10px 10px 10px'}}>
                     {tooltip.startsWith('ndpeImpulse') ? (
                         <>
-                            Engine Launch #{hoveredImpulseIndex + 1}
+                            <div className={styles.tooltipTitle}>
+                                Engine Launch #{hoveredImpulseIndex + 1}
+                            </div>
                             <div className={styles.tooltipInfo}>
                                 |ΔV<sub>x</sub>| = {hoveredImpulseDelta.x == 0 ? '' : velocity_change_to_arrow_sign(hoveredImpulseDelta.x, true)} {planetVRelChange.x_from_0 ? planetVRelChange.x.toExponential(2).toString(10) + '/tick' : (planetVRelChange.x * 100).toFixed(3).toString(10) + '%'}
                                 <br />
                                 |ΔV<sub>y</sub>| = {hoveredImpulseDelta.y == 0 ? '' : velocity_change_to_arrow_sign(hoveredImpulseDelta.y, false)} {planetVRelChange.y_from_0 ? planetVRelChange.y.toExponential(2).toString(10) + '/tick' : (planetVRelChange.y * 100).toFixed(3).toString(10) + '%'}
                             </div>
                         </>
-                    ) : tooltip}
+                    ) : (
+                        <>
+                            <div className={styles.tooltipTitle}>
+                                {tooltip}
+                            </div>
+                            <div className={styles.tooltipInfo}>
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
         </div>

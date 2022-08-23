@@ -3,17 +3,42 @@
 }
 
 .tooltip {
-    padding: 12px 15px;
+    /* padding: 12px 15px; */
+    width: 170px;
+    /* height: 80px; */
     position: absolute;
-    color: #555555;
-    /* background-color: #AAAAAA55; */
-    background: rgba(250, 249, 245, 0.8);
-    -webkit-backdrop-filter: blur(1.5px);  /* Safari 9+ */
-    backdrop-filter: blur(1.5px); /* Chrome and Opera */
+    /* color: #CCCCCC;
+    background: rgba(40, 40, 40, 0.8); */
+    /* color: #555555; */
+    /* background: rgba(250, 249, 245, 0.8); */
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
+    opacity: 1;
+}
+
+.tooltipTitle {
+    padding: 12px 15px;
+    font-size: 15px;
+    border-radius: 10px 10px 0px 0px;
+    font-family: Poppins-Light;
+    text-align: center;
+    color: #DDDDDD;
+    background: rgba(40, 40, 40, 0.8);
+
+    display: block;
+    width: 100%;
 }
 
 .tooltipInfo {
-    margin-top: 8px;
-    font-size: 12px;
+    font-size: 13px;
+    border-radius: 0px 0px 10px 10px;
+    padding-top: 12px;
+    padding-bottom: 12px;
     font-family: monospace;
+    text-align: center;
+    color: #555555;
+    background: rgba(250, 249, 245, 0.8);
+
+    display: block;
+    width: 100%;
 }
