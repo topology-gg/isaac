@@ -1,7 +1,6 @@
 import React, { Component, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { fabric } from 'fabric';
 import { toBN } from 'starknet/dist/utils/number'
-import { BigNumber } from 'bignumber.js'
 
 import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
 import { DEVICE_RESOURCE_MAP } from './ConstantDeviceResources'
@@ -60,6 +59,16 @@ import drawPendingPickups from "../lib/helpers/drawPendingPickups";
 import {
     createCursorGridRect, createCursorFaceRect, createCursorHoverDeviceRect
 } from './fabricObjects/assists';
+import createTriangle from "./fabricObjects/createTriangle";
+import parse_phi_to_degree from "../lib/helpers/parsePhiToDegree";
+import vec2_rotate_by_degree from "../lib/helpers/vec2RotateByDegree";
+import convert_exposure_to_fill from "../lib/helpers/convertExposureToFill";
+import find_face_ori from "../lib/helpers/findFaceOri";
+import find_face_given_grid from "../lib/helpers/findFaceGivenGrid";
+import lerp from "../lib/helpers/lerp";
+import is_valid_coord from "../lib/helpers/isValidCoord";
+import map_face_to_left_top from "../lib/helpers/mapFaceToLeftTop";
+import { convert_screen_to_grid_x, convert_screen_to_grid_y } from "../lib/helpers/convertScreenToGrid"
 
 //
 // Note: reading requirement (translated to Apibara integration design)
@@ -104,75 +113,7 @@ import {
 //     'pu' : PERLIN_VALUES_PU_RAW
 // }
 
-//
-// Helper function for creating the triangles at the tips of axes
-//
-function createTriangle(x, y, rotation)
-{
-    var width  = TRIANGLE_W;
-    var height = TRIANGLE_H;
-    var pos = fabric.util.rotatePoint(
-        new fabric.Point(x, y),
-        new fabric.Point(x + width / 2, y + height / 3 * 2),
-        fabric.util.degreesToRadians(rotation)
-    );
-    return new fabric.Triangle(
-    {
-        width: width,
-        height: height,
-        selectable: false,
-        fill: STROKE,
-        stroke: STROKE,
-        strokeWidth: 1,
-        left: pos.x,
-        top: pos.y,
-        angle: rotation,
-        hoverCursor: 'default'
-    });
-}
-
-//
-// Helper function to convert api-returned phi value into degree
-//
-function parse_phi_to_degree (phi)
-{
-    const phi_bn = new BigNumber(Buffer.from(phi, 'base64').toString('hex'), 16)
-    const phi_degree = (phi_bn / 10**20) / (Math.PI * 2) * 360
-
-    return phi_degree
-}
-
-//
-// Helper function to rotate 2d vector
-//
-function vec2_rotate_by_degree (vec, ang) {
-    ang = -ang * (Math.PI/180);
-    var cos = Math.cos(ang);
-    var sin = Math.sin(ang);
-    return [
-        Math.round(10000*(vec[0] * cos - vec[1] * sin))/10000,
-        Math.round(10000*(vec[0] * sin + vec[1] * cos))/10000
-    ]
-}
-
-//
-// Helper function to convert solar exposure value to face rect fill color
-//
-const FILL_MIN = [17, 26, 0]
-const FILL_MAX = [50, 77, 0]
-function convert_exposure_to_fill (exposure) {
-
-    const exposure_capped = exposure > 20 ? 20 : exposure
-    const ratio = exposure_capped / 20
-
-    const R = FILL_MIN[0] + (FILL_MAX[0]-FILL_MIN[0]) * ratio
-    const G = FILL_MIN[1] + (FILL_MAX[1]-FILL_MIN[1]) * ratio
-    const B = FILL_MIN[2] + (FILL_MAX[2]-FILL_MIN[2]) * ratio
-
-    return (`rgb(${R}, ${G}, ${B})`)
-}
-
-export default function GameWorld (props) {
+export default function GameWorld(props) {
 
     fabric.perfLimitSizeTotal = 4194304;
     fabric.maxCacheSideLimit = 5000*2;
@@ -507,14 +448,6 @@ export default function GameWorld (props) {
         setGridMapping (_gridMapping.current)
 
         return
-    }
-
-    function convert_screen_to_grid_x (x) {
-        return Math.floor( (x - PAD_X) / GRID )
-    }
-
-    function convert_screen_to_grid_y (y) {
-        return SIDE*3 - 1 - Math.floor( (y - PAD_Y) / GRID )
     }
 
     //
@@ -1647,31 +1580,6 @@ export default function GameWorld (props) {
         canvi.requestRenderAll();
     }
 
-    function lerp (start, end, ratio){
-        return start + (end-start) * ratio
-    }
-
-    function find_face_ori (face) {
-        if (face === 0) {
-            return [0, SIDE]
-        }
-        else if (face === 1) {
-            return [SIDE, 0]
-        }
-        else if (face === 2) {
-            return [SIDE, SIDE]
-        }
-        else if (face === 3) {
-            return [SIDE, 2*SIDE]
-        }
-        else if (face === 4) {
-            return [2*SIDE, SIDE]
-        }
-        else { // face === 5
-            return [3*SIDE, SIDE]
-        }
-    }
-
     const drawPerlinImage = canvi => {
 
         for (var element of [0,2,4,6,8]) {
@@ -1866,110 +1774,6 @@ export default function GameWorld (props) {
         _deviceDisplayRef.current = device_rect_face0_group
 
         // canvi.requestRenderAll();
-    }
-
-    //
-    // Grid assists and popup window
-    //
-    function find_face_given_grid (x, y) {
-        const x0 = x >= 0 && x < SIDE
-        const x1 = x >= SIDE && x < SIDE*2
-        const x2 = x >= SIDE*2 && x < SIDE*3
-        const x3 = x >= SIDE*3 && x < SIDE*4
-
-        const y0 = y >= 0 && y < SIDE
-        const y1 = y >= SIDE && y < SIDE*2
-        const y2 = y >= SIDE*2 && y < SIDE*3
-
-        // face 0
-        if (x0 && y1) {
-            return 0
-        }
-
-        // face 1
-        if (x1 && y0) {
-            return 1
-        }
-
-        // face 2
-        if (x1 && y1) {
-            return 2
-        }
-
-        // face 3
-        if (x1 && y2) {
-            return 3
-        }
-
-        // face 4
-        if (x2 && y1) {
-            return 4
-        }
-
-        // face 5
-        if (x3 && y1) {
-            return 5
-        }
-
-        return -1
-    }
-
-    function x_transform_normalized_to_canvas (x) {
-        return PAD_X + x*GRID
-    }
-    function y_transform_normalized_to_canvas (y) {
-        return PAD_Y + (SIDE*3 - y - 1)*GRID
-    }
-
-    function map_face_to_left_top (face) {
-        if (face === 0){
-            return ({
-                left : x_transform_normalized_to_canvas (0),
-                top  : y_transform_normalized_to_canvas (2*SIDE-1)
-            })
-        }
-        if (face === 1){
-            return ({
-                left : x_transform_normalized_to_canvas (SIDE),
-                top  : y_transform_normalized_to_canvas (SIDE-1)
-            })
-        }
-        if (face === 2){
-            return ({
-                left : x_transform_normalized_to_canvas (SIDE),
-                top  : y_transform_normalized_to_canvas (2*SIDE-1)
-            })
-        }
-        if (face === 3){
-            return ({
-                left : x_transform_normalized_to_canvas (SIDE),
-                top  : y_transform_normalized_to_canvas (3*SIDE-1)
-            })
-        }
-        if (face === 4){
-            return ({
-                left : x_transform_normalized_to_canvas (2*SIDE),
-                top  : y_transform_normalized_to_canvas (2*SIDE-1)
-            })
-        }
-        else { // face === 5
-            return ({
-                left : x_transform_normalized_to_canvas (3*SIDE),
-                top  : y_transform_normalized_to_canvas (2*SIDE-1)
-            })
-        }
-
-    }
-
-    function is_valid_coord (x, y) {
-        const face = find_face_given_grid (x, y)
-
-        if (face >= 0) {
-            return true
-        }
-        else{
-            return false
-        }
     }
 
     useEffect(() => {
