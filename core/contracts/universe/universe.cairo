@@ -412,16 +412,22 @@ func recurse_populate_civilization_player_states {syscall_ptr : felt*, pedersen_
     #
     # Give player the starting loadout
     #
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SPG,     amount = 1)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_FE_HARV, amount = 1)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_AL_HARV, amount = 1)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_CU_HARV, amount = 1)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SI_HARV, amount = 1)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_PU_HARV, amount = 1)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SPG,     amount = 2)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_NPG,     amount = 10)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_FE_HARV, amount = 2)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_AL_HARV, amount = 2)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_CU_HARV, amount = 2)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SI_HARV, amount = 2)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_PU_HARV, amount = 2)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_FE_REFN, amount = 2)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_AL_REFN, amount = 2)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_CU_REFN, amount = 2)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SI_REFN, amount = 2)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_PEF,     amount = 2)
     _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTB,     amount = 50)
     _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTL,     amount = 50)
     _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UPSF,    amount = 1)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_NDPE,    amount = 1)
+    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_NDPE,    amount = 10)
 
     #
     # Tail recursion

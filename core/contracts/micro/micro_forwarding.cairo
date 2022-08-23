@@ -372,31 +372,6 @@ namespace ns_micro_forwarding:
         end
 
         #
-        # Handle UPSF
-        #
-        # local syscall_ptr : felt* = syscall_ptr
-        # local pedersen_ptr : HashBuiltin* = pedersen_ptr
-        # local range_check_ptr = range_check_ptr
-        # handle_opsf:
-        # if emap_entry.type == ns_device_types.DEVICE_UPSF:
-        #     #
-        #     # Clear energy balance at this UPSF -- only power generator can store energy
-        #     #
-        #     ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
-        #         emap_entry.id,
-        #         0
-        #     )
-
-        #     tempvar syscall_ptr = syscall_ptr
-        #     tempvar pedersen_ptr = pedersen_ptr
-        #     tempvar range_check_ptr = range_check_ptr
-        # else:
-        #     tempvar syscall_ptr = syscall_ptr
-        #     tempvar pedersen_ptr = pedersen_ptr
-        #     tempvar range_check_ptr = range_check_ptr
-        # end
-
-        #
         # Tail recursion
         #
         recurse:
@@ -455,6 +430,7 @@ namespace ns_micro_forwarding:
             let src_type = emap_entry_src.type
             let dst_type = emap_entry_dst.type
             let (bool_src_harvester) = ns_micro_devices.is_device_harvester (src_type)
+            let (bool_dst_harvester) = ns_micro_devices.is_device_harvester (dst_type)
             let (bool_dst_opsf) = ns_micro_devices.is_device_opsf (dst_type)
 
             local quantity_received
@@ -564,9 +540,50 @@ namespace ns_micro_forwarding:
             local range_check_ptr = range_check_ptr
 
             #
-            # Destination device is UPSF
+            # Destination device is harvester
             #
-            if bool_dst_opsf == 1:
+            if bool_dst_harvester == 1:
+                #
+                # Get curret resource balance
+                #
+                let (max_carry) = harvester_element_type_to_max_carry (element_type)
+                let (dst_balance) = ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_read (emap_entry.dst_device_id)
+
+                #
+                # Consider max carry
+                #
+                local new_balance
+                let candidate_balance = dst_balance + quantity_received
+                let (bool_reached_max_carry) = is_le (max_carry, candidate_balance)
+                if bool_reached_max_carry == 1:
+                    assert new_balance = max_carry
+                else:
+                    assert new_balance = candidate_balance
+                end
+
+
+                ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_write (
+                    emap_entry.dst_device_id,
+                    new_balance
+                )
+
+                let (event_counter) = ns_universe_state_functions.event_counter_read ()
+                ns_universe_state_functions.event_counter_increment ()
+                resource_update_at_harvester_occurred.emit (
+                    event_counter = event_counter,
+                    device_id = emap_entry.dst_device_id,
+                    new_quantity = new_balance
+                )
+
+                tempvar syscall_ptr = syscall_ptr
+                tempvar pedersen_ptr = pedersen_ptr
+                tempvar range_check_ptr = range_check_ptr
+            end
+
+            #
+            # Destination device is factory
+            #
+            else if bool_dst_opsf == 1:
                 #
                 # Update destination device resource balance
                 #
@@ -595,9 +612,8 @@ namespace ns_micro_forwarding:
             #
             else:
                 #
-                # Update destination device resource balance
+                # Get curret resource balance
                 #
-                let (element_type, _) = transformer_device_type_to_element_types (dst_type)
                 let (max_carry) = transformer_element_type_to_max_carry (element_type)
                 let (dst_balances) = ns_micro_state_functions.transformers_deployed_id_to_resource_balances_read (emap_entry.dst_device_id)
 
