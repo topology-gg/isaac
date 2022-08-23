@@ -578,79 +578,79 @@ namespace ns_micro_forwarding:
                 tempvar syscall_ptr = syscall_ptr
                 tempvar pedersen_ptr = pedersen_ptr
                 tempvar range_check_ptr = range_check_ptr
-            end
-
-            #
-            # Destination device is factory
-            #
-            else if bool_dst_opsf == 1:
-                #
-                # Update destination device resource balance
-                #
-                let (dst_balance) = ns_micro_state_functions.opsf_deployed_id_to_resource_balances_read (emap_entry.dst_device_id, element_type)
-                ns_micro_state_functions.opsf_deployed_id_to_resource_balances_write (
-                    emap_entry.dst_device_id,
-                    element_type,
-                    dst_balance + quantity_received ## no max carry limitation
-                )
-
-                let (event_counter) = ns_universe_state_functions.event_counter_read ()
-                ns_universe_state_functions.event_counter_increment ()
-                resource_update_at_upsf_occurred.emit (
-                    event_counter = event_counter,
-                    device_id = emap_entry.dst_device_id,
-                    element_type = element_type,
-                    new_quantity = dst_balance + quantity_received
-                )
-
-                tempvar syscall_ptr = syscall_ptr
-                tempvar pedersen_ptr = pedersen_ptr
-                tempvar range_check_ptr = range_check_ptr
-
-            #
-            # Destination device is transformer
-            #
             else:
                 #
-                # Get curret resource balance
+                # Destination device is factory
                 #
-                let (max_carry) = transformer_element_type_to_max_carry (element_type)
-                let (dst_balances) = ns_micro_state_functions.transformers_deployed_id_to_resource_balances_read (emap_entry.dst_device_id)
+                if bool_dst_opsf == 1:
+                    #
+                    # Update destination device resource balance
+                    #
+                    let (dst_balance) = ns_micro_state_functions.opsf_deployed_id_to_resource_balances_read (emap_entry.dst_device_id, element_type)
+                    ns_micro_state_functions.opsf_deployed_id_to_resource_balances_write (
+                        emap_entry.dst_device_id,
+                        element_type,
+                        dst_balance + quantity_received ## no max carry limitation
+                    )
+
+                    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+                    ns_universe_state_functions.event_counter_increment ()
+                    resource_update_at_upsf_occurred.emit (
+                        event_counter = event_counter,
+                        device_id = emap_entry.dst_device_id,
+                        element_type = element_type,
+                        new_quantity = dst_balance + quantity_received
+                    )
+
+                    tempvar syscall_ptr = syscall_ptr
+                    tempvar pedersen_ptr = pedersen_ptr
+                    tempvar range_check_ptr = range_check_ptr
 
                 #
-                # Consider max carry
+                # Destination device is transformer
                 #
-                local new_balance_resource_before_transform
-                let candidate_balance = dst_balances.balance_resource_before_transform + quantity_received
-                let (bool_reached_max_carry) = is_le (max_carry, candidate_balance)
-                if bool_reached_max_carry == 1:
-                    assert new_balance_resource_before_transform = max_carry
                 else:
-                    assert new_balance_resource_before_transform = candidate_balance
+                    #
+                    # Get curret resource balance
+                    #
+                    let (max_carry) = transformer_element_type_to_max_carry (element_type)
+                    let (dst_balances) = ns_micro_state_functions.transformers_deployed_id_to_resource_balances_read (emap_entry.dst_device_id)
+
+                    #
+                    # Consider max carry
+                    #
+                    local new_balance_resource_before_transform
+                    let candidate_balance = dst_balances.balance_resource_before_transform + quantity_received
+                    let (bool_reached_max_carry) = is_le (max_carry, candidate_balance)
+                    if bool_reached_max_carry == 1:
+                        assert new_balance_resource_before_transform = max_carry
+                    else:
+                        assert new_balance_resource_before_transform = candidate_balance
+                    end
+
+                    #
+                    # Update balance
+                    #
+                    ns_micro_state_functions.transformers_deployed_id_to_resource_balances_write (
+                        emap_entry.dst_device_id,
+                        TransformerResourceBalances(
+                            new_balance_resource_before_transform,
+                            dst_balances.balance_resource_after_transform
+                    ))
+
+                    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+                    ns_universe_state_functions.event_counter_increment ()
+                    resource_update_at_transformer_occurred.emit (
+                        event_counter = event_counter,
+                        device_id = emap_entry.dst_device_id,
+                        new_quantity_pre  = new_balance_resource_before_transform,
+                        new_quantity_post = dst_balances.balance_resource_after_transform
+                    )
+
+                    tempvar syscall_ptr = syscall_ptr
+                    tempvar pedersen_ptr = pedersen_ptr
+                    tempvar range_check_ptr = range_check_ptr
                 end
-
-                #
-                # Update balance
-                #
-                ns_micro_state_functions.transformers_deployed_id_to_resource_balances_write (
-                    emap_entry.dst_device_id,
-                    TransformerResourceBalances(
-                        new_balance_resource_before_transform,
-                        dst_balances.balance_resource_after_transform
-                ))
-
-                let (event_counter) = ns_universe_state_functions.event_counter_read ()
-                ns_universe_state_functions.event_counter_increment ()
-                resource_update_at_transformer_occurred.emit (
-                    event_counter = event_counter,
-                    device_id = emap_entry.dst_device_id,
-                    new_quantity_pre  = new_balance_resource_before_transform,
-                    new_quantity_post = dst_balances.balance_resource_after_transform
-                )
-
-                tempvar syscall_ptr = syscall_ptr
-                tempvar pedersen_ptr = pedersen_ptr
-                tempvar range_check_ptr = range_check_ptr
             end
         else:
             tempvar syscall_ptr = syscall_ptr
