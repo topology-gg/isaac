@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash_chain import hash_chain
-from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le, unsigned_div_rem)
+from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le, assert_not_zero, unsigned_div_rem)
 from starkware.cairo.common.math_cmp import (is_le, is_nn_le, is_not_zero)
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
@@ -449,7 +449,11 @@ namespace ns_micro_forwarding:
                 let (element_type_) = harvester_device_type_to_element_type (src_type)
                 assert element_type = element_type_
                 let (src_balance) = ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_read (emap_entry.src_device_id)
-                let (utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTB, emap_entry.src_device_id)
+                let (local utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_xdevice_read (ns_device_types.DEVICE_UTB, emap_entry.src_device_id)
+
+                with_attr error_message ("micro_forwarding.cairo:454 / Pre-division check: about to perform unsigned_div_rem (src_balance, utb_tether_count) but utb_tether_count = 0"):
+                    assert_not_zero (utb_tether_count)
+                end
                 let (src_balance_divided, _) =  unsigned_div_rem (src_balance, utb_tether_count)
                 let (quantity_should_send) = ns_logistics_utb.utb_quantity_should_send_per_tick (
                     src_balance_divided
@@ -496,6 +500,10 @@ namespace ns_micro_forwarding:
                 let (src_balances) = ns_micro_state_functions.transformers_deployed_id_to_resource_balances_read (emap_entry.src_device_id)
                 let src_balance = src_balances.balance_resource_after_transform
                 let (utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTB, emap_entry.src_device_id)
+
+                with_attr error_message ("micro_forwarding.cairo:504 / Pre-division check: about to perform unsigned_div_rem (src_balance, utb_tether_count) but utb_tether_count = 0"):
+                    assert_not_zero (utb_tether_count)
+                end
                 let (src_balance_divided, _) =  unsigned_div_rem (src_balance, utb_tether_count)
                 let (quantity_should_send) = ns_logistics_utb.utb_quantity_should_send_per_tick (
                     src_balance_divided
@@ -709,6 +717,10 @@ namespace ns_micro_forwarding:
             # Determine energy should send and energy should receive
             #
             let (utl_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTL, src_device_id)
+
+            with_attr error_message ("micro_forwarding.cairo:721 / Pre-division check: about to perform unsigned_div_rem (src_device_energy, utl_tether_count) but utl_tether_count = 0"):
+                assert_not_zero (utl_tether_count)
+            end
             let (src_device_energy_divided, _) = unsigned_div_rem (src_device_energy, utl_tether_count)
             let (energy_should_send) = ns_logistics_utl.utl_energy_should_send_per_tick (
                 src_device_energy_divided
