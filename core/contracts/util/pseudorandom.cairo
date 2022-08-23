@@ -54,6 +54,10 @@ namespace ns_prng:
             num : felt
         ):
 
+        with_attr error_message ("get_prn_mod(): mod = 0"):
+            assert_not_zero (mod)
+        end
+
         let (prn) = get_prn (entropy)
         let (_, prn_low) = split_felt (prn) ## split in half before modulo
         let (_, num) = unsigned_div_rem (prn_low, mod)

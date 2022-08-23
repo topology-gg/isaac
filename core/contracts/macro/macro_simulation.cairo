@@ -109,10 +109,28 @@ func differentiate {syscall_ptr : felt*, range_check_ptr} (
     let (r13_cube) = distance_3 (state.sun1.q, state.plnt.q)
     let (r23_cube) = distance_3 (state.sun2.q, state.plnt.q)
 
+    with_attr error_message ("macro_simulation.cairo:112 / r01_cube = 0"):
+        assert_not_zero (r01_cube)
+    end
+    with_attr error_message ("macro_simulation.cairo:115 / r02_cube = 0"):
+        assert_not_zero (r02_cube)
+    end
+    with_attr error_message ("macro_simulation.cairo:118 / r12_cube = 0"):
+        assert_not_zero (r12_cube)
+    end
     let (G_r01_cube) = div_fp (G, r01_cube)
     let (G_r02_cube) = div_fp (G, r02_cube)
     let (G_r12_cube) = div_fp (G, r12_cube)
 
+    with_attr error_message ("macro_simulation.cairo:125 / r03_cube = 0"):
+        assert_not_zero (r03_cube)
+    end
+    with_attr error_message ("macro_simulation.cairo:128 / r13_cube = 0"):
+        assert_not_zero (r13_cube)
+    end
+    with_attr error_message ("macro_simulation.cairo:131 / r23_cube = 0"):
+        assert_not_zero (r23_cube)
+    end
     let (G_r03_cube) = div_fp (G, r03_cube)
     let (G_r13_cube) = div_fp (G, r13_cube)
     let (G_r23_cube) = div_fp (G, r23_cube)
@@ -396,6 +414,15 @@ func is_world_macro_escape_condition_met {syscall_ptr : felt*, pedersen_ptr : Ha
     let (d_sun1_plnt) = sqrt_fp (d_sun1_plnt_sq)
     let (d_sun2_plnt) = sqrt_fp (d_sun2_plnt_sq)
 
+    with_attr error_message ("macro_simulation.cairo:417 / d_sun0_plnt = 0"):
+        assert_not_zero (d_sun0_plnt)
+    end
+    with_attr error_message ("macro_simulation.cairo:420 / d_sun1_plnt = 0"):
+        assert_not_zero (d_sun1_plnt)
+    end
+    with_attr error_message ("macro_simulation.cairo:423 / d_sun2_plnt = 0"):
+        assert_not_zero (d_sun2_plnt)
+    end
     let (unit_potential_sun0) = div_fp (G_MASS_SUN0, d_sun0_plnt)
     let (unit_potential_sun1) = div_fp (G_MASS_SUN1, d_sun1_plnt)
     let (unit_potential_sun2) = div_fp (G_MASS_SUN2, d_sun2_plnt)
