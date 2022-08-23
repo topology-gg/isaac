@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect, useRef, useMemo } from "react";
+import React, { Component, useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { fabric } from 'fabric';
 import { BigNumber } from 'bignumber.js'
 
@@ -14,6 +14,7 @@ import {
     useMacroStates,
     useImpulses
 } from '../lib/api'
+import styles from "../styles/GameWorld.module.css"
 
 
 const UNIVERSE_ADDR = '0x05538cf7d703fa3dccb61329d23598a6b31748c120c6fff0b7c48da2396ba104' // universe #0
@@ -27,6 +28,7 @@ function useUniverseContract() {
 //
 const STARK_PRIME = new BigNumber('3618502788666131213697322783095070105623107215331596699973092056135872020481')
 const STARK_PRIME_HALF = new BigNumber('1809251394333065606848661391547535052811553607665798349986546028067936010240')
+const DT = 0.005 // from contract: DT = 5 * SCALE_FP_DIV_1000
 
 function createPlnt (x, y, d, rotation, fill, stroke, stroke_w, cursor, opacity)
 {
@@ -84,6 +86,11 @@ function parse_phi_to_degree (phi)
     return phi_degree
 }
 
+// Renders a number to exponential notation in HTML
+function renderExponential (num) {
+    return num.toExponential(2).split('e').map((v, i) => i === 1 ? (<sup>{v}</sup>) : `${v}×10`)
+}
+
 export default function GameWorld() {
 
     const SUN0_RADIUS = 0.89 // from contract
@@ -126,15 +133,24 @@ export default function GameWorld() {
     const { data: db_impulses } = useImpulses ()
 
     //
-    // Logic to initialize a Fabric canvas
+    // React states & refs
     //
     const [canvas, setCanvas] = useState([]);
     const [hasDrawn, _] = useState([]);
     const [universeAge, setUniverseAge] = useState ();
     const [windowDimensions, setWindowDimensions] = useState (getWindowDimensions());
+    const [tooltip, setTooltip] = useState (false);
+    const [showFaceAssist, setShowFaceAssist] = useState (false);
 
     const _canvasRef = useRef()
     const _hasDrawnRef = useRef(false)
+    const tooltipRef = useRef(null)
+    const sun0ImgRef = useRef(null)
+    const sun1ImgRef = useRef(null)
+    const sun2ImgRef = useRef(null)
+    const ndpeLaunchGroupsRef = useRef(null) //  Refs for all the NDPE launch impulses
+    const faceAssistObjsRef = useRef(null)
+    const showFaceAssistRef = useRef (false)
 
     //
     // timer trick to tackle the font loading issue
@@ -156,6 +172,68 @@ export default function GameWorld() {
         }
     }, [timeLeft]);
 
+    // When hovering over an NDPE impulse, calculate deltas to display
+    let hoveredImpulseDelta, hoveredImpulseIndex, planetV, planetVRelChange
+    if (tooltip && tooltip.startsWith('ndpeImpulse') && db_impulses.impulses.length) {
+        hoveredImpulseIndex = parseInt(tooltip.split(',')[1])
+        const impulse = db_impulses.impulses[hoveredImpulseIndex]
+        const delta_vx = impulse.impulse_applied.x / (1e-4)
+        const delta_vy = impulse.impulse_applied.y / (1e-4)
+        hoveredImpulseDelta = { x: delta_vx, y: delta_vy }
+
+        // Grab 2 macro states just before the impulse and calculate velocity
+        if (db_macro_states.macro_states.length) {
+            const closestIndex = db_macro_states.macro_states.findIndex((state) => state.block_number === impulse.block_number)
+            const state0 = db_macro_states.macro_states[closestIndex]
+            const state1 = db_macro_states.macro_states[closestIndex - 1]
+            planetV = {
+                x: (state0.dynamics.planet.q.x - state1.dynamics.planet.q.x)/DT, // divided by DT to get velocity component
+                y: (state0.dynamics.planet.q.y - state1.dynamics.planet.q.y)/DT,
+            }
+            planetVRelChange = {
+                x: planetV.x != 0 ? delta_vx / planetV.x : delta_vx * DT,
+                y: planetV.y != 0 ? delta_vy / planetV.y : delta_vy * DT,
+                x_from_0: planetV.x == 0,
+                y_from_0: planetV.y == 0
+            }
+        }
+    }
+
+    const handleMouseOverTarget = useCallback((target) => {
+        if (target && target !== _canvasRef.current) {
+            if (target === sun0ImgRef.current) {
+                setTooltip("ORTA")
+            } else if (target === sun1ImgRef.current) {
+                setTooltip("BÖYÜK")
+            } else if (target === sun2ImgRef.current) {
+                setTooltip("BALACA")
+            } else {
+                const ndpeIndex = ndpeLaunchGroupsRef.current?.indexOf(target)
+                if (ndpeIndex !== -1) {
+                    setTooltip(`ndpeImpulse,${ndpeIndex}`)
+                }
+            }
+        }
+    }, []);
+
+    const handleMouseOutTarget = useCallback((target) => {
+        setTooltip (false)
+    }, []);
+
+    function handleKeyDown (target) {
+        if (!faceAssistObjsRef.current) return;
+        if (target.key == 'q') {
+            const visible = !showFaceAssistRef.current
+            showFaceAssistRef.current = visible
+            setShowFaceAssist (visible)
+            for (const obj of faceAssistObjsRef.current) {
+                obj.visible = visible
+                obj.dirty = true
+            }
+            _canvasRef.current.requestRenderAll ()
+        }
+    }
+
     //
     // main hooks to initialize canvas and draw everything conditioned on db loaded and font-loading timer expired
     //
@@ -167,7 +245,20 @@ export default function GameWorld() {
             selection: false
         })
         _hasDrawnRef.current = false
-    }, []);
+
+        _canvasRef.current.on("mouse:over", function(e) {
+            handleMouseOverTarget(e.target)
+        })
+        _canvasRef.current.on("mouse:out", function(e) {
+            handleMouseOutTarget(e.target)
+        })
+        document.addEventListener("keydown", handleKeyDown, false);
+
+        return () => {
+            _canvasRef.current.dispose()
+            document.removeEventListener("keydown", handleKeyDown, false);
+        }
+    }, [handleMouseOverTarget, handleMouseOutTarget]);
 
     useEffect (() => {
         if (!db_macro_states || !db_impulses) {
@@ -245,6 +336,10 @@ export default function GameWorld() {
         // const dynamics = macro_state.dynamics
 
         console.log ("window_dim", window_dim)
+
+        // Set canvas dimensions on every draw
+        canvi.setWidth(window_dim.width)
+        canvi.setHeight(window_dim.height)
 
         const ORIGIN_X = window_dim.width / 2
         const ORIGIN_Y = window_dim.height / 2
@@ -336,11 +431,12 @@ export default function GameWorld() {
         const sun1_coord_text = '(' + sun1_x.toString().slice(0,COORD_SLICE) + ', ' + sun1_y.toString().slice(0,COORD_SLICE) + ')'
         const sun2_coord_text = '(' + sun2_x.toString().slice(0,COORD_SLICE) + ', ' + sun2_y.toString().slice(0,COORD_SLICE) + ')'
         const plnt_coord_text = '(' + plnt_x.toString().slice(0,COORD_SLICE) + ', ' + plnt_y.toString().slice(0,COORD_SLICE) + ')'
+        const RECT_BORDER_RADIUS = 10
 
         const tbox_plnt_bg = new fabric.Rect({
             fill: TBOX_BG,
             originX: 'center', originY: 'center',
-            rx: 5, ry: 5,
+            rx: RECT_BORDER_RADIUS, ry: RECT_BORDER_RADIUS,
             width:  TEXTBOX_WIDTH, height: TEXTBOX_HEIGHT
         });
         const tbox_plnt_text = new fabric.Text(
@@ -360,7 +456,7 @@ export default function GameWorld() {
         const tbox_sun0_bg = new fabric.Rect({
             fill: TBOX_BG,
             originX: 'center', originY: 'center',
-            rx: 5, ry: 5,
+            rx: RECT_BORDER_RADIUS, ry: RECT_BORDER_RADIUS,
             width: TEXTBOX_WIDTH, height: TEXTBOX_HEIGHT
         });
         const tbox_sun0_text = new fabric.Text(
@@ -380,7 +476,7 @@ export default function GameWorld() {
         const tbox_sun1_bg = new fabric.Rect({
             fill: TBOX_BG,
             originX: 'center', originY: 'center',
-            rx: 5, ry: 5,
+            rx: RECT_BORDER_RADIUS, ry: RECT_BORDER_RADIUS,
             width: TEXTBOX_WIDTH, height: TEXTBOX_HEIGHT
         });
         const tbox_sun1_text = new fabric.Text(
@@ -400,7 +496,7 @@ export default function GameWorld() {
         const tbox_sun2_bg = new fabric.Rect({
             fill: TBOX_BG,
             originX: 'center', originY: 'center',
-            rx: 5, ry: 5,
+            rx: RECT_BORDER_RADIUS, ry: RECT_BORDER_RADIUS,
             width: TEXTBOX_WIDTH, height: TEXTBOX_HEIGHT
         });
         const tbox_sun2_text = new fabric.Text(
@@ -526,118 +622,27 @@ export default function GameWorld() {
                 canvi.add (new fabric.Line(
                     [sun0_left0, sun0_top0, sun0_left1, sun0_top1]
                     , { stroke: SUN0_TRAIL_FILL_LIGHT, strokeWidth: sun0_thickness, opacity: sun0_opacity,
-                        strokeLineCap: 'round', selectable: false }
+                        strokeLineCap: 'round', selectable: false, hoverCursor: "default" }
                 ));
 
                 canvi.add (new fabric.Line(
                     [sun1_left0, sun1_top0, sun1_left1, sun1_top1]
                     , { stroke: SUN1_TRAIL_FILL_LIGHT, strokeWidth: sun1_thickness, opacity: sun1_opacity,
-                        strokeLineCap: 'round', selectable: false }
+                        strokeLineCap: 'round', selectable: false, hoverCursor: "default" }
                 ));
 
                 canvi.add (new fabric.Line(
                     [sun2_left0, sun2_top0, sun2_left1, sun2_top1]
                     , { stroke: SUN2_TRAIL_FILL_LIGHT, strokeWidth: sun2_thickness, opacity: sun2_opacity,
-                        strokeLineCap: 'round', selectable: false }
+                        strokeLineCap: 'round', selectable: false, hoverCursor: "default" }
                 ));
 
                 canvi.add (new fabric.Line(
                     [plnt_left0, plnt_top0, plnt_left1, plnt_top1]
                     , { stroke: EV_FILL_LIGHT, strokeWidth: plnt_thickness, opacity: plnt_opacity,
-                        strokeLineCap: 'round', selectable: false }
+                        strokeLineCap: 'round', selectable: false, hoverCursor: "default" }
                 ));
 
-
-
-                // const historical_state = db_macro_states.macro_states[i]
-                // const historical_dynamics = historical_state.dynamics
-                // const historical_phi = historical_state.phi
-                // const historical_phi_degree = parse_phi_to_degree (historical_phi)
-
-                // const plnt_x = historical_dynamics.planet.q.x
-                // const plnt_y = historical_dynamics.planet.q.y
-                // const sun0_x = historical_dynamics.sun0.q.x
-                // const sun0_y = historical_dynamics.sun0.q.y
-                // const sun1_x = historical_dynamics.sun1.q.x
-                // const sun1_y = historical_dynamics.sun1.q.y
-                // const sun2_x = historical_dynamics.sun2.q.x
-                // const sun2_y = historical_dynamics.sun2.q.y
-
-                // const sun0_left = ORIGIN_X + (sun0_x.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
-                // const sun0_top  = ORIGIN_Y + (sun0_y.toString(10)-SUN0_RADIUS) *DISPLAY_SCALE
-
-                // const sun1_left = ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
-                // const sun1_top  = ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE
-
-                // const sun2_left = ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
-                // const sun2_top  = ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE
-
-                // const plnt_left = ORIGIN_X + (plnt_x.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE
-                // const plnt_top  = ORIGIN_Y + (plnt_y.toString(10)-PLNT_RADIUS) *DISPLAY_SCALE
-
-                // const historical_sun0_circle = new fabric.Circle ({
-                //     left: sun0_left,
-                //     top:  sun0_top,
-                //     radius: SUN0_RADIUS * DISPLAY_SCALE,
-                //     stroke: '',
-                //     strokeWidth: 0.1,
-                //     fill: SUN0_TRAIL_FILL_LIGHT,
-                //     opacity: 0.027,
-                //     selectable: false,
-                //     hoverCursor: "pointer"
-                // });
-
-                // const historical_sun1_circle = new fabric.Circle ({
-                //     left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
-                //     top:  ORIGIN_Y + (sun1_y.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
-                //     radius: SUN1_RADIUS * DISPLAY_SCALE,
-                //     stroke: '',
-                //     strokeWidth: 0.1,
-                //     fill: SUN1_TRAIL_FILL_LIGHT,
-                //     opacity: 0.01,
-                //     selectable: false,
-                //     hoverCursor: "pointer"
-                // });
-
-                // const historical_sun2_circle = new fabric.Circle ({
-                //     left: ORIGIN_X + (sun2_x.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
-                //     top:  ORIGIN_Y + (sun2_y.toString(10)-SUN2_RADIUS) *DISPLAY_SCALE,
-                //     radius: SUN2_RADIUS * DISPLAY_SCALE,
-                //     stroke: '',
-                //     strokeWidth: 0.1,
-                //     fill: SUN2_TRAIL_FILL_LIGHT,
-                //     opacity: 0.01,
-                //     selectable: false,
-                //     hoverCursor: "pointer"
-                // });
-
-                // const historical_plnt_circle = new fabric.Circle ({
-                //     left: plnt_left,
-                //     top:  plnt_top,
-                //     radius: PLNT_RADIUS * DISPLAY_SCALE,
-                //     stroke: '',
-                //     strokeWidth: 0.1,
-                //     fill: '#8E8E8E10',
-                //     selectable: false,
-                //     hoverCursor: "pointer"
-                // });
-
-                // const historical_plnt_square = createSquare (
-                //     plnt_left,
-                //     plnt_top,
-                //     PLNT_RADIUS * 2 * DISPLAY_SCALE,
-                //     historical_phi_degree,
-                //     EV_FILL_LIGHT,
-                //     '',
-                //     0.03,
-                //     'default',
-                //     0.01
-                // )
-
-                // canvi.add (historical_sun0_circle)
-                // canvi.add (historical_sun1_circle)
-                // canvi.add (historical_sun2_circle)
-                // canvi.add (historical_plnt_square)
             }
         }
 
@@ -645,7 +650,8 @@ export default function GameWorld() {
         // Draw NDPE launch traces
         //
         if (db_impulses.impulses.length > 0){
-            for (const impulse of db_impulses.impulses) {
+            ndpeLaunchGroupsRef.current = []
+            db_impulses.impulses.forEach((impulse) => {
                 const plnt_q_x = impulse.most_recent_planet_q.x
                 const plnt_q_y = impulse.most_recent_planet_q.y
                 const delta_vx = impulse.impulse_applied.x / (1e-4)
@@ -670,24 +676,34 @@ export default function GameWorld() {
                 // canvi.add (ndpe_launch_trace)
 
                 const N = 5
+                const ndpeCircles = []
                 for (var i=0; i<N; i++) {
                     // const radius = delta_v_abs * (i+1)
                     const radius = 0.05 * (i+1)
                     const stroke_color = '#3333CC'
                     const ndpe_launch_circle = new fabric.Circle ({
-                        left: ORIGIN_X + (plnt_q_x-radius) *DISPLAY_SCALE,
-                        top:  ORIGIN_Y + (plnt_q_y-radius) *DISPLAY_SCALE,
+                        // left: radius * DISPLAY_SCALE,
+                        // top:  radius * DISPLAY_SCALE,
                         radius: radius * DISPLAY_SCALE,
                         stroke: stroke_color,
                         opacity: (N-i)/N,
                         strokeWidth: 0.5,
                         fill: '#00000000',
                         selectable: false,
-                        hoverCursor: "default"
+                        hoverCursor: "default",
+                        originX: "center",
+                        originY: "center",
                     });
-                    canvi.add (ndpe_launch_circle)
+                    ndpeCircles.push (ndpe_launch_circle)
                 }
-            }
+                const group = new fabric.Group (ndpeCircles, {
+                    left: ORIGIN_X + (plnt_q_x - 0.25) * DISPLAY_SCALE,
+                    top: ORIGIN_Y + (plnt_q_y - 0.25) * DISPLAY_SCALE,
+                    hoverCursor: "pointer",
+                })
+                ndpeLaunchGroupsRef.current.push(group)
+                canvi.add (group)
+            })
         }
 
 
@@ -707,6 +723,9 @@ export default function GameWorld() {
             selectable: false,
             hoverCursor: "pointer"
         });
+        sun0_circle.on("mouse:over", function(opt){
+            console.log("> sun0 mouse:over")
+        })
 
         const sun1_circle = new fabric.Circle ({
             left: ORIGIN_X + (sun1_x.toString(10)-SUN1_RADIUS) *DISPLAY_SCALE,
@@ -778,6 +797,11 @@ export default function GameWorld() {
             selectable: false,
             hoverCursor: "pointer"
         });
+        sun0_img_instance.on("mouse:over", function(opt){
+            console.log("> sun0_img_instance mouse:over")
+        })
+
+        sun0ImgRef.current = sun0_img_instance
 
         const sun1_img_element = document.getElementById('sun1-img');
         const sun1_img_instance = new fabric.Image(sun1_img_element, {
@@ -790,6 +814,8 @@ export default function GameWorld() {
             hoverCursor: "pointer"
         });
 
+        sun1ImgRef.current = sun1_img_instance
+
         const sun2_img_element = document.getElementById('sun2-img');
         const sun2_img_instance = new fabric.Image(sun2_img_element, {
             left: sun2_img_left,
@@ -801,6 +827,8 @@ export default function GameWorld() {
             hoverCursor: "pointer"
         });
 
+        sun2ImgRef.current = sun2_img_instance
+
         canvi.add(sun0_img_instance);
         canvi.add(sun1_img_instance);
         canvi.add(sun2_img_instance);
@@ -809,40 +837,52 @@ export default function GameWorld() {
         // Draw planet orientation helper
         //
         console.log (`planet rotation in degree: ${phi_degree}`)
-        const plnt_face0_vec = new fabric.Line(
-            [
-                ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
-                ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
-                ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE + 30,
-                ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE
-            ],{
-                stroke: '#666666',
-                strokeWidth: 3,
-                strokeDashArray: [3, 3],
-                angle: phi_degree,
-                selectable: false,
-                hoverCursor: "default"
-            }
-        );
+        const NORMAL_LINE_LEN = 15
+        const faces = [0,2,4,5]
+        var orientation_helper_objs = []
 
-        const plnt_face1_vec = new fabric.Line(
-            [
-                ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
-                ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE,
-                ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE,
-                ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE + 30
-            ],{
-                stroke: '#BBBBBB',
-                strokeWidth: 2,
-                strokeDashArray: [2, 2],
-                angle: phi_degree,
-                selectable: false,
-                hoverCursor: "default"
-            }
-        );
+        faces.forEach (function(face, i){
+            const RAD = PLNT_RADIUS / 4
+            const plnt_face_vec = new fabric.Line(
+                [
+                    ORIGIN_X + (plnt_x + RAD) *DISPLAY_SCALE,
+                    ORIGIN_Y + (plnt_y + RAD) *DISPLAY_SCALE,
+                    ORIGIN_X + (plnt_x + RAD) *DISPLAY_SCALE + NORMAL_LINE_LEN,
+                    ORIGIN_Y + (plnt_y + RAD) *DISPLAY_SCALE
+                ],{
+                    stroke: '#888888', strokeWidth: 1,
+                    angle: phi_degree + i*90,
+                    selectable: false, hoverCursor: "default",
+                    visible: false
+                }
+            );
 
-        canvi.add (plnt_face0_vec)
-        canvi.add (plnt_face1_vec)
+            const tbox_face_bg = new fabric.Circle({
+                fill: TBOX_BG, originX: 'center', originY: 'center',
+                radius: NORMAL_LINE_LEN*0.75, selectable: false, hoverCursor: "default"
+            });
+            const tbox_face_text = new fabric.Text(
+                face.toString(10), {
+                fontSize: 10, originX: 'center', originY: 'center', fill: '#333333', fontFamily: FONT_FAMILY,
+                selectable: false, hoverCursor: "default"
+            });
+            const vec_face = rotateVector ([NORMAL_LINE_LEN+10, 0], -(phi_degree + i*90)) // this rotation takes up as +Y, which is opposite of fabric canvas Y direction
+            const tbox_face_group = new fabric.Group(
+                [ tbox_face_bg, tbox_face_text ], {
+                left: ORIGIN_X + plnt_x.toString(10) *DISPLAY_SCALE + vec_face[0],
+                top:  ORIGIN_Y + plnt_y.toString(10) *DISPLAY_SCALE + vec_face[1],
+                originX: 'center', originY: 'center',
+                selectable: false, hoverCursor: "default",
+                visible: false
+            });
+
+            canvi.add (plnt_face_vec)
+            canvi.add (tbox_face_group)
+
+            orientation_helper_objs.push (plnt_face_vec)
+            orientation_helper_objs.push (tbox_face_group)
+        })
+        faceAssistObjsRef.current = orientation_helper_objs
 
         //
         // Draw axis directionalities
@@ -874,7 +914,8 @@ export default function GameWorld() {
             top: AXIS_ORI_Y - 10,
             fontSize: 16,
             fill: '#333333',
-            fontFamily: FONT_FAMILY
+            fontFamily: FONT_FAMILY,
+            selectable: 'false', hoverCursor: "default"
         });
         const tbox_axis_y = new fabric.Text(
             'y', {
@@ -882,7 +923,8 @@ export default function GameWorld() {
             top: AXIS_ORI_Y + AXIS_LEN + AXIS_TRI_H,
             fontSize: 16,
             fill: '#333333',
-            fontFamily: FONT_FAMILY
+            fontFamily: FONT_FAMILY,
+            selectable: 'false', hoverCursor: "default"
         });
 
         canvi.add (axis_line_x)
@@ -895,15 +937,18 @@ export default function GameWorld() {
 
     const info_style = {
         position:'fixed',
+        borderRadius: '10px 0 0 0',
         right:'0',
         bottom:'0',
-        width:'20em',
+        width:'22em',
         paddingLeft:'1em',
         paddingRight:'1em',
-        height:'3em',
+        paddingTop: '1em',
+        paddingBottom: '1em',
+        height:'8em',
         lineHeight:'3em',
         color: '#555555',
-        backgroundColor:'#AAAAAA55',
+        backgroundColor:'#DDDDDD55',
         fontFamily: 'Poppins-Light',
         fontSize: '0.85em',
         zIndex:'3',
@@ -911,11 +956,53 @@ export default function GameWorld() {
         verticalAlign:'middle'
     }
 
+    function handleMouseMove(ev) {
+
+        var pointer = _canvasRef.current.getPointer(ev);
+        var x = pointer.x;
+        var y = pointer.y;
+        // console.log (`> mouse move: (${x},${y})`)
+
+        // Set the tooltip position to follow mouse cursor
+        if (tooltipRef.current) {
+            const height = tooltipRef.current.clientHeight
+            const width = tooltipRef.current.clientWidth
+            tooltipRef.current.style.left = `${ev.clientX - width / 2}px`
+            tooltipRef.current.style.top = `${ev.clientY - 10 - height}px`
+        }
+
+    }
+
+    function velocity_change_to_arrow_sign (val, is_x=true) {
+        const sign = Math.sign (val)
+
+        if (is_x) {
+            if (sign == 1) return '→'
+            else if (sign == -1) return '←'
+            else return ''
+        }
+        else {
+            if (sign == 1) return '↓'
+            else if (sign == -1) return '↑'
+            else return ''
+        }
+    }
+
+    function boolean_to_next_show_hide (bool) {
+        if (bool) return 'hide'
+        else return 'show'
+    }
+    const kbd_style = {
+        border: '1px solid currentColor',
+        padding: '0px 4px'
+    }
     //
     // Return component
     //
     return(
-        <div>
+        <div
+            onMouseMove = { (ev) => handleMouseMove(ev) }
+        >
             <div style={{fontFamily:'Poppins-Light',height:'0',fontColor:'#00000000'}}>{timeLeft}s</div>
             <canvas id="c" />
             <img src='/sun0_crop.png' id="sun0-img" style={{visibility:imgVisibility}} />
@@ -923,10 +1010,35 @@ export default function GameWorld() {
             <img src="/sun2_crop.png" id="sun2-img" style={{visibility:imgVisibility}} />
             <div style={info_style}>
                 Age of universe: {universeAge} / 2520 ticks
+                <br />
+                <span style={{fontSize:'12px'}}>Press <span style={kbd_style}>q</span> to {boolean_to_next_show_hide(showFaceAssist)} planet face indicators</span>
             </div>
+            {tooltip && (
+                <div ref={tooltipRef} className={styles.tooltip} style={{borderRadius:'10px 10px 10px 10px'}}>
+                    {tooltip.startsWith('ndpeImpulse') ? (
+                        <>
+                            Engine Launch #{hoveredImpulseIndex + 1}
+                            <div className={styles.tooltipInfo}>
+                                |ΔV<sub>x</sub>| = {hoveredImpulseDelta.x == 0 ? '' : velocity_change_to_arrow_sign(hoveredImpulseDelta.x, true)} {planetVRelChange.x_from_0 ? planetVRelChange.x.toExponential(2).toString(10) + '/tick' : (planetVRelChange.x * 100).toFixed(3).toString(10) + '%'}
+                                <br />
+                                |ΔV<sub>y</sub>| = {hoveredImpulseDelta.y == 0 ? '' : velocity_change_to_arrow_sign(hoveredImpulseDelta.y, false)} {planetVRelChange.y_from_0 ? planetVRelChange.y.toExponential(2).toString(10) + '/tick' : (planetVRelChange.y * 100).toFixed(3).toString(10) + '%'}
+                            </div>
+                        </>
+                    ) : tooltip}
+                </div>
+            )}
         </div>
     );
 }
+
+// source: https://stackoverflow.com/a/28112459
+var rotateVector = function (vec, ang)
+{
+    ang = -ang * (Math.PI/180);
+    var cos = Math.cos(ang);
+    var sin = Math.sin(ang);
+    return new Array(Math.round(10000*(vec[0] * cos - vec[1] * sin))/10000, Math.round(10000*(vec[0] * sin + vec[1] * cos))/10000);
+};
 
 function fp_felt_to_num(felt) {
     BigNumber.config({ EXPONENTIAL_AT: 76 })

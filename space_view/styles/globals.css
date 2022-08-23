@@ -113,3 +113,8 @@ https://stackoverflow.com/questions/8200204/fit-background-image-to-div */
     50% { opacity: 0.6; }
     100% { opacity: 1; }
 }
+
+kbd {
+    border: 1px solid currentColor;
+    padding: 2px 4px;
+}
