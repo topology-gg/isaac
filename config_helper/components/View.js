@@ -139,7 +139,7 @@ export default function View () {
             else if (queue_length == CIV_SIZE) {
                 setJoinButtonText ('Dispatch')
                 setJoinButtonColor ('#555555')
-                setJoinButtonBgColor ('#ffd500')
+                setJoinButtonBgColor ('#EFEFEF')
             }
             else {
 
@@ -172,13 +172,15 @@ export default function View () {
                 // if (false) {
                 if (queue_accounts.includes(account_int_str)) {
                     const index = queue_accounts.indexOf (account_int_str)
-                    // console.log('index:',index)
+                    console.log('index:',index)
                     const effective_queue_idx = db_lobby_queue.lobby_queue[index].queue_idx - head_idx
-                    setPositionInQueue (effective_queue_idx)
+                    setPositionInQueue (effective_queue_idx + 1)
                     setJoinButtonText ('already in queue')
                     setJoinButtonColor ('#999999')
                 }
                 else {
+                    setPositionInQueue (0)
+
                     //
                     // find if account is in the civilization of active universe
                     //
@@ -232,7 +234,7 @@ export default function View () {
             setJoinButtonBgColor ('#EFEFEF')
         }
         else if (joinButtonColor==='#555555') { // dispatch
-            setJoinButtonBgColor ('#ffd500')
+            setJoinButtonBgColor ('#EFEFEF')
         }
     }
 

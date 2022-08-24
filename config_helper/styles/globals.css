@@ -57,7 +57,7 @@ body {
 button {
     color: #333333;
     border-radius: 10px;
-    border-width: 0;
+    border: 1px solid #33333330;
     cursor: pointer;
     display: inline-block;
     font-family: "Poppins-Light";
