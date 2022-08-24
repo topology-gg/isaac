@@ -1,7 +1,6 @@
 import React, { Component, useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { fabric } from 'fabric';
 import { toBN } from 'starknet/dist/utils/number'
-import { BigNumber } from 'bignumber.js'
 
 import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
 import { DEVICE_RESOURCE_MAP } from './ConstantDeviceResources'
@@ -25,7 +24,6 @@ import {
     useMacroStates
 } from '../lib/api'
 
-// import Modal from "./Modal";
 import { Modal } from "./Modal"
 import HUD from "./HUD"
 
@@ -34,10 +32,43 @@ import {
 } from '@starknet-react/core'
 import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
 import DEVICE_DIM_MAP from './ConstantDeviceDimMap'
-import { SIDE, GRID, PAD_X, PAD_Y, CANVAS_W, CANVAS_H, TRIANGLE_W, TRIANGLE_H, GRID_SPACING } from '../lib/constants/gameWorld';
+import {
+    SIDE,
+    GRID,
+    PAD_X,
+    PAD_Y,
+    CANVAS_W,
+    CANVAS_H,
+    TRIANGLE_W,
+    TRIANGLE_H,
+    GRID_SPACING,
+    STROKE_WIDTH_CURSOR_FACE,
+    STROKE_WIDTH_GRID_MEDIUM,
+    HOVER_DEVICE_STROKE_WIDTH,
+    STROKE_WIDTH_AXIS,
+    VOLUME,
+    ANIM_UPDATE_INTERVAL_MS,
+    FILL_CURSOR_SELECTED_GRID,
+    GRID_ASSIST_TBOX,
+    CANVAS_BG,
+    STROKE,
+} from "../lib/constants/gameWorld";
 import deviceFromGridCoord from '../lib/deviceFromGridCoord'
 import drawPendingDevices from "../lib/helpers/drawPendingDevices";
 import drawPendingPickups from "../lib/helpers/drawPendingPickups";
+import {
+    createCursorGridRect, createCursorFaceRect, createCursorHoverDeviceRect
+} from './fabricObjects/assists';
+import createTriangle from "./fabricObjects/createTriangle";
+import parse_phi_to_degree from "../lib/helpers/parsePhiToDegree";
+import vec2_rotate_by_degree from "../lib/helpers/vec2RotateByDegree";
+import convert_exposure_to_fill from "../lib/helpers/convertExposureToFill";
+import find_face_ori from "../lib/helpers/findFaceOri";
+import find_face_given_grid from "../lib/helpers/findFaceGivenGrid";
+import lerp from "../lib/helpers/lerp";
+import is_valid_coord from "../lib/helpers/isValidCoord";
+import map_face_to_left_top from "../lib/helpers/mapFaceToLeftTop";
+import { convert_screen_to_grid_x, convert_screen_to_grid_y } from "../lib/helpers/convertScreenToGrid"
 
 //
 // Note: reading requirement (translated to Apibara integration design)
@@ -82,110 +113,7 @@ import drawPendingPickups from "../lib/helpers/drawPendingPickups";
 //     'pu' : PERLIN_VALUES_PU_RAW
 // }
 
-//
-// Sizes
-//
-const STROKE_WIDTH_CURSOR_FACE = 0.75
-const STROKE_WIDTH_AXIS = 0.4
-const STROKE_WIDTH_GRID_COURSE = 0.2
-const STROKE_WIDTH_GRID_MEDIUM = 0.1
-const STROKE_WIDTH_GRID_FINEST = 0.02
-const STROKE_WIDTH_GRID_FACE = 0.4
-const HOVER_DEVICE_STROKE_WIDTH = 0.6
-
-//
-// Styles
-//
-const PALETTE = 'DARK'
-const STROKE             = PALETTE === 'DARK' ? '#DDDDDD' : '#BBBBBB' // grid stroke color
-const CANVAS_BG          = PALETTE === 'DARK' ? '#181818' : '#E3EDFF'
-const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#FFEFD5' : '#999999'
-const STROKE_GRID_FACE   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
-const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
-const FILL_CURSOR_GRID            = PALETTE === 'DARK' ? '#AAAAAA55' : '#AAAAAA55'
-const FILL_CURSOR_SELECTED_GRID   = PALETTE === 'DARK' ? '#DDDDDD55' : '#AAAAAA55'
-// const HOVER_DEVICE_COLOR = PALETTE === 'DARK' ? '#a5f3fc' : '#22d3ee'
-const HOVER_DEVICE_COLOR = PALETTE === 'DARK' ? '#FFFFFF' : '#22d3ee'
-
-//
-// Animation
-//
-const ANIM_UPDATE_INTERVAL_MS = 150
-
-//
-// Sound effect
-//
-const VOLUME = 0.2
-
-//
-// Helper function for creating the triangles at the tips of axes
-//
-function createTriangle(x, y, rotation)
-{
-    var width  = TRIANGLE_W;
-    var height = TRIANGLE_H;
-    var pos = fabric.util.rotatePoint(
-        new fabric.Point(x, y),
-        new fabric.Point(x + width / 2, y + height / 3 * 2),
-        fabric.util.degreesToRadians(rotation)
-    );
-    return new fabric.Triangle(
-    {
-        width: width,
-        height: height,
-        selectable: false,
-        fill: STROKE,
-        stroke: STROKE,
-        strokeWidth: 1,
-        left: pos.x,
-        top: pos.y,
-        angle: rotation,
-        hoverCursor: 'default'
-    });
-}
-
-//
-// Helper function to convert api-returned phi value into degree
-//
-function parse_phi_to_degree (phi)
-{
-    const phi_bn = new BigNumber(Buffer.from(phi, 'base64').toString('hex'), 16)
-    const phi_degree = (phi_bn / 10**20) / (Math.PI * 2) * 360
-
-    return phi_degree
-}
-
-//
-// Helper function to rotate 2d vector
-//
-function vec2_rotate_by_degree (vec, ang) {
-    ang = -ang * (Math.PI/180);
-    var cos = Math.cos(ang);
-    var sin = Math.sin(ang);
-    return [
-        Math.round(10000*(vec[0] * cos - vec[1] * sin))/10000,
-        Math.round(10000*(vec[0] * sin + vec[1] * cos))/10000
-    ]
-}
-
-//
-// Helper function to convert solar exposure value to face rect fill color
-//
-const FILL_MIN = [17, 26, 0]
-const FILL_MAX = [50, 77, 0]
-function convert_exposure_to_fill (exposure) {
-
-    const exposure_capped = exposure > 20 ? 20 : exposure
-    const ratio = exposure_capped / 20
-
-    const R = FILL_MIN[0] + (FILL_MAX[0]-FILL_MIN[0]) * ratio
-    const G = FILL_MIN[1] + (FILL_MAX[1]-FILL_MIN[1]) * ratio
-    const B = FILL_MIN[2] + (FILL_MAX[2]-FILL_MIN[2]) * ratio
-
-    return (`rgb(${R}, ${G}, ${B})`)
-}
-
-export default function GameWorld (props) {
+export default function GameWorld(props) {
 
     fabric.perfLimitSizeTotal = 4194304;
     fabric.maxCacheSideLimit = 5000*2;
@@ -220,9 +148,9 @@ export default function GameWorld (props) {
     const _universeActiveRef = useRef(false);
     const _hasDrawnRef = useRef();
     const _coordTextRef = useRef();
-    const _cursorGridRectRef = useRef();
-    const _cursorFaceRectRef = useRef();
-    const _cursorHoverDeviceRectRef = useRef();
+    const _cursorGridRectRef = useRef(createCursorGridRect());
+    const _cursorFaceRectRef = useRef(createCursorFaceRect());
+    const _cursorHoverDeviceRectRef = useRef(createCursorHoverDeviceRect());
     const modalVisibilityRef = useRef(false)
     const _displayModeRef = useRef('devices')
     const _displayModeTextRef = useRef('');
@@ -522,14 +450,6 @@ export default function GameWorld (props) {
         setGridMapping (_gridMapping.current)
 
         return
-    }
-
-    function convert_screen_to_grid_x (x) {
-        return Math.floor( (x - PAD_X) / GRID )
-    }
-
-    function convert_screen_to_grid_y (y) {
-        return SIDE*3 - 1 - Math.floor( (y - PAD_Y) / GRID )
     }
 
     //
@@ -874,46 +794,6 @@ export default function GameWorld (props) {
         fontFamily: "Poppins-Light"
     });
 
-    var cursorGridRect = new fabric.Rect({
-        height: GRID,
-        width: GRID,
-        left: PAD_X,
-        top: PAD_Y,
-        fill: FILL_CURSOR_GRID,
-        selectable: false,
-        hoverCursor: 'default',
-        visible: false,
-        strokeWidth: 0
-    });
-
-    var cursorFaceRect = new fabric.Rect({
-        height: GRID*SIDE,
-        width: GRID*SIDE,
-        left: PAD_X,
-        top: PAD_Y,
-        fill: "",
-        stroke: STROKE_CURSOR_FACE,
-        strokeWidth: STROKE_WIDTH_CURSOR_FACE,
-        selectable: false,
-        hoverCursor: 'default',
-        visible: false
-    });
-
-    var cursorHoverDeviceRect = new fabric.Rect({
-        height: GRID,
-        width: GRID,
-        left: PAD_X,
-        top: PAD_Y,
-        fill: '',
-        selectable: false,
-        hoverCursor: 'default',
-        visible: false,
-        stroke: HOVER_DEVICE_COLOR,
-        strokeLineJoin: 'round',
-        opacity: 0.5,
-        strokeWidth: HOVER_DEVICE_STROKE_WIDTH,
-    });
-
     //
     // text box showing current display mode
     //
@@ -1069,6 +949,10 @@ export default function GameWorld (props) {
         document.addEventListener("keydown", handleKeyDown, false);
         document.addEventListener("keyup", handleKeyUp, false);
         return () => {
+
+            // Remove canvas elements
+            _canvasRef.current.dispose()
+
             document.removeEventListener("keydown", handleKeyDown, false);
             document.removeEventListener("keyup", handleKeyUp, false);
         };
@@ -1691,41 +1575,11 @@ export default function GameWorld (props) {
         // canvi.add(coordText)
         // _coordTextRef.current = coordText
 
-        canvi.add (cursorGridRect)
-        _cursorGridRectRef.current = cursorGridRect
-
-        canvi.add (cursorFaceRect)
-        _cursorFaceRectRef.current = cursorFaceRect
-
-        canvi.add (cursorHoverDeviceRect)
-        _cursorHoverDeviceRectRef.current = cursorHoverDeviceRect
+        canvi.add (_cursorGridRectRef.current)
+        canvi.add (_cursorFaceRectRef.current)
+        canvi.add (_cursorHoverDeviceRectRef.current)
 
         canvi.requestRenderAll();
-    }
-
-    function lerp (start, end, ratio){
-        return start + (end-start) * ratio
-    }
-
-    function find_face_ori (face) {
-        if (face === 0) {
-            return [0, SIDE]
-        }
-        else if (face === 1) {
-            return [SIDE, 0]
-        }
-        else if (face === 2) {
-            return [SIDE, SIDE]
-        }
-        else if (face === 3) {
-            return [SIDE, 2*SIDE]
-        }
-        else if (face === 4) {
-            return [2*SIDE, SIDE]
-        }
-        else { // face === 5
-            return [3*SIDE, SIDE]
-        }
     }
 
     const drawPerlinImage = canvi => {
@@ -1926,110 +1780,6 @@ export default function GameWorld (props) {
         // canvi.requestRenderAll();
     }
 
-    //
-    // Grid assists and popup window
-    //
-    function find_face_given_grid (x, y) {
-        const x0 = x >= 0 && x < SIDE
-        const x1 = x >= SIDE && x < SIDE*2
-        const x2 = x >= SIDE*2 && x < SIDE*3
-        const x3 = x >= SIDE*3 && x < SIDE*4
-
-        const y0 = y >= 0 && y < SIDE
-        const y1 = y >= SIDE && y < SIDE*2
-        const y2 = y >= SIDE*2 && y < SIDE*3
-
-        // face 0
-        if (x0 && y1) {
-            return 0
-        }
-
-        // face 1
-        if (x1 && y0) {
-            return 1
-        }
-
-        // face 2
-        if (x1 && y1) {
-            return 2
-        }
-
-        // face 3
-        if (x1 && y2) {
-            return 3
-        }
-
-        // face 4
-        if (x2 && y1) {
-            return 4
-        }
-
-        // face 5
-        if (x3 && y1) {
-            return 5
-        }
-
-        return -1
-    }
-
-    function x_transform_normalized_to_canvas (x) {
-        return PAD_X + x*GRID
-    }
-    function y_transform_normalized_to_canvas (y) {
-        return PAD_Y + (SIDE*3 - y - 1)*GRID
-    }
-
-    function map_face_to_left_top (face) {
-        if (face === 0){
-            return ({
-                left : x_transform_normalized_to_canvas (0),
-                top  : y_transform_normalized_to_canvas (2*SIDE-1)
-            })
-        }
-        if (face === 1){
-            return ({
-                left : x_transform_normalized_to_canvas (SIDE),
-                top  : y_transform_normalized_to_canvas (SIDE-1)
-            })
-        }
-        if (face === 2){
-            return ({
-                left : x_transform_normalized_to_canvas (SIDE),
-                top  : y_transform_normalized_to_canvas (2*SIDE-1)
-            })
-        }
-        if (face === 3){
-            return ({
-                left : x_transform_normalized_to_canvas (SIDE),
-                top  : y_transform_normalized_to_canvas (3*SIDE-1)
-            })
-        }
-        if (face === 4){
-            return ({
-                left : x_transform_normalized_to_canvas (2*SIDE),
-                top  : y_transform_normalized_to_canvas (2*SIDE-1)
-            })
-        }
-        else { // face === 5
-            return ({
-                left : x_transform_normalized_to_canvas (3*SIDE),
-                top  : y_transform_normalized_to_canvas (2*SIDE-1)
-            })
-        }
-
-    }
-
-    function is_valid_coord (x, y) {
-        const face = find_face_given_grid (x, y)
-
-        if (face >= 0) {
-            return true
-        }
-        else{
-            return false
-        }
-    }
-
     useEffect(() => {
         drawPendingDevices(_canvasRef, _pendingDevicesRef)
     }, [pendingDevices])
@@ -2040,95 +1790,93 @@ export default function GameWorld (props) {
 
     function drawAssistObject (canvi, mPosNorm) {
 
-        if (_cursorGridRectRef.current && _cursorFaceRectRef.current && _cursorHoverDeviceRectRef.current) {
-            if (mPosNorm.x.toString() === '-') {
-                //
-                // Show face & coordinate textbox
-                //
-                // _coordTextRef.current.text = 'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
-                // _coordTextRef.current.dirty  = true
-                setHudLines ( arr => [
-                    'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')', arr[1]
-                ])
+        if (mPosNorm.x.toString() === '-' || !gridMapping) {
+            //
+            // Show face & coordinate textbox
+            //
+            // _coordTextRef.current.text = 'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')'
+            // _coordTextRef.current.dirty  = true
+            setHudLines ( arr => [
+                'Face - / Grid (' + mPosNorm.x.toString() + ',' + mPosNorm.y.toString() + ')', arr[1]
+            ])
 
-                //
-                // Hide grid assist square
-                //
-                _cursorGridRectRef.current.visible = false
+            //
+            // Hide grid assist square
+            //
+            _cursorGridRectRef.current.visible = false
 
-                //
-                // Hide face assist square
-                //
-                _cursorFaceRectRef.current.visible = false
+            //
+            // Hide face assist square
+            //
+            _cursorFaceRectRef.current.visible = false
 
-                // Hide hover device selection
+            // Hide hover device selection
+            _cursorHoverDeviceRectRef.current.visible = false
+        }
+        else {
+            const face = find_face_given_grid (mPosNorm.x, mPosNorm.y)
+            const ori  = map_face_to_left_top (face)
+            const gridData = gridMapping[`(${mPosNorm.x},${mPosNorm.y})`]
+
+            // Grid data mapped to lines for HUD
+            const gridDataLines = gridData
+                ? [
+                    DEVICE_TYPE_MAP[gridData.type],
+                    _pendingPickupsRef.current && _pendingPickupsRef.current.find(({id}) => id === gridData.id) ? 'Pending pick-up' : null,
+                    ...Object.keys(gridData.balances)
+                    .map(
+                        (key) =>
+                        gridData.balances[key] &&
+                        key + ': ' + gridData.balances[key]
+                    ),
+                ].filter((x) => x)
+                : []
+
+            //
+            // Show face & coordinate textbox
+            // Along with info about the device
+            //
+            // _coordTextRef.current.text = 'Face ' + face.toString() + ' / Grid (' + mPosNorm.x.toString() + ', ' + mPosNorm.y.toString() + ')'
+            // _coordTextRef.current.dirty  = true
+            setHudLines((arr) => [
+                `Face ${face} / Grid (${mPosNorm.x}, ${mPosNorm.y})`,
+                arr[1],
+                ...gridDataLines,
+            ])
+
+            //
+            // Show grid assist square
+            //
+            _cursorGridRectRef.current.left = PAD_X + mPosNorm.x*GRID
+            _cursorGridRectRef.current.top  = PAD_Y + (SIDE*3 - mPosNorm.y - 1)*GRID
+            _cursorGridRectRef.current.visible = true
+
+
+            //
+            // Show face assist square
+            //
+            _cursorFaceRectRef.current.left = ori.left - STROKE_WIDTH_CURSOR_FACE/2
+            _cursorFaceRectRef.current.top  = ori.top - STROKE_WIDTH_CURSOR_FACE/2
+            _cursorFaceRectRef.current.visible = true
+            // console.log (`draw face assist square, face: ${face}`)
+
+            // Show device hover selection
+            const device = deviceFromGridCoord (mPosNorm.x, mPosNorm.y, db_deployed_devices.deployed_devices)
+            if (device) {
+                _cursorHoverDeviceRectRef.current.left    = PAD_X + device.device.base_grid.x * GRID - HOVER_DEVICE_STROKE_WIDTH
+                _cursorHoverDeviceRectRef.current.top     = PAD_Y + (SIDE * 3 - (device.device.base_grid.y + device.dimension)) * GRID - HOVER_DEVICE_STROKE_WIDTH
+                _cursorHoverDeviceRectRef.current.width   = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH
+                _cursorHoverDeviceRectRef.current.height  = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH
+                _cursorHoverDeviceRectRef.current.visible = true
+            } else {
                 _cursorHoverDeviceRectRef.current.visible = false
             }
-            else {
-                const face = find_face_given_grid (mPosNorm.x, mPosNorm.y)
-                const ori  = map_face_to_left_top (face)
-                const gridData = gridMapping[`(${mPosNorm.x},${mPosNorm.y})`]
-
-                // Grid data mapped to lines for HUD
-                const gridDataLines = gridData
-                  ? [
-                      DEVICE_TYPE_MAP[gridData.type],
-                      _pendingPickupsRef.current && _pendingPickupsRef.current.find(({id}) => id === gridData.id) ? 'Pending pick-up' : null,
-                      ...Object.keys(gridData.balances)
-                        .map(
-                          (key) =>
-                            gridData.balances[key] &&
-                            key + ': ' + gridData.balances[key]
-                        ),
-                    ].filter((x) => x)
-                  : []
-
-                //
-                // Show face & coordinate textbox
-                // Along with info about the device
-                //
-                // _coordTextRef.current.text = 'Face ' + face.toString() + ' / Grid (' + mPosNorm.x.toString() + ', ' + mPosNorm.y.toString() + ')'
-                // _coordTextRef.current.dirty  = true
-                setHudLines((arr) => [
-                  `Face ${face} / Grid (${mPosNorm.x}, ${mPosNorm.y})`,
-                  arr[1],
-                  ...gridDataLines,
-                ])
-
-                //
-                // Show grid assist square
-                //
-                _cursorGridRectRef.current.left = PAD_X + mPosNorm.x*GRID
-                _cursorGridRectRef.current.top  = PAD_Y + (SIDE*3 - mPosNorm.y - 1)*GRID
-                _cursorGridRectRef.current.visible = true
-
-
-                //
-                // Show face assist square
-                //
-                _cursorFaceRectRef.current.left = ori.left - STROKE_WIDTH_CURSOR_FACE/2
-                _cursorFaceRectRef.current.top  = ori.top - STROKE_WIDTH_CURSOR_FACE/2
-                _cursorFaceRectRef.current.visible = true
-                // console.log (`draw face assist square, face: ${face}`)
-
-                // Show device hover selection
-                const device = deviceFromGridCoord (mPosNorm.x, mPosNorm.y, db_deployed_devices.deployed_devices)
-                if (device) {
-                    _cursorHoverDeviceRectRef.current.left    = PAD_X + device.device.base_grid.x * GRID - HOVER_DEVICE_STROKE_WIDTH
-                    _cursorHoverDeviceRectRef.current.top     = PAD_Y + (SIDE * 3 - (device.device.base_grid.y + device.dimension)) * GRID - HOVER_DEVICE_STROKE_WIDTH
-                    _cursorHoverDeviceRectRef.current.width   = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH
-                    _cursorHoverDeviceRectRef.current.height  = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH
-                    _cursorHoverDeviceRectRef.current.visible = true
-                } else {
-                    _cursorHoverDeviceRectRef.current.visible = false
-                }
-            }
-            _cursorGridRectRef.current.dirty        = true
-            _cursorFaceRectRef.current.dirty        = true
-            _cursorHoverDeviceRectRef.current.dirty = true
-
-            canvi.requestRenderAll();
         }
+        _cursorGridRectRef.current.dirty        = true
+        _cursorFaceRectRef.current.dirty        = true
+        _cursorHoverDeviceRectRef.current.dirty = true
+
+        canvi.requestRenderAll();
     }
 
     useEffect (() => {
