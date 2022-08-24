@@ -30,28 +30,15 @@ export function ConnectWallet() {
 
     if (account) {
         if (!stardisc_query) return;
-        console.log ('stardisc_query: ', stardisc_query)
-        // console.log ('> fetched stardisc_registry:', db_stardisc_registry.stardisc_registry)
+        // console.log ('stardisc_query: ', stardisc_query)
 
-        // const account_str_decimal = toBN(account).toString(10)
-        // const found_name_obj = db_stardisc_registry.stardisc_registry.find(o => o.addr === account_str_decimal);
-
-        // var rendered_account
-        // if (found_name_obj) {
-        //     const name = toBN(found_name_obj.name).toString(10)
-        //     const name_string = feltLiteralToString (name)
-        //     rendered_account = name_string
-        // }
-        // else {
-        //     rendered_account = String(account).slice(0,5) + '...' + String(account).slice(-4)
-        // }
         var rendered_account
-        if (stardisc_query.stardisc_query.length > 0) {
+        if (stardisc_query.stardisc_query.length > 0) { // query succeeded
             const name = toBN(stardisc_query.stardisc_query[0].name).toString(10)
             const name_string = feltLiteralToString (name)
             rendered_account = <strong>{name_string}</strong>
         }
-        else {
+        else { // query failed
             rendered_account = String(account).slice(0,5) + '...' + String(account).slice(-4)
         }
 
