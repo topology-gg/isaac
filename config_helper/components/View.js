@@ -17,7 +17,7 @@ import {
 } from '@starknet-react/core'
 import QueueVisualization from "./QueueVisualization";
 
-const CIV_SIZE = 20
+const CIV_SIZE = 5
 
 export default function View () {
 
