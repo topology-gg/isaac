@@ -4,9 +4,13 @@ import {
 } from '@starknet-react/core'
 import { useEffect, useState } from 'react'
 import Button from './Button'
+import { toBN } from 'starknet/dist/utils/number'
 
 import styles from './ConnectWallet.module.css'
 
+import {
+    useStardiscRegistry
+} from '../lib/api'
 
 export function ConnectWallet() {
 
@@ -15,17 +19,36 @@ export function ConnectWallet() {
     const [connectors, setConnectors] = useState([])
     const [walletNotFound, setWalletNotFound] = useState(false)
 
-    // Connectors  are not available server-side therefore we
+    const { data: db_stardisc_registry } = useStardiscRegistry () // must be a better way than fetching the entire registry
+
+    // Connectors are not available server-side therefore we
     // set the state in a useEffect hook
     useEffect(() => {
       if (available) setConnectors(available)
     }, [available])
 
     if (account) {
+        if (!db_stardisc_registry.stardisc_registry) return;
+
+        console.log ('> fetched stardisc_registry:', db_stardisc_registry.stardisc_registry)
+
+        const account_str_decimal = toBN(account).toString(10)
+        const found_name_obj = db_stardisc_registry.stardisc_registry.find(o => o.addr === account_str_decimal);
+
+        var rendered_account
+        if (found_name_obj) {
+            const name = toBN(found_name_obj.name).toString(10)
+            const name_string = feltLiteralToString (name)
+            rendered_account = name_string
+        }
+        else {
+            rendered_account = String(account).slice(0,5) + '...' + String(account).slice(-4)
+        }
+
         return (
             <div className={styles.wrapper}>
                 <p className={styles.text}>
-                    Connected account: {String(account).slice(0,5)}...{String(account).slice(-4)}
+                    Connected: {rendered_account}
                 </p>
                 <Button className={styles.button} onClick={() => disconnect()}>
                     Disconnect
@@ -59,4 +82,27 @@ export function ConnectWallet() {
             )}
       </div>
     )
+}
+
+function feltLiteralToString (felt) {
+
+    const tester = felt.split('');
+
+    let currentChar = '';
+    let result = "";
+    const minVal = 25;
+    const maxval = 255;
+
+    for (let i = 0; i < tester.length; i++) {
+        currentChar += tester[i];
+        if (parseInt(currentChar) > minVal) {
+            result += String.fromCharCode(currentChar);
+            currentChar = "";
+        }
+        if (parseInt(currentChar) > maxval) {
+            currentChar = '';
+        }
+    }
+
+    return result
 }
