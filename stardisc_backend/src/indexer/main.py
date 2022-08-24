@@ -1,6 +1,7 @@
 """Apibara indexer entrypoint."""
 
 import asyncio
+import os
 from functools import wraps
 
 import click
@@ -33,7 +34,7 @@ async def start(server_url, mongo_url, restart):
     if server_url is None:
         server_url = "localhost:7171"
     if mongo_url is None:
-        mongo_url = "mongodb://apibara:apibara@localhost:27017"
+        mongo_url = os.getenv("MONGO_URL", "mongodb://apibara:apibara@localhost:27017")
     await run_indexer(
         restart=restart,
         server_url=server_url,

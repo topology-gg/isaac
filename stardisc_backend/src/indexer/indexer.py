@@ -1,3 +1,5 @@
+import os
+
 from apibara import Client, IndexerRunner, Info, NewBlock, NewEvents
 from apibara.indexer.runner import IndexerRunnerConfiguration
 from apibara.model import EventFilter
@@ -7,7 +9,7 @@ from indexer.contract import (
     decode_sns_register_occurred
 )
 
-indexer_id = "my-indexer"
+indexer_id = os.getenv('INDEXER_ID', 'stardisc')
 STARDISC_ADDR = '0x0367846f4e87762424244c9891a5db6c242b270632ff2d82bfe1ed0907dfddf5'
 BIRTH_BLOCK = 307806 # deploy tx hash: 0x84f9a339eb3f94d30bd5e333e241721f22366ba999687a205ae9dd26a61936
 
