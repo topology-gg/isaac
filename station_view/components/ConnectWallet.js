@@ -42,17 +42,20 @@ export function ConnectWallet() {
             rendered_account = String(account).slice(0,5) + '...' + String(account).slice(-4)
         }
 
-
         return (
             <div className={styles.wrapper}>
                 <p className={styles.text}>
                     Connected: {rendered_account}
                 </p>
-                <Button className={styles.button} onClick={() => disconnect()}>
+                <Button className={styles.button} onClick={() => handleDisconnect()}>
                     Disconnect
                 </Button>
             </div>
       )
+    }
+
+    function handleDisconnect () {
+        disconnect ()
     }
 
     const buttons_sorted = [].concat(connectors)
