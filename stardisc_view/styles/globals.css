@@ -153,8 +153,7 @@ strong {
 }
 strong::before {
     /* Highlight color */
-    /* background-color: #46b96c; */
-    background-color: #ffd500;
+    background-color: #FFFE71;
 
     content: "";
     position: absolute;
@@ -168,4 +167,8 @@ strong::before {
 
 input::placeholder {
     opacity: .5;
+}
+
+.result {
+    font-size: 20px;
 }

@@ -24,10 +24,10 @@ export function SnsPoll (props) {
         if (stardisc_query.stardisc_query.length > 0) { // query succeeded
             const name = toBN(stardisc_query.stardisc_query[0].name).toString(10)
             const name_string = feltLiteralToString (name)
-            rendered_account = <strong>{name_string}</strong>
+            rendered_account = <p className='result'>you are <strong>{name_string}</strong></p>
         }
         else { // query failed
-            rendered_account = 'not registered yet'
+            rendered_account = <p  className='result'>not registered yet</p>
         }
     }
 
