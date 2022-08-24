@@ -185,8 +185,7 @@ function convert_exposure_to_fill (exposure) {
     return (`rgb(${R}, ${G}, ${B})`)
 }
 
-export default function GameWorld() {
-
+export default function GameWorld (props) {
 
     fabric.perfLimitSizeTotal = 4194304;
     fabric.maxCacheSideLimit = 5000*2;
@@ -627,6 +626,7 @@ export default function GameWorld() {
             modalVisibilityRef.current = true
 
             const info = {
+                'mode' : 'grids',
                 'grids' : _selectedGridsRef.current
             }
             setModalInfo (info)
@@ -729,15 +729,6 @@ export default function GameWorld() {
         }
 
         if (ev.key === 'c') {
-            // _courseGridLines.current.visible = false
-            // _courseGridLines.current.dirty = true
-
-            // _mediumGridLines.current.visible = false
-            // _mediumGridLines.current.dirty = true
-
-            // _finestGridLines.current.visible = false
-            // _finestGridLines.current.dirty = true
-
             resetZoom ()
         }
 
@@ -827,13 +818,25 @@ export default function GameWorld() {
             setModalVisibility (true)
             modalVisibilityRef.current = true
             const info = {
+                'mode' : 'transfer',
                 'grids' : null
             }
             setModalInfo (info)
         }
 
-        else if(ev.key === 'q') {
+        else if (ev.key === 'q') {
             setHighlightOwnDevices (true);
+        }
+
+        else if (ev.key === 'i') {
+            setModalVisibility (true)
+            modalVisibilityRef.current = true
+            _selectStateRef.current = 'popup'
+            const info = {
+                'mode' : 'inventory',
+                'grids' : null
+            }
+            setModalInfo (info)
         }
 
       }, [modalVisibility]);

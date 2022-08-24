@@ -82,7 +82,7 @@ function Home() {
                     <p>Pan: <kbd>RMB</kbd></p>
                     <p>Zoom: mouse wheel / press <kbd>c</kbd> to reset zoom</p>
                     <p>Hold <kbd>q</kbd> to highlight your own devices</p>
-
+                    <p>Press <kbd>i</kbd> to open Inventory</p>
                     <span>.</span>
                 </div>
 

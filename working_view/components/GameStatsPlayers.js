@@ -6,7 +6,7 @@ import {
 } from '../lib/api'
 import GameStatsPlayer from "./GameStatsPlayer";
 
-const CIV_SIZE = 20
+const CIV_SIZE = 5
 
 export default function GameStatsPlayers(props) {
 

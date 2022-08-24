@@ -79,6 +79,10 @@ button {
 kbd {
     border: 1px solid currentColor;
     padding: 2px 4px;
+    margin-left: 1px;
+    margin-right: 1px;
+    font-family: Poppins-Light;
+    font-size: 10px;
 }
 
 ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
@@ -131,9 +135,14 @@ kbd {
     margin: 0;
 }
 
+.right-child-container {
+    display: flex;
+    flex-direction: column;
+}
+
 .right-child-bottom {
     overflow-y: auto;
-    height: 20em;
+    height: 17em;
     margin: 0;
 }
 

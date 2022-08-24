@@ -42,13 +42,15 @@ export function Modal (props) {
         <th key='balance' style={{textAlign:'left',paddingLeft:'3em'}}>Balance</th>
     ]
 
-    if (!info['grids']) {
-        //
-        // transfer device
-        //
+    if (info.mode == 'transfer') {
         title += "Transfer device peer-to-peer"
         grids = ""
         options.push (<TransferDeviceInterface />)
+    }
+    else if (info.mode == 'inventory') {
+        title += "Inventory"
+        grids = ""
+        // options.push (<TransferDeviceInterface />)
     }
     else {
         //
@@ -290,12 +292,18 @@ export function Modal (props) {
                     <span>.</span>
                 </div>
 
-                <div style={modal_right_child_style}>
-                    <h3>Options:</h3>
+                {
+                    options.length > 0 ?
+                    <div style={modal_right_child_style}>
+                        <h3>Options:</h3>
 
-                    {options_gated}
+                        {options_gated}
 
-                </div>
+                    </div>
+                     :
+                    <></>
+                }
+
 
             </div>
 
