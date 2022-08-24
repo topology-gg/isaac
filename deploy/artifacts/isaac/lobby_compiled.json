@@ -2478,7 +2478,7 @@
             "0x40137fff7fff8003",
             "0x48127ffe7fff8000",
             "0x480680017fff8000",
-            "0x14",
+            "0x5",
             "0x4829800080008003",
             "0x1104800180018000",
             "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffa07",
@@ -2586,7 +2586,7 @@
             "0x1104800180018000",
             "0x43",
             "0x4826800180008000",
-            "0x14",
+            "0x5",
             "0x1104800180018000",
             "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffc44",
             "0x480a80017fff8000",
@@ -2606,7 +2606,7 @@
             "0x48127ffe7fff8000",
             "0x480a80037fff8000",
             "0x480680017fff8000",
-            "0x14",
+            "0x5",
             "0x480a80027fff8000",
             "0x1104800180018000",
             "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd94",
@@ -2627,7 +2627,7 @@
             "0x480a80017fff8000",
             "0x480a80037fff8000",
             "0x480680017fff8000",
-            "0x14",
+            "0x5",
             "0x480a80027fff8000",
             "0x1104800180018000",
             "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd02",
@@ -2653,7 +2653,7 @@
             "0x40780017fff7fff",
             "0x0",
             "0x482680017ffd8000",
-            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffffed",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffffc",
             "0x20680017fff7fff",
             "0x6",
             "0x480a7ff87fff8000",
@@ -2906,7 +2906,7 @@
             "0x480a80017fff8000",
             "0x480a80007fff8000",
             "0x480680017fff8000",
-            "0x14",
+            "0x5",
             "0x480a80027fff8000",
             "0x1104800180018000",
             "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffc10",
@@ -2959,7 +2959,7 @@
             "0x40780017fff7fff",
             "0x0",
             "0x482680017ffb8000",
-            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffffed",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffffc",
             "0x20680017fff7fff",
             "0x6",
             "0x480a7ff87fff8000",
@@ -73594,7 +73594,7 @@
             },
             "contracts.design.constants.CIV_SIZE": {
                 "type": "const",
-                "value": 20
+                "value": 5
             },
             "contracts.design.constants.DELTA_PHI_PLANET": {
                 "type": "const",
@@ -74536,7 +74536,7 @@
             },
             "contracts.design.constants.ns_solar_power.BASE_RADIATION": {
                 "type": "const",
-                "value": 7500000000000000000000
+                "value": 37500000000000000000000
             },
             "contracts.design.constants.ns_solar_power.BOUND": {
                 "type": "const",
@@ -74550,11 +74550,11 @@
             },
             "contracts.design.constants.ns_solar_power.MULT": {
                 "type": "const",
-                "value": 1
+                "value": 2
             },
             "contracts.design.constants.ns_solar_power.OBLIQUE_RADIATION": {
                 "type": "const",
-                "value": 1500000000000000000000
+                "value": 7500000000000000000000
             },
             "contracts.design.constants.ns_solar_power.Return": {
                 "cairo_type": "()",

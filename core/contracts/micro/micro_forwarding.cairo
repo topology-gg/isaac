@@ -449,7 +449,7 @@ namespace ns_micro_forwarding:
                 let (element_type_) = harvester_device_type_to_element_type (src_type)
                 assert element_type = element_type_
                 let (src_balance) = ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_read (emap_entry.src_device_id)
-                let (local utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_xdevice_read (ns_device_types.DEVICE_UTB, emap_entry.src_device_id)
+                let (local utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTB, emap_entry.src_device_id)
 
                 with_attr error_message ("micro_forwarding.cairo:454 / Pre-division check: about to perform unsigned_div_rem (src_balance, utb_tether_count) but utb_tether_count = 0"):
                     assert_not_zero (utb_tether_count)
