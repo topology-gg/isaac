@@ -9,7 +9,7 @@ import { toBN } from 'starknet/dist/utils/number'
 import styles from './ConnectWallet.module.css'
 
 import {
-    useStardiscRegistry
+    useStardiscRegistryByAccount
 } from '../lib/api'
 
 export function ConnectWallet() {
@@ -19,7 +19,8 @@ export function ConnectWallet() {
     const [connectors, setConnectors] = useState([])
     const [walletNotFound, setWalletNotFound] = useState(false)
 
-    const { data: db_stardisc_registry } = useStardiscRegistry () // must be a better way than fetching the entire registry
+    const account_str_decimal = toBN(account).toString(10)
+    const { data: stardisc_query } = useStardiscRegistryByAccount (account_str_decimal) // must be a better way than fetching the entire registry
 
     // Connectors are not available server-side therefore we
     // set the state in a useEffect hook
@@ -28,22 +29,32 @@ export function ConnectWallet() {
     }, [available])
 
     if (account) {
-        if (!db_stardisc_registry.stardisc_registry) return;
+        if (!stardisc_query) return;
+        console.log ('stardisc_query: ', stardisc_query)
+        // console.log ('> fetched stardisc_registry:', db_stardisc_registry.stardisc_registry)
 
-        console.log ('> fetched stardisc_registry:', db_stardisc_registry.stardisc_registry)
+        // const account_str_decimal = toBN(account).toString(10)
+        // const found_name_obj = db_stardisc_registry.stardisc_registry.find(o => o.addr === account_str_decimal);
 
-        const account_str_decimal = toBN(account).toString(10)
-        const found_name_obj = db_stardisc_registry.stardisc_registry.find(o => o.addr === account_str_decimal);
-
+        // var rendered_account
+        // if (found_name_obj) {
+        //     const name = toBN(found_name_obj.name).toString(10)
+        //     const name_string = feltLiteralToString (name)
+        //     rendered_account = name_string
+        // }
+        // else {
+        //     rendered_account = String(account).slice(0,5) + '...' + String(account).slice(-4)
+        // }
         var rendered_account
-        if (found_name_obj) {
-            const name = toBN(found_name_obj.name).toString(10)
+        if (stardisc_query.stardisc_query.length > 0) {
+            const name = toBN(stardisc_query.stardisc_query[0].name).toString(10)
             const name_string = feltLiteralToString (name)
-            rendered_account = name_string
+            rendered_account = <strong>{name_string}</strong>
         }
         else {
             rendered_account = String(account).slice(0,5) + '...' + String(account).slice(-4)
         }
+
 
         return (
             <div className={styles.wrapper}>
