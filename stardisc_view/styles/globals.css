@@ -66,6 +66,11 @@ button {
   touch-action: manipulation;
 }
 
+.creamy-button:hover {
+    background-color:#FFFE71;
+    transition: 0.1s;
+}
+
 .mother-container {
     display: flex;
     flex-direction: column;

@@ -26,6 +26,7 @@ export function ConnectWallet() {
                 }
             }
             style={{padding:'0 30px',fontSize:'20px',height:'50px',border:'0',color:'#333333',border:'1px solid #333'}}
+            className = 'creamy-button'
         >
             Connect wallet
         </button>

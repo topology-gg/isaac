@@ -9,3 +9,7 @@ export function usePuzzles () {
 export function useS2mState () {
     return useSWR('/api/state', fetcher)
 }
+
+export function useStardiscRegistryByAccount (account) {
+    return useSWR(`/api/stardisc_registry/${account}`, fetcher)
+}

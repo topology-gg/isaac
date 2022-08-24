@@ -7,50 +7,33 @@ import {
     useStarknetCall
 } from '@starknet-react/core'
 
-import { useSNSContract } from "./SNSContract";
+import { useStarDiscContract } from "./StarDiscContract";
+
+import { useStardiscRegistryByAccount } from '../lib/api'
 
 export function SnsPoll (props) {
 
     const { account, connect } = useStarknet ()
-    const { contract: snsContract } = useSNSContract ()
+    const account_str_decimal = toBN(account).toString(10)
+    const { data: stardisc_query } = useStardiscRegistryByAccount (account_str_decimal) // must be a better way than fetching the entire registry
 
-    // console.log (`account: ${account}, typeof(account): ${typeof(account)}`)
+    if (account) {
+        if (!stardisc_query) return;
 
-    const { data : result, loading, error, refresh} = useStarknetCall ({
-        contract: snsContract,
-        method: 'sns_lookup_adr_to_name',
-        args: [account]
-    })
-
-    const value = useMemo(() => {
-
-        if (result && result.length > 0) {
-            const exist = toBN(result.exist).toString(10)
-            const name = toBN(result.name).toString(10)
-            const name_string = felt_literal_to_string (name)
-
-            console.log ('exist:', exist)
-            console.log ('name:', name_string)
-            return [exist, name_string]
+        var rendered_account
+        if (stardisc_query.stardisc_query.length > 0) { // query succeeded
+            const name = toBN(stardisc_query.stardisc_query[0].name).toString(10)
+            const name_string = feltLiteralToString (name)
+            rendered_account = <strong>{name_string}</strong>
         }
-
-    }, [result])
-
-    const info =
-        !value ? '' :
-        value[0] == 0 ? ' not registered yet' : ' ' + value[1]
-
+        else { // query failed
+            rendered_account = 'not registered yet'
+        }
+    }
 
     return (
         <div>
-            {
-                value && (
-                    value[0] == 0 ?
-                        <p style={{fontSize:'20px'}}>you are {info} </p>
-                        :
-                        <p style={{fontSize:'20px'}}>you are <strong>{info}</strong> </p>
-                )
-            }
+            {rendered_account}
             {/* <p>loading: {loading}</p>
             <p>error: {error}</p> */}
         </div>
@@ -58,7 +41,7 @@ export function SnsPoll (props) {
 }
 
 // reference: https://stackoverflow.com/a/66228871
-function felt_literal_to_string (felt) {
+function feltLiteralToString (felt) {
 
     const tester = felt.split('');
 

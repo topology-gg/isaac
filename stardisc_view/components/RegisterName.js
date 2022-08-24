@@ -7,12 +7,12 @@ import {
     useStarknetInvoke
 } from '@starknet-react/core'
 
-import { useSNSContract } from "./SNSContract";
+import { useStarDiscContract } from "./StarDiscContract";
 
 export function RegisterName (props) {
 
     const { account, connect } = useStarknet ()
-    const { contract } = useSNSContract ()
+    const { contract } = useStarDiscContract ()
     const { data, loading, error, reset, invoke } = useStarknetInvoke ({
         contract,
         method: 'sns_register'
@@ -87,7 +87,7 @@ export function RegisterName (props) {
             <div style={{display:'flex',flexDirection:'row'}}>
                 <form onSubmit={handleSubmit(onSubmitSnsRegister)} style={FORM_STYLE}>
                     <input style={INPUT_STYLE} placeholder="gnocchi#6789" {...register("nameRequired", { required: true })} />
-                    <input type="submit" value={'Go'} style={BUTTON_STYLE}/>
+                    <input type="submit" value={'Go'} style={BUTTON_STYLE} className = 'creamy-button'/>
                     {/* <p>Error: {error || 'No error'}</p> */}
                 </form>
             </div>
