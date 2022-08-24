@@ -212,7 +212,7 @@ export default function GameWorld() {
                 setTooltip("Ev")
             } else {
                 const ndpeIndex = ndpeLaunchGroupsRef.current?.indexOf(target)
-                if (ndpeIndex !== -1) {
+                if (ndpeIndex && (ndpeIndex !== -1)) {
                     setTooltip(`ndpeImpulse,${ndpeIndex}`)
                 }
             }
@@ -1014,7 +1014,7 @@ export default function GameWorld() {
             </div>
             {tooltip && (
                 <div ref={tooltipRef} className={styles.tooltip} style={{borderRadius:'10px 10px 10px 10px'}}>
-                    {tooltip.startsWith('ndpeImpulse') ? (
+                    {tooltip.startsWith('ndpeImpulse') && hoveredImpulseDelta && planetVRelChange ? (
                         <>
                             <div className={styles.tooltipTitle}>
                                 Engine Launch #{hoveredImpulseIndex + 1}
