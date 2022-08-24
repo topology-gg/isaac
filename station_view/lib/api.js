@@ -26,6 +26,10 @@ export function useMacroStatesAll () {
     return useSWR('/api/macro_states_all', fetcher)
 }
 
-export function useStardiscRegistry () {
+export function useStardiscRegistryAll () {
     return useSWR('/api/stardisc_registry', fetcher)
+}
+
+export function useStardiscRegistryByAccount (account) {
+    return useSWR(`/api/stardisc_registry/${account}`, fetcher)
 }
