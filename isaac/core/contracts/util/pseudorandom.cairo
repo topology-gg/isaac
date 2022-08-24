@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash import hash2
-from starkware.cairo.common.math import (unsigned_div_rem, split_felt)
+from starkware.cairo.common.math import assert_not_zero, unsigned_div_rem, split_felt
 
 
 # Seed for pseudorandom
