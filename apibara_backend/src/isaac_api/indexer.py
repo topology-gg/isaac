@@ -42,17 +42,17 @@ from isaac_api.contract import (
 
 # load_dotenv ()
 
-CIV_SIZE = 20
+CIV_SIZE = 5
 UNIVERSE_COUNT = 1
 DEVICE_TYPE_COUNT = 16
 
-ORIGIN_BLOCK_TO_INDEX = 303261 - 1
+BIRTH_BLOCK = 308893
 INDEXER_ID = os.getenv('ISAAC_INDEXER_ID', 'isaac')
 
 ISAAC_UNIVERSE_ADDRESSES = {
-    0 : '0x03df9fa61c7f69d0b9e5da0ed94ceafed7c6f9ffa56b3828d515768ef861bb56'
+    0 : '0x03852fa21aed9c040a16116339bbcdd8a311ccd855594d17152b9cbf210e3a6e'
 }
-ISAAC_LOBBY_ADDRESS = '0x06ea0fc5dcf98f2cb9f4b97fc355cd1f92e0ee83fde75c0f6117602a54cf6bda'
+ISAAC_LOBBY_ADDRESS = '0x01c9125178ed782ca3fd9bea67acf1d602376cf5203450946d9dd897bddc97e4'
 
 PG_TYPES = [0,1]
 HARVESTER_TYPES = [2,3,4,5,6]
@@ -1173,7 +1173,7 @@ async def run_indexer (server_url=None, mongo_url=None, restart=None):
                 address = ISAAC_LOBBY_ADDRESS.replace ('0x', '')
             )
         ],
-        index_from_block = ORIGIN_BLOCK_TO_INDEX
+        index_from_block = BIRTH_BLOCK - 1
     )
 
     await runner.run()
