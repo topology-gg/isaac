@@ -17,7 +17,7 @@ const UNIVERSE_MAX_AGE_IN_TICKS = 2520 # ~7 days, given 2 blocks (4 minutes) per
 #
 # Capacity control - size of civilization per universe, and number of universes deployed
 #
-const CIV_SIZE = 20
+const CIV_SIZE = 5
 const UNIVERSE_COUNT = 1
 
 #
@@ -117,9 +117,9 @@ const SCALE_FP_DIV_PLANET_DIM = SCALE_FP / PLANET_DIM
 # Constants for solar power generation parametrization
 #
 namespace ns_solar_power:
-    const BASE_RADIATION = 75 * SCALE_FP
-    const OBLIQUE_RADIATION = 15 * SCALE_FP
-    const MULT = 1
+    const BASE_RADIATION = 375 * SCALE_FP
+    const OBLIQUE_RADIATION = 75 * SCALE_FP
+    const MULT = 2
     const BOUND = 1
 end
 

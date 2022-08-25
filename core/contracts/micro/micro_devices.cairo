@@ -766,9 +766,15 @@ namespace ns_micro_devices:
         if utx_device_type == ns_device_types.DEVICE_UTB:
             #
             # From harvester to corresponding refinery / enrichment facility
+            # Note: supporting chaining: Harv => Harv => Harv => Refn => UPSF
             #
             # iron harvester => iron refinery
             if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_FE_REFN + 1) == 1:
+                return ()
+            end
+
+            #  iron harvester => iron harvester
+            if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_FE_HARV + 1) == 1:
                 return ()
             end
 
@@ -777,8 +783,18 @@ namespace ns_micro_devices:
                 return ()
             end
 
+            #  aluminum harvester => aluminum harvester
+            if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_AL_HARV + 1) == 1:
+                return ()
+            end
+
             # copper harvester => copper refinery
             if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_CU_REFN + 1) == 1:
+                return ()
+            end
+
+            # copper harvester => copper harvester
+            if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_CU_HARV + 1) == 1:
                 return ()
             end
 
@@ -787,8 +803,18 @@ namespace ns_micro_devices:
                 return ()
             end
 
+            # silicon harvester => silicon harvester
+            if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_SI_HARV + 1) == 1:
+                return ()
+            end
+
             # plutonium harvester => plutonium enrichment facility
             if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_PEF + 1) == 1:
+                return ()
+            end
+
+            # plutonium harvester => plutonium harvester
+            if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_PU_HARV + 1) == 1:
                 return ()
             end
 
@@ -855,12 +881,13 @@ namespace ns_micro_devices:
             #
             # SPG / NPG => any of the devices;
             # meaning device_type0 needs to be power generator (pg) :: {0, 1}
-            # and device_type1 needs to be power consumer (pc) :: {2, 3 ... 15}
+            # note: device_type1 used to be restricted to power consumer (pc) :: {2, 3 ... 15}
             #
 
             let (is_device_type0_pg) = is_nn_le (device_type0, 1)
-            let (is_device_type1_pc) = is_nn_le (device_type1 - 2, 13)
-            if is_device_type0_pg * is_device_type1_pc == 1:
+            # let (is_device_type1_pc) = is_nn_le (device_type1 - 2, 13)
+            # if is_device_type0_pg * is_device_type1_pc == 1:
+            if is_device_type0_pg == 1:
                 return ()
             end
 
