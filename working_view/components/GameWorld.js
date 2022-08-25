@@ -1942,7 +1942,7 @@ export default function GameWorld(props) {
         console.log(`handleDeployStarted() x: ${x}, y: ${y}, typ: ${typ}, txid: ${txid}`)
         const device = {
             x, y, type: typ,
-            utxGrids,
+            utxGrids: utxGrids && utxGrids.map((grid) => ({...grid, rectRef: React.createRef()})),
             dimension: DEVICE_DIM_MAP.get(typ),
             color: DEVICE_COLOR_MAP.get(typ),
             rectRef: React.createRef(),
