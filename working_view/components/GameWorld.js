@@ -246,7 +246,14 @@ export default function GameWorld(props) {
             // reset references, states, and fabric canvas
             //
             _currZoom.current = _canvasRef.current.getZoom();
-            _canvasRef.current.remove(..._canvasRef.current.getObjects())
+
+            // Clear canvas, but check whether context is defined
+            // If the context is not available, clearing will throw
+            if (_canvasRef.current.getContext()) {
+                // console.log("Clearing canvas")
+                _canvasRef.current.clear();
+            }
+
             _utxAnimRectsRef.current = []
             _utxAnimGridsRef.current = []
             _utxAnimGridIndicesRef.current = []
