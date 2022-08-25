@@ -8,7 +8,7 @@ import {
 } from '@starknet-react/core'
 
 import { BUTTON_LEFT_STYLE, BUTTON_LEFT_DISABLED_STYLE, INPUT_END_STYLE, TX_HASH_STYLE } from "./ActionStyles";
-import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
+import { DEVICE_TYPE_FULL_NAME_MAP } from './ConstantDeviceTypes'
 import { useUniverseContract } from "./UniverseContract";
 
 export function BuildDeviceInterface (props) {
@@ -62,12 +62,12 @@ export function BuildDeviceInterface (props) {
             <form onSubmit={handleSubmitBuildAmount(onSubmitBuildDevice)}>
                 <input
                     type="submit"
-                    value={`Build ${DEVICE_TYPE_MAP[typ]}`}
+                    value={`Build ${DEVICE_TYPE_FULL_NAME_MAP[typ]}`}
                     style={props.can_build ? BUTTON_LEFT_STYLE : BUTTON_LEFT_DISABLED_STYLE}
                     className='action-button'
                     onMouseOver = {
                         () => {
-                            // console.log (`mouse over: ${typ}`)
+                            console.log (`mouse over: ${typ}`)
                             props.setHoverDeviceCallback(props.typ)
                         }
                     }

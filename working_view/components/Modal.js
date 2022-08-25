@@ -137,7 +137,7 @@ export function Modal (props) {
                 // Generate options - actions to be performed by player
                 //
 
-                if (['UTB', 'UTL'].includes(typ)) {
+                if (['Belt', 'Wire'].includes(typ)) {
                     bool_display_left_bottom = false
                     options.push(
                         <PickupUtxInterface
@@ -163,7 +163,7 @@ export function Modal (props) {
                     )
                 }
 
-                if (balances && ['UPSF'].includes(typ)) {
+                if (balances && ['Factory'].includes(typ)) {
 
                     var thead = [
                         <th key='upsf-resource' style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
@@ -190,7 +190,7 @@ export function Modal (props) {
                     }
 
                 }
-                else if (['NDPE'].includes(typ)) {
+                else if (['Engine'].includes(typ)) {
                     options.push (
                         <LaunchNdpeInterface grid_x={grid.x} grid_y={grid.y} />
                     )

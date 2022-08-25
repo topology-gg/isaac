@@ -20,7 +20,8 @@ export const HOVER_DEVICE_COLOR = PALETTE === 'DARK' ? '#FFFFFF' : '#22d3ee'
 export const FILL_CURSOR_GRID   = PALETTE === 'DARK' ? '#AAAAAA55' : '#AAAAAA55';
 export const STROKE_CURSOR_FACE = PALETTE === 'DARK' ? '#FFEFD5' : '#999999';
 export const STROKE             = PALETTE === 'DARK' ? '#DDDDDD' : '#BBBBBB' // grid stroke color
-export const CANVAS_BG          = PALETTE === 'DARK' ? '#181818' : '#E3EDFF'
+// export const CANVAS_BG          = PALETTE === 'DARK' ? '#181818' : '#E3EDFF'
+export const CANVAS_BG = '#E2CFBE'
 export const GRID_ASSIST_TBOX   = PALETTE === 'DARK' ? '#CCCCCC' : '#333333'
 export const FILL_CURSOR_SELECTED_GRID   = PALETTE === 'DARK' ? '#DDDDDD55' : '#AAAAAA55'
 

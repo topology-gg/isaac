@@ -6,7 +6,7 @@ const BUTTON_BASE_STYLE = {
     paddingLeft:'30px',
     paddingRight:'30px',
     lineHeight:'15px',
-    width: '175px',
+    width: '250px',
     borderWidth: '0',
     cursor: 'pointer',
     display: 'inline-block',
