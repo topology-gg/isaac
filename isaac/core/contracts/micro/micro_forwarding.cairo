@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash_chain import hash_chain
-from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le, unsigned_div_rem)
+from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le, assert_not_zero, unsigned_div_rem)
 from starkware.cairo.common.math_cmp import (is_le, is_nn_le, is_not_zero)
 from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
@@ -372,31 +372,6 @@ namespace ns_micro_forwarding:
         end
 
         #
-        # Handle UPSF
-        #
-        # local syscall_ptr : felt* = syscall_ptr
-        # local pedersen_ptr : HashBuiltin* = pedersen_ptr
-        # local range_check_ptr = range_check_ptr
-        # handle_opsf:
-        # if emap_entry.type == ns_device_types.DEVICE_UPSF:
-        #     #
-        #     # Clear energy balance at this UPSF -- only power generator can store energy
-        #     #
-        #     ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
-        #         emap_entry.id,
-        #         0
-        #     )
-
-        #     tempvar syscall_ptr = syscall_ptr
-        #     tempvar pedersen_ptr = pedersen_ptr
-        #     tempvar range_check_ptr = range_check_ptr
-        # else:
-        #     tempvar syscall_ptr = syscall_ptr
-        #     tempvar pedersen_ptr = pedersen_ptr
-        #     tempvar range_check_ptr = range_check_ptr
-        # end
-
-        #
         # Tail recursion
         #
         recurse:
@@ -455,6 +430,7 @@ namespace ns_micro_forwarding:
             let src_type = emap_entry_src.type
             let dst_type = emap_entry_dst.type
             let (bool_src_harvester) = ns_micro_devices.is_device_harvester (src_type)
+            let (bool_dst_harvester) = ns_micro_devices.is_device_harvester (dst_type)
             let (bool_dst_opsf) = ns_micro_devices.is_device_opsf (dst_type)
 
             local quantity_received
@@ -473,7 +449,11 @@ namespace ns_micro_forwarding:
                 let (element_type_) = harvester_device_type_to_element_type (src_type)
                 assert element_type = element_type_
                 let (src_balance) = ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_read (emap_entry.src_device_id)
-                let (utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTB, emap_entry.src_device_id)
+                let (local utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTB, emap_entry.src_device_id)
+
+                with_attr error_message ("micro_forwarding.cairo:454 / Pre-division check: about to perform unsigned_div_rem (src_balance, utb_tether_count) but utb_tether_count = 0"):
+                    assert_not_zero (utb_tether_count)
+                end
                 let (src_balance_divided, _) =  unsigned_div_rem (src_balance, utb_tether_count)
                 let (quantity_should_send) = ns_logistics_utb.utb_quantity_should_send_per_tick (
                     src_balance_divided
@@ -520,6 +500,10 @@ namespace ns_micro_forwarding:
                 let (src_balances) = ns_micro_state_functions.transformers_deployed_id_to_resource_balances_read (emap_entry.src_device_id)
                 let src_balance = src_balances.balance_resource_after_transform
                 let (utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTB, emap_entry.src_device_id)
+
+                with_attr error_message ("micro_forwarding.cairo:504 / Pre-division check: about to perform unsigned_div_rem (src_balance, utb_tether_count) but utb_tether_count = 0"):
+                    assert_not_zero (utb_tether_count)
+                end
                 let (src_balance_divided, _) =  unsigned_div_rem (src_balance, utb_tether_count)
                 let (quantity_should_send) = ns_logistics_utb.utb_quantity_should_send_per_tick (
                     src_balance_divided
@@ -564,77 +548,117 @@ namespace ns_micro_forwarding:
             local range_check_ptr = range_check_ptr
 
             #
-            # Destination device is UPSF
+            # Destination device is harvester
             #
-            if bool_dst_opsf == 1:
+            if bool_dst_harvester == 1:
                 #
-                # Update destination device resource balance
+                # Get curret resource balance
                 #
-                let (dst_balance) = ns_micro_state_functions.opsf_deployed_id_to_resource_balances_read (emap_entry.dst_device_id, element_type)
-                ns_micro_state_functions.opsf_deployed_id_to_resource_balances_write (
-                    emap_entry.dst_device_id,
-                    element_type,
-                    dst_balance + quantity_received ## no max carry limitation
-                )
-
-                let (event_counter) = ns_universe_state_functions.event_counter_read ()
-                ns_universe_state_functions.event_counter_increment ()
-                resource_update_at_upsf_occurred.emit (
-                    event_counter = event_counter,
-                    device_id = emap_entry.dst_device_id,
-                    element_type = element_type,
-                    new_quantity = dst_balance + quantity_received
-                )
-
-                tempvar syscall_ptr = syscall_ptr
-                tempvar pedersen_ptr = pedersen_ptr
-                tempvar range_check_ptr = range_check_ptr
-
-            #
-            # Destination device is transformer
-            #
-            else:
-                #
-                # Update destination device resource balance
-                #
-                let (element_type, _) = transformer_device_type_to_element_types (dst_type)
-                let (max_carry) = transformer_element_type_to_max_carry (element_type)
-                let (dst_balances) = ns_micro_state_functions.transformers_deployed_id_to_resource_balances_read (emap_entry.dst_device_id)
+                let (max_carry) = harvester_element_type_to_max_carry (element_type)
+                let (dst_balance) = ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_read (emap_entry.dst_device_id)
 
                 #
                 # Consider max carry
                 #
-                local new_balance_resource_before_transform
-                let candidate_balance = dst_balances.balance_resource_before_transform + quantity_received
+                local new_balance
+                let candidate_balance = dst_balance + quantity_received
                 let (bool_reached_max_carry) = is_le (max_carry, candidate_balance)
                 if bool_reached_max_carry == 1:
-                    assert new_balance_resource_before_transform = max_carry
+                    assert new_balance = max_carry
                 else:
-                    assert new_balance_resource_before_transform = candidate_balance
+                    assert new_balance = candidate_balance
                 end
 
-                #
-                # Update balance
-                #
-                ns_micro_state_functions.transformers_deployed_id_to_resource_balances_write (
+
+                ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_write (
                     emap_entry.dst_device_id,
-                    TransformerResourceBalances(
-                        new_balance_resource_before_transform,
-                        dst_balances.balance_resource_after_transform
-                ))
+                    new_balance
+                )
 
                 let (event_counter) = ns_universe_state_functions.event_counter_read ()
                 ns_universe_state_functions.event_counter_increment ()
-                resource_update_at_transformer_occurred.emit (
+                resource_update_at_harvester_occurred.emit (
                     event_counter = event_counter,
                     device_id = emap_entry.dst_device_id,
-                    new_quantity_pre  = new_balance_resource_before_transform,
-                    new_quantity_post = dst_balances.balance_resource_after_transform
+                    new_quantity = new_balance
                 )
 
                 tempvar syscall_ptr = syscall_ptr
                 tempvar pedersen_ptr = pedersen_ptr
                 tempvar range_check_ptr = range_check_ptr
+            else:
+                #
+                # Destination device is factory
+                #
+                if bool_dst_opsf == 1:
+                    #
+                    # Update destination device resource balance
+                    #
+                    let (dst_balance) = ns_micro_state_functions.opsf_deployed_id_to_resource_balances_read (emap_entry.dst_device_id, element_type)
+                    ns_micro_state_functions.opsf_deployed_id_to_resource_balances_write (
+                        emap_entry.dst_device_id,
+                        element_type,
+                        dst_balance + quantity_received ## no max carry limitation
+                    )
+
+                    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+                    ns_universe_state_functions.event_counter_increment ()
+                    resource_update_at_upsf_occurred.emit (
+                        event_counter = event_counter,
+                        device_id = emap_entry.dst_device_id,
+                        element_type = element_type,
+                        new_quantity = dst_balance + quantity_received
+                    )
+
+                    tempvar syscall_ptr = syscall_ptr
+                    tempvar pedersen_ptr = pedersen_ptr
+                    tempvar range_check_ptr = range_check_ptr
+
+                #
+                # Destination device is transformer
+                #
+                else:
+                    #
+                    # Get curret resource balance
+                    #
+                    let (max_carry) = transformer_element_type_to_max_carry (element_type)
+                    let (dst_balances) = ns_micro_state_functions.transformers_deployed_id_to_resource_balances_read (emap_entry.dst_device_id)
+
+                    #
+                    # Consider max carry
+                    #
+                    local new_balance_resource_before_transform
+                    let candidate_balance = dst_balances.balance_resource_before_transform + quantity_received
+                    let (bool_reached_max_carry) = is_le (max_carry, candidate_balance)
+                    if bool_reached_max_carry == 1:
+                        assert new_balance_resource_before_transform = max_carry
+                    else:
+                        assert new_balance_resource_before_transform = candidate_balance
+                    end
+
+                    #
+                    # Update balance
+                    #
+                    ns_micro_state_functions.transformers_deployed_id_to_resource_balances_write (
+                        emap_entry.dst_device_id,
+                        TransformerResourceBalances(
+                            new_balance_resource_before_transform,
+                            dst_balances.balance_resource_after_transform
+                    ))
+
+                    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+                    ns_universe_state_functions.event_counter_increment ()
+                    resource_update_at_transformer_occurred.emit (
+                        event_counter = event_counter,
+                        device_id = emap_entry.dst_device_id,
+                        new_quantity_pre  = new_balance_resource_before_transform,
+                        new_quantity_post = dst_balances.balance_resource_after_transform
+                    )
+
+                    tempvar syscall_ptr = syscall_ptr
+                    tempvar pedersen_ptr = pedersen_ptr
+                    tempvar range_check_ptr = range_check_ptr
+                end
             end
         else:
             tempvar syscall_ptr = syscall_ptr
@@ -693,6 +717,10 @@ namespace ns_micro_forwarding:
             # Determine energy should send and energy should receive
             #
             let (utl_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTL, src_device_id)
+
+            with_attr error_message ("micro_forwarding.cairo:721 / Pre-division check: about to perform unsigned_div_rem (src_device_energy, utl_tether_count) but utl_tether_count = 0"):
+                assert_not_zero (utl_tether_count)
+            end
             let (src_device_energy_divided, _) = unsigned_div_rem (src_device_energy, utl_tether_count)
             let (energy_should_send) = ns_logistics_utl.utl_energy_should_send_per_tick (
                 src_device_energy_divided

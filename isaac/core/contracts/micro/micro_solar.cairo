@@ -2,10 +2,10 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash_chain import hash_chain
-from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le, sign)
-from starkware.cairo.common.math_cmp import (is_le, is_nn_le, is_not_zero)
+from starkware.cairo.common.math import assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le, assert_not_zero, sign
+from starkware.cairo.common.math_cmp import is_le, is_nn_le, is_not_zero
 from starkware.cairo.common.alloc import alloc
-from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
+from starkware.starknet.common.syscalls import get_block_number, get_caller_address
 
 from contracts.design.constants import (
     SCALE_FP, PI,
@@ -167,8 +167,19 @@ namespace ns_micro_solar:
             macro_states.macro_distances.distance_sq_to_sun2
         )
 
+        with_attr error_message ("micro_solar.cairo:170 / Pre-division check: about to perform div_fp (ns_solar_power.OBLIQUE_RADIATION, dist_0_sq) but dist_0_sq = 0"):
+            assert_not_zero (dist_0_sq)
+        end
         let (exposure_0) = div_fp (ns_solar_power.OBLIQUE_RADIATION, dist_0_sq)
+
+        with_attr error_message ("micro_solar.cairo:175 / Pre-division check: about to perform div_fp (ns_solar_power.OBLIQUE_RADIATION, dist_1_sq) but dist_1_sq = 0"):
+            assert_not_zero (dist_1_sq)
+        end
         let (exposure_1) = div_fp (ns_solar_power.OBLIQUE_RADIATION, dist_1_sq)
+
+        with_attr error_message ("micro_solar.cairo:180 / Pre-division check: about to perform div_fp (ns_solar_power.OBLIQUE_RADIATION, dist_2_sq) but dist_2_sq = 0"):
+            assert_not_zero (dist_2_sq)
+        end
         let (exposure_2) = div_fp (ns_solar_power.OBLIQUE_RADIATION, dist_2_sq)
 
         #
@@ -226,17 +237,30 @@ namespace ns_micro_solar:
         let (sign_0) = sign (dot_0)
         let (sign_1) = sign (dot_1)
         let (sign_2) = sign (dot_2)
-        let (mag_normal) = magnitude_fp (normal)
+        let (local mag_normal) = magnitude_fp (normal)
 
         if sign_0 == 1:
-            let (mag_plnt_sun) = magnitude_fp (macro_states.macro_vectors.vector_plnt_to_sun0)
+            let (local mag_plnt_sun) = magnitude_fp (macro_states.macro_vectors.vector_plnt_to_sun0)
+
+            with_attr error_message ("micro_solar.cairo:245 / Pre-division check: about to perform div_fp (dot_0, mag_normal) but mag_normal = 0"):
+                assert_not_zero (mag_normal)
+            end
             let (cos_) = div_fp (dot_0, mag_normal)
+
+            with_attr error_message ("micro_solar.cairo:250 / Pre-division check: about to perform div_fp (cos_, mag_plnt_sun) but mag_plnt_sun = 0"):
+                assert_not_zero (mag_plnt_sun)
+            end
             let (cos) = div_fp (cos_, mag_plnt_sun)
-            let (dist_sq) = mul_fp (
+
+            let (local dist_sq) = mul_fp (
                 macro_states.macro_distances.distance_sq_to_sun0,
                 macro_states.macro_distances.distance_sq_to_sun0
             )
+            with_attr error_message ("micro_solar.cairo:259 / Pre-division check: about to perform div_fp (ns_solar_power.BASE_RADIATION, dist_sq) but dist_sq = 0"):
+                assert_not_zero (dist_sq)
+            end
             let (exposure_0_) = div_fp (ns_solar_power.BASE_RADIATION, dist_sq)
+
             let (exposure_0__) = mul_fp (exposure_0_, cos)
             assert exposure_0 = exposure_0__
 
@@ -248,14 +272,28 @@ namespace ns_micro_solar:
         end
 
         if sign_1 == 1:
-            let (mag_plnt_sun) = magnitude_fp (macro_states.macro_vectors.vector_plnt_to_sun1)
+            let (local mag_plnt_sun) = magnitude_fp (macro_states.macro_vectors.vector_plnt_to_sun1)
+
+            with_attr error_message ("micro_solar.cairo:277 / Pre-division check: about to perform div_fp (dot_1, mag_normal) but mag_normal = 0"):
+                assert_not_zero (mag_normal)
+            end
             let (cos_) = div_fp (dot_1, mag_normal)
+
+            with_attr error_message ("micro_solar.cairo:282 / Pre-division check: about to perform div_fp (cos_, mag_plnt_sun) but mag_plnt_sun = 0"):
+                assert_not_zero (mag_plnt_sun)
+            end
             let (cos) = div_fp (cos_, mag_plnt_sun)
-            let (dist_sq) = mul_fp (
+
+            let (local dist_sq) = mul_fp (
                 macro_states.macro_distances.distance_sq_to_sun1,
                 macro_states.macro_distances.distance_sq_to_sun1
             )
+
+            with_attr error_message ("micro_solar.cairo:292 / Pre-division check: about to perform div_fp (ns_solar_power.BASE_RADIATION, dist_sq) but dist_sq = 0"):
+                assert_not_zero (dist_sq)
+            end
             let (exposure_1_) = div_fp (ns_solar_power.BASE_RADIATION, dist_sq)
+
             let (exposure_1__) = mul_fp (exposure_1_, cos)
             assert exposure_1 = exposure_1__
 
@@ -267,14 +305,28 @@ namespace ns_micro_solar:
         end
 
         if sign_2 == 1:
-            let (mag_plnt_sun) = magnitude_fp (macro_states.macro_vectors.vector_plnt_to_sun2)
+            let (local mag_plnt_sun) = magnitude_fp (macro_states.macro_vectors.vector_plnt_to_sun2)
+
+            with_attr error_message ("micro_solar.cairo:310 / Pre-division check: about to perform div_fp (dot_2, mag_normal) but mag_normal = 0"):
+                assert_not_zero (mag_normal)
+            end
             let (cos_) = div_fp (dot_2, mag_normal)
+
+            with_attr error_message ("micro_solar.cairo:315 / Pre-division check: about to perform div_fp (cos_, mag_plnt_sun) but mag_plnt_sun = 0"):
+                assert_not_zero (mag_plnt_sun)
+            end
             let (cos) = div_fp (cos_, mag_plnt_sun)
-            let (dist_sq) = mul_fp (
+
+            let (local dist_sq) = mul_fp (
                 macro_states.macro_distances.distance_sq_to_sun2,
                 macro_states.macro_distances.distance_sq_to_sun2
             )
+
+            with_attr error_message ("micro_solar.cairo:325 / Pre-division check: about to perform div_fp (ns_solar_power.BASE_RADIATION, dist_sq) but dist_sq = 0"):
+                assert_not_zero (dist_sq)
+            end
             let (exposure_2_) = div_fp (ns_solar_power.BASE_RADIATION, dist_sq)
+
             let (exposure_2__) = mul_fp (exposure_2_, cos)
             assert exposure_2 = exposure_2__
 

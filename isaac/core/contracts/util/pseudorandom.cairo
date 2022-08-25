@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash import hash2
-from starkware.cairo.common.math import (unsigned_div_rem, split_felt)
+from starkware.cairo.common.math import assert_not_zero, unsigned_div_rem, split_felt
 
 
 # Seed for pseudorandom
@@ -53,6 +53,10 @@ namespace ns_prng:
         ) -> (
             num : felt
         ):
+
+        with_attr error_message ("get_prn_mod(): mod = 0"):
+            assert_not_zero (mod)
+        end
 
         let (prn) = get_prn (entropy)
         let (_, prn_low) = split_felt (prn) ## split in half before modulo
