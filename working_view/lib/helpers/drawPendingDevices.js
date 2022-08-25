@@ -12,6 +12,14 @@ const newDeviceRect = () => {
     })
 }
 
+const addAndAnimateRect = (canvi, rect, rectRef) => {
+    // Remove any previous instance and add it again
+    if (rectRef.current) { canvi.remove(rectRef.current) }
+    canvi.add(rect);
+    animateGlow(canvi, rect);
+    rectRef.current = rect;
+}
+
 export default function drawPendingDevices(canvasRef, pendingDevicesRef) {
     console.log("drawPendingDevices");
     const canvi = canvasRef.current;
@@ -36,15 +44,12 @@ export default function drawPendingDevices(canvasRef, pendingDevicesRef) {
             device.utxGrids.forEach(grid => {
                 const rect = newDeviceRect();
                 setRectProps({x: grid.x, y: grid.y, dimension: 1, color: device.color}, rect);
-                canvi.add(rect);
-                animateGlow(canvi, rect);
+                addAndAnimateRect(canvi, rect, grid.rectRef);
             })
         } else {
             const deviceRect = newDeviceRect();
             setRectProps(device, deviceRect);
-            canvi.add(deviceRect);
-            animateGlow(canvi, deviceRect);
-            device.rectRef.current = deviceRect;
+            addAndAnimateRect(canvi, deviceRect, device.rectRef);
         }
     })
 
