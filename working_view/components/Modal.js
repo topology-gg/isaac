@@ -101,7 +101,7 @@ export function Modal (props) {
                 if (balances) {
                     for (var key of Object.keys(balances)) {
 
-                        if (! ['SPG', 'NPG', 'UPSF', 'NDPE'].includes(typ)) { // only these types need to display energy balance
+                        if (! ['Solar Power Generator', 'Nuclear Power Generator', 'Factory', 'Engine'].includes(typ)) { // only these types need to display energy balance
                             if (key === 'energy') {
                                 continue;
                             }
@@ -111,7 +111,7 @@ export function Modal (props) {
                         cell.push (<td key={`manufacture-key-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'0'}}>{key}</td>)
                         cell.push (<td key={`manufacture-balance-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{balances[key]}</td>)
 
-                        if (['UPSF'].includes(typ)) { // only UPSF needs to display manufacture requirement info
+                        if (['Factory'].includes(typ)) { // only UPSF needs to display manufacture requirement info
                             if (hoverDevice == '-') {
                                 cell.push (<td key={`dash-${key}`} style={{height:CELL_HEIGHT,textAlign:'left',paddingLeft:'3em'}}>{'-'}</td>)
                             }
