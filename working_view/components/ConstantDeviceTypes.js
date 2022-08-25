@@ -19,7 +19,7 @@ export const DEVICE_TYPE_MAP = {
 
 export const DEVICE_TYPE_FULL_NAME_MAP = {
     0:  "Solar Power Generator",
-    1:  "NPG",
+    1:  "Nuclear Power Generator",
     2:  "Iron Harvester",
     3:  "Aluminum Harvester",
     4:  "Copper Harvester",
@@ -29,9 +29,9 @@ export const DEVICE_TYPE_FULL_NAME_MAP = {
     8:  "Aluminum Refinery",
     9:  "Copper Refinery",
     10: "Silicon Refinery",
-    11: "Plutonium Enrichment Facility",
-    12: "Universal Transportation Belt",
-    13: "Universal Transmission Line",
-    14: "Universal Production & Storage Facility",
-    15: "Nuclear Driller Propulsion Engine"
+    11: "Plutonium Enricher",
+    12: "Belt",
+    13: "Wire",
+    14: "Factory",
+    15: "Engine"
 }

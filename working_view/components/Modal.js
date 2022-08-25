@@ -1,7 +1,7 @@
 import React, { Component, useState } from "react";
 import styles from "../styles/Modal.module.css";
 
-import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
+import { DEVICE_TYPE_FULL_NAME_MAP } from './ConstantDeviceTypes'
 import { MANUFACTURING_REQUIREMENT } from './ConstantManufacturingRequirement'
 
 import { DeployDeviceInterface } from './ActionDeployDevice'
@@ -86,7 +86,7 @@ export function Modal (props) {
                 const grid_info = grid_mapping [grid_str]
 
                 const owner = grid_info ['owner']
-                const typ   = DEVICE_TYPE_MAP [grid_info ['type']]
+                const typ   = DEVICE_TYPE_FULL_NAME_MAP [grid_info ['type']]
                 const balances = grid_info ['balances']
 
                 const id = grid_info ['id']

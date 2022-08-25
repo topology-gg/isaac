@@ -40,12 +40,33 @@ export default function GameStatsDevices(props) {
         }
     }
 
-    const arr_types = [
-        "SPG", "NPG",
-        "FE HARV", "AL HARV", "CU HARV", "SI HARV", "PU HARV",
-        "FE REFN", "AL REFN", "CU REFN", "SI REFN", "PEF",
-        "UTB", "UTL", "UPSF", "NDPE"
-    ]
+    // const arr_types = [
+    //     "Solar Power Generator",
+    //     "Nuclear Power Generator",
+    //     "Fe Harvester", "Al Harvester", "Cu Harvester", "Si Harvester", "Pu Harvester",
+    //     "Fe Refinery", "Al Refinery", "Cu Refinery", "Si Refinery", "Plutonium Enricher",
+    //     "Belt", "Wire", "Factory", "Engine"
+    // ]
+
+
+    const arr_types = {
+        0:  "Solar Power Generator",
+        1:  "Nuclear Power Generator",
+        2:  "Iron Harvester",
+        3:  "Aluminum Harvester",
+        4:  "Copper Harvester",
+        5:  "Silicon Harvester",
+        6:  "Plutonium Harvester",
+        7:  "Iron Refinery",
+        8:  "Aluminum Refinery",
+        9:  "Copper Refinery",
+        10: "Silicon Refinery",
+        11: "Plutonium Enricher",
+        12: "Belt",
+        13: "Wire",
+        14: "Factory",
+        15: "Engine"
+    }
     const arr_footprints = [
         "1 x 1", "3 x 3",
         "1 x 1", "1 x 1", "1 x 1", "1 x 1", "1 x 1",

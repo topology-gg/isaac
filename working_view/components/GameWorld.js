@@ -30,7 +30,7 @@ import HUD from "./HUD"
 import {
     useStarknet
 } from '@starknet-react/core'
-import { DEVICE_TYPE_MAP } from './ConstantDeviceTypes'
+import { DEVICE_TYPE_FULL_NAME_MAP } from './ConstantDeviceTypes'
 import DEVICE_DIM_MAP from './ConstantDeviceDimMap'
 import {
     SIDE,
@@ -1821,7 +1821,7 @@ export default function GameWorld(props) {
             // Grid data mapped to lines for HUD
             const gridDataLines = gridData
                 ? [
-                    DEVICE_TYPE_MAP[gridData.type],
+                    DEVICE_TYPE_FULL_NAME_MAP [gridData.type],
                     _pendingPickupsRef.current && _pendingPickupsRef.current.find(({id}) => id === gridData.id) ? 'Pending pick-up' : null,
                     ...Object.keys(gridData.balances)
                     .map(
