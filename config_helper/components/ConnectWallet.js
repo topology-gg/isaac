@@ -7,20 +7,14 @@ import Button from './Button'
 import { toBN } from 'starknet/dist/utils/number'
 
 import styles from './ConnectWallet.module.css'
+import { gyoza_addr } from './Addresses'
 
-import {
-    useStardiscRegistryByAccount
-} from '../lib/api'
-
-export function ConnectWallet() {
+export function ConnectWallet (props) {
 
     const { account } = useStarknet()
     const { available, connect, disconnect } = useConnectors()
     const [connectors, setConnectors] = useState([])
     const [walletNotFound, setWalletNotFound] = useState(false)
-
-    const account_str_decimal = toBN(account).toString(10)
-    const { data: stardisc_query } = useStardiscRegistryByAccount (account_str_decimal) // must be a better way than fetching the entire registry
 
     // Connectors are not available server-side therefore we
     // set the state in a useEffect hook
@@ -29,24 +23,33 @@ export function ConnectWallet() {
     }, [available])
 
     if (account) {
-        if (!stardisc_query) return;
-        // console.log ('stardisc_query: ', stardisc_query)
+        // console.log ('account: ', account)
 
-        var rendered_account
-        if (stardisc_query.stardisc_query.length > 0) { // query succeeded
-            const name = toBN(stardisc_query.stardisc_query[0].name).toString(10)
-            const name_string = feltLiteralToString (name)
-            rendered_account = <strong>{name_string}</strong>
+        const account_int_str = toBN(account).toString(10)
+        const gyoza_int_str = toBN(gyoza_addr).toString(10)
+
+        var render
+        if (account_int_str === gyoza_int_str) {
+            render = (
+                <p className={styles.text}>
+                    Welcome back, <strong>gyoza</strong>.
+                </p>
+            )
+            props.set_is_gyoza (true)
         }
-        else { // query failed
-            rendered_account = String(account).slice(0,5) + '...' + String(account).slice(-4)
+        else {
+            const account_abbrev = String(account).slice(0,5) + '...' + String(account).slice(-4)
+            render = (
+                <p className={styles.text}>
+                    {account_abbrev} is not gyoza.
+                </p>
+            )
+            props.set_is_gyoza (false)
         }
 
         return (
             <div className={styles.wrapper}>
-                <p className={styles.text}>
-                    Connected: {rendered_account}
-                </p>
+                {render}
                 <Button className={styles.button} onClick={() => handleDisconnect()}>
                     Disconnect
                 </Button>
@@ -56,6 +59,7 @@ export function ConnectWallet() {
 
     function handleDisconnect () {
         disconnect ()
+        props.set_is_gyoza (false)
     }
 
     const buttons_sorted = [].concat(connectors)

@@ -247,6 +247,10 @@
     {
         "data": [
             {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "account",
                 "type": "felt"
             },
@@ -261,6 +265,10 @@
     },
     {
         "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
             {
                 "name": "account",
                 "type": "felt"
