@@ -30,7 +30,7 @@ from contracts.util.logistics import (
 )
 from contracts.micro.micro_state import (
     ns_micro_state_functions,
-    GridStat, DeviceDeployedEmapEntry, TransformerResourceBalances, UtxSetDeployedEmapEntry
+    GridStat, DeviceEmapEntry, TransformerResourceBalances, UtxSetDeployedEmapEntry
 )
 
 #####################################
@@ -42,34 +42,34 @@ namespace ns_micro_iterator:
     #
     # Iterating over device emap
     #
-    func iterate_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func iterate_device_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         ) -> (
             emap_len : felt,
-            emap : DeviceDeployedEmapEntry*
+            emap : DeviceEmapEntry*
         ):
         alloc_locals
 
-        let (emap_size) = ns_micro_state_functions.device_deployed_emap_size_read ()
-        let (emap : DeviceDeployedEmapEntry*) = alloc ()
+        let (emap_size) = ns_micro_state_functions.device_emap_size_read ()
+        let (emap : DeviceEmapEntry*) = alloc ()
 
-        recurse_traverse_device_deployed_emap (emap_size, emap, 0)
+        recurse_traverse_device_emap (emap_size, emap, 0)
 
         return (emap_size, emap)
     end
 
-    func recurse_traverse_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func recurse_traverse_device_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         len : felt,
-        arr : DeviceDeployedEmapEntry*,
+        arr : DeviceEmapEntry*,
         idx : felt) -> ():
 
         if idx == len:
             return ()
         end
 
-        let (emap_entry) = ns_micro_state_functions.device_deployed_emap_read (idx)
+        let (emap_entry) = ns_micro_state_functions.device_emap_read (idx)
         assert arr[idx] = emap_entry
 
-        recurse_traverse_device_deployed_emap (len, arr, idx+1)
+        recurse_traverse_device_emap (len, arr, idx+1)
 
         return ()
     end

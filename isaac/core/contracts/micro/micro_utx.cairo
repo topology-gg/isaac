@@ -30,7 +30,7 @@ from contracts.util.logistics import (
 )
 from contracts.micro.micro_state import (
     ns_micro_state_functions,
-    GridStat, DeviceDeployedEmapEntry, TransformerResourceBalances, UtxSetDeployedEmapEntry
+    GridStat, TransformerResourceBalances, UtxSetDeployedEmapEntry
 )
 from contracts.micro.micro_devices import (
     ns_micro_devices
@@ -82,7 +82,7 @@ namespace ns_micro_utx:
         #
         # Check if caller owns at least `locs_len` amount of undeployed utx
         #
-        let (local owned_utx_amount) = ns_micro_state_functions.device_undeployed_ledger_read (caller, utx_device_type)
+        let (local owned_utx_amount) = ns_micro_state_functions.fungible_device_undeployed_ledger_read (caller, utx_device_type)
         local len = locs_len
         with_attr error_message ("attempt to deploy {len} amount of UTXs but owning only {owned_utx_amount}"):
             assert_le (locs_len, owned_utx_amount)
@@ -112,10 +112,10 @@ namespace ns_micro_utx:
         #
         let src_device_id = src_grid_stat.deployed_device_id
         let dst_device_id = dst_grid_stat.deployed_device_id
-        let (src_emap_index) = ns_micro_state_functions.device_deployed_id_to_emap_index_read (src_device_id)
-        let (dst_emap_index) = ns_micro_state_functions.device_deployed_id_to_emap_index_read (dst_device_id)
-        let (src_emap_entry) = ns_micro_state_functions.device_deployed_emap_read (src_emap_index)
-        let (dst_emap_entry) = ns_micro_state_functions.device_deployed_emap_read (dst_emap_index)
+        let (src_emap_index) = ns_micro_state_functions.device_id_to_emap_index_read (src_device_id)
+        let (dst_emap_index) = ns_micro_state_functions.device_id_to_emap_index_read (dst_device_id)
+        let (src_emap_entry) = ns_micro_state_functions.device_emap_read (src_emap_index)
+        let (dst_emap_entry) = ns_micro_state_functions.device_emap_read (dst_emap_index)
 
         #
         # Check locs[0] is contiguous to src_device_id's grid using `are_contiguous_grids_given_valid_grids()`
@@ -158,7 +158,7 @@ namespace ns_micro_utx:
         #
         # Decrease caller's undeployed utx amount
         #
-        ns_micro_state_functions.device_undeployed_ledger_write (caller, utx_device_type, owned_utx_amount - locs_len)
+        ns_micro_state_functions.fungible_device_undeployed_ledger_write (caller, utx_device_type, owned_utx_amount - locs_len)
 
         #
         # Update `utx_deployed_index`
@@ -310,8 +310,8 @@ namespace ns_micro_utx:
         #
         # Return the entire set of utxs back to the caller
         #
-        let (amount_curr) = ns_micro_state_functions.device_undeployed_ledger_read (caller, utx_device_type)
-        ns_micro_state_functions.device_undeployed_ledger_write (caller, utx_device_type, amount_curr + utx_end_index - utx_start_index)
+        let (amount_curr) = ns_micro_state_functions.fungible_device_undeployed_ledger_read (caller, utx_device_type)
+        ns_micro_state_functions.fungible_device_undeployed_ledger_write (caller, utx_device_type, amount_curr + utx_end_index - utx_start_index)
 
         #
         # Update enumerable map of utx-sets:

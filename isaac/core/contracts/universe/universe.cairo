@@ -42,7 +42,7 @@ from contracts.macro.macro_state import (ns_macro_state_functions)
 #
 # Import states / functions / namespaces for micro world
 #
-from contracts.micro.micro_state import (ns_micro_state_functions, DeviceDeployedEmapEntry, UtxSetDeployedEmapEntry)
+from contracts.micro.micro_state import (ns_micro_state_functions, DeviceEmapEntry, UtxSetDeployedEmapEntry)
 from contracts.micro.micro_devices import (ns_micro_devices)
 from contracts.micro.micro_utx import (ns_micro_utx)
 from contracts.micro.micro_forwarding import (ns_micro_forwarding)
@@ -55,15 +55,6 @@ from contracts.micro.micro_reset import (ns_micro_reset)
 # Event emission for Apibara
 #
 @event
-func give_undeployed_device_occurred (
-        event_counter : felt,
-        to : felt,
-        type : felt,
-        amount : felt
-    ):
-end
-
-@event
 func activate_universe_occurred (
         event_counter : felt,
         civ_idx : felt
@@ -75,7 +66,6 @@ func player_deploy_device_occurred (
         event_counter : felt,
         owner : felt,
         device_id : felt,
-        type : felt,
         grid : Vec2
     ):
 end
@@ -84,7 +74,8 @@ end
 func player_pickup_device_occurred (
         event_counter : felt,
         owner : felt,
-        grid : Vec2
+        grid : Vec2,
+        device_id : felt
     ):
 end
 
@@ -110,6 +101,29 @@ func player_pickup_utx_occurred (
 end
 
 @event
+func player_upsf_build_fungible_device_occurred (
+        event_counter : felt,
+        owner : felt,
+        grid : Vec2,
+        device_type : felt,
+        device_count : felt
+    ):
+end
+
+@event
+func player_upsf_build_nonfungible_device_occurred (
+        event_counter : felt,
+        owner : felt,
+        grid : Vec2,
+        device_type : felt,
+        device_count : felt,
+        arr_device_id_len : felt,
+        arr_device_id : felt*
+    ):
+end
+
+
+@event
 func terminate_universe_occurred (
         event_counter : felt,
         bool_universe_terminable : felt,
@@ -120,11 +134,19 @@ func terminate_universe_occurred (
 end
 
 @event
-func player_transfer_undeployed_device_occurred (
+func player_transfer_undeployed_fungible_device_occurred (
         src : felt,
         dst : felt,
         device_type : felt,
         device_amount : felt
+    ):
+end
+
+@event
+func player_transfer_undeployed_nonfungible_device_occurred (
+        src : felt,
+        dst : felt,
+        device_id : felt
     ):
 end
 
@@ -412,22 +434,22 @@ func recurse_populate_civilization_player_states {syscall_ptr : felt*, pedersen_
     #
     # Give player the starting loadout
     #
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SPG,     amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_NPG,     amount = 10)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_FE_HARV, amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_AL_HARV, amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_CU_HARV, amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SI_HARV, amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_PU_HARV, amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_FE_REFN, amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_AL_REFN, amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_CU_REFN, amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SI_REFN, amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_PEF,     amount = 2)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTB,     amount = 50)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTL,     amount = 50)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UPSF,    amount = 1)
-    _give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_NDPE,    amount = 10)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SPG,     amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_NPG,     amount = 10)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_FE_HARV, amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_AL_HARV, amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_CU_HARV, amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SI_HARV, amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_PU_HARV, amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_FE_REFN, amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_AL_REFN, amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_CU_REFN, amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_SI_REFN, amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_PEF,     amount = 2)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTB,     amount = 50)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UTL,     amount = 50)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_UPSF,    amount = 1)
+    give_undeployed_device (to = player_adr, type = ns_device_types.DEVICE_NDPE,    amount = 10)
 
     #
     # Tail recursion
@@ -666,14 +688,14 @@ end
 #
 
 @external
-func player_deploy_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-    type : felt, grid : Vec2) -> ():
+func player_deploy_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    device_id : felt, grid : Vec2) -> ():
     alloc_locals
 
     let (caller) = get_caller_address ()
     assert_address_in_civilization (caller)
 
-    let (device_id) = ns_micro_devices.device_deploy (caller, type, grid)
+    ns_micro_devices.device_deploy (caller, device_id, grid)
 
     let (event_counter) = ns_universe_state_functions.event_counter_read ()
     ns_universe_state_functions.event_counter_increment ()
@@ -681,7 +703,6 @@ func player_deploy_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuilt
         event_counter,
         caller,
         device_id,
-        type,
         grid
     )
 
@@ -696,14 +717,15 @@ func player_pickup_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuilt
     let (caller) = get_caller_address ()
     assert_address_in_civilization (caller)
 
-    ns_micro_devices.device_pickup_by_grid (caller, grid)
+    let (device_id) = ns_micro_devices.device_pickup_by_grid (caller, grid)
 
     let (event_counter) = ns_universe_state_functions.event_counter_read ()
     ns_universe_state_functions.event_counter_increment ()
     player_pickup_device_occurred.emit (
         event_counter,
         caller,
-        grid
+        grid,
+        device_id
     )
 
     return ()
@@ -769,7 +791,38 @@ func player_pickup_utx_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
 end
 
 @external
-func player_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func player_upsf_build_fungible_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        grid : Vec2,
+        device_type : felt,
+        device_count : felt
+    ) -> ():
+    alloc_locals
+
+    let (caller) = get_caller_address ()
+    assert_address_in_civilization (caller)
+
+    ns_micro_devices.upsf_build_fungible_device (
+        caller,
+        grid,
+        device_type,
+        device_count
+    )
+
+    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+    ns_universe_state_functions.event_counter_increment ()
+    player_upsf_build_fungible_device_occurred.emit (
+        event_counter,
+        caller,
+        grid,
+        device_type,
+        device_count
+    )
+
+    return ()
+end
+
+@external
+func player_upsf_build_nonfungible_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         grid : Vec2,
         device_type : felt,
         device_count : felt
@@ -778,12 +831,14 @@ func player_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*,
     let (caller) = get_caller_address ()
     assert_address_in_civilization (caller)
 
-    ns_micro_devices.opsf_build_device (
+    ns_micro_devices.upsf_build_nonfungible_device (
         caller,
         grid,
         device_type,
         device_count
     )
+
+    ## Note: Apibara event emission for building nonfungible device is located in `micro_devices.cairo :: create_new_nonfungible_device ()`
 
     return ()
 end
@@ -814,17 +869,18 @@ func player_launch_all_deployed_ndpe {syscall_ptr : felt*, pedersen_ptr : HashBu
     return ()
 end
 
+
 @external
-func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func player_transfer_undeployed_fungible_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         type : felt,
         amount : felt,
-        to_idx : felt
+        to_player_idx : felt
     ) -> ():
     #
-    # get player address at to_idx
+    # get player address at to_player_idx
     #
-    let (to) = ns_universe_state_functions.civilization_player_idx_to_address_read (to_idx)
-    with_attr error_message ("invalid destination player index"):
+    let (to) = ns_universe_state_functions.civilization_player_idx_to_address_read (to_player_idx)
+    with_attr error_message ("player address should not be 0"):
         assert_not_zero (to)
     end
 
@@ -845,7 +901,7 @@ func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : Hash
     #
     # Confirm caller has at least `amount` number of undeployed devices of type `type`
     #
-    let (from_curr_amount) = ns_micro_state_functions.device_undeployed_ledger_read (caller, type)
+    let (from_curr_amount) = ns_micro_state_functions.fungible_device_undeployed_ledger_read (caller, type)
     with_attr error_message ("insufficient device balance"):
         assert_le (amount, from_curr_amount)
     end
@@ -853,14 +909,14 @@ func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : Hash
     #
     # Make transfer
     #
-    let (to_curr_amount) = ns_micro_state_functions.device_undeployed_ledger_read (to, type)
-    ns_micro_state_functions.device_undeployed_ledger_write (caller, type, from_curr_amount - amount)
-    ns_micro_state_functions.device_undeployed_ledger_write (to,     type, to_curr_amount + amount)
+    let (to_curr_amount) = ns_micro_state_functions.fungible_device_undeployed_ledger_read (to, type)
+    ns_micro_state_functions.fungible_device_undeployed_ledger_write (caller, type, from_curr_amount - amount)
+    ns_micro_state_functions.fungible_device_undeployed_ledger_write (to,     type, to_curr_amount + amount)
 
     #
     # Apibara event emission
     #
-    player_transfer_undeployed_device_occurred.emit (
+    player_transfer_undeployed_fungible_device_occurred.emit (
         src = caller,
         dst = to,
         device_type = type,
@@ -870,138 +926,81 @@ func player_transfer_undeployed_device {syscall_ptr : felt*, pedersen_ptr : Hash
     return ()
 end
 
-# #
-# # State-changing functions with input arguments flattened (no struct) for testing purposes
-# #
+@external
+func player_transfer_undeployed_nonfungible_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        device_id : felt,
+        to_player_idx : felt
+    ) -> ():
+    #
+    # get player address at to_player_idx
+    #
+    let (to) = ns_universe_state_functions.civilization_player_idx_to_address_read (to_player_idx)
+    with_attr error_message ("player address should not be 0"):
+        assert_not_zero (to)
+    end
 
-# @external
-# func flat_device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-#         type : felt,
-#         grid_x : felt,
-#         grid_y : felt
-#     ) -> ():
+    #
+    # Confirm caller & to are both in this civilization
+    #
+    let (caller) = get_caller_address ()
+    assert_address_in_civilization (caller)
+    assert_address_in_civilization (to)
 
-#     player_deploy_device_by_grid (
-#         type,
-#         Vec2 (grid_x, grid_y)
-#     )
+    #
+    # Confirm caller is not equal to transfer destination
+    #
+    with_attr error_message ("why transferring to yourself?"):
+        assert_not_equal (caller, to)
+    end
 
-#     return ()
-# end
+    #
+    # Confirm device_id is a device owned by caller, and it is not deployed
+    # note: device_id is given only to non-fungible device
+    #
+    let (emap_index) = ns_micro_state_functions.device_id_to_emap_index_read (device_id)
+    let (emap_entry) = ns_micro_state_functions.device_emap_read (emap_index)
+    with_attr error_message ("caller does not own the device with this device_id"):
+        assert emap_entry.owner = caller
+    end
+    with_attr error_message ("The device with this device_id is deployed, hence unable to transfer"):
+        assert emap_entry.is_deployed = 0
+    end
 
+    #
+    # Make transfer by updating the entry in device_emap
+    #
+    ns_micro_state_functions.device_emap_write (emap_index, DeviceEmapEntry(
+        owner       = to,
+        type        = emap_entry.type,
+        id          = emap_entry.id,
+        is_deployed = emap_entry.is_deployed,
+        grid        = emap_entry.grid
+    ))
 
-# @external
-# func flat_device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-#         grid_x : felt,
-#         grid_y : felt
-#     ) -> ():
-#     alloc_locals
+    #
+    # Apibara event emission
+    #
+    player_transfer_undeployed_nonfungible_device_occurred.emit (
+        src = caller,
+        dst = to,
+        device_id = device_id
+    )
 
-#     player_pickup_device_by_grid (
-#         Vec2 (grid_x, grid_y)
-#     )
-
-#     return ()
-# end
-
-
-# @external
-# func flat_utx_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-#         utx_device_type : felt,
-#         src_device_grid_x : felt,
-#         src_device_grid_y : felt,
-#         dst_device_grid_x : felt,
-#         dst_device_grid_y : felt,
-#         locs_x_len : felt,
-#         locs_x : felt*,
-#         locs_y_len : felt,
-#         locs_y : felt*
-#     ) -> ():
-#     alloc_locals
-
-#     assert locs_x_len = locs_y_len
-#     let locs_len = locs_x_len
-#     let (locs : Vec2*) = alloc ()
-#     assemble_xy_arrays_into_vec2_array (
-#         len = locs_x_len,
-#         arr_x = locs_x,
-#         arr_y = locs_y,
-#         arr = locs,
-#         idx = 0
-#     )
-
-#     player_deploy_utx_by_grids (
-#         utx_device_type,
-#         Vec2 (src_device_grid_x, src_device_grid_y),
-#         Vec2 (dst_device_grid_x, dst_device_grid_y),
-#         locs_len,
-#         locs
-#     )
-
-#     return ()
-# end
-
-# func assemble_xy_arrays_into_vec2_array {range_check_ptr} (
-#         len : felt,
-#         arr_x : felt*,
-#         arr_y : felt*,
-#         arr : Vec2*,
-#         idx : felt
-#     ) -> ():
-#     if idx == len:
-#         return ()
-#     end
-
-#     assert arr[idx] = Vec2 (arr_x[idx], arr_y[idx])
-
-#     assemble_xy_arrays_into_vec2_array (
-#         len, arr_x, arr_y, arr, idx + 1
-#     )
-#     return ()
-# end
-
-# @external
-# func flat_utx_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-#         grid_x : felt,
-#         grid_y : felt
-#     ) -> ():
-
-#     player_pickup_utx_by_grid (
-#         Vec2 (grid_x, grid_y)
-#     )
-
-#     return ()
-# end
-
-# @external
-# func flat_opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-#         grid_x : felt,
-#         grid_y : felt,
-#         device_type : felt,
-#         device_count : felt
-#     ) -> ():
-
-#     player_opsf_build_device (
-#         Vec2 (grid_x, grid_y),
-#         device_type,
-#         device_count
-#     )
-
-#     return ()
-# end
+    return ()
+end
 
 #
 # Exposing iterator functions for observing the micro world
 #
 
 @view
-func anyone_view_device_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func anyone_view_device_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     ) -> (
         emap_len : felt,
-        emap : DeviceDeployedEmapEntry*
+        emap : DeviceEmapEntry*
     ):
 
-    let (emap_len, emap) = ns_micro_iterator.iterate_device_deployed_emap ()
+    let (emap_len, emap) = ns_micro_iterator.iterate_device_emap ()
 
     return (emap_len, emap)
 end
@@ -1036,62 +1035,50 @@ end
 # Admin functions for testing purposes
 ######################################
 
-func _give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+func give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     to : felt, type : felt, amount : felt):
 
-    #
-    # Give device
-    #
-    ns_micro_state_functions.device_undeployed_ledger_write (to, type, amount)
-
-    #
-    # Event emission for Apibara
-    #
-    let (event_counter) = ns_universe_state_functions.event_counter_read ()
-    ns_universe_state_functions.event_counter_increment ()
-    give_undeployed_device_occurred.emit (
-        event_counter,
-        to,
-        type,
-        amount
+    let (block_height) = get_block_number ()
+    recurse_give_undeployed_device (
+        idx = 0,
+        len = amount,
+        block_height = block_height,
+        to = to,
+        type = type
     )
 
     return ()
 end
 
-# @external
-# func admin_write_opsf_deployed_id_to_resource_balances {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-#     id : felt, element_type : felt, balance : felt):
+func recurse_give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        idx : felt,
+        len : felt,
+        block_height : felt,
+        to : felt,
+        type : felt
+    ):
 
-#     #
-#     # Confirm admin identity
-#     #
-#     # let (caller) = get_caller_address ()
-#     # with_attr error_message ("Only admin can invoke this function."):
-#     #     assert caller = GYOZA
-#     # end
+    if idx == len:
+        return ()
+    end
 
-#     ns_micro_state_functions.opsf_deployed_id_to_resource_balances_write (id, element_type, balance)
+    ## note: create_new_nonfungible_device () emits event for Apibara
+    ns_micro_devices.create_new_nonfungible_device (
+        block_height = block_height,
+        owner = to,
+        device_type = type
+    )
 
-#     return ()
-# end
+    #
+    # Tail recursion
+    #
+    recurse_give_undeployed_device (
+        idx + 1,
+        len,
+        block_height,
+        to,
+        type
+    )
 
-# @external
-# func admin_write_device_deployed_id_to_energy_balance {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-#     id : felt, energy : felt):
-
-#     #
-#     # Confirm admin identity
-#     #
-#     # let (caller) = get_caller_address ()
-#     # with_attr error_message ("Only admin can invoke this function."):
-#     #     assert caller = GYOZA
-#     # end
-
-#     ns_micro_state_functions.device_deployed_id_to_energy_balance_write (id, energy)
-
-#     return ()
-# end
-
-
-
+    return ()
+end
