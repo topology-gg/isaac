@@ -413,6 +413,24 @@ namespace ns_ndpe_impulse_function:
     const SLOPE_3 = 2 * (10**11)
 end
 
+func assert_device_type_is_nonfungible {} (device_type : felt) -> ():
+    alloc_locals
+
+    if device_type == ns_device_types.DEVICE_UTB:
+        with_attr error_message ("device_type is 12 (UTB), which is fungible"):
+            assert 0 = 1
+        end
+    end
+
+    if device_type == ns_device_types.DEVICE_UTL:
+        with_attr error_message ("device_type is 13 (UTL), which is fungible"):
+            assert 0 = 1
+        end
+    end
+
+    return ()
+end
+
 func assert_device_type_is_utx {} (device_type : felt) -> ():
     alloc_locals
 
@@ -425,7 +443,7 @@ func assert_device_type_is_utx {} (device_type : felt) -> ():
     end
 
     local x = device_type
-    with_attr error_message ("device_type ({x}) is neither UTB (12) or UTL (13)."):
+    with_attr error_message ("device_type ({x}) is neither 12 (UTB) or 13 (UTL)."):
         assert 0 = 1
     end
     return ()
