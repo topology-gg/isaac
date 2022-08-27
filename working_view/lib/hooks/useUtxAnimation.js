@@ -7,12 +7,8 @@ export default function useUtxAnimation(db_utx_sets, hasDrawnState, canvasRef) {
     const utxAnimGridsRef = useRef([]);
     const utxAnimGridIndicesRef = useRef([]);
 
-    console.log("useUtxAnimation. db_utx_sets: ", db_utx_sets)
-
     const draw = () => {
         if (!db_utx_sets) return;
-
-        console.log("drawing utx animation");
 
         for (const utx_set of db_utx_sets.utx_sets) {
             //
@@ -22,7 +18,6 @@ export default function useUtxAnimation(db_utx_sets, hasDrawnState, canvasRef) {
                 console.log("utx set not tethered");
                 continue;
             }
-            console.log("utx set tethered. drawing rect", utx_set);
 
             //
             // For each utx set, create a rect for animation
@@ -65,8 +60,6 @@ export default function useUtxAnimation(db_utx_sets, hasDrawnState, canvasRef) {
                 n_utx_set += 1;
             }
         }
-
-        console.log("starting utx animation");
 
         const interval = setInterval(() => {
             for (const i = 0; i < n_utx_set; i++) {
