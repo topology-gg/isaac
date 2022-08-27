@@ -14,7 +14,8 @@ from contracts.design.constants import (
     MIN_L2_BLOCK_NUM_BETWEEN_FORWARD,
     UNIVERSE_MAX_AGE_IN_TICKS,
     CIV_SIZE,
-    ns_macro_init
+    ns_macro_init,
+    is_device_type_utx
 )
 from contracts.util.structs import (
     Vec2, Dynamic, Dynamics,
@@ -1038,14 +1039,20 @@ end
 func give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     to : felt, type : felt, amount : felt):
 
-    let (block_height) = get_block_number ()
-    recurse_give_undeployed_device (
-        idx = 0,
-        len = amount,
-        block_height = block_height,
-        to = to,
-        type = type
-    )
+    let (bool_is_utx) = is_device_type_utx (type)
+
+    if bool_is_utx == 1:
+
+    else:
+        let (block_height) = get_block_number ()
+        recurse_give_undeployed_device (
+            idx = 0,
+            len = amount,
+            block_height = block_height,
+            to = to,
+            type = type
+        )
+    end
 
     return ()
 end
