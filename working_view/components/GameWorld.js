@@ -3,8 +3,6 @@ import { fabric } from 'fabric';
 import { toBN } from 'starknet/dist/utils/number'
 
 import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
-import { DEVICE_RESOURCE_MAP } from './ConstantDeviceResources'
-import { PERLIN_COLOR_MAP } from './ConstantPerlinColors'
 
 // import sound_open from '../public/sound-open.ogg'
 // import sound_close from '../public/sound-close.ogg';
@@ -65,10 +63,12 @@ import vec2_rotate_by_degree from "../lib/helpers/vec2RotateByDegree";
 import convert_exposure_to_fill from "../lib/helpers/convertExposureToFill";
 import find_face_ori from "../lib/helpers/findFaceOri";
 import find_face_given_grid from "../lib/helpers/findFaceGivenGrid";
-import lerp from "../lib/helpers/lerp";
 import is_valid_coord from "../lib/helpers/isValidCoord";
 import map_face_to_left_top from "../lib/helpers/mapFaceToLeftTop";
 import { convert_screen_to_grid_x, convert_screen_to_grid_y } from "../lib/helpers/convertScreenToGrid"
+import gridMappingFromData from "../lib/helpers/gridMappingFromData"
+import useUtxAnimation from "../lib/hooks/useUtxAnimation"
+import useDebouncedEffect from "../lib/hooks/useDebouncedEffect"
 
 //
 // Note: reading requirement (translated to Apibara integration design)
@@ -171,12 +171,6 @@ export default function GameWorld(props) {
     const _selectStateRef = useRef('idle'); // idle => select => popup => idle
     const _selectedGridsRef = useRef([]);
 
-    const _utxAnimRectsRef = useRef([]); // references to the animation rectangles
-    const _utxAnimGridsRef = useRef([]); // references to the animation grids for each rectangle (2d array)
-    const _utxAnimGridIndicesRef = useRef([]); // references to the current animation index for each rectangle
-
-    const _gridMapping = useRef({});
-
     const _panStateRef = useRef({'panning':false, 'last_x':0, 'last_y':0});
 
     const _currZoom = useRef();
@@ -209,6 +203,12 @@ export default function GameWorld(props) {
     const [pendingDevices, _setPendingDevices] = useState([])
     const [pendingPickups, _setPendingPickups] = useState([])
 
+    const {
+        draw: drawUtxAnim,
+        reset: resetUtxAnim,
+        toggleVisible: toggleUtxAnimationVisible
+    } = useUtxAnimation(db_utx_sets, hasDrawnState, _canvasRef)
+
     const setPendingDevices = (setValueFn) => {
         _pendingDevicesRef.current = setValueFn(_pendingDevicesRef.current)
         _setPendingDevices(setValueFn)
@@ -224,7 +224,7 @@ export default function GameWorld(props) {
     //
     // useEffect for checking if all database collections are loaded
     //
-    useEffect (() => {
+    useDebouncedEffect(() => {
         // if (hasLoadedDB) {
         //     return
         // }
@@ -254,9 +254,7 @@ export default function GameWorld(props) {
                 _canvasRef.current.clear();
             }
 
-            _utxAnimRectsRef.current = []
-            _utxAnimGridsRef.current = []
-            _utxAnimGridIndicesRef.current = []
+            resetUtxAnim()
             updatePendingDevices(db_deployed_devices)
             updatePendingPickups(db_deployed_devices)
 
@@ -271,7 +269,7 @@ export default function GameWorld(props) {
             drawWorldUpToImages (_canvasRef.current)
             setHudVisible (true)
         }
-    }, [db_macro_states, db_civ_state, db_player_balances, db_deployed_devices, db_utx_sets, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs, db_deployed_ndpes]);
+    }, [db_macro_states, db_civ_state, db_player_balances, db_deployed_devices, db_utx_sets, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs, db_deployed_ndpes], 1000)
 
     //
     // useEffect to check if the signed in account is in current civilization
@@ -305,159 +303,6 @@ export default function GameWorld(props) {
 
     }, [db_player_balances, account]);
 
-
-    //
-    // Function to build mapping from device id to device info for various device classes
-    //
-    function prepare_grid_mapping () {
-
-        //
-        // Build mapping for device id => resource & energy balances
-        //
-        const deployed_pg_mapping = new Map();
-        for (const pg of db_deployed_pgs.deployed_pgs) {
-            deployed_pg_mapping.set(
-                pg['id'],
-                {
-                    'energy' : pg['energy']
-                }
-            );
-        }
-
-        // ref: https://stackoverflow.com/questions/10640159/key-for-javascript-dictionary-is-not-stored-as-value-but-as-variable-name
-        const deployed_harvester_mapping = new Map();
-        for (const harvester of db_deployed_harvesters.deployed_harvesters) {
-            const resource_type = DEVICE_RESOURCE_MAP [harvester['type']]
-
-            deployed_harvester_mapping.set(
-                harvester['id'],
-                {
-                    [resource_type] : harvester['resource'],
-                    'energy' : harvester['energy']
-                }
-            );
-        }
-
-        const deployed_transformer_mapping = new Map();
-        for (const transformer of db_deployed_transformers.deployed_transformers) {
-            const resource_type_pre  = DEVICE_RESOURCE_MAP [transformer['type']] ['pre']
-            const resource_type_post = DEVICE_RESOURCE_MAP [transformer['type']] ['post']
-
-            deployed_transformer_mapping.set(
-                transformer['id'],
-                {
-                    [resource_type_pre]  : transformer['resource_pre'],
-                    [resource_type_post] : transformer['resource_post'],
-                    'energy' : transformer['energy']
-                }
-            );
-        }
-
-        const deployed_upsf_mapping = new Map();
-        for (const upsf of db_deployed_upsfs.deployed_upsfs) {
-            deployed_upsf_mapping.set(
-                upsf['id'],
-                {
-                    'FE raw'      : upsf['resource_0'],
-                    'AL raw'      : upsf['resource_2'],
-                    'CU raw'      : upsf['resource_4'],
-                    'SI raw'      : upsf['resource_6'],
-                    'PU raw'      : upsf['resource_8'],
-                    'FE refined'  : upsf['resource_1'],
-                    'AL refined'  : upsf['resource_3'],
-                    'CU refined'  : upsf['resource_5'],
-                    'SI refined'  : upsf['resource_7'],
-                    'PU enriched' : upsf['resource_9'],
-                    'Energy'      : upsf['energy']
-                }
-            );
-        }
-
-        const deployed_ndpe_mapping = new Map();
-        for (const ndpe of db_deployed_ndpes.deployed_ndpes) {
-            deployed_ndpe_mapping.set(
-                ndpe['id'],
-                {
-                    'energy' : ndpe['energy']
-                }
-            );
-        }
-
-        var base_grid_str_drawn = []
-        for (const entry of db_deployed_devices.deployed_devices){
-            const x = entry.grid.x
-            const y = entry.grid.y
-            const typ = parseInt (entry.type)
-            const id = entry.id
-
-            const owner_hexstr = toBN(entry.owner).toString(16)
-            const owner_hexstr_abbrev = "0x" + owner_hexstr.slice(0,3) + "..." + owner_hexstr.slice(-4)
-
-            const device_dim = DEVICE_DIM_MAP.get (typ)
-
-            var balances
-            if ([0,1].includes(typ)) {
-                balances = deployed_pg_mapping.get (id)
-            }
-            else if ([2,3,4,5,6].includes(typ)) {
-                balances = deployed_harvester_mapping.get (id)
-            }
-            else if ([7,8,9,10,11].includes(typ)) {
-                balances = deployed_transformer_mapping.get (id)
-            }
-            else if (typ == 14) {
-                balances = deployed_upsf_mapping.get (id)
-            }
-            else if (typ == 15) {
-                balances = deployed_ndpe_mapping.get (id)
-            }
-            else {
-                balances = {}
-            }
-
-            var base_grid
-            if ('base_grid' in entry) {
-                // base_grid is a key => entry is a grid with deployed device of non-utx type
-                base_grid = entry.base_grid
-                const base_grid_str = `(${base_grid.x},${base_grid.y})`
-                if (base_grid_str_drawn.includes(base_grid_str)) {
-                    continue
-                }
-                base_grid_str_drawn.push (base_grid_str)
-            }
-            else {
-                // base_grid not a key => entry is a grid with deployed utx
-                base_grid = entry.grid
-            }
-
-            for (const i=0; i<device_dim; i++) {
-                for (const j=0; j<device_dim; j++) {
-                    _gridMapping.current [`(${base_grid.x+i},${base_grid.y+j})`] = {
-                        'owner' : owner_hexstr_abbrev,
-                        'id' : id,
-                        'type' : typ,
-                        'balances' : balances
-                    }
-                }
-            }
-
-            // Use device dimension to insert entry into grid mapping (every device is a square)
-            // for (const i=0; i<device_dim; i++) {
-            //     for (const j=0; j<device_dim; j++) {
-            //         _gridMapping.current [`(${x+i},${y+j})`] = {
-            //             'owner' : owner_hexstr_abbrev,
-            //             'type' : typ,
-            //             'balances' : balances
-            //         }
-            //     }
-            // }
-
-        }
-
-        setGridMapping (_gridMapping.current)
-
-        return
-    }
 
     //
     // Selection control mechanism -- linear state transitions:
@@ -780,9 +625,7 @@ export default function GameWorld(props) {
 
         _deviceDisplayRef.current.visible = visibility
 
-        for (const rect of _utxAnimRectsRef.current) {
-            rect.visible = visibility
-        }
+        toggleUtxAnimationVisible(visibility)
     }
 
     //
@@ -1027,7 +870,14 @@ export default function GameWorld(props) {
             return
         }
         else {
-            prepare_grid_mapping ()
+            setGridMapping (gridMappingFromData(
+                db_deployed_pgs,
+                db_deployed_harvesters,
+                db_deployed_transformers,
+                db_deployed_upsfs,
+                db_deployed_ndpes,
+                db_deployed_devices
+            ))
             drawLandscape (canvi)
             drawDevices (canvi)
             drawUtxAnim (canvi)
@@ -1086,107 +936,6 @@ export default function GameWorld(props) {
             });
         canvi.add (tbox_idle_message)
     }
-
-    //
-    // UTX animation
-    //
-    const drawUtxAnim = canvi => {
-        if (!db_utx_sets) return
-
-        for (const utx_set of db_utx_sets.utx_sets) {
-            //
-            // If not tethered, don't create animation
-            //
-            if (utx_set.tethered == 0) {
-                continue;
-            }
-
-            //
-            // For each utx set, create a rect for animation
-            //
-            const color = DEVICE_COLOR_MAP.get(`${utx_set.type}-anim`)
-            const rect = new fabric.Rect({
-                height: GRID,
-                width: GRID,
-                left: PAD_X + utx_set.grids[0].x*GRID,
-                top:  PAD_Y + (SIDE*3 - utx_set.grids[0].y - 1)*GRID,
-                fill: color,
-                opacity: 0.2,
-                selectable: false,
-                hoverCursor: 'default',
-                strokeWidth: 0
-            });
-            _utxAnimRectsRef.current.push (rect)
-
-            //
-            // For each utx set, set the grids along its animation path, with first grid as redundant for full transparent rect (enable flashing effect for single-utx)
-            // set animation index to 0
-            //
-            const grids = [ utx_set.grids[0] ].concat (utx_set.grids)
-            _utxAnimGridsRef.current.push (grids)
-            _utxAnimGridIndicesRef.current.push (0)
-
-            canvi.add (rect)
-        }
-    }
-    // reference: https://stackoverflow.com/questions/57137094/implementing-a-countdown-timer-in-react-with-hooks
-    useEffect(() => {
-
-        if (!db_utx_sets) return;
-        if (hasDrawnState === 0) return;
-        if (_canvasRef === null) return;
-
-        var n_utx_set = 0
-        for (const utx_set of db_utx_sets.utx_sets) {
-            if (utx_set.tethered == 1) {
-                n_utx_set += 1
-            }
-        }
-
-        const interval = setInterval(() => {
-
-            for (const i=0; i<n_utx_set; i++) {
-
-                //
-                // get the next animation index
-                //
-                const anim_length = _utxAnimGridsRef.current[i].length
-                const anim_idx_ = _utxAnimGridIndicesRef.current[i] + 1
-                const anim_idx = (anim_idx_ == anim_length) ? 0 : anim_idx_
-                // console.log (`${i} anim_idx=${anim_idx}`)
-                _utxAnimGridIndicesRef.current[i] = anim_idx
-
-                //
-                // animate x
-                //
-                const x = _utxAnimGridsRef.current[i][anim_idx].x
-                _utxAnimRectsRef.current[i].left = PAD_X + x*GRID
-
-                //
-                // animate y
-                //
-                const y = _utxAnimGridsRef.current[i][anim_idx].y
-                _utxAnimRectsRef.current[i].top = PAD_Y + (SIDE*3 - y - 1)*GRID
-
-                //
-                // animate opacity - make transparent at i=0
-                //
-                if (anim_idx==0) {
-                    _utxAnimRectsRef.current[i].opacity = 0
-                }
-                else {
-                    _utxAnimRectsRef.current[i].opacity = 0.2
-                }
-
-                // console.log (`ANIMATE: new grid (${x}, ${y})`)
-            }
-            _canvasRef.current.requestRenderAll ();
-
-        }, ANIM_UPDATE_INTERVAL_MS);
-
-        return () => clearInterval(interval);
-    }, [hasDrawnState, db_utx_sets]);
-
 
     const drawLandscape = canvi => {
         const TBOX_FONT_FAMILY = "Poppins-Light"
@@ -1631,91 +1380,6 @@ export default function GameWorld(props) {
 
     }
 
-    // PERLIN_VALUES
-    const drawPerlin = canvi => {
-
-        //
-        // build colors
-        //
-        var perlin_colors_per_element = {}
-        for (const element of ['fe','al','cu','si','pu']){
-
-            var perlin_colors = {}
-            const perlin_values = PERLIN_VALUES[element]
-            // console.log (`${element} / max perline value: ${perlin_values['max']}`)
-            // console.log (`${element} / min perline value: ${perlin_values['min']}`)
-
-            for (var face=0; face<6; face++) {
-
-                for (var row=0; row<SIDE; row++) {
-                    for (var col=0; col<SIDE; col++) {
-
-                        const perlin_value = perlin_values[face][row][col]
-                        const perlin_value_normalized = (perlin_value - perlin_values['min']) / (perlin_values['max'] - perlin_values['min'])
-
-                        const hi = PERLIN_COLOR_MAP[element]['hi']
-                        const lo = PERLIN_COLOR_MAP[element]['lo']
-                        const r = lerp (lo[0], hi[0], perlin_value_normalized)
-                        const g = lerp (lo[1], hi[1], perlin_value_normalized)
-                        const b = lerp (lo[2], hi[2], perlin_value_normalized)
-                        const rect_color = `rgb(${r}, ${g}, ${b})`
-
-                        perlin_colors [`(${face},${row},${col})`] = rect_color
-                    }
-                }
-            }
-            perlin_colors_per_element [element] = perlin_colors
-        }
-        _perlinColorsPerElementRef.current = perlin_colors_per_element
-
-        //
-        // build rects
-        //
-        const perlin_rects = []
-        const perlin_rects_dict = {}
-        for (var face=0; face<6; face++) {
-
-            const face_ori = find_face_ori (face)
-
-            for (var row=0; row<SIDE; row++) {
-
-                for (var col=0; col<SIDE; col++) {
-
-                    var rect = new fabric.Rect({
-                        height: GRID,
-                        width: GRID,
-                        left: PAD_X + (col + face_ori[0]) * GRID,
-                        top: PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
-                        fill: '#FFFFFF',
-                        selectable: false,
-                        hoverCursor: 'default',
-                        visible: false,
-                        strokeWidth: 0,
-
-                        objectCaching: true
-                    });
-                    perlin_rects.push (rect)
-                    perlin_rects_dict [`(${face},${row},${col})`] = rect
-                    canvi.add (rect) // if we need per-rect control we need to add each rect to the canvas
-                }
-            }
-        }
-        _elementDisplayRectsRef.current = perlin_rects_dict
-
-        // // TODO: may be able to fix text blurring at high zoom by messing with cache
-        // // see: http://fabricjs.com/fabric-object-caching
-        // var perlin_rects_group = new fabric.Group(
-        //     perlin_rects, {
-        //         visible: false,
-        //         selectable: false,
-        //         // objectCaching: false
-        //     });
-        // canvi.add(perlin_rects_group)
-        // _elementDisplayRef.current = perlin_rects_group
-
-        // canvi.requestRenderAll();
-    }
-
     const drawDevices = canvi => {
 
         // Basic geometries provided by Fabric:
@@ -1925,10 +1589,13 @@ export default function GameWorld(props) {
         const bool = is_valid_coord (x_norm, y_norm)
 
         if (bool && !modalVisibility) {
-            setMousePositionNorm ({
-                x: x_norm,
-                y: y_norm
-            })
+            // Only change object in state if coordinates differ
+            if (MousePositionNorm.x !== x_norm || MousePositionNorm.y !== y_norm) {
+                setMousePositionNorm ({
+                    x: x_norm,
+                    y: y_norm
+                })
+            }
         }
         else {
             setMousePositionNorm ({
