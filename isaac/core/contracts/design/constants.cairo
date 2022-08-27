@@ -449,6 +449,16 @@ func assert_device_type_is_utx {} (device_type : felt) -> ():
     return ()
 end
 
+func is_device_type_utx {} (device_type : felt) -> (bool : felt):
+    if device_type == ns_device_types.DEVICE_UTB:
+        return (1)
+    end
+    if device_type == ns_device_types.DEVICE_UTL:
+        return (1)
+    end
+    return (0)
+end
+
 #
 # Every device is a square i.e. xdim == ydim
 # possible dimensions: 1x1, 2x2, 3x3, 5x5
