@@ -63,6 +63,15 @@ func activate_universe_occurred (
 end
 
 @event
+func give_undeployed_fungible_device_occurred (
+        event_counter : felt,
+        to : felt,
+        type : felt,
+        amount : felt
+    ):
+end
+
+@event
 func player_deploy_device_occurred (
         event_counter : felt,
         owner : felt,
@@ -75,8 +84,8 @@ end
 func player_pickup_device_occurred (
         event_counter : felt,
         owner : felt,
-        grid : Vec2,
-        device_id : felt
+        device_id : felt,
+        grid : Vec2
     ):
 end
 
@@ -112,30 +121,8 @@ func player_upsf_build_fungible_device_occurred (
 end
 
 @event
-func player_upsf_build_nonfungible_device_occurred (
-        event_counter : felt,
-        owner : felt,
-        grid : Vec2,
-        device_type : felt,
-        device_count : felt,
-        arr_device_id_len : felt,
-        arr_device_id : felt*
-    ):
-end
-
-
-@event
-func terminate_universe_occurred (
-        event_counter : felt,
-        bool_universe_terminable : felt,
-        destruction_by_which_sun : felt,
-        bool_universe_max_age_reached : felt,
-        bool_universe_escape_condition_met : felt
-    ):
-end
-
-@event
 func player_transfer_undeployed_fungible_device_occurred (
+        event_counter : felt,
         src : felt,
         dst : felt,
         device_type : felt,
@@ -145,9 +132,20 @@ end
 
 @event
 func player_transfer_undeployed_nonfungible_device_occurred (
+        event_counter : felt,
         src : felt,
         dst : felt,
         device_id : felt
+    ):
+end
+
+@event
+func terminate_universe_occurred (
+        event_counter : felt,
+        bool_universe_terminable : felt,
+        destruction_by_which_sun : felt,
+        bool_universe_max_age_reached : felt,
+        bool_universe_escape_condition_met : felt
     ):
 end
 
@@ -725,8 +723,8 @@ func player_pickup_device_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuilt
     player_pickup_device_occurred.emit (
         event_counter,
         caller,
-        grid,
-        device_id
+        device_id,
+        grid
     )
 
     return ()
@@ -917,7 +915,10 @@ func player_transfer_undeployed_fungible_device {syscall_ptr : felt*, pedersen_p
     #
     # Apibara event emission
     #
+    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+    ns_universe_state_functions.event_counter_increment ()
     player_transfer_undeployed_fungible_device_occurred.emit (
+        event_counter = event_counter,
         src = caller,
         dst = to,
         device_type = type,
@@ -981,7 +982,10 @@ func player_transfer_undeployed_nonfungible_device {syscall_ptr : felt*, pederse
     #
     # Apibara event emission
     #
+    let (event_counter) = ns_universe_state_functions.event_counter_read ()
+    ns_universe_state_functions.event_counter_increment ()
     player_transfer_undeployed_nonfungible_device_occurred.emit (
+        event_counter = event_counter,
         src = caller,
         dst = to,
         device_id = device_id
@@ -1038,11 +1042,30 @@ end
 
 func give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
     to : felt, type : felt, amount : felt):
+    alloc_locals
 
     let (bool_is_utx) = is_device_type_utx (type)
 
     if bool_is_utx == 1:
+        #
+        # Give device
+        #
+        ns_micro_state_functions.fungible_device_undeployed_ledger_write (to, type, amount)
 
+        #
+        # Event emission for Apibara
+        #
+        let (event_counter) = ns_universe_state_functions.event_counter_read ()
+        ns_universe_state_functions.event_counter_increment ()
+        give_undeployed_fungible_device_occurred.emit (
+            event_counter,
+            to,
+            type,
+            amount
+        )
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
     else:
         let (block_height) = get_block_number ()
         recurse_give_undeployed_device (
@@ -1052,6 +1075,9 @@ func give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
             to = to,
             type = type
         )
+        tempvar syscall_ptr = syscall_ptr
+        tempvar pedersen_ptr = pedersen_ptr
+        tempvar range_check_ptr = range_check_ptr
     end
 
     return ()
@@ -1064,6 +1090,7 @@ func recurse_give_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBui
         to : felt,
         type : felt
     ):
+    alloc_locals
 
     if idx == len:
         return ()
