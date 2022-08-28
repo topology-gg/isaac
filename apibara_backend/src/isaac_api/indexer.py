@@ -510,10 +510,10 @@ async def handle_player_deploy_utx_occurred (info, event, univ):
     # print (f'    owner={owner}, utx_label={utx_label}, utx_device_type={utx_device_type}, src_device_grid={src_device_grid}, dst_device_grid={dst_device_grid}, locs_len={locs_len}, locs={locs}')
 
     #
-    # Update collection 'u{}_player_balances'
+    # Update collection 'u{}_player_fungible_balances'
     #
     await info.storage.find_one_and_update (
-        f'u{univ}_player_balances',
+        f'u{univ}_player_fungible_balances',
         {'account' : str(owner)},
         {'$inc' : {str(utx_device_type) : -1*locs_len}}
     )
@@ -614,11 +614,11 @@ async def handle_player_pickup_utx_occurred (info, event, univ):
     # pickedup_count = result.deleted_count + 1
 
     #
-    # Update collection 'u{}_player_balances'
+    # Update collection 'u{}_player_fungible_balances'
     #
     ## return picked-up amount back to balance
     await info.storage.find_one_and_update (
-        f'u{univ}_player_balances',
+        f'u{univ}_player_fungible_balances',
         {'account' : str(owner)},
         {'$inc' : {str(utx_device_type) : pickedup_count}}
     )
@@ -808,7 +808,7 @@ async def handle_player_transfer_undeployed_fungible_device_occurred (info, even
     print (f'> src_account={src_account}, dst_account={dst_account}, device_type={device_type}, device_amount={device_amount}\n')
 
     #
-    # Update collection 'u{}_player_balances'
+    # Update collection 'u{}_player_fungible_balances'
     #
     await info.storage.find_one_and_update (
         f'u{univ}_player_fungible_balances',
@@ -955,30 +955,17 @@ async def handle_universe_activation_occurred (info, event):
     univ = universe_idx-777
 
     #
-    # Update collection `u{}_player_balances`
+    # Update collection `u{}_player_fungible_balances`
     # Record in player_balances ~ {account, 0, 1, 2, ..., 15}, where 0-15 is the enumeration of device types
     #
     assert arr_player_adr_len == CIV_SIZE
     for player_index, account in enumerate (arr_player_adr):
 
         await info.storage.find_one_and_update (
-            f'u{univ}_player_balances',
+            f'u{univ}_player_fungible_balances',
             {'account' : str(account)},
             {'$set': {'player_index' : player_index}}
         )
-
-        # result = await info.storage.find_one (
-        #     f'u{univ}_player_balances',
-        #     {'account' : str(account)}
-        # )
-        # if result is None:
-        #     document = {'account' : str(account), 'player_index' : player_index}
-        #     for i in range(DEVICE_TYPE_COUNT):
-        #         document [str(i)] = 0
-        #     await info.storage.insert_one (
-        #         f'u{univ}_player_balances',
-        #         document
-        #     )
 
     #
     # Update collection `lobby_queue`
@@ -1097,7 +1084,6 @@ async def handle_block (info: Info, block: NewBlock):
     block = await info.rpc_client.get_block_by_hash(block.new_head.hash)
     block_time = datetime.fromtimestamp(block['accepted_time'])
     print(f'> new live block at {block_time}')
-
 
 
 #
