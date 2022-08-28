@@ -832,6 +832,29 @@
                 "type": "felt"
             },
             {
+                "name": "to",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "give_undeployed_fungible_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "owner",
                 "type": "felt"
             },
@@ -859,12 +882,12 @@
                 "type": "felt"
             },
             {
-                "name": "grid",
-                "type": "Vec2"
-            },
-            {
                 "name": "device_id",
                 "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
             }
         ],
         "keys": [],
@@ -963,32 +986,47 @@
                 "type": "felt"
             },
             {
-                "name": "owner",
+                "name": "src",
                 "type": "felt"
             },
             {
-                "name": "grid",
-                "type": "Vec2"
+                "name": "dst",
+                "type": "felt"
             },
             {
                 "name": "device_type",
                 "type": "felt"
             },
             {
-                "name": "device_count",
+                "name": "device_amount",
                 "type": "felt"
-            },
-            {
-                "name": "arr_device_id_len",
-                "type": "felt"
-            },
-            {
-                "name": "arr_device_id",
-                "type": "felt*"
             }
         ],
         "keys": [],
-        "name": "player_upsf_build_nonfungible_device_occurred",
+        "name": "player_transfer_undeployed_fungible_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "src",
+                "type": "felt"
+            },
+            {
+                "name": "dst",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "player_transfer_undeployed_nonfungible_device_occurred",
         "type": "event"
     },
     {
@@ -1016,48 +1054,6 @@
         ],
         "keys": [],
         "name": "terminate_universe_occurred",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
-                "name": "src",
-                "type": "felt"
-            },
-            {
-                "name": "dst",
-                "type": "felt"
-            },
-            {
-                "name": "device_type",
-                "type": "felt"
-            },
-            {
-                "name": "device_amount",
-                "type": "felt"
-            }
-        ],
-        "keys": [],
-        "name": "player_transfer_undeployed_fungible_device_occurred",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
-                "name": "src",
-                "type": "felt"
-            },
-            {
-                "name": "dst",
-                "type": "felt"
-            },
-            {
-                "name": "device_id",
-                "type": "felt"
-            }
-        ],
-        "keys": [],
-        "name": "player_transfer_undeployed_nonfungible_device_occurred",
         "type": "event"
     },
     {

@@ -650,7 +650,7 @@ namespace ns_micro_devices:
         let (new_device_id) = hash_chain {hash_ptr = pedersen_ptr} (data_ptr)
 
         #
-        # Create a new entry in device_emap
+        # Create a new entry in device_emap; add device_id to emap_index mapping
         #
         ns_micro_state_functions.device_emap_size_write (new_emap_index + 1)
         ns_micro_state_functions.device_emap_write (new_emap_index, DeviceEmapEntry(
@@ -660,6 +660,7 @@ namespace ns_micro_devices:
             is_deployed = 0,
             grid        = Vec2(0,0)
         ))
+        ns_micro_state_functions.device_id_to_emap_index_write (new_device_id, new_emap_index)
 
         #
         # Emit event for Apibara
