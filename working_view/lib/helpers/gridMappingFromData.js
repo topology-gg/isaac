@@ -19,7 +19,7 @@ export default function gridMappingFromData(
     // Build mapping for device id => resource & energy balances
     //
     const pg_mapping = new Map();
-    for (const pg of db_pgs.deployed_pgs) {
+    for (const pg of db_pgs.pgs) {
         pg_mapping.set(pg["id"], {
             energy: pg["energy"],
         });
