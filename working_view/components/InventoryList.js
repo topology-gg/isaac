@@ -218,6 +218,7 @@ export function InventoryList ({ onDeployDevice }) {
                     <div>
                         {deviceInfo}
                         <button
+                            className="action-button"
                             style = {DEVICE_BUTTON_STYLE}
                             onClick = { () => handleDeployDevice(device) }
                         >Deploy Device</button>
