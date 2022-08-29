@@ -11,17 +11,19 @@ import { PERLIN_COLOR_MAP } from './ConstantPerlinColors'
 
 import {
     useCivState,
-    usePlayerBalances,
+    useFungiblePlayerBalances,
     useDeployedDevices,
     useUtxSets,
 
-    useDeployedPgs,
-    useDeployedHarvesters,
-    useDeployedTransformers,
-    useDeployedUpsfs,
-    useDeployedNdpes,
+    usePgs,
+    useHarvesters,
+    useTransformers,
+    useUpsfs,
+    useNdpes,
 
-    useMacroStates
+    useMacroStates,
+    usePlayerFungibleBalances,
+    usePlayerNonfungibleDevices
 } from '../lib/api'
 
 import { Modal } from "./Modal"
@@ -129,16 +131,14 @@ export default function GameWorld(props) {
     // Data fetched from backend on Apibara
     //
     const { data: db_civ_state } = useCivState ()
-    const { data: db_player_balances } = usePlayerBalances ()
+    const { data: db_player_fungible_balances } = usePlayerFungibleBalances ()
     const { data: db_deployed_devices } = useDeployedDevices ()
     const { data: db_utx_sets } = useUtxSets ()
-
-    const { data: db_deployed_pgs } = useDeployedPgs ()
-    const { data: db_deployed_harvesters } = useDeployedHarvesters ()
-    const { data: db_deployed_transformers } = useDeployedTransformers ()
-    const { data: db_deployed_upsfs } = useDeployedUpsfs ()
-    const { data: db_deployed_ndpes } = useDeployedNdpes ()
-
+    const { data: db_pgs } = usePgs ()
+    const { data: db_harvesters } = useHarvesters ()
+    const { data: db_transformers } = useTransformers ()
+    const { data: db_upsfs } = useUpsfs ()
+    const { data: db_ndpes } = useNdpes ()
     const { data: db_macro_states } = useMacroStates ()
 
     //
@@ -229,16 +229,17 @@ export default function GameWorld(props) {
         //     return
         // }
         if (!_canvasRef.current) {
-            console.log ('canvas not created..')
+            console.log ('> canvas not created..')
             return
         }
 
-        if (!db_macro_states || !db_civ_state || !db_player_balances || !db_deployed_devices || !db_utx_sets || !db_deployed_pgs || !db_deployed_harvesters || !db_deployed_transformers || !db_deployed_upsfs || !db_deployed_ndpes) {
-            console.log ('db not fully loaded..')
+        if (!db_macro_states || !db_civ_state || !db_player_fungible_balances || !db_deployed_devices || !db_utx_sets || !db_pgs || !db_harvesters || !db_transformers || !db_upsfs || !db_ndpes) {
+            console.log ('> db not fully loaded..')
             return
         }
         else {
-            // console.log ('db fully loaded!')
+            console.log ('> db fully loaded!')
+
             // setHasLoadedDB (true)
             // console.log ('drawWorld()')
 
@@ -271,18 +272,18 @@ export default function GameWorld(props) {
             drawWorldUpToImages (_canvasRef.current)
             setHudVisible (true)
         }
-    }, [db_macro_states, db_civ_state, db_player_balances, db_deployed_devices, db_utx_sets, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs, db_deployed_ndpes]);
+    }, [db_macro_states, db_civ_state, db_player_fungible_balances, db_deployed_devices, db_utx_sets, db_pgs, db_harvesters, db_transformers, db_upsfs, db_ndpes]);
 
     //
     // useEffect to check if the signed in account is in current civilization
     //
     useEffect (() => {
-        if (!db_player_balances) return
+        if (!db_player_fungible_balances) return
         if (!account) return
 
-        const player_balances = db_player_balances.player_balances
+        const player_fungible_balances = db_player_fungible_balances.player_fungible_balances
         var account_intstr_list = []
-        for (const entry of player_balances) {
+        for (const entry of player_fungible_balances) {
             account_intstr_list.push (entry['account'])
         }
 
@@ -292,7 +293,7 @@ export default function GameWorld(props) {
             console.log ('account is in this civilization')
             setAccountInCiv (true)
 
-            var entry = player_balances.filter(obj => {
+            var entry = player_fungible_balances.filter(obj => {
                 return obj['account'] === account_intstr
             })
             setAccountDeviceBalance (entry[0])
@@ -303,7 +304,7 @@ export default function GameWorld(props) {
             setAccountInCiv (false)
         }
 
-    }, [db_player_balances, account]);
+    }, [db_player_fungible_balances, account]);
 
 
     //
@@ -314,9 +315,9 @@ export default function GameWorld(props) {
         //
         // Build mapping for device id => resource & energy balances
         //
-        const deployed_pg_mapping = new Map();
-        for (const pg of db_deployed_pgs.deployed_pgs) {
-            deployed_pg_mapping.set(
+        const pg_mapping = new Map();
+        for (const pg of db_pgs.pgs) {
+            pg_mapping.set(
                 pg['id'],
                 {
                     'energy' : pg['energy']
@@ -325,11 +326,11 @@ export default function GameWorld(props) {
         }
 
         // ref: https://stackoverflow.com/questions/10640159/key-for-javascript-dictionary-is-not-stored-as-value-but-as-variable-name
-        const deployed_harvester_mapping = new Map();
-        for (const harvester of db_deployed_harvesters.deployed_harvesters) {
+        const harvester_mapping = new Map();
+        for (const harvester of db_harvesters.harvesters) {
             const resource_type = DEVICE_RESOURCE_MAP [harvester['type']]
 
-            deployed_harvester_mapping.set(
+            harvester_mapping.set(
                 harvester['id'],
                 {
                     [resource_type] : harvester['resource'],
@@ -338,12 +339,12 @@ export default function GameWorld(props) {
             );
         }
 
-        const deployed_transformer_mapping = new Map();
-        for (const transformer of db_deployed_transformers.deployed_transformers) {
+        const transformer_mapping = new Map();
+        for (const transformer of db_transformers.transformers) {
             const resource_type_pre  = DEVICE_RESOURCE_MAP [transformer['type']] ['pre']
             const resource_type_post = DEVICE_RESOURCE_MAP [transformer['type']] ['post']
 
-            deployed_transformer_mapping.set(
+            transformer_mapping.set(
                 transformer['id'],
                 {
                     [resource_type_pre]  : transformer['resource_pre'],
@@ -353,9 +354,9 @@ export default function GameWorld(props) {
             );
         }
 
-        const deployed_upsf_mapping = new Map();
-        for (const upsf of db_deployed_upsfs.deployed_upsfs) {
-            deployed_upsf_mapping.set(
+        const upsf_mapping = new Map();
+        for (const upsf of db_upsfs.upsfs) {
+            upsf_mapping.set(
                 upsf['id'],
                 {
                     'FE raw'      : upsf['resource_0'],
@@ -373,9 +374,9 @@ export default function GameWorld(props) {
             );
         }
 
-        const deployed_ndpe_mapping = new Map();
-        for (const ndpe of db_deployed_ndpes.deployed_ndpes) {
-            deployed_ndpe_mapping.set(
+        const ndpe_mapping = new Map();
+        for (const ndpe of db_ndpes.ndpes) {
+            ndpe_mapping.set(
                 ndpe['id'],
                 {
                     'energy' : ndpe['energy']
@@ -397,19 +398,19 @@ export default function GameWorld(props) {
 
             var balances
             if ([0,1].includes(typ)) {
-                balances = deployed_pg_mapping.get (id)
+                balances = pg_mapping.get (id)
             }
             else if ([2,3,4,5,6].includes(typ)) {
-                balances = deployed_harvester_mapping.get (id)
+                balances = harvester_mapping.get (id)
             }
             else if ([7,8,9,10,11].includes(typ)) {
-                balances = deployed_transformer_mapping.get (id)
+                balances = transformer_mapping.get (id)
             }
             else if (typ == 14) {
-                balances = deployed_upsf_mapping.get (id)
+                balances = upsf_mapping.get (id)
             }
             else if (typ == 15) {
-                balances = deployed_ndpe_mapping.get (id)
+                balances = ndpe_mapping.get (id)
             }
             else {
                 balances = {}
@@ -440,17 +441,6 @@ export default function GameWorld(props) {
                     }
                 }
             }
-
-            // Use device dimension to insert entry into grid mapping (every device is a square)
-            // for (const i=0; i<device_dim; i++) {
-            //     for (const j=0; j<device_dim; j++) {
-            //         _gridMapping.current [`(${x+i},${y+j})`] = {
-            //             'owner' : owner_hexstr_abbrev,
-            //             'type' : typ,
-            //             'balances' : balances
-            //         }
-            //     }
-            // }
 
         }
 

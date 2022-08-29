@@ -5,7 +5,7 @@ import { toBN } from 'starknet/dist/utils/number'
 import {
     useCivState,
     useMacroStates,
-    usePlayerBalances
+    usePlayerFungibleBalances
 } from '../lib/api'
 
 export default function GameStatsCiv() {
@@ -13,9 +13,9 @@ export default function GameStatsCiv() {
     var content = []
     const { data: db_civ_state } = useCivState ()
     const { data: db_macro_states } = useMacroStates ()
-    const { data: db_player_balances } = usePlayerBalances ()
+    const { data: db_player_fungible_balances } = usePlayerFungibleBalances ()
 
-    if (!db_civ_state || !db_macro_states || !db_player_balances) {
+    if (!db_civ_state || !db_macro_states || !db_player_fungible_balances) {
         content = []
     }
     else {
@@ -27,7 +27,7 @@ export default function GameStatsCiv() {
             const civ_idx = db_civ_state.civ_state[0].civ_idx
             const active = db_civ_state.civ_state[0].active
             const line = `Number: ${civ_idx}`
-            const population = db_player_balances.player_balances.length
+            const population = db_player_fungible_balances.player_fungible_balances.length
             const ticks_since_birth = db_macro_states.macro_states.length - 1 // at age 0 a macro state event is emitted
 
             content.push (<h5 key='stats-h5'>Civilization</h5>)

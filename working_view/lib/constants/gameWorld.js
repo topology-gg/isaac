@@ -1,3 +1,7 @@
+// Universe parameters
+export const CIV_SIZE = 3
+
+
 //
 // Sizes
 //

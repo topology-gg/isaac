@@ -93,7 +93,7 @@ function Home() {
                     <span>.</span>
                     <GameStatsPlayers universeActive={universeActive} />
                     <span>.</span>
-                    <GameStatsDevices universeActive={universeActive} />
+                    {/* <GameStatsDevices universeActive={universeActive} /> */}
                 </div>
 
             </div>

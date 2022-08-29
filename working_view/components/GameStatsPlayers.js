@@ -2,39 +2,36 @@ import React, { Component, useState, useEffect } from "react";
 import { toBN } from 'starknet/dist/utils/number'
 
 import {
-    usePlayerBalances
+    usePlayerFungibleBalances
 } from '../lib/api'
 import GameStatsPlayer from "./GameStatsPlayer";
+import { CIV_SIZE } from "../lib/constants/gameWorld";
 
-const CIV_SIZE = 5
+export default function GameStatsPlayers (props) {
 
-export default function GameStatsPlayers(props) {
-
-    const { data: db_player_balances } = usePlayerBalances ()
+    const { data: db_player_fungible_balances } = usePlayerFungibleBalances ()
 
     const empty_addr_array = []
-    const empty_result_array = []
     for (var i=0; i<CIV_SIZE; i++){
         empty_addr_array.push ('0')
-        empty_result_array.push (null)
     }
     const [accountStringsState, setAccountStringsState] = useState(empty_addr_array)
 
     useEffect (() => {
-        if (!db_player_balances) return;
-        if (db_player_balances.player_balances.length == 0) return;
+        if (!db_player_fungible_balances) return;
+        if (db_player_fungible_balances.player_fungible_balances.length == 0) return;
 
         setAccountStringsState ((prev) =>
             prev.map((account_str, idx) => {
                 if (account_str !== '0') return account_str
 
-                const player_account = db_player_balances.player_balances.find(e => e.player_index === idx).account;
+                const player_account = db_player_fungible_balances.player_fungible_balances.find(e => e.player_index === idx).account;
 
                 return toBN(player_account).toString(16)
             })
         )
 
-    }, [db_player_balances])
+    }, [db_player_fungible_balances])
 
     //
     // Return component
