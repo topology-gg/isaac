@@ -28,8 +28,9 @@ import { Modal } from "./Modal"
 import HUD from "./HUD"
 
 import {
-    useStarknet
+    useStarknet, useStarknetInvoke
 } from '@starknet-react/core'
+import { useUniverseContract } from './UniverseContract'
 import { DEVICE_TYPE_FULL_NAME_MAP } from './ConstantDeviceTypes'
 import DEVICE_DIM_MAP from './ConstantDeviceDimMap'
 import {
@@ -47,7 +48,6 @@ import {
     HOVER_DEVICE_STROKE_WIDTH,
     STROKE_WIDTH_AXIS,
     VOLUME,
-    ANIM_UPDATE_INTERVAL_MS,
     FILL_CURSOR_SELECTED_GRID,
     GRID_ASSIST_TBOX,
     CANVAS_BG,
@@ -57,7 +57,7 @@ import deviceFromGridCoord from '../lib/deviceFromGridCoord'
 import drawPendingDevices from "../lib/helpers/drawPendingDevices";
 import drawPendingPickups from "../lib/helpers/drawPendingPickups";
 import {
-    createCursorGridRect, createCursorFaceRect, createCursorHoverDeviceRect
+    createCursorGridRect, createCursorFaceRect, createCursorHoverDeviceRect, createPlacementAssistRect
 } from './fabricObjects/assists';
 import createTriangle from "./fabricObjects/createTriangle";
 import parse_phi_to_degree from "../lib/helpers/parsePhiToDegree";
@@ -71,6 +71,7 @@ import { convert_screen_to_grid_x, convert_screen_to_grid_y } from "../lib/helpe
 import gridMappingFromData from "../lib/helpers/gridMappingFromData"
 import useUtxAnimation from "../lib/hooks/useUtxAnimation"
 import useDebouncedEffect from "../lib/hooks/useDebouncedEffect"
+import usePlacementAssist from "../lib/hooks/usePlacementAssist"
 
 //
 // Note: reading requirement (translated to Apibara integration design)
@@ -166,6 +167,7 @@ export default function GameWorld(props) {
 
     const _pendingDevicesRef = useRef([]); // Devices pending deployment
     const _pendingPickupsRef = useRef([]); // Devices pending pickup
+    const _deviceBeingPlacedRef = useRef(null); // Device being placed by user
 
     const _mouseStateRef = useRef('up'); // up => down => up
     const _selectStateRef = useRef('idle'); // idle => select => popup => idle
@@ -202,12 +204,16 @@ export default function GameWorld(props) {
 
     const [pendingDevices, _setPendingDevices] = useState([])
     const [pendingPickups, _setPendingPickups] = useState([])
+    const [deviceBeingPlaced, _setDeviceBeingPlaced] = useState(null)
+
+    // const [debugCounter, setDebugCounter] = useState(0)
 
     const {
         draw: drawUtxAnim,
         reset: resetUtxAnim,
         toggleVisible: toggleUtxAnimationVisible
     } = useUtxAnimation(db_utx_sets, hasDrawnState, _canvasRef)
+    usePlacementAssist(deviceBeingPlaced, MousePositionNorm, _canvasRef)
 
     const setPendingDevices = (setValueFn) => {
         _pendingDevicesRef.current = setValueFn(_pendingDevicesRef.current)
@@ -218,6 +224,19 @@ export default function GameWorld(props) {
         _pendingPickupsRef.current = setValueFn(_pendingPickupsRef.current)
         _setPendingPickups(setValueFn)
     }
+
+    const setDeviceBeingPlaced = (setValueFn) => {
+        _deviceBeingPlacedRef.current = setValueFn(_deviceBeingPlacedRef.current)
+        _setDeviceBeingPlaced(setValueFn)
+    }
+
+    // Used for invoking contract directly from the game world
+    const { contract } = useUniverseContract ()
+
+    const { data, loading, error, reset, invoke: invokeDeployDevice } = useStarknetInvoke ({
+        contract,
+        method: 'player_deploy_device_by_grid'
+    })
 
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
 
@@ -258,6 +277,8 @@ export default function GameWorld(props) {
             resetUtxAnim()
             updatePendingDevices(db_deployed_devices)
             updatePendingPickups(db_deployed_devices)
+            setDeviceBeingPlaced(() => null)
+            // _cursorGridRectRef.current = null
 
             imageLeftToBeDrawnRef.current = 6*5
             requestAnimationFrame(() => {
@@ -327,7 +348,7 @@ export default function GameWorld(props) {
         const bool_in_range = is_valid_coord (x_grid, y_grid)
         const bool_in_idle = (_selectStateRef.current === 'idle')
 
-        if (bool_in_idle && bool_in_range) {
+        if (bool_in_idle && bool_in_range && !_deviceBeingPlacedRef.current) {
             _selectStateRef.current = 'select'
             _selectedGridsRef.current.push ({x: x_grid, y: y_grid})
 
@@ -395,7 +416,13 @@ export default function GameWorld(props) {
         const bool_in_range = is_valid_coord (x_grid, y_grid)
         const bool_not_empty = (_selectedGridsRef.current.length !== 0)
 
-        if (bool_in_range && bool_not_empty) {
+        if (_deviceBeingPlacedRef.current) {
+            // TODO: check if device placement is valid
+            console.log("invoke", ({ args: [_deviceBeingPlacedRef.current.type, { x: x_grid, y: y_grid }] }))
+            invokeDeployDevice ({ args: [_deviceBeingPlacedRef.current.type, { x: x_grid, y: y_grid }] })
+            setDeviceBeingPlaced(() => null)
+            // TODO: set ghost placement
+        } else if (bool_in_range && bool_not_empty) {
             _selectStateRef.current = 'popup'
             setModalVisibility (true)
             modalVisibilityRef.current = true
@@ -501,6 +528,11 @@ export default function GameWorld(props) {
                 hidePopup ()
             }
             return
+        }
+
+        if (ev.key === "Escape") {
+            // console.log("escape key pressed, resetting device placement")
+            setDeviceBeingPlaced(() => null)
         }
 
         if (ev.key === 'c') {
@@ -1331,6 +1363,7 @@ export default function GameWorld(props) {
         //
         // canvi.add(coordText)
         // _coordTextRef.current = coordText
+        // console.log("drawAssist")
 
         canvi.add (_cursorGridRectRef.current)
         canvi.add (_cursorFaceRectRef.current)
@@ -1671,6 +1704,18 @@ export default function GameWorld(props) {
         })
     }
 
+    function handleDeployDevice(device) {
+        // console.log(device)
+        hidePopup()
+        // After hiding the popup, the state needs to trigger with a
+        // bit of delay in order for the device placement assist to be
+        // rendered properly (fabric.js quirk?)
+        // Edit: still Not working properly...
+        setTimeout(() => {
+            setDeviceBeingPlaced(() => device)
+        }, 200)
+    }
+
     // Set the display style of the player's own devices (based on highlight mode)
     useEffect(() => {
         if (!db_deployed_devices || !account || !_deviceDisplayRef.current) return;
@@ -1733,12 +1778,26 @@ export default function GameWorld(props) {
                 device_balance = {accountDeviceBalance}
                 pendingPickups = {pendingPickups}
                 onDeployStarted = {handleDeployStarted}
+                onDeployDevice = {handleDeployDevice}
                 onPendingPickup = {handlePendingPickup}
             />
 
             <HUD lines={hudLines} universeActive={universeActive}/>
 
             <canvas id="c" />
+
+            {/* <button onClick={() => setDebugCounter((c) => c + 1)}>Trigger redraw</button>
+            <button
+                onClick={() =>
+                    setDeviceBeingPlaced((d) => ({
+                        type: 14,
+                        dimension: DEVICE_DIM_MAP.get(14),
+                        color: DEVICE_COLOR_MAP.get(14),
+                    }))
+                }
+            >
+                Place device
+            </button> */}
         </div>
     );
 }

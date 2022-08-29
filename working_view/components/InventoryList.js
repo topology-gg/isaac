@@ -20,8 +20,33 @@ import {
 import { DEVICE_TYPE_FULL_NAME_MAP } from './ConstantDeviceTypes';
 import { DEVICE_RESOURCE_MAP } from './ConstantDeviceResources'
 import { useUniverseContract } from "./UniverseContract";
+import DEVICE_DIM_MAP from "./ConstantDeviceDimMap";
+import { DEVICE_COLOR_MAP } from "./ConstantDeviceColors";
 
-export function InventoryList (props) {
+const TYPE_BUTTON_STYLE = {border: '1px solid #222222', padding:'0px 20px', fontSize:'10px',height:'24px',lineHeight:'24px',marginBottom:'5px'}
+const DEVICE_BUTTON_STYLE = {border: '1px solid #222222', marginRight:'15px', marginBottom:'15px', display:'inline-block'}
+const nonfungible_types = [0,1,2,3,4,5,6,7,8,9,10,11,14,15]
+
+const MID_VIEW_STYLE = {
+    padding: '20px',
+    marginLeft: '20px',
+    borderRadius:'10px',
+    backgroundColor:"#EEEEEE",
+    height:'90%',
+    width:'300px',
+    overflowY: 'auto'
+}
+
+const RIGHT_VIEW_STYLE = {
+    padding: '20px',
+    marginLeft: '20px',
+    borderRadius:'10px',
+    backgroundColor:"#EEEEEE",
+    height:'90%',
+    width:'300px'
+}
+
+export function InventoryList ({ onDeployDevice }) {
 
     const { account, connect } = useStarknet ()
     const account_str_decimal = toBN(account).toString(10)
@@ -43,27 +68,13 @@ export function InventoryList (props) {
     const { data: db_upsfs } = useUpsfs ()
     const { data: db_ndpes } = useNdpes ()
 
-    const TYPE_BUTTON_STYLE = {border: '1px solid #222222', padding:'0px 20px', fontSize:'10px',height:'24px',lineHeight:'24px',marginBottom:'5px'}
-    const DEVICE_BUTTON_STYLE = {border: '1px solid #222222', marginRight:'15px', marginBottom:'15px', display:'inline-block'}
-    const nonfungible_types = [0,1,2,3,4,5,6,7,8,9,10,11,14,15]
-
-    const MID_VIEW_STYLE = {
-        padding: '20px',
-        marginLeft: '20px',
-        borderRadius:'10px',
-        backgroundColor:"#EEEEEE",
-        height:'90%',
-        width:'300px',
-        overflowY: 'auto'
-    }
-
-    const RIGHT_VIEW_STYLE = {
-        padding: '20px',
-        marginLeft: '20px',
-        borderRadius:'10px',
-        backgroundColor:"#EEEEEE",
-        height:'90%',
-        width:'300px'
+    const handleDeployDevice = (device) => {
+        onDeployDevice({
+                id: device.id,
+                type: device.type,
+                dimension: DEVICE_DIM_MAP.get(device.type),
+                color: DEVICE_COLOR_MAP.get(device.type),
+            })
     }
 
     useEffect (() => {
@@ -206,6 +217,10 @@ export function InventoryList (props) {
                 setRightView (
                     <div>
                         {deviceInfo}
+                        <button
+                            style = {DEVICE_BUTTON_STYLE}
+                            onClick = { () => handleDeployDevice(device) }
+                        >Deploy Device</button>
                     </div>
                 )
             }

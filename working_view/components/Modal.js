@@ -300,7 +300,7 @@ export function Modal (props) {
         <div style={{width:'100%'}}>
             <h3>{title}</h3>
 
-            <InventoryList />
+            <InventoryList onDeployDevice={props.onDeployDevice} />
 
             <span>.</span>
         </div>
