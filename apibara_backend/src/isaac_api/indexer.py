@@ -48,17 +48,17 @@ from isaac_api.contract import (
 
 # load_dotenv ()
 
-CIV_SIZE = 5
+CIV_SIZE = 3
 UNIVERSE_COUNT = 1
 DEVICE_TYPE_COUNT = 16
 
-BIRTH_BLOCK = 308893
+BIRTH_BLOCK = 313745
 INDEXER_ID = os.getenv('ISAAC_INDEXER_ID', 'isaac')
 
 ISAAC_UNIVERSE_ADDRESSES = {
-    0 : '0x03852fa21aed9c040a16116339bbcdd8a311ccd855594d17152b9cbf210e3a6e'
+    0 : '0x0121af9f9263f78643f79137f2b6ff916f18bf7246821a9eeecf5d47955c4560'
 }
-ISAAC_LOBBY_ADDRESS = '0x01c9125178ed782ca3fd9bea67acf1d602376cf5203450946d9dd897bddc97e4'
+ISAAC_LOBBY_ADDRESS = '0x00498a85f7d4812d834f60d33aefe4b9c9d2495fa67796cf462783d699df6f42'
 
 PG_TYPES = [0,1]
 HARVESTER_TYPES = [2,3,4,5,6]
@@ -195,16 +195,16 @@ async def handle_events(info: Info, block_events: NewEvents):
             await handle_impulse_applied_occurred (info, event, from_univ, block_number)
 
         elif event.name == 'player_transfer_undeployed_fungible_device_occurred':
-            await handle_player_transfer_undeployed_fungible_device_occurred (info, event, from_univ)
+            await handle_player_transfer_undeployed_fungible_device_occurred (info, event, from_univ, block_number)
 
         elif event.name == 'player_transfer_undeployed_nonfungible_device_occurred':
-            await handle_player_transfer_undeployed_nonfungible_device_occurred (info, event, from_univ)
+            await handle_player_transfer_undeployed_nonfungible_device_occurred (info, event, from_univ, block_number)
 
         elif event.name == 'player_upsf_build_fungible_device_occurred':
-            await handle_player_upsf_build_fungible_device_occurred (info, event, from_univ)
+            await handle_player_upsf_build_fungible_device_occurred (info, event, from_univ, block_number)
 
         elif event.name == 'create_new_nonfungible_device_occurred':
-            await handle_create_new_nonfungible_device_occurred (info, event, from_univ)
+            await handle_create_new_nonfungible_device_occurred (info, event, from_univ, block_number)
 
         #
         # lobby
@@ -255,7 +255,7 @@ async def handle_forward_world_macro_occurred (info, event, univ, block_number):
     distance_1 = distance (sun1_q, plnt_q)
     distance_2 = distance (sun2_q, plnt_q)
 
-    print (f'    - distances to sun0 ({distance_0}), sun1 ({distance_1}), sun2 ({distance_2})')
+    # print (f'    - distances to sun0 ({distance_0}), sun1 ({distance_1}), sun2 ({distance_2})')
 
 
 async def handle_give_undeployed_fungible_device_occurred (info, event, univ, block_number):
@@ -362,7 +362,7 @@ async def handle_player_deploy_device_occurred (info, event, univ):
     #
     # Decode event
     #
-    event_counter, owner, device_id, grid = decode_player_deploy_device_occurred_event (event)
+    owner, device_id, grid = decode_player_deploy_device_occurred_event (event)
     print(f'> owner={owner}, device_id={device_id}, grid={grid}\n')
 
     #

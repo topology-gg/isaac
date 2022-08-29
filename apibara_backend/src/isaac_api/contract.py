@@ -173,7 +173,7 @@ def decode_terminate_universe_occurred_event (event: Event) -> Tuple [int, int, 
 #
 # Decode event: universe::player_deploy_device_occurred
 #
-def decode_player_deploy_device_occurred_event (event: Event) -> Tuple [int, int, int, Vec2]:
+def decode_player_deploy_device_occurred_event (event: Event) -> Tuple [int, int, Vec2]:
     it = iter(event.data)
 
     # @event
@@ -447,7 +447,7 @@ def decode_create_new_nonfungible_device_occurred_event (event: Event) -> Tuple 
     event_counter = _felt_from_iter (it, scale=False)
     owner         = _felt_from_iter (it, scale=False, signed=False)
     device_type   = _felt_from_iter (it, scale=False)
-    device_id     = _felt_from_iter (it, scale=False, signed=False))
+    device_id     = _felt_from_iter (it, scale=False, signed=False)
 
     return owner, device_type, device_id
 
