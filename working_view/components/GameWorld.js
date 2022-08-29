@@ -72,6 +72,7 @@ import gridMappingFromData from "../lib/helpers/gridMappingFromData"
 import useUtxAnimation from "../lib/hooks/useUtxAnimation"
 import useDebouncedEffect from "../lib/hooks/useDebouncedEffect"
 import usePlacementAssist from "../lib/hooks/usePlacementAssist"
+import FloatingMessage from "./FloatingMessage"
 
 //
 // Note: reading requirement (translated to Apibara integration design)
@@ -1781,6 +1782,8 @@ export default function GameWorld(props) {
                 onDeployDevice = {handleDeployDevice}
                 onPendingPickup = {handlePendingPickup}
             />
+
+            {deviceBeingPlaced && <FloatingMessage message={<>Choose the location you want deploy your device, then press <kbd>LMB</kbd> to initiate the deploy.</>} />}
 
             <HUD lines={hudLines} universeActive={universeActive}/>
 
