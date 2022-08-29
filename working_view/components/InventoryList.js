@@ -85,6 +85,16 @@ export function InventoryList (props) {
             const fungible_balances = db_player_fungible_balances.player_fungible_balances [0]
             const belt_balance = fungible_balances[12]
             const wire_balance = fungible_balances[13]
+
+            const nonfungible_counts = {}
+            for (var typ of nonfungible_types) {
+                const count = db_player_nonfungible_devices.player_nonfungible_devices.filter (
+                    ele => (ele.is_deployed == false) && (ele.type == typ)
+                ).length
+                nonfungible_counts [typ] = count
+            }
+
+
             setLeftView (
                 <div style={{display:'flex',flexDirection:'row'}}>
                     <div style={{display:'flex',flexDirection:'column'}}>
@@ -97,7 +107,7 @@ export function InventoryList (props) {
                                     style = {{...TYPE_BUTTON_STYLE, backgroundColor: ele==viewingType?'#FFFE71':'#EFEFEF'}}
                                     onClick = { () => {setViewingType(ele)} }
                                 >
-                                    {DEVICE_TYPE_FULL_NAME_MAP[ele]}
+                                    {DEVICE_TYPE_FULL_NAME_MAP[ele]} ({nonfungible_counts[ele]})
                                 </button>
                             )
                         }
