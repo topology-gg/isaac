@@ -166,22 +166,22 @@ export function InventoryList ({ onDeployDevice }) {
                     ele => ele.id == viewingId
                 )[0]
                 const device_type = device.type
-                deviceInfo.push (<h4>{DEVICE_TYPE_FULL_NAME_MAP[device_type]}</h4>)
-                deviceInfo.push (<p>&lt; Id = {abbrevDecString(viewingId)} &gt;</p>)
+                deviceInfo.push (<h4 key='device-type-title'>{DEVICE_TYPE_FULL_NAME_MAP[device_type]}</h4>)
+                deviceInfo.push (<p key='device-id-subtitle'>&lt; Id = {abbrevDecString(viewingId)} &gt;</p>)
 
                 if ([0,1].includes(device_type)) {
                     const pg = db_pgs.pgs.filter (
                         ele => ele.id == viewingId
                     )[0]
-                    deviceInfo.push (<p>Energy: {pg.energy}</p>)
+                    deviceInfo.push (<p key='device-energy'>Energy: {pg.energy}</p>)
                 }
                 else if ([2,3,4,5,6].includes(device_type)) {
                     const harvester = db_harvesters.harvesters.filter (
                         ele => ele.id == viewingId
                     )[0]
                     const resource_name = DEVICE_RESOURCE_MAP [ parseInt(harvester.type) ]
-                    deviceInfo.push (<p>{resource_name}: {harvester.resource}</p>)
-                    deviceInfo.push (<p>Energy: {harvester.energy}</p>)
+                    deviceInfo.push (<p key='device-resource'>{resource_name}: {harvester.resource}</p>)
+                    deviceInfo.push (<p key='device-energy'>Energy: {harvester.energy}</p>)
                 }
                 else if ([7,8,9,10,11].includes(device_type)) {
                     const transformer = db_transformers.transformers.filter (

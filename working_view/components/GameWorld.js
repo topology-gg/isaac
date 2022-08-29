@@ -234,9 +234,9 @@ export default function GameWorld(props) {
     // Used for invoking contract directly from the game world
     const { contract } = useUniverseContract ()
 
-    const { data, loading, error, reset, invoke: invokeDeployDevice } = useStarknetInvoke ({
+    const { data, loading, error, reset, invoke: invokePlayerDeployDevice } = useStarknetInvoke ({
         contract,
-        method: 'player_deploy_device_by_grid'
+        method: 'player_deploy_device'
     })
 
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
@@ -419,8 +419,13 @@ export default function GameWorld(props) {
 
         if (_deviceBeingPlacedRef.current) {
             // TODO: check if device placement is valid
-            console.log("invoke", ({ args: [_deviceBeingPlacedRef.current.type, { x: x_grid, y: y_grid }] }))
-            invokeDeployDevice ({ args: [_deviceBeingPlacedRef.current.type, { x: x_grid, y: y_grid }] })
+            console.log("invoke", ({ args: [_deviceBeingPlacedRef.current.id, { x: x_grid, y: y_grid }] }))
+            invokePlayerDeployDevice (
+                { args: [
+                    _deviceBeingPlacedRef.current.id,
+                    { x: x_grid, y: y_grid }
+                ] }
+            )
             setDeviceBeingPlaced(() => null)
             // TODO: set ghost placement
         } else if (bool_in_range && bool_not_empty) {
@@ -1784,6 +1789,8 @@ export default function GameWorld(props) {
             />
 
             {deviceBeingPlaced && <FloatingMessage message={<>Choose the location you want deploy your device, then press <kbd>LMB</kbd> to initiate the deploy.</>} />}
+
+            {error ? <h3>{error}</h3> : ''}
 
             <HUD lines={hudLines} universeActive={universeActive}/>
 
