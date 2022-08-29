@@ -106,12 +106,12 @@ def decode_forward_world_event(event: Event) -> Tuple[Dynamic, int]:
     return dynamics, phi
 
 #
-# Decode event: universe::give_undeployed_device_occurred
+# Decode event: universe::give_undeployed_fungible_device_occurred
 #
-def decode_give_undeployed_device_occurred_event (event: Event) -> Tuple [int, int, int, int]:
+def decode_give_undeployed_fungible_device_occurred_event (event: Event) -> Tuple [int, int, int, int]:
 
     # @event
-    # func give_undeployed_device_occurred (
+    # func give_undeployed_fungible_device_occurred (
     #         event_counter : felt,
     #         to : felt,
     #         type : felt,
@@ -148,104 +148,6 @@ def decode_activate_universe_occurred_event (event: Event) -> Tuple [int, int]:
     return event_counter, civ_idx
 
 #
-# Decode event: lobby::universe_activation_occurred
-#
-def decode_universe_activation_occurred_event (event: Event) -> Tuple [int, int, int, int, list]:
-
-    # @event
-    # func universe_activation_occurred (
-    #     event_counter      : felt,
-    #     universe_index     : felt,
-    #     universe_address   : felt,
-    #     arr_player_adr_len : felt,
-    #     arr_player_adr     : felt*
-    # ):
-    # end
-
-    it = iter (event.data)
-
-    event_counter      = _felt_from_iter (it, scale=False)
-    universe_idx       = _felt_from_iter (it, scale=False)
-    universe_adr       = _felt_from_iter (it, scale=False, signed=False)
-    arr_player_adr_len = _felt_from_iter (it, scale=False)
-    arr_player_adr     = [
-        _felt_from_iter (it, scale=False, signed=False) for _ in range (arr_player_adr_len)
-    ]
-
-    return event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr
-
-#
-# Decode event: lobby::universe_deactivation_occurred
-#
-def decode_universe_deactivation_occurred_event (event: Event) -> Tuple [int, int, int, int, list]:
-
-    # @event
-    # func universe_deactivation_occurred (
-    #     event_counter      : felt,
-    #     universe_index     : felt,
-    #     universe_address   : felt,
-    #     arr_player_adr_len : felt,
-    #     arr_player_adr     : felt*
-    # ):
-    # end
-
-    it = iter (event.data)
-
-    event_counter      = _felt_from_iter (it, scale=False)
-    universe_idx       = _felt_from_iter (it, scale=False)
-    universe_adr       = _felt_from_iter (it, scale=False, signed=False)
-    arr_player_adr_len = _felt_from_iter (it, scale=False)
-    arr_player_adr     = [
-        _felt_from_iter (it, scale=False, signed=False) for _ in range (arr_player_adr_len)
-    ]
-
-    return event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr
-
-#
-# Decode event: universe::player_deploy_device_occurred
-#
-def decode_player_deploy_device_occurred_event (event: Event) -> Tuple [int, int, Vec2]:
-    it = iter(event.data)
-
-    # @event
-    # func player_deploy_device_occurred (
-    #         owner : felt,
-    #         device_id : felt,
-    #         type : felt,
-    #         grid : Vec2
-    #     ):
-    # end
-
-    event_counter = _felt_from_iter(it, scale=False)
-    owner       = _felt_from_iter (it, scale=False, signed=False)
-    device_id   = _felt_from_iter (it, scale=False, signed=False)
-    device_type = _felt_from_iter (it, scale=False)
-    grid        = Vec2.from_iter  (it, scale=False)
-
-    return owner, device_id, device_type, grid
-
-
-#
-# Decode event: universe::player_pickup_device_occurred
-#
-def decode_player_pickup_device_occurred_event (event: Event) -> Tuple [int, Vec2]:
-    it = iter(event.data)
-
-    # @event
-    # func player_pickup_device_occurred (
-    #         owner : felt,
-    #         grid : Vec2
-    #     ):
-    # end
-
-    event_counter = _felt_from_iter(it, scale=False)
-    owner = _felt_from_iter (it, scale=False, signed=False)
-    grid  = Vec2.from_iter  (it, scale=False)
-
-    return owner, grid
-
-
-#
 # Decode event: universe::terminate_universe_occurred
 #
 def decode_terminate_universe_occurred_event (event: Event) -> Tuple [int, int, int, int]:
@@ -267,6 +169,49 @@ def decode_terminate_universe_occurred_event (event: Event) -> Tuple [int, int, 
     bool_universe_escape_condition_met = _felt_from_iter (it, scale=False)
 
     return bool_universe_terminable, destruction_by_which_sun, bool_universe_max_age_reached, bool_universe_escape_condition_met
+
+#
+# Decode event: universe::player_deploy_device_occurred
+#
+def decode_player_deploy_device_occurred_event (event: Event) -> Tuple [int, int, Vec2]:
+    it = iter(event.data)
+
+    # @event
+    # func player_deploy_device_occurred (
+    #         owner : felt,
+    #         device_id : felt,
+    #         grid : Vec2
+    #     ):
+    # end
+
+    event_counter = _felt_from_iter(it, scale=False)
+    owner         = _felt_from_iter (it, scale=False, signed=False)
+    device_id     = _felt_from_iter (it, scale=False, signed=False)
+    grid          = Vec2.from_iter  (it, scale=False)
+
+    return owner, device_id, grid
+
+#
+# Decode event: universe::player_pickup_device_occurred
+#
+def decode_player_pickup_device_occurred_event (event: Event) -> Tuple [int, int, Vec2]:
+    it = iter(event.data)
+
+    # @event
+    # func player_pickup_device_occurred (
+    #         event_counter : felt,
+    #         owner : felt,
+    #         device_id : felt,
+    #         grid : Vec2
+    #     ):
+    # end
+
+    event_counter = _felt_from_iter (it, scale=False)
+    owner         = _felt_from_iter (it, scale=False, signed=False)
+    device_id     = _felt_from_iter (it, scale=False, signed=False)
+    grid          = Vec2.from_iter  (it, scale=False)
+
+    return owner, device_id, grid
 
 #
 # Decode event: universe::player_deploy_utx_occurred
@@ -393,11 +338,177 @@ def decode_energy_update_at_device_occurred_event (event: Event) -> Tuple [int, 
     # end
 
     event_counter = _felt_from_iter(it, scale=False)
-    device_id    = _felt_from_iter (it, scale=False, signed=False)
-    new_quantity = _felt_from_iter (it, scale=False)
+    device_id     = _felt_from_iter (it, scale=False, signed=False)
+    new_quantity  = _felt_from_iter (it, scale=False)
 
     return device_id, new_quantity
 
+#
+# Decode event: universe::impulse_applied_occurred
+#
+def decode_impulse_applied_occurred_event (event: Event) -> Tuple [Vec2]:
+    it = iter (event.data)
+
+    # @event
+    # func impulse_applied_occurred (
+    #     impulse : Vec2
+    # ):
+    # end
+
+    impulse = Vec2.from_iter (it, scale=True)
+
+    return impulse
+
+#
+# Decode event: universe::player_transfer_undeployed_fungible_device_occurred
+#
+def decode_player_transfer_undeployed_fungible_device_occurred_event (event: Event) -> Tuple [int, int, int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func player_transfer_undeployed_fungible_device_occurred (
+    #         event_counter : felt,
+    #         src : felt,
+    #         dst : felt,
+    #         device_type : felt,
+    #         device_amount : felt
+    #     ):
+    # end
+
+    event_counter = _felt_from_iter (it, scale=False)
+    src_account   = _felt_from_iter (it, scale=False, signed=False)
+    dst_account   = _felt_from_iter (it, scale=False, signed=False)
+    device_type   = _felt_from_iter (it, scale=False)
+    device_amount = _felt_from_iter (it, scale=False)
+
+    return src_account, dst_account, device_type, device_amount
+
+#
+# Decode event: universe::player_transfer_undeployed_nonfungible_device_occurred
+#
+def decode_player_transfer_undeployed_nonfungible_device_occurred_event (event: Event) -> Tuple [int, int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func player_transfer_undeployed_nonfungible_device_occurred (
+    #         event_counter : felt,
+    #         src : felt,
+    #         dst : felt,
+    #         device_id : felt
+    #     ):
+    # end
+
+    event_counter = _felt_from_iter (it, scale=False)
+    src_account   = _felt_from_iter (it, scale=False, signed=False)
+    dst_account   = _felt_from_iter (it, scale=False, signed=False)
+    device_id     = _felt_from_iter (it, scale=False, signed=False)
+
+    return src_account, dst_account, device_id
+
+#
+# Decode event: universe::player_upsf_build_fungible_device_occurred
+#
+def decode_player_upsf_build_fungible_device_occurred_event (event: Event) -> Tuple [int, Vec2, int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func player_upsf_build_fungible_device_occurred (
+    #         event_counter : felt,
+    #         owner : felt,
+    #         grid : Vec2,
+    #         device_type : felt,
+    #         device_count : felt
+    #     ):
+    # end
+
+    event_counter = _felt_from_iter (it, scale=False)
+    owner         = _felt_from_iter (it, scale=False, signed=False)
+    grid          = Vec2.from_iter  (it, scale=False)
+    device_type   = _felt_from_iter (it, scale=False)
+    device_count  = _felt_from_iter (it, scale=False)
+
+    return owner, grid, device_type, device_count
+
+#
+# Decode event: universe::create_new_nonfungible_device_occurred
+#
+def decode_create_new_nonfungible_device_occurred_event (event: Event) -> Tuple [int, int, int]:
+    it = iter (event.data)
+
+    # @event
+    # func create_new_nonfungible_device_occurred (
+    #         event_counter : felt,
+    #         owner : felt,
+    #         type : felt,
+    #         id : felt
+    #     ):
+    # end
+
+    event_counter = _felt_from_iter (it, scale=False)
+    owner         = _felt_from_iter (it, scale=False, signed=False)
+    device_type   = _felt_from_iter (it, scale=False)
+    device_id     = _felt_from_iter (it, scale=False, signed=False)
+
+    return owner, device_type, device_id
+
+
+##############
+# Lobby events
+##############
+
+#
+# Decode event: lobby::universe_activation_occurred
+#
+def decode_universe_activation_occurred_event (event: Event) -> Tuple [int, int, int, int, list]:
+
+    # @event
+    # func universe_activation_occurred (
+    #     event_counter      : felt,
+    #     universe_index     : felt,
+    #     universe_address   : felt,
+    #     arr_player_adr_len : felt,
+    #     arr_player_adr     : felt*
+    # ):
+    # end
+
+    it = iter (event.data)
+
+    event_counter      = _felt_from_iter (it, scale=False)
+    universe_idx       = _felt_from_iter (it, scale=False)
+    universe_adr       = _felt_from_iter (it, scale=False, signed=False)
+    arr_player_adr_len = _felt_from_iter (it, scale=False)
+    arr_player_adr     = [
+        _felt_from_iter (it, scale=False, signed=False) for _ in range (arr_player_adr_len)
+    ]
+
+    return event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr
+
+#
+# Decode event: lobby::universe_deactivation_occurred
+#
+def decode_universe_deactivation_occurred_event (event: Event) -> Tuple [int, int, int, int, list]:
+
+    # @event
+    # func universe_deactivation_occurred (
+    #     event_counter      : felt,
+    #     universe_index     : felt,
+    #     universe_address   : felt,
+    #     arr_player_adr_len : felt,
+    #     arr_player_adr     : felt*
+    # ):
+    # end
+
+    it = iter (event.data)
+
+    event_counter      = _felt_from_iter (it, scale=False)
+    universe_idx       = _felt_from_iter (it, scale=False)
+    universe_adr       = _felt_from_iter (it, scale=False, signed=False)
+    arr_player_adr_len = _felt_from_iter (it, scale=False)
+    arr_player_adr     = [
+        _felt_from_iter (it, scale=False, signed=False) for _ in range (arr_player_adr_len)
+    ]
+
+    return event_counter, universe_idx, universe_adr, arr_player_adr_len, arr_player_adr
 
 #
 # Decode event: lobby::ask_to_queue_occurred
@@ -418,7 +529,6 @@ def decode_ask_to_queue_occurred_event (event: Event) -> Tuple [int, int]:
 
     return account, queue_idx
 
-
 #
 # Decode event: lobby::give_invitation_occurred
 #
@@ -436,42 +546,3 @@ def decode_give_invitation_occurred_event (event: Event) -> Tuple [int, int]:
     account = _felt_from_iter(it, scale=False, signed=False)
 
     return account
-
-
-#
-# Decode event: universe::impulse_applied_occurred
-#
-def decode_impulse_applied_occurred_event (event: Event) -> Tuple [Vec2]:
-    it = iter (event.data)
-
-    # @event
-    # func impulse_applied_occurred (
-    #     impulse : Vec2
-    # ):
-    # end
-
-    impulse = Vec2.from_iter (it, scale=True)
-
-    return impulse
-
-#
-# Decode event: universe::player_transfer_undeployed_device_occurred
-#
-def decode_player_transfer_undeployed_device_occurred_event (event: Event) -> Tuple [int, int, int, int]:
-    it = iter (event.data)
-
-    # @event
-    # func player_transfer_undeployed_device_occurred (
-    #         src : felt,
-    #         dst : felt,
-    #         device_type : felt,
-    #         device_amount : felt
-    #     ):
-    # end
-
-    src_account   = _felt_from_iter (it, scale=False, signed=False)
-    dst_account   = _felt_from_iter (it, scale=False, signed=False)
-    device_type   = _felt_from_iter (it, scale=False)
-    device_amount = _felt_from_iter (it, scale=False)
-
-    return src_account, dst_account, device_type, device_amount
