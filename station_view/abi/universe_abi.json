@@ -90,23 +90,33 @@
     {
         "members": [
             {
-                "name": "grid",
+                "name": "owner",
                 "offset": 0,
-                "type": "Vec2"
+                "type": "felt"
             },
             {
                 "name": "type",
-                "offset": 2,
+                "offset": 1,
                 "type": "felt"
             },
             {
                 "name": "id",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "is_deployed",
                 "offset": 3,
                 "type": "felt"
+            },
+            {
+                "name": "grid",
+                "offset": 4,
+                "type": "Vec2"
             }
         ],
-        "name": "DeviceDeployedEmapEntry",
-        "size": 4,
+        "name": "DeviceEmapEntry",
+        "size": 6,
         "type": "struct"
     },
     {
@@ -379,7 +389,7 @@
                 "type": "felt"
             }
         ],
-        "name": "device_undeployed_ledger_read",
+        "name": "fungible_device_undeployed_ledger_read",
         "outputs": [
             {
                 "name": "amount",
@@ -391,7 +401,7 @@
     },
     {
         "inputs": [],
-        "name": "device_deployed_emap_size_read",
+        "name": "device_emap_size_read",
         "outputs": [
             {
                 "name": "size",
@@ -408,11 +418,11 @@
                 "type": "felt"
             }
         ],
-        "name": "device_deployed_emap_read",
+        "name": "device_emap_read",
         "outputs": [
             {
                 "name": "emap_entry",
-                "type": "DeviceDeployedEmapEntry"
+                "type": "DeviceEmapEntry"
             }
         ],
         "stateMutability": "view",
@@ -425,7 +435,7 @@
                 "type": "felt"
             }
         ],
-        "name": "device_deployed_id_to_emap_index_read",
+        "name": "device_id_to_emap_index_read",
         "outputs": [
             {
                 "name": "emap_index",
@@ -442,7 +452,7 @@
                 "type": "felt"
             }
         ],
-        "name": "harvesters_deployed_id_to_resource_balance_read",
+        "name": "harvesters_id_to_resource_balance_read",
         "outputs": [
             {
                 "name": "balance",
@@ -459,7 +469,7 @@
                 "type": "felt"
             }
         ],
-        "name": "transformers_deployed_id_to_resource_balances_read",
+        "name": "transformers_id_to_resource_balances_read",
         "outputs": [
             {
                 "name": "balances",
@@ -480,7 +490,7 @@
                 "type": "felt"
             }
         ],
-        "name": "opsf_deployed_id_to_resource_balances_read",
+        "name": "opsf_id_to_resource_balances_read",
         "outputs": [
             {
                 "name": "balance",
@@ -497,7 +507,7 @@
                 "type": "felt"
             }
         ],
-        "name": "device_deployed_id_to_energy_balance_read",
+        "name": "device_id_to_energy_balance_read",
         "outputs": [
             {
                 "name": "energy",
@@ -700,6 +710,29 @@
                 "type": "felt"
             },
             {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "create_new_nonfungible_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "device_id",
                 "type": "felt"
             },
@@ -784,29 +817,6 @@
                 "type": "felt"
             },
             {
-                "name": "to",
-                "type": "felt"
-            },
-            {
-                "name": "type",
-                "type": "felt"
-            },
-            {
-                "name": "amount",
-                "type": "felt"
-            }
-        ],
-        "keys": [],
-        "name": "give_undeployed_device_occurred",
-        "type": "event"
-    },
-    {
-        "data": [
-            {
-                "name": "event_counter",
-                "type": "felt"
-            },
-            {
                 "name": "civ_idx",
                 "type": "felt"
             }
@@ -822,15 +832,34 @@
                 "type": "felt"
             },
             {
+                "name": "to",
+                "type": "felt"
+            },
+            {
+                "name": "type",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "give_undeployed_fungible_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
                 "name": "owner",
                 "type": "felt"
             },
             {
                 "name": "device_id",
-                "type": "felt"
-            },
-            {
-                "name": "type",
                 "type": "felt"
             },
             {
@@ -850,6 +879,10 @@
             },
             {
                 "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
                 "type": "felt"
             },
             {
@@ -917,6 +950,83 @@
         ],
         "keys": [],
         "name": "player_pickup_utx_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "owner",
+                "type": "felt"
+            },
+            {
+                "name": "grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "device_type",
+                "type": "felt"
+            },
+            {
+                "name": "device_count",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "player_upsf_build_fungible_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "src",
+                "type": "felt"
+            },
+            {
+                "name": "dst",
+                "type": "felt"
+            },
+            {
+                "name": "device_type",
+                "type": "felt"
+            },
+            {
+                "name": "device_amount",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "player_transfer_undeployed_fungible_device_occurred",
+        "type": "event"
+    },
+    {
+        "data": [
+            {
+                "name": "event_counter",
+                "type": "felt"
+            },
+            {
+                "name": "src",
+                "type": "felt"
+            },
+            {
+                "name": "dst",
+                "type": "felt"
+            },
+            {
+                "name": "device_id",
+                "type": "felt"
+            }
+        ],
+        "keys": [],
+        "name": "player_transfer_undeployed_nonfungible_device_occurred",
         "type": "event"
     },
     {
@@ -1032,7 +1142,7 @@
     {
         "inputs": [
             {
-                "name": "type",
+                "name": "device_id",
                 "type": "felt"
             },
             {
@@ -1040,7 +1150,7 @@
                 "type": "Vec2"
             }
         ],
-        "name": "player_deploy_device_by_grid",
+        "name": "player_deploy_device",
         "outputs": [],
         "type": "function"
     },
@@ -1108,7 +1218,26 @@
                 "type": "felt"
             }
         ],
-        "name": "player_opsf_build_device",
+        "name": "player_upsf_build_fungible_device",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "grid",
+                "type": "Vec2"
+            },
+            {
+                "name": "device_type",
+                "type": "felt"
+            },
+            {
+                "name": "device_count",
+                "type": "felt"
+            }
+        ],
+        "name": "player_upsf_build_nonfungible_device",
         "outputs": [],
         "type": "function"
     },
@@ -1134,132 +1263,32 @@
                 "type": "felt"
             },
             {
-                "name": "to",
+                "name": "to_player_idx",
                 "type": "felt"
             }
         ],
-        "name": "player_transfer_undeployed_device",
+        "name": "player_transfer_undeployed_fungible_device",
         "outputs": [],
         "type": "function"
     },
     {
         "inputs": [
             {
-                "name": "type",
+                "name": "device_id",
                 "type": "felt"
             },
             {
-                "name": "grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "grid_y",
+                "name": "to_player_idx",
                 "type": "felt"
             }
         ],
-        "name": "flat_device_deploy",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "grid_y",
-                "type": "felt"
-            }
-        ],
-        "name": "flat_device_pickup_by_grid",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "utx_device_type",
-                "type": "felt"
-            },
-            {
-                "name": "src_device_grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "src_device_grid_y",
-                "type": "felt"
-            },
-            {
-                "name": "dst_device_grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "dst_device_grid_y",
-                "type": "felt"
-            },
-            {
-                "name": "locs_x_len",
-                "type": "felt"
-            },
-            {
-                "name": "locs_x",
-                "type": "felt*"
-            },
-            {
-                "name": "locs_y_len",
-                "type": "felt"
-            },
-            {
-                "name": "locs_y",
-                "type": "felt*"
-            }
-        ],
-        "name": "flat_utx_deploy",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "grid_y",
-                "type": "felt"
-            }
-        ],
-        "name": "flat_utx_pickup_by_grid",
-        "outputs": [],
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
-                "name": "grid_x",
-                "type": "felt"
-            },
-            {
-                "name": "grid_y",
-                "type": "felt"
-            },
-            {
-                "name": "device_type",
-                "type": "felt"
-            },
-            {
-                "name": "device_count",
-                "type": "felt"
-            }
-        ],
-        "name": "flat_opsf_build_device",
+        "name": "player_transfer_undeployed_nonfungible_device",
         "outputs": [],
         "type": "function"
     },
     {
         "inputs": [],
-        "name": "anyone_view_device_deployed_emap",
+        "name": "anyone_view_device_emap",
         "outputs": [
             {
                 "name": "emap_len",
@@ -1267,7 +1296,7 @@
             },
             {
                 "name": "emap",
-                "type": "DeviceDeployedEmapEntry*"
+                "type": "DeviceEmapEntry*"
             }
         ],
         "stateMutability": "view",
