@@ -27,10 +27,8 @@ apibara indexer list
 Start the indexer by running the following command:
 
 ```sh
-poetry run isaac-api isaac-alpha
+poetry run isaac start
 ```
-
-Where `isaac-alpha` is the indexer id.
 
 After the indexer started, you can find it in the list of registered indexers.
 
@@ -41,10 +39,10 @@ apibara indexer list
 Notice that you can stop the indexer at any time and restart it later, the
 indexer will automatically start indexing from where it left off.
 
-You can restart indexing from scratch by passing the `--reset` flag.
+You can restart indexing from scratch by passing the `--restart` flag.
 
 ```sh
-poetry run isaac-api isaac-alpha --reset
+poetry run isaac start --restart
 ```
 
 You can check that the indexer is storing data by connecting directly to the
