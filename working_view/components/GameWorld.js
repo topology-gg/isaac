@@ -429,9 +429,7 @@ export default function GameWorld(props) {
             invokePlayerDeployDeviceRef.current ({
                 args: [_deviceBeingPlacedRef.current.id, { x: x_grid, y: y_grid }]
             })
-            // setDeviceBeingPlaced((prev) => ({ ...prev, x: x_grid, y: y_grid }))
-            setDeviceBeingPlaced(() => null)
-            // TODO: set ghost placement
+            setDeviceBeingPlaced((prev) => ({ ...prev, x: x_grid, y: y_grid }))
         } else if (bool_in_range && bool_not_empty) {
             _selectStateRef.current = 'popup'
             setModalVisibility (true)
@@ -1662,7 +1660,7 @@ export default function GameWorld(props) {
         // Add the device to the list of pending devices
         setPendingDevices ((pendingDevices) => {
             if (pendingDevices.find(d => d.txid === txid)) {
-                console.warn('Cannot add device with the same txid')
+                console.log('Cannot add device with the same txid')
                 return pendingDevices
             }
             return [...pendingDevices, device]
@@ -1715,7 +1713,6 @@ export default function GameWorld(props) {
     }
 
     function handleDeployDevice(device) {
-        // console.log(device)
         hidePopup()
         // After hiding the popup, the state needs to trigger with a
         // bit of delay in order for the device placement assist to be
@@ -1726,11 +1723,13 @@ export default function GameWorld(props) {
         }, 200)
     }
 
-    // useEffect(() => {
-    //     if (deployDeviceTxid) {
-    //         handleDeployStarted({ ..._deviceBeingPlacedRef.current, txid: deployDeviceTxid })
-    //     }
-    // }, [deployDeviceTxid])
+    useEffect(() => {
+        const deviceBeingPlaced = _deviceBeingPlacedRef.current
+        if (deployDeviceTxid && deviceBeingPlaced) {
+            handleDeployStarted({ ...deviceBeingPlaced, typ: deviceBeingPlaced.type, txid: deployDeviceTxid })
+            setDeviceBeingPlaced(() => null)
+        }
+    }, [deployDeviceTxid])
 
     // Set the display style of the player's own devices (based on highlight mode)
     useEffect(() => {
@@ -1799,7 +1798,7 @@ export default function GameWorld(props) {
             />
 
 
-            {deployDeviceError ? <FloatingMessage message={deployDeviceError} /> : deviceBeingPlaced && <FloatingMessage message={<>Choose the location you want deploy your device, then press <kbd>LMB</kbd> to initiate the deploy.</>} />}
+            {deviceBeingPlaced && <FloatingMessage message={<>Choose the location you want deploy your device, then press <kbd>LMB</kbd> to initiate the deploy.</>} />}
 
             <HUD lines={hudLines} universeActive={universeActive}/>
 
