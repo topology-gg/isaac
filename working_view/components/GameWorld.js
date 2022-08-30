@@ -234,10 +234,13 @@ export default function GameWorld(props) {
     // Used for invoking contract directly from the game world
     const { contract } = useUniverseContract ()
 
-    const { data, loading, error, reset, invoke: invokePlayerDeployDevice } = useStarknetInvoke ({
+    const { data: deployDeviceTxid, loading, error: deployDeviceError, reset, invoke: invokePlayerDeployDevice } = useStarknetInvoke ({
         contract,
         method: 'player_deploy_device'
     })
+
+
+    const invokePlayerDeployDeviceRef = useRef(invokePlayerDeployDevice)
 
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
 
@@ -420,12 +423,10 @@ export default function GameWorld(props) {
         if (_deviceBeingPlacedRef.current) {
             // TODO: check if device placement is valid
             console.log("invoke", ({ args: [_deviceBeingPlacedRef.current.id, { x: x_grid, y: y_grid }] }))
-            invokePlayerDeployDevice (
-                { args: [
-                    _deviceBeingPlacedRef.current.id,
-                    { x: x_grid, y: y_grid }
-                ] }
-            )
+            invokePlayerDeployDeviceRef.current ({
+                args: [_deviceBeingPlacedRef.current.id, { x: x_grid, y: y_grid }]
+            })
+            // setDeviceBeingPlaced((prev) => ({ ...prev, x: x_grid, y: y_grid }))
             setDeviceBeingPlaced(() => null)
             // TODO: set ghost placement
         } else if (bool_in_range && bool_not_empty) {
@@ -1722,6 +1723,12 @@ export default function GameWorld(props) {
         }, 200)
     }
 
+    // useEffect(() => {
+    //     if (deployDeviceTxid) {
+    //         handleDeployStarted({ ..._deviceBeingPlacedRef.current, txid: deployDeviceTxid })
+    //     }
+    // }, [deployDeviceTxid])
+
     // Set the display style of the player's own devices (based on highlight mode)
     useEffect(() => {
         if (!db_deployed_devices || !account || !_deviceDisplayRef.current) return;
@@ -1788,9 +1795,8 @@ export default function GameWorld(props) {
                 onPendingPickup = {handlePendingPickup}
             />
 
-            {deviceBeingPlaced && <FloatingMessage message={<>Choose the location you want deploy your device, then press <kbd>LMB</kbd> to initiate the deploy.</>} />}
 
-            {error ? <h3>{error}</h3> : ''}
+            {deployDeviceError ? <FloatingMessage message={deployDeviceError} /> : deviceBeingPlaced && <FloatingMessage message={<>Choose the location you want deploy your device, then press <kbd>LMB</kbd> to initiate the deploy.</>} />}
 
             <HUD lines={hudLines} universeActive={universeActive}/>
 
