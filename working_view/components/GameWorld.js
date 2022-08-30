@@ -239,8 +239,11 @@ export default function GameWorld(props) {
         method: 'player_deploy_device'
     })
 
-
+    // Use a ref to hold the reference to the current invoke function
+    // So it can be used in event callbacks, etc.
     const invokePlayerDeployDeviceRef = useRef(invokePlayerDeployDevice)
+    // Always set the current ref when the function changes (contract is loaded, etc)
+    invokePlayerDeployDeviceRef.current = invokePlayerDeployDevice
 
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
 
