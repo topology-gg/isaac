@@ -65,8 +65,6 @@ function Home() {
             <div className="right-child-container" style={{display: universeActive?'flex':'none'}}>
 
                 <div className="right-child-title">
-                    <span>.</span>
-
                     <h3 style={{fontFamily:'Anoxic',fontSize:'40px',marginTop:'10px',marginBottom:'20px'}}>
                         ISAAC
                     </h3>
@@ -74,7 +72,6 @@ function Home() {
                 </div>
 
                 <div className="right-child-middle" >
-                    <span>.</span>
                     <h4>Controls</h4>
                     <p>Choose display mode: press <kbd>1</kbd> to <kbd>6</kbd></p>
                     <p>Transfer device: press <kbd>7</kbd></p>
@@ -83,16 +80,13 @@ function Home() {
                     <p>Zoom: mouse wheel / press <kbd>c</kbd> to reset zoom</p>
                     <p>Hold <kbd>q</kbd> to highlight your own devices</p>
                     <p>Press <kbd>i</kbd> to open Inventory</p>
-                    <span>.</span>
                 </div>
 
                 <h4 style={{paddingBottom:'1em'}}>Universe Stats</h4>
 
                 <div className="right-child-bottom">
                     <GameStatsCiv />
-                    <span>.</span>
                     <GameStatsPlayers universeActive={universeActive} />
-                    <span>.</span>
                     {/* <GameStatsDevices universeActive={universeActive} /> */}
                 </div>
 

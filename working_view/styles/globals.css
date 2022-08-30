@@ -107,20 +107,94 @@ kbd {
    opacity: 0.4;
 }
 
+button[disabled] {
+    background-color: #d6d6d6;
+    border-color: #c0c0c0;
+}
+
+.button-active {
+    background-color: #FFFE71;
+}
+
+.inventory-button {
+    border: 1px solid #222222;
+    box-sizing: border-box;
+    padding: 2px 10px;
+    font-size: 10px;
+    margin-bottom: 5px;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.inventory-mid-view {
+    padding: 20px;
+    margin-left: 20px;
+    border-radius: 10px;
+    background-color: rgba(250, 249, 245, 0.8);
+    height: 90%;
+    width: 300px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.inventory-right-view {
+    padding: 20px;
+    margin-left: 20px;
+    border-radius: 10px;
+    background-color: rgba(250, 249, 245, 0.8);
+    height: 90%;
+    width: 300px;
+    flex: 1;
+}
+
+.inventory-devices-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.inventory-device-button {
+    border: 1px solid #222222;
+    display: inline-block;
+    white-space: normal;
+}
+
+.inventory-device-button:hover {
+    /* background-color:#CCCCCC; */
+    background-color:#D0F0C0;
+    transition: 0.1s;
+}
+
+.inventory-device-type {
+    flex: 1;
+}
+
+.inventory-device-count {
+    font-family: monospace;
+    padding: 0 4px;
+    background-color: #00000013;
+    line-height: normal;
+    border-radius: 2px;
+}
+
+.inventory-device-id {
+    font-size: 10px;
+}
+
 .action-button:hover {
     /* background-color:#CCCCCC; */
     background-color:#FFFE71;
     transition: 0.1s;
 }
 
-.device-button:hover {
-    /* background-color:#CCCCCC; */
-    background-color:#D0F0C0;
-    transition: 0.1s;
-}
-
 .mother-container {
     display: flex;
+    height: 100vh;
     background-color: #444444;
 }
 
@@ -138,7 +212,7 @@ kbd {
 }
 
 .right-child-title {
-    margin: 0;
+    margin: 16px 0;
 }
 
 .right-child-container {
@@ -146,9 +220,13 @@ kbd {
     flex-direction: column;
 }
 
+.right-child-middle {
+    margin-bottom: 16px;
+}
+
 .right-child-bottom {
     overflow-y: auto;
-    height: 17em;
+    flex: 1;
     margin: 0;
 }
 
@@ -186,10 +264,6 @@ tr.nonfungible_device td {
 tr.nonfungible_device:hover td {
     background-color: '#555555';
     transition: 2s;
-}
-
-span {
-    color: transparent;
 }
 
 h4 {
@@ -288,4 +362,5 @@ https://stackoverflow.com/questions/8200204/fit-background-image-to-div */
     -moz-user-select: none;
     user-select: none;
     outline: none;
+    position: relative;
 }

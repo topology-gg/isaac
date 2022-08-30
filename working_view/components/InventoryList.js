@@ -23,28 +23,7 @@ import { useUniverseContract } from "./UniverseContract";
 import DEVICE_DIM_MAP from "./ConstantDeviceDimMap";
 import { DEVICE_COLOR_MAP } from "./ConstantDeviceColors";
 
-const TYPE_BUTTON_STYLE = {border: '1px solid #222222', padding:'0px 20px', fontSize:'10px',height:'24px',lineHeight:'24px',marginBottom:'5px'}
-const DEVICE_BUTTON_STYLE = {border: '1px solid #222222', marginRight:'15px', marginBottom:'15px', display:'inline-block'}
 const nonfungible_types = [0,1,2,3,4,5,6,7,8,9,10,11,14,15]
-
-const MID_VIEW_STYLE = {
-    padding: '20px',
-    marginLeft: '20px',
-    borderRadius:'10px',
-    backgroundColor:"#EEEEEE",
-    height:'90%',
-    width:'300px',
-    overflowY: 'auto'
-}
-
-const RIGHT_VIEW_STYLE = {
-    padding: '20px',
-    marginLeft: '20px',
-    borderRadius:'10px',
-    backgroundColor:"#EEEEEE",
-    height:'90%',
-    width:'300px'
-}
 
 export function InventoryList ({ onDeployDevice }) {
 
@@ -114,17 +93,18 @@ export function InventoryList ({ onDeployDevice }) {
                             nonfungible_types.map ((ele, idx) =>
                                 <button
                                     key = {`type-button-${idx}`}
-                                    className = 'action-button'
-                                    style = {{...TYPE_BUTTON_STYLE, backgroundColor: ele==viewingType?'#FFFE71':'#EFEFEF'}}
+                                    className = {`inventory-button ${ele==viewingType ? 'button-active' : ''} ${nonfungible_counts[ele] ? 'action-button' : 'disabled-button'}`}
+                                    disabled = { !nonfungible_counts[ele] }
                                     onClick = { () => {setViewingType(ele)} }
                                 >
-                                    {DEVICE_TYPE_FULL_NAME_MAP[ele]} ({nonfungible_counts[ele]})
+                                    <span className="inventory-device-type">{DEVICE_TYPE_FULL_NAME_MAP[ele]}</span>
+                                    <span className="inventory-device-count">{nonfungible_counts[ele]}</span>
                                 </button>
                             )
                         }
                         <h5 style={{marginTop:'20px'}}>Fungible</h5>
-                        <p style={{margin:'0'}}>Belt: {belt_balance}</p>
-                        <p style={{margin:'0'}}>Wire: {wire_balance}</p>
+                        <p style={{margin:'0'}}>Belt x {belt_balance}</p>
+                        <p style={{margin:'0'}}>Wire x {wire_balance}</p>
                     </div>
                 </div>
             )
@@ -133,7 +113,7 @@ export function InventoryList ({ onDeployDevice }) {
             // Create mid view
             //
             setMidView (
-                <div>
+                <div className="inventory-devices-list">
                     {
                         db_player_nonfungible_devices.player_nonfungible_devices.filter (
                             ele =>(ele.is_deployed == false) && (ele.type == viewingType)
@@ -144,11 +124,11 @@ export function InventoryList ({ onDeployDevice }) {
                             // </tr>
                             <button
                                 key = {`nonfungible_device-button-${idx}`}
-                                className = 'device-button'
-                                style = {DEVICE_BUTTON_STYLE}
+                                className = 'inventory-device-button'
                                 onClick = { () => {setViewingId(ele.id)} }
                             >
-                                { abbrevDecString(ele.id) }
+                                <div>{ DEVICE_TYPE_FULL_NAME_MAP[ele.type] }</div>
+                                <div className="inventory-device-id">{ abbrevDecString(ele.id) }</div>
                             </button>
                         )
                     }
@@ -218,8 +198,7 @@ export function InventoryList ({ onDeployDevice }) {
                     <div>
                         {deviceInfo}
                         <button
-                            className="action-button"
-                            style = {DEVICE_BUTTON_STYLE}
+                            className="action-button inventory-device-button"
                             onClick = { () => handleDeployDevice(device) }
                         >Deploy Device</button>
                     </div>
@@ -238,11 +217,11 @@ export function InventoryList ({ onDeployDevice }) {
         <div style={{display:'flex',flexDirection:'row',width:'100%',height:'85%'}}>
             {leftView}
 
-            <div style={MID_VIEW_STYLE}>
+            <div className="inventory-mid-view">
                 {midView}
             </div>
 
-            <div style={RIGHT_VIEW_STYLE}>
+            <div className="inventory-right-view">
                 {rightView}
             </div>
 

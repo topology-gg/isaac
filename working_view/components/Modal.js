@@ -282,7 +282,7 @@ export function Modal (props) {
             {display_left_top}
             {display_left_bottom}
 
-            <span>.</span>
+            <div>&nbsp;</div>
         </div>
 
     const non_inventory_right_view =
@@ -302,7 +302,7 @@ export function Modal (props) {
 
             <InventoryList onDeployDevice={props.onDeployDevice} />
 
-            <span>.</span>
+            <div>&nbsp;</div>
         </div>
 
     const view = info.mode == 'inventory' ? inventory_view : [non_inventory_left_view, non_inventory_right_view]
