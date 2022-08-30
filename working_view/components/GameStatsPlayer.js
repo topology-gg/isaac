@@ -2,6 +2,7 @@ import React from 'react'
 import { useStarknet, useStarknetCall } from '@starknet-react/core'
 import { useSNSContract } from "./SNSContract";
 import { toBN } from 'starknet/dist/utils/number';
+import { abbrevHexString } from '../lib/helpers/feltAbbreviator';
 
 function feltLiteralToString (felt) {
 
@@ -38,10 +39,6 @@ function parseCallResult (res) {
 
 }
 
-function abbrevAccountString (accountString) {
-    return "0x" + accountString.slice(0,3) + "..." + accountString.slice(-4)
-}
-
 const GameStatsPlayer = ({ accountString }) => {
 
     const { account } = useStarknet()
@@ -57,7 +54,7 @@ const GameStatsPlayer = ({ accountString }) => {
 
     const [_exist, name] = data ? parseCallResult (data) : [null, null]
 
-    const displayAccountStr = name || abbrevAccountString(accountString)
+    const displayAccountStr = name || abbrevHexString(accountString)
 
     return (
         <>

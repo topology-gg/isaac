@@ -4,6 +4,7 @@ import styles from "../styles/Modal.module.css";
 import { DEVICE_TYPE_FULL_NAME_MAP } from './ConstantDeviceTypes'
 import { MANUFACTURING_REQUIREMENT } from './ConstantManufacturingRequirement'
 
+import { InventoryList } from "./InventoryList"
 import { DeployDeviceInterface } from './ActionDeployDevice'
 import { PickupDeviceInterface } from './ActionPickupDevice'
 import { PickupUtxInterface } from './ActionPickupUtx'
@@ -273,6 +274,39 @@ export function Modal (props) {
         fontSize: '1em'
     }
 
+    const non_inventory_left_view =
+        <div style={modal_left_child_style}>
+            <h3>{title}</h3>
+            <p style={{fontSize:"0.9em",margin:'0'}}>{grids}</p>
+
+            {display_left_top}
+            {display_left_bottom}
+
+            <span>.</span>
+        </div>
+
+    const non_inventory_right_view =
+            options.length > 0 ?
+            <div style={modal_right_child_style}>
+                <h3>Options:</h3>
+
+                {options_gated}
+
+            </div>
+                :
+            <></>
+
+    const inventory_view =
+        <div style={{width:'100%'}}>
+            <h3>{title}</h3>
+
+            <InventoryList onDeployDevice={props.onDeployDevice} />
+
+            <span>.</span>
+        </div>
+
+    const view = info.mode == 'inventory' ? inventory_view : [non_inventory_left_view, non_inventory_right_view]
+
     return (
         <div style={{display:'flex'}}>
             { props.show ?
@@ -282,29 +316,7 @@ export function Modal (props) {
                     <Image src={closeSvg} alt="close modal" />
                 </div>
 
-                <div style={modal_left_child_style}>
-                    <h3>{title}</h3>
-                    <p style={{fontSize:"0.9em",margin:'0'}}>{grids}</p>
-
-                    {display_left_top}
-                    {display_left_bottom}
-
-                    <span>.</span>
-                </div>
-
-                {
-                    options.length > 0 ?
-                    <div style={modal_right_child_style}>
-                        <h3>Options:</h3>
-
-                        {options_gated}
-
-                    </div>
-                     :
-                    <></>
-                }
-
-
+                {view}
             </div>
 
             : null }

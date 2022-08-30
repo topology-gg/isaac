@@ -113,6 +113,12 @@ kbd {
     transition: 0.1s;
 }
 
+.device-button:hover {
+    /* background-color:#CCCCCC; */
+    background-color:#D0F0C0;
+    transition: 0.1s;
+}
+
 .mother-container {
     display: flex;
     background-color: #444444;
@@ -172,6 +178,14 @@ table, th, td {
 
 tr.player_account td {
     height: 1em;
+}
+
+tr.nonfungible_device td {
+    height: 1em;
+}
+tr.nonfungible_device:hover td {
+    background-color: '#555555';
+    transition: 2s;
 }
 
 span {

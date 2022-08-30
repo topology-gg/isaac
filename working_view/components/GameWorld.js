@@ -9,25 +9,28 @@ import { DEVICE_COLOR_MAP } from './ConstantDeviceColors'
 
 import {
     useCivState,
-    usePlayerBalances,
+    useFungiblePlayerBalances,
     useDeployedDevices,
     useUtxSets,
 
-    useDeployedPgs,
-    useDeployedHarvesters,
-    useDeployedTransformers,
-    useDeployedUpsfs,
-    useDeployedNdpes,
+    usePgs,
+    useHarvesters,
+    useTransformers,
+    useUpsfs,
+    useNdpes,
 
-    useMacroStates
+    useMacroStates,
+    usePlayerFungibleBalances,
+    usePlayerNonfungibleDevices
 } from '../lib/api'
 
 import { Modal } from "./Modal"
 import HUD from "./HUD"
 
 import {
-    useStarknet
+    useStarknet, useStarknetInvoke
 } from '@starknet-react/core'
+import { useUniverseContract } from './UniverseContract'
 import { DEVICE_TYPE_FULL_NAME_MAP } from './ConstantDeviceTypes'
 import DEVICE_DIM_MAP from './ConstantDeviceDimMap'
 import {
@@ -45,7 +48,6 @@ import {
     HOVER_DEVICE_STROKE_WIDTH,
     STROKE_WIDTH_AXIS,
     VOLUME,
-    ANIM_UPDATE_INTERVAL_MS,
     FILL_CURSOR_SELECTED_GRID,
     GRID_ASSIST_TBOX,
     CANVAS_BG,
@@ -55,7 +57,7 @@ import deviceFromGridCoord from '../lib/deviceFromGridCoord'
 import drawPendingDevices from "../lib/helpers/drawPendingDevices";
 import drawPendingPickups from "../lib/helpers/drawPendingPickups";
 import {
-    createCursorGridRect, createCursorFaceRect, createCursorHoverDeviceRect
+    createCursorGridRect, createCursorFaceRect, createCursorHoverDeviceRect, createPlacementAssistRect
 } from './fabricObjects/assists';
 import createTriangle from "./fabricObjects/createTriangle";
 import parse_phi_to_degree from "../lib/helpers/parsePhiToDegree";
@@ -69,6 +71,8 @@ import { convert_screen_to_grid_x, convert_screen_to_grid_y } from "../lib/helpe
 import gridMappingFromData from "../lib/helpers/gridMappingFromData"
 import useUtxAnimation from "../lib/hooks/useUtxAnimation"
 import useDebouncedEffect from "../lib/hooks/useDebouncedEffect"
+import usePlacementAssist from "../lib/hooks/usePlacementAssist"
+import FloatingMessage from "./FloatingMessage"
 
 //
 // Note: reading requirement (translated to Apibara integration design)
@@ -129,16 +133,14 @@ export default function GameWorld(props) {
     // Data fetched from backend on Apibara
     //
     const { data: db_civ_state } = useCivState ()
-    const { data: db_player_balances } = usePlayerBalances ()
+    const { data: db_player_fungible_balances } = usePlayerFungibleBalances ()
     const { data: db_deployed_devices } = useDeployedDevices ()
     const { data: db_utx_sets } = useUtxSets ()
-
-    const { data: db_deployed_pgs } = useDeployedPgs ()
-    const { data: db_deployed_harvesters } = useDeployedHarvesters ()
-    const { data: db_deployed_transformers } = useDeployedTransformers ()
-    const { data: db_deployed_upsfs } = useDeployedUpsfs ()
-    const { data: db_deployed_ndpes } = useDeployedNdpes ()
-
+    const { data: db_pgs } = usePgs ()
+    const { data: db_harvesters } = useHarvesters ()
+    const { data: db_transformers } = useTransformers ()
+    const { data: db_upsfs } = useUpsfs ()
+    const { data: db_ndpes } = useNdpes ()
     const { data: db_macro_states } = useMacroStates ()
 
     //
@@ -166,6 +168,7 @@ export default function GameWorld(props) {
 
     const _pendingDevicesRef = useRef([]); // Devices pending deployment
     const _pendingPickupsRef = useRef([]); // Devices pending pickup
+    const _deviceBeingPlacedRef = useRef(null); // Device being placed by user
 
     const _mouseStateRef = useRef('up'); // up => down => up
     const _selectStateRef = useRef('idle'); // idle => select => popup => idle
@@ -202,12 +205,16 @@ export default function GameWorld(props) {
 
     const [pendingDevices, _setPendingDevices] = useState([])
     const [pendingPickups, _setPendingPickups] = useState([])
+    const [deviceBeingPlaced, _setDeviceBeingPlaced] = useState(null)
+
+    // const [debugCounter, setDebugCounter] = useState(0)
 
     const {
         draw: drawUtxAnim,
         reset: resetUtxAnim,
         toggleVisible: toggleUtxAnimationVisible
     } = useUtxAnimation(db_utx_sets, hasDrawnState, _canvasRef)
+    usePlacementAssist(deviceBeingPlaced, MousePositionNorm, _canvasRef)
 
     const setPendingDevices = (setValueFn) => {
         _pendingDevicesRef.current = setValueFn(_pendingDevicesRef.current)
@@ -219,6 +226,25 @@ export default function GameWorld(props) {
         _setPendingPickups(setValueFn)
     }
 
+    const setDeviceBeingPlaced = (setValueFn) => {
+        _deviceBeingPlacedRef.current = setValueFn(_deviceBeingPlacedRef.current)
+        _setDeviceBeingPlaced(setValueFn)
+    }
+
+    // Used for invoking contract directly from the game world
+    const { contract } = useUniverseContract ()
+
+    const { data: deployDeviceTxid, loading, error: deployDeviceError, reset, invoke: invokePlayerDeployDevice } = useStarknetInvoke ({
+        contract,
+        method: 'player_deploy_device'
+    })
+
+    // Use a ref to hold the reference to the current invoke function
+    // So it can be used in event callbacks, etc.
+    const invokePlayerDeployDeviceRef = useRef(invokePlayerDeployDevice)
+    // Always set the current ref when the function changes (contract is loaded, etc)
+    invokePlayerDeployDeviceRef.current = invokePlayerDeployDevice
+
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
 
     //
@@ -229,16 +255,17 @@ export default function GameWorld(props) {
         //     return
         // }
         if (!_canvasRef.current) {
-            console.log ('canvas not created..')
+            console.log ('> canvas not created..')
             return
         }
 
-        if (!db_macro_states || !db_civ_state || !db_player_balances || !db_deployed_devices || !db_utx_sets || !db_deployed_pgs || !db_deployed_harvesters || !db_deployed_transformers || !db_deployed_upsfs || !db_deployed_ndpes) {
-            console.log ('db not fully loaded..')
+        if (!db_macro_states || !db_civ_state || !db_player_fungible_balances || !db_deployed_devices || !db_utx_sets || !db_pgs || !db_harvesters || !db_transformers || !db_upsfs || !db_ndpes) {
+            console.log ('> db not fully loaded..')
             return
         }
         else {
-            // console.log ('db fully loaded!')
+            console.log ('> db fully loaded!')
+
             // setHasLoadedDB (true)
             // console.log ('drawWorld()')
 
@@ -257,6 +284,8 @@ export default function GameWorld(props) {
             resetUtxAnim()
             updatePendingDevices(db_deployed_devices)
             updatePendingPickups(db_deployed_devices)
+            setDeviceBeingPlaced(() => null)
+            // _cursorGridRectRef.current = null
 
             imageLeftToBeDrawnRef.current = 6*5
             requestAnimationFrame(() => {
@@ -269,18 +298,18 @@ export default function GameWorld(props) {
             drawWorldUpToImages (_canvasRef.current)
             setHudVisible (true)
         }
-    }, [db_macro_states, db_civ_state, db_player_balances, db_deployed_devices, db_utx_sets, db_deployed_pgs, db_deployed_harvesters, db_deployed_transformers, db_deployed_upsfs, db_deployed_ndpes], 1000)
+    }, [db_macro_states, db_civ_state, db_player_fungible_balances, db_deployed_devices, db_utx_sets, db_pgs, db_harvesters, db_transformers, db_upsfs, db_ndpes], 1000);
 
     //
     // useEffect to check if the signed in account is in current civilization
     //
     useEffect (() => {
-        if (!db_player_balances) return
+        if (!db_player_fungible_balances) return
         if (!account) return
 
-        const player_balances = db_player_balances.player_balances
+        const player_fungible_balances = db_player_fungible_balances.player_fungible_balances
         var account_intstr_list = []
-        for (const entry of player_balances) {
+        for (const entry of player_fungible_balances) {
             account_intstr_list.push (entry['account'])
         }
 
@@ -290,7 +319,7 @@ export default function GameWorld(props) {
             console.log ('account is in this civilization')
             setAccountInCiv (true)
 
-            var entry = player_balances.filter(obj => {
+            var entry = player_fungible_balances.filter(obj => {
                 return obj['account'] === account_intstr
             })
             setAccountDeviceBalance (entry[0])
@@ -301,7 +330,7 @@ export default function GameWorld(props) {
             setAccountInCiv (false)
         }
 
-    }, [db_player_balances, account]);
+    }, [db_player_fungible_balances, account]);
 
 
     //
@@ -326,7 +355,7 @@ export default function GameWorld(props) {
         const bool_in_range = is_valid_coord (x_grid, y_grid)
         const bool_in_idle = (_selectStateRef.current === 'idle')
 
-        if (bool_in_idle && bool_in_range) {
+        if (bool_in_idle && bool_in_range && !_deviceBeingPlacedRef.current) {
             _selectStateRef.current = 'select'
             _selectedGridsRef.current.push ({x: x_grid, y: y_grid})
 
@@ -394,7 +423,16 @@ export default function GameWorld(props) {
         const bool_in_range = is_valid_coord (x_grid, y_grid)
         const bool_not_empty = (_selectedGridsRef.current.length !== 0)
 
-        if (bool_in_range && bool_not_empty) {
+        if (_deviceBeingPlacedRef.current) {
+            // TODO: check if device placement is valid
+            console.log("invoke", ({ args: [_deviceBeingPlacedRef.current.id, { x: x_grid, y: y_grid }] }))
+            invokePlayerDeployDeviceRef.current ({
+                args: [_deviceBeingPlacedRef.current.id, { x: x_grid, y: y_grid }]
+            })
+            // setDeviceBeingPlaced((prev) => ({ ...prev, x: x_grid, y: y_grid }))
+            setDeviceBeingPlaced(() => null)
+            // TODO: set ghost placement
+        } else if (bool_in_range && bool_not_empty) {
             _selectStateRef.current = 'popup'
             setModalVisibility (true)
             modalVisibilityRef.current = true
@@ -500,6 +538,11 @@ export default function GameWorld(props) {
                 hidePopup ()
             }
             return
+        }
+
+        if (ev.key === "Escape") {
+            // console.log("escape key pressed, resetting device placement")
+            setDeviceBeingPlaced(() => null)
         }
 
         if (ev.key === 'c') {
@@ -871,11 +914,11 @@ export default function GameWorld(props) {
         }
         else {
             setGridMapping (gridMappingFromData(
-                db_deployed_pgs,
-                db_deployed_harvesters,
-                db_deployed_transformers,
-                db_deployed_upsfs,
-                db_deployed_ndpes,
+                db_pgs,
+                db_harvesters,
+                db_transformers,
+                db_upsfs,
+                db_ndpes,
                 db_deployed_devices
             ))
             drawLandscape (canvi)
@@ -1330,6 +1373,7 @@ export default function GameWorld(props) {
         //
         // canvi.add(coordText)
         // _coordTextRef.current = coordText
+        // console.log("drawAssist")
 
         canvi.add (_cursorGridRectRef.current)
         canvi.add (_cursorFaceRectRef.current)
@@ -1670,6 +1714,24 @@ export default function GameWorld(props) {
         })
     }
 
+    function handleDeployDevice(device) {
+        // console.log(device)
+        hidePopup()
+        // After hiding the popup, the state needs to trigger with a
+        // bit of delay in order for the device placement assist to be
+        // rendered properly (fabric.js quirk?)
+        // Edit: still Not working properly...
+        setTimeout(() => {
+            setDeviceBeingPlaced(() => device)
+        }, 200)
+    }
+
+    // useEffect(() => {
+    //     if (deployDeviceTxid) {
+    //         handleDeployStarted({ ..._deviceBeingPlacedRef.current, txid: deployDeviceTxid })
+    //     }
+    // }, [deployDeviceTxid])
+
     // Set the display style of the player's own devices (based on highlight mode)
     useEffect(() => {
         if (!db_deployed_devices || !account || !_deviceDisplayRef.current) return;
@@ -1732,12 +1794,29 @@ export default function GameWorld(props) {
                 device_balance = {accountDeviceBalance}
                 pendingPickups = {pendingPickups}
                 onDeployStarted = {handleDeployStarted}
+                onDeployDevice = {handleDeployDevice}
                 onPendingPickup = {handlePendingPickup}
             />
+
+
+            {deployDeviceError ? <FloatingMessage message={deployDeviceError} /> : deviceBeingPlaced && <FloatingMessage message={<>Choose the location you want deploy your device, then press <kbd>LMB</kbd> to initiate the deploy.</>} />}
 
             <HUD lines={hudLines} universeActive={universeActive}/>
 
             <canvas id="c" />
+
+            {/* <button onClick={() => setDebugCounter((c) => c + 1)}>Trigger redraw</button>
+            <button
+                onClick={() =>
+                    setDeviceBeingPlaced((d) => ({
+                        type: 14,
+                        dimension: DEVICE_DIM_MAP.get(14),
+                        color: DEVICE_COLOR_MAP.get(14),
+                    }))
+                }
+            >
+                Place device
+            </button> */}
         </div>
     );
 }

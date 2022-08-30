@@ -57,3 +57,18 @@ export function createCursorHoverDeviceRect () {
         strokeWidth: HOVER_DEVICE_STROKE_WIDTH,
     });
 }
+
+export function createPlacementAssistRect () {
+    return new fabric.Rect({
+        height: GRID,
+        width: GRID,
+        left: PAD_X,
+        top: PAD_Y,
+        fill: '',
+        strokeWidth: 0,
+        selectable: false,
+        hoverCursor: 'default',
+        visible: true,
+        opacity: 0.5,
+    })
+}

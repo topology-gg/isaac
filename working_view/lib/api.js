@@ -6,8 +6,16 @@ export function useCivState () {
     return useSWR('/api/civ_state', fetcher)
 }
 
-export function usePlayerBalances () {
-    return useSWR('/api/player_balances', fetcher)
+export function usePlayerFungibleBalances () {
+    return useSWR('/api/player_fungible_balances', fetcher)
+}
+
+export function usePlayerFungibleBalancesByAccount (account) {
+    return useSWR(`/api/player_fungible_balances/${account}`, fetcher)
+}
+
+export function usePlayerNonfungibleDevicesByAccount (account) {
+    return useSWR(`/api/player_nonfungible_devices/${account}`, fetcher)
 }
 
 export function useDeployedDevices () {
@@ -18,24 +26,24 @@ export function useUtxSets () {
     return useSWR('/api/utx_sets', fetcher)
 }
 
-export function useDeployedPgs () {
-    return useSWR('/api/deployed_pgs', fetcher)
+export function usePgs () {
+    return useSWR('/api/pgs', fetcher)
 }
 
-export function useDeployedHarvesters () {
-    return useSWR('/api/deployed_harvesters', fetcher)
+export function useHarvesters () {
+    return useSWR('/api/harvesters', fetcher)
 }
 
-export function useDeployedTransformers () {
-    return useSWR('/api/deployed_transformers', fetcher)
+export function useTransformers () {
+    return useSWR('/api/transformers', fetcher)
 }
 
-export function useDeployedUpsfs () {
-    return useSWR('/api/deployed_upsfs', fetcher)
+export function useUpsfs () {
+    return useSWR('/api/upsfs', fetcher)
 }
 
-export function useDeployedNdpes () {
-    return useSWR('/api/deployed_ndpes', fetcher)
+export function useNdpes () {
+    return useSWR('/api/ndpes', fetcher)
 }
 
 export function useMacroStates () {
