@@ -9,7 +9,7 @@ export default async function handler(req, res) {
     const db = client.db(DB_NAME)
 
     const utx_sets = await db
-        .collection('u0' + '_utx_sets')
+        .collection('u0' + '_deployed_utx_sets')
         .find({'_chain.valid_to' : null})
         .toArray()
 
