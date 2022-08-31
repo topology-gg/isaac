@@ -25,7 +25,7 @@ import { DEVICE_COLOR_MAP } from "./ConstantDeviceColors";
 
 const nonfungible_types = [0,1,2,3,4,5,6,7,8,9,10,11,14,15]
 
-export function InventoryList ({ onDeployDevice }) {
+export function InventoryList ({ onDeployDevice, inCiv }) {
 
     const { account, connect } = useStarknet ()
     const account_str_decimal = toBN(account).toString(10)
@@ -59,7 +59,10 @@ export function InventoryList ({ onDeployDevice }) {
     useEffect (() => {
 
         if (!account) {
-            setLeftView (<p key='no-account-signed'>no account signed in</p>)
+            setLeftView (<p key='inventory-no-account-signed'>no account signed in</p>)
+        }
+        else if (!inCiv) {
+            setLeftView (<p key='inventory-account-not-in-civ'>account not in this civilization</p>)
         }
         else if (
             !db_player_nonfungible_devices || !db_player_fungible_balances ||
