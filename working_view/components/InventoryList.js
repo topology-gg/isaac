@@ -127,7 +127,7 @@ export function InventoryList ({ onDeployDevice, inCiv }) {
                             // </tr>
                             <button
                                 key = {`nonfungible_device-button-${idx}`}
-                                className = 'inventory-device-button'
+                                className = {`inventory-device-button ${ele.id === viewingId ? 'button-active' : ''}`}
                                 onClick = { () => {setViewingId(ele.id)} }
                             >
                                 <div>{ DEVICE_TYPE_FULL_NAME_MAP[ele.type] }</div>

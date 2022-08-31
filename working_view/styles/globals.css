@@ -114,6 +114,7 @@ button[disabled] {
 
 .button-active {
     background-color: #FFFE71;
+    box-shadow: 0 0 0px 3px rgba(0, 0, 0, 0.15);
 }
 
 .inventory-button {
@@ -165,8 +166,7 @@ button[disabled] {
 }
 
 .inventory-device-button:hover {
-    /* background-color:#CCCCCC; */
-    background-color:#D0F0C0;
+    background-color:#FFFE71;
     transition: 0.1s;
 }
 
@@ -187,7 +187,6 @@ button[disabled] {
 }
 
 .action-button:hover {
-    /* background-color:#CCCCCC; */
     background-color:#FFFE71;
     transition: 0.1s;
 }
