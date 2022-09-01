@@ -1784,6 +1784,14 @@ export default function GameWorld(props) {
         }
     }, [deployUtxTxid])
 
+    useEffect(() => {
+        if (deployUtxError) {
+            setDeployingUtx((prev) => null)
+            // FIXME: not resetting the selected grids
+            _selectedGridsRef.current = []
+        }
+    }, [deployUtxError])
+
     // Set the display style of the player's own devices (based on highlight mode)
     useEffect(() => {
         if (!db_deployed_devices || !account || !_deviceDisplayRef.current) return;
