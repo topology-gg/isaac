@@ -54,15 +54,8 @@ export default function useUtxAnimation(db_utx_sets, hasDrawnState, canvasRef) {
         if (hasDrawnState === 0) return;
         if (canvasRef === null) return;
 
-        var n_utx_set = 0;
-        for (const utx_set of db_utx_sets.utx_sets) {
-            if (utx_set.tethered == 1) {
-                n_utx_set += 1;
-            }
-        }
-
         const interval = setInterval(() => {
-            for (const i = 0; i < n_utx_set; i++) {
+            for (const i = 0; i < utxAnimGridsRef.current.length; i++) {
                 //
                 // get the next animation index
                 //
