@@ -69,6 +69,8 @@ import is_valid_coord from "../lib/helpers/isValidCoord";
 import map_face_to_left_top from "../lib/helpers/mapFaceToLeftTop";
 import { convert_screen_to_grid_x, convert_screen_to_grid_y } from "../lib/helpers/convertScreenToGrid"
 import gridMappingFromData from "../lib/helpers/gridMappingFromData"
+import getWindowDimensions from "../lib/helpers/getWindowDimensions"
+
 import useUtxAnimation from "../lib/hooks/useUtxAnimation"
 import useDebouncedEffect from "../lib/hooks/useDebouncedEffect"
 import usePlacementAssist from "../lib/hooks/usePlacementAssist"
@@ -703,8 +705,10 @@ export default function GameWorld(props) {
     //
     useEffect (() => {
 
+        const { height: windowHeight } = getWindowDimensions()
+
         _canvasRef.current = new fabric.Canvas('c', {
-            height: CANVAS_H,
+            height: windowHeight,
             width: CANVAS_W,
             backgroundColor: CANVAS_BG,
             selection: false,
