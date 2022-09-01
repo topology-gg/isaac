@@ -25,7 +25,7 @@ import { DEVICE_COLOR_MAP } from "./ConstantDeviceColors";
 
 const nonfungible_types = [0,1,2,3,4,5,6,7,8,9,10,11,14,15]
 
-export function InventoryList ({ onDeployDevice, inCiv }) {
+export function InventoryList ({ onDeployDevice, onDeployUtx, inCiv }) {
 
     const { account, connect } = useStarknet ()
     const account_str_decimal = toBN(account).toString(10)
@@ -76,8 +76,8 @@ export function InventoryList ({ onDeployDevice, inCiv }) {
             // Create left view
             //
             const fungible_balances = db_player_fungible_balances.player_fungible_balances [0]
-            const belt_balance = fungible_balances[12]
-            const wire_balance = fungible_balances[13]
+            const belt_balance = fungible_balances[12] || 0
+            const wire_balance = fungible_balances[13] || 0
 
             const nonfungible_counts = {}
             for (var typ of nonfungible_types) {
@@ -89,26 +89,40 @@ export function InventoryList ({ onDeployDevice, inCiv }) {
 
 
             setLeftView (
-                <div style={{display:'flex',flexDirection:'row'}}>
-                    <div style={{display:'flex',flexDirection:'column'}}>
-                        <h5>Non-fungible</h5>
-                        {
-                            nonfungible_types.map ((ele, idx) =>
-                                <button
-                                    key = {`type-button-${idx}`}
-                                    className = {`inventory-button ${ele==viewingType ? 'button-active' : ''} ${nonfungible_counts[ele] ? 'action-button' : 'disabled-button'}`}
-                                    disabled = { !nonfungible_counts[ele] }
-                                    onClick = { () => {setViewingType(ele)} }
-                                >
-                                    <span className="inventory-device-type">{DEVICE_TYPE_FULL_NAME_MAP[ele]}</span>
-                                    <span className="inventory-device-count">{nonfungible_counts[ele]}</span>
-                                </button>
-                            )
-                        }
-                        <h5 style={{marginTop:'20px'}}>Fungible</h5>
-                        <p style={{margin:'0'}}>Belt x {belt_balance}</p>
-                        <p style={{margin:'0'}}>Wire x {wire_balance}</p>
-                    </div>
+                <div style={{display:'flex',flexDirection:'column'}}>
+                    <h5>Non-fungible</h5>
+                    {
+                        nonfungible_types.map ((ele, idx) =>
+                            <button
+                                key = {`type-button-${idx}`}
+                                className = {`inventory-button ${ele==viewingType ? 'button-active' : ''} ${nonfungible_counts[ele] ? 'action-button' : 'disabled-button'}`}
+                                disabled = { !nonfungible_counts[ele] }
+                                onClick = { () => {setViewingType(ele)} }
+                            >
+                                <span className="inventory-device-type">{DEVICE_TYPE_FULL_NAME_MAP[ele]}</span>
+                                <span className="inventory-device-count">{nonfungible_counts[ele]}</span>
+                            </button>
+                        )
+                    }
+                    <h5 style={{marginTop:'20px'}}>Fungible</h5>
+                    <p style={{margin:'0'}}>Belt x {belt_balance}</p>
+                    {belt_balance > 0 && (
+                        <button
+                            className={`inventory-device-button`}
+                            onClick={() => onDeployUtx(12)}
+                        >
+                            Deploy Belt
+                        </button>
+                    )}
+                    <p style={{ margin: "0" }}>Wire x {wire_balance}</p>
+                    {wire_balance > 0 && (
+                        <button
+                            className={`inventory-device-button`}
+                            onClick={() => onDeployUtx(13)}
+                        >
+                            Deploy Wire
+                        </button>
+                    )}
                 </div>
             )
 
@@ -218,7 +232,9 @@ export function InventoryList ({ onDeployDevice, inCiv }) {
 
     return (
         <div style={{display:'flex',flexDirection:'row',width:'100%',height:'85%'}}>
-            {leftView}
+            <div className="inventory-left-view">
+                {leftView}
+            </div>
 
             <div className="inventory-mid-view">
                 {midView}

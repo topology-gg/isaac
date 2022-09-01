@@ -132,6 +132,15 @@ button[disabled] {
     flex-shrink: 0;
 }
 
+.inventory-left-view {
+    display: flex;
+    flex-direction: row;
+    height: 90%;
+    overflow-y: auto;
+    /* x padding to make room for outlines */
+    padding: 20px 5px;
+}
+
 .inventory-mid-view {
     padding: 20px;
     margin-left: 20px;
