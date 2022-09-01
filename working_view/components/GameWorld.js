@@ -1854,6 +1854,8 @@ export default function GameWorld(props) {
 
             {deviceBeingPlaced && <FloatingMessage message={<>Choose the location you want deploy your device, then press <kbd>LMB</kbd> to initiate the deploy.</>} />}
 
+            {deployingUtx && <FloatingMessage message={<>Choose the location of the {DEVICE_TYPE_FULL_NAME_MAP[deployingUtx]} by pressing <kbd>LMB</kbd> and dragging along the path.</>} />}
+
             <HUD lines={hudLines} universeActive={universeActive}/>
 
             <canvas id="c" />
