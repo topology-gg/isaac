@@ -212,7 +212,7 @@ export default function GameWorld() {
                 setTooltip("Ev")
             } else {
                 const ndpeIndex = ndpeLaunchGroupsRef.current?.indexOf(target)
-                if (ndpeIndex && (ndpeIndex !== -1)) {
+                if (ndpeIndex !== -1) {
                     setTooltip(`ndpeImpulse,${ndpeIndex}`)
                 }
             }
