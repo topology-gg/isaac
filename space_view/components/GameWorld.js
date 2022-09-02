@@ -1020,9 +1020,9 @@ export default function GameWorld() {
                                 Engine Launch #{hoveredImpulseIndex + 1}
                             </div>
                             <div className={styles.tooltipInfo}>
-                                |ΔV<sub>x</sub>| = {hoveredImpulseDelta.x == 0 ? '' : velocity_change_to_arrow_sign(hoveredImpulseDelta.x, true)} {planetVRelChange.x_from_0 ? planetVRelChange.x.toExponential(2).toString(10) + '/tick' : (planetVRelChange.x * 100).toFixed(3).toString(10) + '%'}
+                                |ΔV<sub>x</sub>| = {hoveredImpulseDelta.x == 0 ? '' : velocity_change_to_arrow_sign(hoveredImpulseDelta.x, true)} {planetVRelChange.x_from_0 ? Math.abs(planetVRelChange.x).toExponential(2).toString(10) + '/tick' : (Math.abs(planetVRelChange.x) * 100).toFixed(3).toString(10) + '%'}
                                 <br />
-                                |ΔV<sub>y</sub>| = {hoveredImpulseDelta.y == 0 ? '' : velocity_change_to_arrow_sign(hoveredImpulseDelta.y, false)} {planetVRelChange.y_from_0 ? planetVRelChange.y.toExponential(2).toString(10) + '/tick' : (planetVRelChange.y * 100).toFixed(3).toString(10) + '%'}
+                                |ΔV<sub>y</sub>| = {hoveredImpulseDelta.y == 0 ? '' : velocity_change_to_arrow_sign(hoveredImpulseDelta.y, false)} {planetVRelChange.y_from_0 ? Math.abs(planetVRelChange.y).toExponential(2).toString(10) + '/tick' : (Math.abs(planetVRelChange.y) * 100).toFixed(3).toString(10) + '%'}
                             </div>
                         </>
                     ) : (
