@@ -256,7 +256,7 @@ export default function GameWorld(props) {
     // Always set the current ref when the function changes (contract is loaded, etc)
     invokePlayerDeployDeviceRef.current = invokePlayerDeployDevice
 
-    const { data: deployUtxTxid, error: deployUtxError, invoke: invokePlayerDeployUtx } = useStarknetInvoke ({
+    const { data: deployUtxTxid, error: deployUtxError, loading: deployUtxLoading, invoke: invokePlayerDeployUtx } = useStarknetInvoke ({
         contract,
         method: 'player_deploy_utx_by_grids'
     })
@@ -491,15 +491,18 @@ export default function GameWorld(props) {
         sound_close.volume = VOLUME
         sound_close.play ()
 
+        setModalVisibility (false)
+        modalVisibilityRef.current = false
+
+        resetSelectedGrids()
+    }
+
+    function resetSelectedGrids() {
         for (const grid of _selectedGridsRef.current) {
             const face = find_face_given_grid (grid.x, grid.y)
             const face_ori = find_face_ori (face)
             _gridAssistRectsRef.current [`(${face},${grid.x-face_ori[0]},${grid.y-face_ori[1]})`].visible = false
         }
-
-        setModalVisibility (false)
-        modalVisibilityRef.current = false
-
         _selectStateRef.current = 'idle'
         _selectedGridsRef.current = []
         setSelectedGrids ([])
@@ -1781,16 +1784,17 @@ export default function GameWorld(props) {
                 typ: deployingUtx, txid: deployUtxTxid
             })
             setDeployingUtx(() => null)
+            resetSelectedGrids()
         }
-    }, [deployUtxTxid])
+    }, [deployUtxTxid, deployUtxLoading])
 
     useEffect(() => {
-        if (deployUtxError) {
-            setDeployingUtx((prev) => null)
-            // FIXME: not resetting the selected grids
-            _selectedGridsRef.current = []
+        if (!deployUtxLoading && deployUtxError) {
+            // console.log("error", deployUtxError)
+            setDeployingUtx(() => null)
+            resetSelectedGrids()
         }
-    }, [deployUtxError])
+    }, [deployUtxError, deployUtxLoading])
 
     // Set the display style of the player's own devices (based on highlight mode)
     useEffect(() => {
