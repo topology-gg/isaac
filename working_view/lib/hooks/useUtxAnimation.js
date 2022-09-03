@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { DEVICE_COLOR_MAP } from "../../components/ConstantDeviceColors";
-import { GRID, SIDE, PAD_X, PAD_Y, ANIM_UPDATE_INTERVAL_MS } from "../constants/gameWorld";
+import { GRID, SIDE, PAD_X, PAD_Y, ANIM_UPDATE_INTERVAL_MS, DEVICE_STROKE_WIDTH } from "../constants/gameWorld";
 
 export default function useUtxAnimation(db_utx_sets, hasDrawnState, canvasRef) {
     const utxAnimRectsRef = useRef([]);
@@ -24,15 +24,15 @@ export default function useUtxAnimation(db_utx_sets, hasDrawnState, canvasRef) {
             //
             const color = DEVICE_COLOR_MAP.get(`${utx_set.type}-anim`);
             const rect = new fabric.Rect({
-                height: GRID,
-                width: GRID,
-                left: PAD_X + utx_set.grids[0].x * GRID,
-                top: PAD_Y + (SIDE * 3 - utx_set.grids[0].y - 1) * GRID,
-                fill: color,
-                opacity: 0.2,
+                height: GRID - DEVICE_STROKE_WIDTH,
+                width: GRID - DEVICE_STROKE_WIDTH,
+                left: PAD_X + utx_set.grids[0].x * GRID + DEVICE_STROKE_WIDTH,
+                top: PAD_Y + (SIDE * 3 - utx_set.grids[0].y - 1) * GRID + DEVICE_STROKE_WIDTH,
+                fill: '#FFFFFF',
+                opacity: 1.0,
                 selectable: false,
                 hoverCursor: "default",
-                strokeWidth: 0,
+                strokeWidth: 0
             });
             utxAnimRectsRef.current.push(rect);
 
@@ -69,14 +69,14 @@ export default function useUtxAnimation(db_utx_sets, hasDrawnState, canvasRef) {
                 // animate x
                 //
                 const x = utxAnimGridsRef.current[i][anim_idx].x;
-                utxAnimRectsRef.current[i].left = PAD_X + x * GRID;
+                utxAnimRectsRef.current[i].left = PAD_X + x * GRID + DEVICE_STROKE_WIDTH;
 
                 //
                 // animate y
                 //
                 const y = utxAnimGridsRef.current[i][anim_idx].y;
                 utxAnimRectsRef.current[i].top =
-                    PAD_Y + (SIDE * 3 - y - 1) * GRID;
+                    PAD_Y + (SIDE * 3 - y - 1) * GRID + DEVICE_STROKE_WIDTH;
 
                 //
                 // animate opacity - make transparent at i=0
@@ -84,7 +84,7 @@ export default function useUtxAnimation(db_utx_sets, hasDrawnState, canvasRef) {
                 if (anim_idx == 0) {
                     utxAnimRectsRef.current[i].opacity = 0;
                 } else {
-                    utxAnimRectsRef.current[i].opacity = 0.2;
+                    utxAnimRectsRef.current[i].opacity = 1.0;
                 }
 
                 // console.log (`ANIMATE: new grid (${x}, ${y})`)

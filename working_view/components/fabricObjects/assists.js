@@ -18,11 +18,12 @@ export function createCursorGridRect() {
         width: GRID,
         left: PAD_X,
         top: PAD_Y,
-        fill: FILL_CURSOR_GRID,
+        fill: '#00000000',
         selectable: false,
         hoverCursor: 'default',
         visible: false,
-        strokeWidth: 0
+        strokeWidth: 0.5,
+        stroke: '#FFFFFF'
     });
 }
 
@@ -53,7 +54,7 @@ export function createCursorHoverDeviceRect () {
         visible: false,
         stroke: HOVER_DEVICE_COLOR,
         strokeLineJoin: 'round',
-        opacity: 0.5,
+        opacity: 1.0,
         strokeWidth: HOVER_DEVICE_STROKE_WIDTH,
     });
 }

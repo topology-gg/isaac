@@ -43,6 +43,7 @@ import {
     TRIANGLE_W,
     TRIANGLE_H,
     GRID_SPACING,
+    DEVICE_STROKE_WIDTH,
     STROKE_WIDTH_CURSOR_FACE,
     STROKE_WIDTH_GRID_MEDIUM,
     HOVER_DEVICE_STROKE_WIDTH,
@@ -104,22 +105,6 @@ import FloatingMessage from "./FloatingMessage"
 // 6. launch NDPE
 // 7. transfer undeployed device
 // UX: multi call
-
-//
-// Import pre-generated perlin values
-//
-// const PERLIN_VALUES_FE_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_0.json`);
-// const PERLIN_VALUES_AL_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_2.json`);
-// const PERLIN_VALUES_CU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_4.json`);
-// const PERLIN_VALUES_SI_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_6.json`);
-// const PERLIN_VALUES_PU_RAW = require(`../public/perlin_planet_dim_${SIDE}_element_8.json`);
-// const PERLIN_VALUES = {
-//     'fe' : PERLIN_VALUES_FE_RAW,
-//     'al' : PERLIN_VALUES_AL_RAW,
-//     'cu' : PERLIN_VALUES_CU_RAW,
-//     'si' : PERLIN_VALUES_SI_RAW,
-//     'pu' : PERLIN_VALUES_PU_RAW
-// }
 
 export default function GameWorld(props) {
 
@@ -1418,8 +1403,9 @@ export default function GameWorld(props) {
                 fill: device_color,
                 selectable: false,
                 hoverCursor: 'pointer',
-                strokeWidth: 0,
-                stroke: device_color,
+                strokeWidth: DEVICE_STROKE_WIDTH,
+                stroke: '#111111',
+                // stroke: device_color,
                 isaac_class: 'device'
             });
             if ('base_grid' in entry) {
@@ -1528,10 +1514,10 @@ export default function GameWorld(props) {
             // Show device hover selection
             const device = deviceFromGridCoord (mPosNorm.x, mPosNorm.y, db_deployed_devices.deployed_devices)
             if (device) {
-                _cursorHoverDeviceRectRef.current.left    = PAD_X + device.device.base_grid.x * GRID - HOVER_DEVICE_STROKE_WIDTH
-                _cursorHoverDeviceRectRef.current.top     = PAD_Y + (SIDE * 3 - (device.device.base_grid.y + device.dimension)) * GRID - HOVER_DEVICE_STROKE_WIDTH
-                _cursorHoverDeviceRectRef.current.width   = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH
-                _cursorHoverDeviceRectRef.current.height  = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH
+                _cursorHoverDeviceRectRef.current.left    = PAD_X + device.device.base_grid.x * GRID - HOVER_DEVICE_STROKE_WIDTH/2
+                _cursorHoverDeviceRectRef.current.top     = PAD_Y + (SIDE * 3 - (device.device.base_grid.y + device.dimension)) * GRID - HOVER_DEVICE_STROKE_WIDTH/2
+                _cursorHoverDeviceRectRef.current.width   = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH/2
+                _cursorHoverDeviceRectRef.current.height  = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH/2
                 _cursorHoverDeviceRectRef.current.visible = true
             } else {
                 _cursorHoverDeviceRectRef.current.visible = false
