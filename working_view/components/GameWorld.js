@@ -75,6 +75,7 @@ import utxFromSelectedGrids from "../lib/helpers/utxFromSelectedGrids"
 import useUtxAnimation from "../lib/hooks/useUtxAnimation"
 import useDebouncedEffect from "../lib/hooks/useDebouncedEffect"
 import usePlacementAssist from "../lib/hooks/usePlacementAssist"
+import useSelectedGrids from "../lib/hooks/useSelectedGrids"
 import FloatingMessage from "./FloatingMessage"
 
 //
@@ -174,8 +175,6 @@ export default function GameWorld(props) {
     const _deviceBeingPlacedRef = useRef(null); // Device being placed by user
 
     const _mouseStateRef = useRef('up'); // up => down => up
-    const _selectStateRef = useRef('idle'); // idle => select => popup => idle
-    const _selectedGridsRef = useRef([]);
 
     const _panStateRef = useRef({'panning':false, 'last_x':0, 'last_y':0});
 
@@ -196,7 +195,6 @@ export default function GameWorld(props) {
     const [MousePositionNorm, setMousePositionNorm] = useState({x: 0, y: 0})
     const [modalVisibility, setModalVisibility] = useState(false)
     const [modalInfo, setModalInfo] = useState({})
-    const [selectedGrids, setSelectedGrids] = useState([])
     const [gridMapping, setGridMapping] = useState()
     const [accountInCiv, setAccountInCiv] = useState(false)
     const [accountDeviceBalance, setAccountDeviceBalance] = useState({})
@@ -226,6 +224,7 @@ export default function GameWorld(props) {
         toggleVisible: toggleUtxAnimationVisible
     } = useUtxAnimation(db_utx_sets, hasDrawnState, _canvasRef)
     usePlacementAssist(deviceBeingPlaced, MousePositionNorm, _canvasRef)
+    const { selectedGridsRef, addToSelection, reset: resetSelectedGrids } = useSelectedGrids(_canvasRef)
 
     const setPendingDevices = (setValueFn) => {
         _pendingDevicesRef.current = setValueFn(_pendingDevicesRef.current)
@@ -377,17 +376,9 @@ export default function GameWorld(props) {
         const x_grid = convert_screen_to_grid_x (x)
         const y_grid = convert_screen_to_grid_y (y)
         const bool_in_range = is_valid_coord (x_grid, y_grid)
-        const bool_in_idle = (_selectStateRef.current === 'idle')
 
-        if (bool_in_idle && bool_in_range && !_deviceBeingPlacedRef.current) {
-            _selectStateRef.current = 'select'
-            _selectedGridsRef.current.push ({x: x_grid, y: y_grid})
-
-            setSelectedGrids( selectedGrids.concat({x: x_grid, y: y_grid}) )
-
-            const face = find_face_given_grid (x_grid, y_grid)
-            const face_ori = find_face_ori (face)
-            _gridAssistRectsRef.current [`(${face},${x_grid-face_ori[0]},${y_grid-face_ori[1]})`].visible = true
+        if (bool_in_range && !_deviceBeingPlacedRef.current) {
+            addToSelection ({x: x_grid, y: y_grid})
         }
     }
 
@@ -405,19 +396,8 @@ export default function GameWorld(props) {
         const y_grid = convert_screen_to_grid_y (y)
         const bool_in_range = is_valid_coord (x_grid, y_grid)
 
-        // ref:
-        // https://stackoverflow.com/questions/50371188/javascripts-includes-function-not-working-correctly-with-array-of-objects
-        var bool_exist = _selectedGridsRef.current.some (ele =>{
-            return JSON.stringify({x: x_grid, y: y_grid}) === JSON.stringify(ele);
-        });
-
-        if (bool_mouse_down && bool_in_range && !bool_exist) {
-            _selectedGridsRef.current.push ({x: x_grid, y: y_grid})
-            setSelectedGrids( selectedGrids.concat({x: x_grid, y: y_grid}) )
-
-            const face = find_face_given_grid (x_grid, y_grid)
-            const face_ori = find_face_ori (face)
-            _gridAssistRectsRef.current [`(${face},${x_grid-face_ori[0]},${y_grid-face_ori[1]})`].visible = true
+        if (bool_mouse_down && bool_in_range) {
+            addToSelection ({x: x_grid, y: y_grid})
         }
     }
 
@@ -445,7 +425,7 @@ export default function GameWorld(props) {
         const x_grid = convert_screen_to_grid_x (x)
         const y_grid = convert_screen_to_grid_y (y)
         const bool_in_range = is_valid_coord (x_grid, y_grid)
-        const bool_not_empty = (_selectedGridsRef.current.length !== 0)
+        const bool_not_empty = (selectedGridsRef.current.length !== 0)
 
         if (_deviceBeingPlacedRef.current) {
             // TODO: check if device placement is valid
@@ -456,7 +436,7 @@ export default function GameWorld(props) {
             setDeviceBeingPlaced((prev) => ({ ...prev, x: x_grid, y: y_grid }))
         } else if (bool_in_range && bool_not_empty && _deployingUtxRef.current) {
             // Deploying specific UTX
-            const utx = utxFromSelectedGrids(_selectedGridsRef.current)
+            const utx = utxFromSelectedGrids(selectedGridsRef.current)
             console.log("invoke contract with selected grids. utx: ", utx)
             invokePlayerDeployUtxRef.current ({ args: [
                 _deployingUtxRef.current,
@@ -465,13 +445,12 @@ export default function GameWorld(props) {
                 utx.grids
             ] })
         } else if (bool_in_range && bool_not_empty) {
-            _selectStateRef.current = 'popup'
             setModalVisibility (true)
             modalVisibilityRef.current = true
 
             const info = {
                 'mode' : 'grids',
-                'grids' : _selectedGridsRef.current
+                'grids' : selectedGridsRef.current
             }
             setModalInfo (info)
         }
@@ -495,17 +474,6 @@ export default function GameWorld(props) {
         modalVisibilityRef.current = false
 
         resetSelectedGrids()
-    }
-
-    function resetSelectedGrids() {
-        for (const grid of _selectedGridsRef.current) {
-            const face = find_face_given_grid (grid.x, grid.y)
-            const face_ori = find_face_ori (face)
-            _gridAssistRectsRef.current [`(${face},${grid.x-face_ori[0]},${grid.y-face_ori[1]})`].visible = false
-        }
-        _selectStateRef.current = 'idle'
-        _selectedGridsRef.current = []
-        setSelectedGrids ([])
     }
 
     function resetZoom () {
@@ -666,7 +634,6 @@ export default function GameWorld(props) {
             sound_open.volume = VOLUME
             sound_open.play ()
 
-            _selectStateRef.current = 'popup'
             setModalVisibility (true)
             modalVisibilityRef.current = true
             const info = {
@@ -683,7 +650,6 @@ export default function GameWorld(props) {
         else if (ev.key === 'i') {
             setModalVisibility (true)
             modalVisibilityRef.current = true
-            _selectStateRef.current = 'popup'
             const info = {
                 'mode' : 'inventory',
                 'grids' : null
@@ -764,10 +730,7 @@ export default function GameWorld(props) {
             //
             // handle grid selection
             //
-            if (_selectStateRef.current === 'select'){
-                // handleMouseDrag (opt.e.clientX, opt.e.clientY)
-                handleMouseDrag (posx, posy)
-            }
+            handleMouseDrag (posx, posy)
 
             //
             // handle panning
@@ -889,55 +852,6 @@ export default function GameWorld(props) {
 
     }, []);
 
-    // useEffect (() => {
-    //     if (!_hasDrawnRef.current) {
-    //         drawWorld (_canvasRef.current)
-    //         setHudVisible (true)
-    //     }
-    // }, [hasLoadedDB]);
-
-    const initializeGridAssistRectsRef = canvi => {
-
-        //
-        // traverse across all grids of all faces, push a var Rect object to _gridAssistRectsRef,
-        // with key being stringified grid coord `(${face},${col},${row})`
-        //
-        var gridAssistRects = []
-        for (var face=0; face<6; face++) {
-            const face_ori = find_face_ori (face)
-            for (var row=0; row<SIDE; row++) {
-                for (var col=0; col<SIDE; col++) {
-
-                    var gridAssistRect = new fabric.Rect({
-                        height: GRID, width: GRID,
-                        left: PAD_X + (col + face_ori[0]) * GRID,
-                        top:  PAD_Y + (SIDE*3 - (row + face_ori[1]) - 1) * GRID,
-                        fill: FILL_CURSOR_SELECTED_GRID,
-                        selectable: false,
-                        hoverCursor: 'default',
-                        visible: false,
-                        strokeWidth: 0
-                    });
-
-                    gridAssistRects.push (gridAssistRect)
-                    _gridAssistRectsRef.current [`(${face},${col},${row})`] = gridAssistRect
-                    canvi.add (gridAssistRect)
-                }
-            }
-        }
-
-        const group = new fabric.Group(
-            gridAssistRects, {
-                visible: false,
-                selectable: false,
-                hoverCursor: 'default'
-        });
-        _gridAssistRectsGroupRef.current = group
-        canvi.add (group)
-
-        // canvi.requestRenderAll();
-    }
-
     const drawWorldUpToImages = canvi => {
 
         // if (hasLoadedDB) {
@@ -984,7 +898,6 @@ export default function GameWorld(props) {
 
         const canvi = _canvasRef.current
 
-        initializeGridAssistRectsRef (canvi)
         drawAssist (canvi)
 
         _hasDrawnRef.current = true
@@ -1635,26 +1548,6 @@ export default function GameWorld(props) {
         drawAssistObject (_canvasRef.current, MousePositionNorm)
     }, [MousePositionNorm]);
 
-    function drawAssistObjects (canvi, grids) {
-        if (_coordTextRef.current) {
-            if (grids.length === 0){
-                // console.log ('drawAssistObjects() with empty grids')
-                _gridAssistRectsGroupRef.current.visible = false
-            }
-            else {
-                // console.log ('drawAssistObjects() with non-empty grids')
-                _gridAssistRectsGroupRef.current.visible = true
-            }
-            _gridAssistRectsGroupRef.current.dirty = true
-
-            canvi.requestRenderAll();
-        }
-    }
-
-    useEffect (() => {
-        drawAssistObjects (_canvasRef.current, selectedGrids)
-    }, [selectedGrids])
-
     function handleMouseMove(ev) {
 
         // const x = ev.pageX
@@ -1778,7 +1671,7 @@ export default function GameWorld(props) {
     useEffect(() => {
         const deployingUtx = _deployingUtxRef.current
         if (deployUtxTxid && deployingUtx) {
-            const utxGrids = _selectedGridsRef.current
+            const utxGrids = selectedGridsRef.current
             handleDeployStarted({
                 x: utxGrids[0].x, y: utxGrids[0].y, utxGrids,
                 typ: deployingUtx, txid: deployUtxTxid
