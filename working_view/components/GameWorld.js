@@ -70,6 +70,7 @@ import map_face_to_left_top from "../lib/helpers/mapFaceToLeftTop";
 import { convert_screen_to_grid_x, convert_screen_to_grid_y } from "../lib/helpers/convertScreenToGrid"
 import gridMappingFromData from "../lib/helpers/gridMappingFromData"
 import getWindowDimensions from "../lib/helpers/getWindowDimensions"
+import utxFromSelectedGrids from "../lib/helpers/utxFromSelectedGrids"
 
 import useUtxAnimation from "../lib/hooks/useUtxAnimation"
 import useDebouncedEffect from "../lib/hooks/useDebouncedEffect"
@@ -209,6 +210,14 @@ export default function GameWorld(props) {
     const [pendingPickups, _setPendingPickups] = useState([])
     const [deviceBeingPlaced, _setDeviceBeingPlaced] = useState(null)
 
+    // Whether the player is choosing where to deploy UTX, and which type it is (number)
+    const _deployingUtxRef = useRef()
+    const [deployingUtx, _setDeployingUtx] = useState(null)
+    const setDeployingUtx = (setValueFn) => {
+        _deployingUtxRef.current = setValueFn(_deployingUtxRef.current)
+        _setDeployingUtx(setValueFn)
+    }
+
     // const [debugCounter, setDebugCounter] = useState(0)
 
     const {
@@ -246,6 +255,19 @@ export default function GameWorld(props) {
     const invokePlayerDeployDeviceRef = useRef(invokePlayerDeployDevice)
     // Always set the current ref when the function changes (contract is loaded, etc)
     invokePlayerDeployDeviceRef.current = invokePlayerDeployDevice
+
+    const { data: deployUtxTxid, error: deployUtxError, loading: deployUtxLoading, invoke: invokePlayerDeployUtx } = useStarknetInvoke ({
+        contract,
+        method: 'player_deploy_utx_by_grids'
+    })
+    // Debug
+    // const [deployUtxTxid, setDeployUtxTxid] = useState()
+
+    // Use a ref to hold the reference to the current invoke function
+    // So it can be used in event callbacks, etc.
+    const invokePlayerDeployUtxRef = useRef(invokePlayerDeployUtx)
+    // Always set the current ref when the function changes (contract is loaded, etc)
+    invokePlayerDeployUtxRef.current = invokePlayerDeployUtx
 
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
 
@@ -432,6 +454,16 @@ export default function GameWorld(props) {
                 args: [_deviceBeingPlacedRef.current.id, { x: x_grid, y: y_grid }]
             })
             setDeviceBeingPlaced((prev) => ({ ...prev, x: x_grid, y: y_grid }))
+        } else if (bool_in_range && bool_not_empty && _deployingUtxRef.current) {
+            // Deploying specific UTX
+            const utx = utxFromSelectedGrids(_selectedGridsRef.current)
+            console.log("invoke contract with selected grids. utx: ", utx)
+            invokePlayerDeployUtxRef.current ({ args: [
+                _deployingUtxRef.current,
+                utx.src,
+                utx.dst,
+                utx.grids
+            ] })
         } else if (bool_in_range && bool_not_empty) {
             _selectStateRef.current = 'popup'
             setModalVisibility (true)
@@ -459,15 +491,18 @@ export default function GameWorld(props) {
         sound_close.volume = VOLUME
         sound_close.play ()
 
+        setModalVisibility (false)
+        modalVisibilityRef.current = false
+
+        resetSelectedGrids()
+    }
+
+    function resetSelectedGrids() {
         for (const grid of _selectedGridsRef.current) {
             const face = find_face_given_grid (grid.x, grid.y)
             const face_ori = find_face_ori (face)
             _gridAssistRectsRef.current [`(${face},${grid.x-face_ori[0]},${grid.y-face_ori[1]})`].visible = false
         }
-
-        setModalVisibility (false)
-        modalVisibilityRef.current = false
-
         _selectStateRef.current = 'idle'
         _selectedGridsRef.current = []
         setSelectedGrids ([])
@@ -1735,6 +1770,32 @@ export default function GameWorld(props) {
         }
     }, [deployDeviceTxid])
 
+    function handleDeployUtx(type) {
+        hidePopup()
+        setDeployingUtx(() => type)
+    }
+
+    useEffect(() => {
+        const deployingUtx = _deployingUtxRef.current
+        if (deployUtxTxid && deployingUtx) {
+            const utxGrids = _selectedGridsRef.current
+            handleDeployStarted({
+                x: utxGrids[0].x, y: utxGrids[0].y, utxGrids,
+                typ: deployingUtx, txid: deployUtxTxid
+            })
+            setDeployingUtx(() => null)
+            resetSelectedGrids()
+        }
+    }, [deployUtxTxid, deployUtxLoading])
+
+    useEffect(() => {
+        if (!deployUtxLoading && deployUtxError) {
+            // console.log("error", deployUtxError)
+            setDeployingUtx(() => null)
+            resetSelectedGrids()
+        }
+    }, [deployUtxError, deployUtxLoading])
+
     // Set the display style of the player's own devices (based on highlight mode)
     useEffect(() => {
         if (!db_deployed_devices || !account || !_deviceDisplayRef.current) return;
@@ -1798,16 +1859,20 @@ export default function GameWorld(props) {
                 pendingPickups = {pendingPickups}
                 onDeployStarted = {handleDeployStarted}
                 onDeployDevice = {handleDeployDevice}
+                onDeployUtx = {handleDeployUtx}
                 onPendingPickup = {handlePendingPickup}
             />
 
 
             {deviceBeingPlaced && <FloatingMessage message={<>Choose the location you want deploy your device, then press <kbd>LMB</kbd> to initiate the deploy.</>} />}
 
+            {deployingUtx && <FloatingMessage message={<>Choose the location of the {DEVICE_TYPE_FULL_NAME_MAP[deployingUtx]} by pressing <kbd>LMB</kbd> and dragging along the path.</>} />}
+
             <HUD lines={hudLines} universeActive={universeActive}/>
 
             <canvas id="c" />
 
+            {/* DEBUG PANEL */}
             {/* <button onClick={() => setDebugCounter((c) => c + 1)}>Trigger redraw</button>
             <button
                 onClick={() =>
@@ -1819,6 +1884,13 @@ export default function GameWorld(props) {
                 }
             >
                 Place device
+            </button>
+            <button
+                onClick={() =>
+                    setDeployUtxTxid(() => '12345')
+                }
+            >
+                Set utx deploy txid
             </button> */}
         </div>
     );
