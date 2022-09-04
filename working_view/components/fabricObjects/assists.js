@@ -1,5 +1,4 @@
 import {
-    FILL_CURSOR_GRID,
     GRID,
     HOVER_DEVICE_COLOR,
     HOVER_DEVICE_STROKE_WIDTH,
@@ -7,7 +6,8 @@ import {
     PAD_Y,
     SIDE,
     STROKE_CURSOR_FACE,
-    STROKE_WIDTH_CURSOR_FACE
+    STROKE_WIDTH_CURSOR_FACE,
+    STROKE_WIDTH_GRID_MEDIUM
 } from "../../lib/constants/gameWorld";
 
 import { fabric } from 'fabric';
@@ -22,7 +22,7 @@ export function createCursorGridRect() {
         selectable: false,
         hoverCursor: 'default',
         visible: false,
-        strokeWidth: 0.5,
+        strokeWidth: STROKE_WIDTH_GRID_MEDIUM,
         stroke: '#FFFFFF'
     });
 }

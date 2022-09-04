@@ -1403,9 +1403,8 @@ export default function GameWorld(props) {
                 fill: device_color,
                 selectable: false,
                 hoverCursor: 'pointer',
-                strokeWidth: DEVICE_STROKE_WIDTH,
-                stroke: '#111111',
-                // stroke: device_color,
+                strokeWidth: 0,
+                stroke: device_color,
                 isaac_class: 'device'
             });
             if ('base_grid' in entry) {
@@ -1498,8 +1497,8 @@ export default function GameWorld(props) {
             //
             // Show grid assist square
             //
-            _cursorGridRectRef.current.left = PAD_X + mPosNorm.x*GRID
-            _cursorGridRectRef.current.top  = PAD_Y + (SIDE*3 - mPosNorm.y - 1)*GRID
+            _cursorGridRectRef.current.left = PAD_X + mPosNorm.x*GRID - STROKE_WIDTH_GRID_MEDIUM/2
+            _cursorGridRectRef.current.top  = PAD_Y + (SIDE*3 - mPosNorm.y - 1)*GRID - STROKE_WIDTH_GRID_MEDIUM/2
             _cursorGridRectRef.current.visible = true
 
 
@@ -1514,10 +1513,10 @@ export default function GameWorld(props) {
             // Show device hover selection
             const device = deviceFromGridCoord (mPosNorm.x, mPosNorm.y, db_deployed_devices.deployed_devices)
             if (device) {
-                _cursorHoverDeviceRectRef.current.left    = PAD_X + device.device.base_grid.x * GRID - HOVER_DEVICE_STROKE_WIDTH/2
-                _cursorHoverDeviceRectRef.current.top     = PAD_Y + (SIDE * 3 - (device.device.base_grid.y + device.dimension)) * GRID - HOVER_DEVICE_STROKE_WIDTH/2
-                _cursorHoverDeviceRectRef.current.width   = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH/2
-                _cursorHoverDeviceRectRef.current.height  = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH/2
+                _cursorHoverDeviceRectRef.current.left    = PAD_X + device.device.base_grid.x * GRID - HOVER_DEVICE_STROKE_WIDTH
+                _cursorHoverDeviceRectRef.current.top     = PAD_Y + (SIDE * 3 - (device.device.base_grid.y + device.dimension)) * GRID - HOVER_DEVICE_STROKE_WIDTH
+                _cursorHoverDeviceRectRef.current.width   = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH
+                _cursorHoverDeviceRectRef.current.height  = GRID * device.dimension + HOVER_DEVICE_STROKE_WIDTH
                 _cursorHoverDeviceRectRef.current.visible = true
             } else {
                 _cursorHoverDeviceRectRef.current.visible = false
