@@ -1,5 +1,4 @@
 import {
-    FILL_CURSOR_GRID,
     GRID,
     HOVER_DEVICE_COLOR,
     HOVER_DEVICE_STROKE_WIDTH,
@@ -7,7 +6,8 @@ import {
     PAD_Y,
     SIDE,
     STROKE_CURSOR_FACE,
-    STROKE_WIDTH_CURSOR_FACE
+    STROKE_WIDTH_CURSOR_FACE,
+    STROKE_WIDTH_GRID_MEDIUM
 } from "../../lib/constants/gameWorld";
 
 import { fabric } from 'fabric';
@@ -18,11 +18,12 @@ export function createCursorGridRect() {
         width: GRID,
         left: PAD_X,
         top: PAD_Y,
-        fill: FILL_CURSOR_GRID,
+        fill: '#00000000',
         selectable: false,
         hoverCursor: 'default',
         visible: false,
-        strokeWidth: 0
+        strokeWidth: STROKE_WIDTH_GRID_MEDIUM,
+        stroke: '#FFFFFF'
     });
 }
 
@@ -53,7 +54,7 @@ export function createCursorHoverDeviceRect () {
         visible: false,
         stroke: HOVER_DEVICE_COLOR,
         strokeLineJoin: 'round',
-        opacity: 0.5,
+        opacity: 1.0,
         strokeWidth: HOVER_DEVICE_STROKE_WIDTH,
     });
 }

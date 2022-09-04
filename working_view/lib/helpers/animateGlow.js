@@ -3,8 +3,8 @@ export default function animateGlow(canvi, shape) {
         shape.animate('opacity', opacity, {
             duration: 500,
             onChange: canvi.requestRenderAll.bind(canvi),
-            onComplete: () => opacity === 0.5 ? animate(0.1) : animate(0.5),
+            onComplete: () => opacity === 0.8 ? animate(0.05) : animate(0.8),
         })
     }
-    animate(0.7);
+    animate(0.8);
 }

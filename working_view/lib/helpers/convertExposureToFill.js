@@ -1,8 +1,8 @@
 //
 // Helper function to convert solar exposure value to face rect fill color
 //
-const FILL_MIN = [17, 26, 0]
-const FILL_MAX = [50, 77, 0]
+const FILL_MIN = [241, 129, 16] // rgba(241,129,16,255)
+const FILL_MAX = [255, 173, 72] // rgba(255,173,72,255)
 
 export default function convert_exposure_to_fill (exposure) {
 

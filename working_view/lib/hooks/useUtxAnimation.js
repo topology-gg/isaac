@@ -29,7 +29,7 @@ export default function useUtxAnimation(db_utx_sets, hasDrawnState, canvasRef) {
                 left: PAD_X + utx_set.grids[0].x * GRID,
                 top: PAD_Y + (SIDE * 3 - utx_set.grids[0].y - 1) * GRID,
                 fill: color,
-                opacity: 0.2,
+                opacity: 1.0,
                 selectable: false,
                 hoverCursor: "default",
                 strokeWidth: 0,
@@ -84,7 +84,7 @@ export default function useUtxAnimation(db_utx_sets, hasDrawnState, canvasRef) {
                 if (anim_idx == 0) {
                     utxAnimRectsRef.current[i].opacity = 0;
                 } else {
-                    utxAnimRectsRef.current[i].opacity = 0.2;
+                    utxAnimRectsRef.current[i].opacity = 1.0;
                 }
 
                 // console.log (`ANIMATE: new grid (${x}, ${y})`)
