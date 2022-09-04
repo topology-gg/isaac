@@ -99,6 +99,7 @@ export function InventoryList ({ onDeployDevice, onDeployUtx, inCiv }) {
                                 disabled = { !nonfungible_counts[ele] }
                                 onClick = { () => {setViewingType(ele)} }
                             >
+                                <span className="inventory-button-indicator" style={{backgroundColor: DEVICE_COLOR_MAP.get(ele)}}></span>
                                 <span className="inventory-device-type">{DEVICE_TYPE_FULL_NAME_MAP[ele]}</span>
                                 <span className="inventory-device-count">{nonfungible_counts[ele]}</span>
                             </button>
@@ -163,7 +164,12 @@ export function InventoryList ({ onDeployDevice, onDeployUtx, inCiv }) {
                     ele => ele.id == viewingId
                 )[0]
                 const device_type = device.type
-                deviceInfo.push (<h4 key='device-type-title'>{DEVICE_TYPE_FULL_NAME_MAP[device_type]}</h4>)
+                deviceInfo.push (
+                    <h4 className="inventory-device-title" key='device-type-title'>
+                        <span className="inventory-button-indicator" style={{backgroundColor: DEVICE_COLOR_MAP.get(device_type)}}></span>
+                        {DEVICE_TYPE_FULL_NAME_MAP[device_type]}
+                    </h4>
+                )
                 deviceInfo.push (<p key='device-id-subtitle'>&lt; Id = {abbrevDecString(viewingId)} &gt;</p>)
 
                 if ([0,1].includes(device_type)) {

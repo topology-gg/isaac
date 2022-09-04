@@ -23,7 +23,6 @@ const BUTTON_BASE_STYLE = {
 export const BUTTON_SINGLE_STYLE = {
     ...BUTTON_BASE_STYLE,
     borderRadius: '8px',
-    color: '#333333'
 }
 
 export const BUTTON_SINGLE_DISABLED_STYLE = {
