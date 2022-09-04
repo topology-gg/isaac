@@ -113,7 +113,8 @@ button[disabled] {
 }
 
 .button-active {
-    background-color: #FFFE71;
+    background-color: #1c2737;
+    color: #ffffff;
     box-shadow: 0 0 0px 3px rgba(0, 0, 0, 0.15);
 }
 
@@ -130,6 +131,11 @@ button[disabled] {
     align-items: center;
     gap: 4px;
     flex-shrink: 0;
+}
+
+.inventory-button-indicator {
+    width: 10px;
+    height: 10px;
 }
 
 .inventory-left-view {
@@ -169,13 +175,14 @@ button[disabled] {
 }
 
 .inventory-device-button {
-    border: 1px solid #222222;
+    border: 1px solid #1c2737;
     display: inline-block;
     white-space: normal;
 }
 
 .inventory-device-button:hover {
-    background-color:#FFFE71;
+    background-color: #1c2737;
+    color: #ffffff;
     transition: 0.1s;
 }
 
@@ -195,8 +202,18 @@ button[disabled] {
     font-size: 10px;
 }
 
+.inventory-device-title {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.inventory-device-title .inventory-button-indicator {
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
+
 .action-button:hover {
-    background-color:#FFFE71;
+    background-color:#1c2737;
+    color: #ffffff;
     transition: 0.1s;
 }
 
@@ -245,7 +262,7 @@ button[disabled] {
     margin-bottom: 10px;
 }
 .wallet-button:hover {
-    background-color:#FFFE71;
+    background-color:#FFCE93;
     transition: 0.1s;
 }
 

@@ -59,8 +59,7 @@ const GameStatsPlayer = ({ accountString }) => {
     return (
         <>
             {accountString === signedInAccountStr ? (
-                // <td style={{ color: '#00CCFF' }}>
-                <td style={{ color: '#FFD500' }}>
+                <td style={{ color: '#FFAD48' }}>
                     {displayAccountStr}
                 </td>
             ) : (
