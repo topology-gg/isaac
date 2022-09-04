@@ -207,6 +207,9 @@ button[disabled] {
     align-items: center;
     gap: 5px;
 }
+.inventory-device-title .inventory-button-indicator {
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+}
 
 .action-button:hover {
     background-color:#1c2737;
