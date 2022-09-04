@@ -7,4 +7,5 @@
     transform: translateX(-50%);
     z-index: 3;
     pointer-events: none;
+    text-shadow: 0 0 16px rgba(0, 0, 0, 0.5);
 }
