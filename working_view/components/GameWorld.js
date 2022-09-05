@@ -26,6 +26,7 @@ import {
 
 import { Modal } from "./Modal"
 import HUD from "./HUD"
+import HUDLeft from "./HUDLeft"
 
 import {
     useStarknet, useStarknetInvoke
@@ -61,8 +62,6 @@ import {
     createCursorGridRect, createCursorFaceRect, createCursorHoverDeviceRect, createPlacementAssistRect
 } from './fabricObjects/assists';
 import createTriangle from "./fabricObjects/createTriangle";
-import parse_phi_to_degree from "../lib/helpers/parsePhiToDegree";
-import vec2_rotate_by_degree from "../lib/helpers/vec2RotateByDegree";
 import convert_exposure_to_fill from "../lib/helpers/convertExposureToFill";
 import find_face_ori from "../lib/helpers/findFaceOri";
 import find_face_given_grid from "../lib/helpers/findFaceGivenGrid";
@@ -72,6 +71,7 @@ import { convert_screen_to_grid_x, convert_screen_to_grid_y } from "../lib/helpe
 import gridMappingFromData from "../lib/helpers/gridMappingFromData"
 import getWindowDimensions from "../lib/helpers/getWindowDimensions"
 import utxFromSelectedGrids from "../lib/helpers/utxFromSelectedGrids"
+import faceRadiationFromMacro from "../lib/helpers/faceRadiationFromMacro"
 
 import useUtxAnimation from "../lib/hooks/useUtxAnimation"
 import useDebouncedEffect from "../lib/hooks/useDebouncedEffect"
@@ -254,6 +254,13 @@ export default function GameWorld(props) {
     invokePlayerDeployUtxRef.current = invokePlayerDeployUtx
 
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
+
+    const faceRadiationRef = useRef()
+    if (db_macro_states?.macro_states) {
+        faceRadiationRef.current = faceRadiationFromMacro(db_macro_states.macro_states[0])
+    }
+
+    const face = find_face_given_grid (MousePositionNorm.x, MousePositionNorm.y)
 
     //
     // useEffect for checking if all database collections are loaded
@@ -1112,64 +1119,9 @@ export default function GameWorld(props) {
         const DRAW_FACE_RECTS = true
         if (DRAW_FACE_RECTS) {
 
-            if (!db_macro_states.macro_states[0]) {return;}
+            if (!faceRadiationRef.current) {return;}
 
-            //
-            // Compute colors for each face according to (1) face number (2) distance to each suns (3) planet rotation
-            // following the exact way solar exposure is computed in smart contract.
-            //
-
-            // Compute distances and vectors
-            const sun0_q = db_macro_states.macro_states[0].dynamics.sun0.q
-            const sun1_q = db_macro_states.macro_states[0].dynamics.sun1.q
-            const sun2_q = db_macro_states.macro_states[0].dynamics.sun2.q
-            const plnt_q = db_macro_states.macro_states[0].dynamics.planet.q
-            const phi_degree = parse_phi_to_degree (db_macro_states.macro_states[0].phi)
-            const dist_sqs = {
-                0 : (sun0_q.x - plnt_q.x)**2 + (sun0_q.y - plnt_q.y)**2,
-                1 : (sun1_q.x - plnt_q.x)**2 + (sun1_q.y - plnt_q.y)**2,
-                2 : (sun2_q.x - plnt_q.x)**2 + (sun2_q.y - plnt_q.y)**2
-            }
-            const vec_suns = {
-                0 : [sun0_q.x - plnt_q.x, sun0_q.y - plnt_q.y],
-                1 : [sun1_q.x - plnt_q.x, sun1_q.y - plnt_q.y],
-                2 : [sun2_q.x - plnt_q.x, sun1_q.y - plnt_q.y]
-            }
-
-            const normal_0 = vec2_rotate_by_degree ([1,0], -phi_degree)
-            const normal_2 = vec2_rotate_by_degree (normal_0, -90)
-            const normal_4 = vec2_rotate_by_degree (normal_0, -180)
-            const normal_5 = vec2_rotate_by_degree (normal_0, -270)
-            const normals = {
-                0 : normal_0,
-                2 : normal_2,
-                4 : normal_4,
-                5 : normal_5
-            }
-            // console.log ('normals', normals)
-
-            // Compute radiation levels for top & bottom faces
-            const BASE_RADIATION = 75 // from contract
-            const OBLIQUE_RADIATION =  15 // from contract
-            const face_1_exposure = (OBLIQUE_RADIATION / dist_sqs[0]) + (OBLIQUE_RADIATION / dist_sqs[1]) + (OBLIQUE_RADIATION / dist_sqs[2])
-            const face_3_exposure = face_1_exposure
-
-            // Compute radiation levels for side faces; compute fill color; draw rect
-            for (const face of [0, 2, 4, 5]) {
-
-                var exposure = 0
-                for (const sun of [0,1,2]) {
-                    const dot = vec_suns[sun][0] * normals[face][0] + vec_suns[sun][1] * normals[face][1]
-                    if (dot <= 0) { exposure += 0 }
-                    else {
-                        const mag_normal = Math.sqrt ( normals[face][0]**2 + normals[face][1]**2 )
-                        const mag_vec_sun = Math.sqrt ( vec_suns[sun][0]**2 + vec_suns[sun][1]**2 )
-                        const cos = dot / (mag_normal * mag_vec_sun)
-                        exposure += BASE_RADIATION * cos / dist_sqs[sun]
-                    }
-                }
-                // const exposure_sides[face] = exposure
-
+            faceRadiationRef.current.forEach((exposure, face) => {
                 const face_fill = convert_exposure_to_fill (exposure)
 
                 const ori = map_face_to_left_top (face)
@@ -1187,39 +1139,7 @@ export default function GameWorld(props) {
                     objectCaching: true
                 });
                 canvi.add (rect)
-            }
-
-
-            // face 1
-            const face_nonside_fill = convert_exposure_to_fill (face_1_exposure)
-            const ori_1 = map_face_to_left_top (1)
-            const rect_1 = new fabric.Rect({
-                height: GRID*SIDE,
-                width: GRID*SIDE,
-                left: ori_1.left,
-                top: ori_1.top,
-                fill: face_nonside_fill,
-                selectable: false,
-                hoverCursor: 'default',
-                visible: true,
-                strokeWidth: 0,
-                objectCaching: true
             });
-            canvi.add (rect_1)
-            const ori_3 = map_face_to_left_top (3)
-            const rect_3 = new fabric.Rect({
-                height: GRID*SIDE,
-                width: GRID*SIDE,
-                left: ori_3.left,
-                top: ori_3.top,
-                fill: face_nonside_fill,
-                selectable: false,
-                hoverCursor: 'default',
-                visible: true,
-                strokeWidth: 0,
-                objectCaching: true
-            });
-            canvi.add (rect_3)
 
         }
 
@@ -1746,6 +1666,7 @@ export default function GameWorld(props) {
 
             {deployingUtx && <FloatingMessage message={<>Choose the location of the {DEVICE_TYPE_FULL_NAME_MAP[deployingUtx]} by pressing <kbd>LMB</kbd> and dragging along the path.</>} />}
 
+            <HUDLeft faceRadiation={faceRadiationRef.current} selectedFace={face} />
             <HUD lines={hudLines} universeActive={universeActive}/>
 
             <canvas id="c" />
