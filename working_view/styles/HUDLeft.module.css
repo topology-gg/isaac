@@ -19,7 +19,7 @@
 .hud > * {
     display: flex;
     font-size: 0.8em;
-    margin-left: 1.4em;
+    margin: 0 1.4em;
 }
 
 .buttonLink {
@@ -30,4 +30,12 @@
 
 .buttonLink:hover {
     color: #1c2737;
+}
+
+.selectedFace {
+    display: flex;
+}
+
+.faceNumber {
+    flex: 1;
 }
