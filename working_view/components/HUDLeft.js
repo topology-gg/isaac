@@ -12,7 +12,7 @@ const HUDLeft = ({ faceRadiation, selectedFace }) => {
             </div>
             <div>
                 Solar Exposure:{" "}
-                {selectedFace !== -1
+                {selectedFace !== -1 && faceRadiation
                     ? Math.floor(
                           (Math.min(faceRadiation[selectedFace], 20) / 20.0) *
                               100
