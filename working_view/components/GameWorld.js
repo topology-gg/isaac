@@ -256,7 +256,7 @@ export default function GameWorld(props) {
     // const [hoverTransferDeviceRect, setHoverTransferDeviceRect] = useState(false)
 
     const faceRadiationRef = useRef()
-    if (db_macro_states?.macro_states) {
+    if (db_macro_states?.macro_states && db_macro_states.macro_states[0]) {
         faceRadiationRef.current = faceRadiationFromMacro(db_macro_states.macro_states[0])
     }
 
@@ -1666,7 +1666,8 @@ export default function GameWorld(props) {
 
             {deployingUtx && <FloatingMessage message={<>Choose the location of the {DEVICE_TYPE_FULL_NAME_MAP[deployingUtx]} by pressing <kbd>LMB</kbd> and dragging along the path.</>} />}
 
-            <HUDLeft faceRadiation={faceRadiationRef.current} selectedFace={face} />
+            {universeActive && <HUDLeft faceRadiation={faceRadiationRef.current} selectedFace={face} />}
+
             <HUD lines={hudLines} universeActive={universeActive}/>
 
             <canvas id="c" />
