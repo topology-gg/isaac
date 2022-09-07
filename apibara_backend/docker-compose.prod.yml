@@ -5,8 +5,8 @@ services:
     image: mongo:latest
     restart: always
     environment:
-      MONGO_INITDB_ROOT_USERNAME: isaac
-      MONGO_INITDB_ROOT_PASSWORD: isaac
+      MONGO_INITDB_ROOT_USERNAME: apibara
+      MONGO_INITDB_ROOT_PASSWORD: apibara
     ports:
     - 27017:27017
     volumes:
@@ -24,3 +24,20 @@ services:
     - ./apibara/configuration.toml:/usr/etc/apibara/configuration.toml
     links:
     - mongo
+
+  indexer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    command:
+    - start
+    - --server-url
+    - apibara:7171
+    - --mongo-url
+    - "mongodb://apibara:apibara@mongo:27017"
+    environment:
+      PYTHONUNBUFFERED: "1"
+    links:
+    - mongo
+    - apibara

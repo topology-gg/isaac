@@ -1081,9 +1081,7 @@ async def handle_block (info: Info, block: NewBlock):
     # Use the provided RPC client to fetch the current block data.
     # The client is already initialized with the correct network based
     # on the indexer's settings.
-    block = await info.rpc_client.get_block_by_hash(block.new_head.hash)
-    block_time = datetime.fromtimestamp(block['accepted_time'])
-    print(f'> new live block at {block_time}')
+    print(f'> new live block at {block.new_head}')
 
 
 #
