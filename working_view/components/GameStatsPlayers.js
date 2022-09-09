@@ -9,25 +9,27 @@ import { CIV_SIZE } from "../lib/constants/gameWorld";
 
 export default function GameStatsPlayers (props) {
 
+    // const account_str_decimal = toBN(account).toString(10)
+    // const { data: stardisc_query } = useStardiscRegistryByAccount (account_str_decimal) // must be a better way than fetching the entire registry
     const { data: db_player_fungible_balances } = usePlayerFungibleBalances ()
 
     const empty_addr_array = []
     for (var i=0; i<CIV_SIZE; i++){
         empty_addr_array.push ('0')
     }
-    const [accountStringsState, setAccountStringsState] = useState(empty_addr_array)
+    const [accountBns, setAccountBns] = useState(empty_addr_array)
 
     useEffect (() => {
         if (!db_player_fungible_balances) return;
         if (db_player_fungible_balances.player_fungible_balances.length == 0) return;
 
-        setAccountStringsState ((prev) =>
-            prev.map((account_str, idx) => {
-                if (account_str !== '0') return account_str
+        setAccountBns ((prev) =>
+            prev.map((account_bn, idx) => {
+                if (account_bn !== '0') return account_bn
 
                 const player_account = db_player_fungible_balances.player_fungible_balances.find(e => e.player_index === idx).account;
 
-                return toBN(player_account).toString(16)
+                return toBN(player_account)
             })
         )
 
@@ -48,10 +50,10 @@ export default function GameStatsPlayers (props) {
                     </tr>
                 </thead>
                 <tbody>
-                    {accountStringsState.map((accountString, idx) =>
+                    {accountBns.map((accountBn, idx) =>
                         <tr key={`players-row-${idx}`} className="player_account">
                             <td key={`players-rowidx-${idx}`}>{idx}</td>
-                            <GameStatsPlayer accountString={accountString} />
+                            <GameStatsPlayer accountBn={accountBn} />
                         </tr>
                     )}
                 </tbody>

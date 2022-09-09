@@ -1,8 +1,10 @@
-import React from 'react'
-import { useStarknet, useStarknetCall } from '@starknet-react/core'
-import { useSNSContract } from "./SNSContract";
+import React, { useState, useEffect } from 'react'
+import { useStarknet } from '@starknet-react/core'
 import { toBN } from 'starknet/dist/utils/number';
 import { abbrevHexString } from '../lib/helpers/feltAbbreviator';
+import {
+    useStardiscRegistryByAccount
+} from '../lib/api'
 
 function feltLiteralToString (felt) {
 
@@ -27,38 +29,32 @@ function feltLiteralToString (felt) {
     return result
 }
 
-function parseCallResult (res) {
-
-    if (res && res.length > 0) {
-        const exist = toBN(res.exist).toString(10)
-        const name = toBN(res.name).toString(10)
-        const name_string = feltLiteralToString (name)
-
-        return [exist, name_string]
-    }
-
-}
-
-const GameStatsPlayer = ({ accountString }) => {
+const GameStatsPlayer = ({ accountBn }) => {
 
     const { account } = useStarknet()
-    const { contract: snsContract } = useSNSContract ()
+    const signedInAccountStr = toBN(account).toString(10)
+    const { data: db_stardisc_query } = useStardiscRegistryByAccount (accountBn.toString(10))
 
-    const signedInAccountStr = toBN(account).toString(16)
+    // React state
+    const [displayAccountStr, setDisplayAccountStr] = useState ()
 
-    const { data } = useStarknetCall ({
-        contract: snsContract,
-        method: 'sns_lookup_adr_to_name',
-        args: ["0x" + accountString],
-    })
+    useEffect(() => {
+        if (!db_stardisc_query) return;
+        if (db_stardisc_query.stardisc_query.length == 0) {
+            const abbrev_account_hexstr = abbrevHexString (accountBn.toString(16))
+            setDisplayAccountStr (abbrev_account_hexstr)
+            return;
+        }
 
-    const [_exist, name] = data ? parseCallResult (data) : [null, null]
+        const name = toBN(db_stardisc_query.stardisc_query[0].name).toString(10)
+        const name_string = feltLiteralToString (name)
 
-    const displayAccountStr = name || abbrevHexString(accountString)
+        setDisplayAccountStr (name_string)
+    }, [db_stardisc_query])
 
     return (
         <>
-            {accountString === signedInAccountStr ? (
+            {accountBn.toString(10) === signedInAccountStr ? (
                 <td style={{ color: '#FFAD48' }}>
                     {displayAccountStr}
                 </td>
