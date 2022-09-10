@@ -8,7 +8,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
 
 from contracts.design.constants import (
-    ns_device_types, assert_device_type_is_utx,
+    ns_device_types, assert_device_type_is_utx, assert_device_type_is_nonfungible,
     harvester_device_type_to_element_type,
     transformer_device_type_to_element_types,
     get_device_dimension_ptr
@@ -27,7 +27,7 @@ from contracts.util.logistics import (
 from contracts.design.manufacturing import (ns_manufacturing)
 from contracts.micro.micro_state import (
     ns_micro_state_functions,
-    GridStat, DeviceDeployedEmapEntry, TransformerResourceBalances, UtxSetDeployedEmapEntry
+    GridStat, DeviceEmapEntry, TransformerResourceBalances, UtxSetDeployedEmapEntry
 )
 from contracts.micro.micro_ndpe import (compute_impulse_in_micro_coord)
 from contracts.util.vector_ops import (compute_vector_rotate)
@@ -37,6 +37,19 @@ from contracts.universe.universe_state import (
 from contracts.macro.macro_state import (
     ns_macro_state_functions
 )
+
+#
+# Event emission for Apibara
+#
+@event
+func create_new_nonfungible_device_occurred (
+        event_counter : felt,
+        owner : felt,
+        type : felt,
+        id : felt
+    ):
+end
+
 
 ##############################
 ## Devices (including opsf)
@@ -251,11 +264,9 @@ namespace ns_micro_devices:
 
     func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
             caller : felt,
-            type : felt,
+            device_id : felt,
             grid : Vec2
-        ) -> (
-            device_id : felt
-        ):
+        ) -> ():
         alloc_locals
 
         #
@@ -264,56 +275,53 @@ namespace ns_micro_devices:
         let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
 
         #
-        # Check if caller owns at least 1 undeployed device of type `type`
+        # Get emap-entry from device_id
         #
-        let (amount_curr) = ns_micro_state_functions.device_undeployed_ledger_read (caller, type)
-        assert_nn (amount_curr - 1)
+        let (emap_index) = ns_micro_state_functions.device_id_to_emap_index_read (device_id)
+        let (emap_entry : DeviceEmapEntry) = ns_micro_state_functions.device_emap_read (emap_index)
+
+        #
+        # Confirm device_id is correct & caller owns this device & this device is not deployed, and get its type
+        #
+        with_attr error_message ("this device_id does not exist"):
+            assert emap_entry.id = device_id
+        end
+        with_attr error_message ("caller does not own this device"):
+            assert emap_entry.owner = caller
+        end
+        with_attr error_message ("this device is already deployed"):
+            assert emap_entry.is_deployed = 0
+        end
+        let device_type = emap_entry.type
 
         #
         # Check if this device can be deployed with the origin of its footprint at `grid`
         #
-        assert_device_footprint_populable (type, grid, civ_idx)
-
-        #
-        # Create new device id
-        #
-        let (block_height) = get_block_number ()
-        tempvar data_ptr : felt* = new (5, block_height, caller, type, grid.x, grid.y)
-        let (new_id) = hash_chain {hash_ptr = pedersen_ptr} (data_ptr)
+        assert_device_footprint_populable (device_type, grid, civ_idx)
 
         #
         # Update `grid_stats` at grid(s)
         #
-        let new_grid_stat = GridStat(
+        let new_grid_stat = GridStat (
             populated = 1,
-            deployed_device_type = type,
-            deployed_device_id =  new_id,
+            deployed_device_type  = device_type,
+            deployed_device_id    = device_id,
             deployed_device_owner = caller
         )
-        update_grid_with_new_grid_stat (type, grid, new_grid_stat, civ_idx)
+        update_grid_with_new_grid_stat (device_type, grid, new_grid_stat, civ_idx)
 
         #
-        # Update `device_deployed_emap`
+        # Update `device_emap`
         #
-        let (emap_size_curr) = ns_micro_state_functions.device_deployed_emap_size_read ()
-        ns_micro_state_functions.device_deployed_emap_size_write (emap_size_curr + 1)
-        ns_micro_state_functions.device_deployed_emap_write (emap_size_curr, DeviceDeployedEmapEntry(
-            grid = grid,
-            type = type,
-            id = new_id,
+        ns_micro_state_functions.device_emap_write (emap_index, DeviceEmapEntry(
+            owner       = emap_entry.owner,
+            type        = emap_entry.type,
+            id          = emap_entry.id,
+            is_deployed = 1,
+            grid        = grid,
         ))
 
-        #
-        # Update `device_deployed_id_to_emap_index`
-        #
-        ns_micro_state_functions.device_deployed_id_to_emap_index_write (new_id, emap_size_curr)
-
-        #
-        # Update `device_undeployed_ledger`: subtract by 1
-        #
-        ns_micro_state_functions.device_undeployed_ledger_write (caller, type, amount_curr - 1)
-
-        return (new_id)
+        return ()
     end
 
     func recurse_untether_utx_for_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
@@ -369,7 +377,9 @@ namespace ns_micro_devices:
     func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
             caller : felt,
             grid : Vec2
-        ) -> ():
+        ) -> (
+            device_id : felt
+        ):
         alloc_locals
 
         #
@@ -391,30 +401,20 @@ namespace ns_micro_devices:
         end
 
         #
-        # Update `device_deployed_emap`
+        # Update `device_emap`
         #
-        let (emap_index)      = ns_micro_state_functions.device_deployed_id_to_emap_index_read (grid_stat.deployed_device_id)
-        let (emap_size_curr)  = ns_micro_state_functions.device_deployed_emap_size_read ()
-        let (emap_entry)      = ns_micro_state_functions.device_deployed_emap_read (emap_index)
-        let (emap_entry_last) = ns_micro_state_functions.device_deployed_emap_read (emap_size_curr - 1)
-        ns_micro_state_functions.device_deployed_emap_size_write (
-            emap_size_curr - 1
-        )
-        ns_micro_state_functions.device_deployed_emap_write (
-            emap_size_curr - 1,
-            DeviceDeployedEmapEntry(
-                Vec2(0,0), 0, 0
+        let (emap_index)      = ns_micro_state_functions.device_id_to_emap_index_read (grid_stat.deployed_device_id)
+        let (emap_entry)      = ns_micro_state_functions.device_emap_read (emap_index)
+        ns_micro_state_functions.device_emap_write (
+            emap_index,
+            DeviceEmapEntry(
+                owner       = emap_entry.owner,
+                type        = emap_entry.type,
+                id          = emap_entry.id,
+                is_deployed = 0,
+                grid        = Vec2(0,0)
             )
         )
-        ns_micro_state_functions.device_deployed_emap_write (emap_index, emap_entry_last)
-        let grid_0_0 = emap_entry.grid
-        let type = emap_entry.type
-
-        #
-        # Update `device_deployed_id_to_emap_index`
-        #
-        let id_moved = emap_entry_last.id
-        ns_micro_state_functions.device_deployed_id_to_emap_index_write (id_moved, emap_index)
 
         #
         # Untether all utx-sets tethered to this device
@@ -435,50 +435,8 @@ namespace ns_micro_devices:
             idx = 0
         )
 
-        update_devices:
-        local syscall_ptr : felt* = syscall_ptr
-        local pedersen_ptr : HashBuiltin* = pedersen_ptr
-        local range_check_ptr = range_check_ptr
-        #
-        # Clear entry in device-id to resource-balance lookup
-        #
-        let (bool_is_harvester) = is_device_harvester (grid_stat.deployed_device_type)
-        let (bool_is_transformer) = is_device_transformer (grid_stat.deployed_device_type)
-
-        check_harvesters:
-        tempvar bool_is_harvester_minus_one = bool_is_harvester - 1
-        jmp check_transformers if bool_is_harvester_minus_one != 0
-
-        ns_micro_state_functions.harvesters_deployed_id_to_resource_balance_write (
-            grid_stat.deployed_device_id,
-            0
-        )
-        jmp recycle
-
-        check_transformers:
-        if bool_is_transformer == 1:
-            ns_micro_state_functions.transformers_deployed_id_to_resource_balances_write (
-                grid_stat.deployed_device_id,
-                TransformerResourceBalances (0,0)
-            )
-            tempvar syscall_ptr = syscall_ptr
-            tempvar pedersen_ptr = pedersen_ptr
-            tempvar range_check_ptr = range_check_ptr
-        else:
-            tempvar syscall_ptr = syscall_ptr
-            tempvar pedersen_ptr = pedersen_ptr
-            tempvar range_check_ptr = range_check_ptr
-        end
-
-        recycle:
-        #
-        # Recycle device back to caller
-        #
-        let (amount_curr) = ns_micro_state_functions.device_undeployed_ledger_read (caller, grid_stat.deployed_device_type)
-        ns_micro_state_functions.device_undeployed_ledger_write (caller, grid_stat.deployed_device_type, amount_curr + 1)
-
         update_grid_stat:
-        update_grid_with_new_grid_stat (type, grid_0_0, GridStat(
+        update_grid_with_new_grid_stat (emap_entry.type, emap_entry.grid, GridStat(
             populated = 0,
             deployed_device_type = 0,
             deployed_device_id = 0,
@@ -487,10 +445,10 @@ namespace ns_micro_devices:
             civ_idx
         )
 
-        return ()
+        return (emap_entry.id)
     end
 
-    func opsf_build_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func upsf_build_fungible_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
             caller : felt,
             grid : Vec2,
             device_type : felt,
@@ -504,17 +462,22 @@ namespace ns_micro_devices:
         let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
 
         #
-        # Check if `caller` owns the device at `opsf_grid`
+        # Check if `caller` owns the device at `upsf_grid`
         #
         let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
         assert grid_stat.populated = 1
         assert grid_stat.deployed_device_owner = caller
 
         #
-        # Check if an UPSF is deployed at `opsf_grid`
+        # Check if an UPSF is deployed at `upsf_grid`
         #
         assert grid_stat.deployed_device_type = ns_device_types.DEVICE_UPSF
         let opsf_device_id = grid_stat.deployed_device_id
+
+        #
+        # Check if device_type is of fungible type
+        #
+        assert_device_type_is_utx (device_type)
 
         #
         # Get resource & energy requirement for manufacturing one device of type `device_type`
@@ -529,13 +492,13 @@ namespace ns_micro_devices:
         local energy_should_consume = energy * device_count
 
         #
-        # Consume opsf energy; revert if insufficient
+        # Consume upsf energy; revert if insufficient
         #
-        let (local curr_energy) = ns_micro_state_functions.device_deployed_id_to_energy_balance_read (opsf_device_id)
+        let (local curr_energy) = ns_micro_state_functions.device_id_to_energy_balance_read (opsf_device_id)
         with_attr error_message ("insufficient energy; {energy_should_consume} required, {curr_energy} available at UPSF."):
             assert_le (energy_should_consume, curr_energy)
         end
-        ns_micro_state_functions.device_deployed_id_to_energy_balance_write (
+        ns_micro_state_functions.device_id_to_energy_balance_write (
             opsf_device_id,
             curr_energy - energy_should_consume
         )
@@ -554,10 +517,161 @@ namespace ns_micro_devices:
         #
         # If both resource & energy update above are successful, give devices to caller
         #
-        let (curr_amount) = ns_micro_state_functions.device_undeployed_ledger_read (caller, device_type)
-        ns_micro_state_functions.device_undeployed_ledger_write (
+        let (curr_amount) = ns_micro_state_functions.fungible_device_undeployed_ledger_read (caller, device_type)
+        ns_micro_state_functions.fungible_device_undeployed_ledger_write (
             caller, device_type,
             curr_amount + device_count
+        )
+
+        return ()
+    end
+
+    func upsf_build_nonfungible_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            caller : felt,
+            grid : Vec2,
+            device_type : felt,
+            device_count : felt
+        ) -> ():
+        alloc_locals
+
+        #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
+
+        #
+        # Check if `caller` owns the device at `upsf_grid`
+        #
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
+        assert grid_stat.populated = 1
+        assert grid_stat.deployed_device_owner = caller
+
+        #
+        # Check if an UPSF is deployed at `upsf_grid`
+        #
+        assert grid_stat.deployed_device_type = ns_device_types.DEVICE_UPSF
+        let opsf_device_id = grid_stat.deployed_device_id
+
+        #
+        # Check if device_type is of non-fungible type
+        #
+        assert_device_type_is_nonfungible (device_type)
+
+        #
+        # Get resource & energy requirement for manufacturing one device of type `device_type`
+        #
+        let (
+            energy : felt,
+            resource_arr_len : felt,
+            resource_arr : felt*
+        ) = ns_manufacturing.get_resource_energy_requirement_given_device_type (
+            device_type
+        )
+        local energy_should_consume = energy * device_count
+
+        #
+        # Consume upsf energy; revert if insufficient
+        #
+        let (local curr_energy) = ns_micro_state_functions.device_id_to_energy_balance_read (opsf_device_id)
+        with_attr error_message ("insufficient energy; {energy_should_consume} required, {curr_energy} available at UPSF."):
+            assert_le (energy_should_consume, curr_energy)
+        end
+        ns_micro_state_functions.device_id_to_energy_balance_write (
+            opsf_device_id,
+            curr_energy - energy_should_consume
+        )
+
+        #
+        # Recurse update resource balance at this UPSF; revert if any balance is insufficient
+        #
+        recurse_consume_device_balance_at_opsf (
+            opsf_device_id = opsf_device_id,
+            device_count = device_count,
+            len = resource_arr_len,
+            arr = resource_arr,
+            idx = 0
+        )
+
+        #
+        # If all resource & energy updates above are successful, create new devices
+        #
+        let (block_height) = get_block_number ()
+        recurse_create_new_undeployed_device (
+            idx = 0,
+            len = device_count,
+            block_height = block_height,
+            owner = caller,
+            device_type = device_type
+        )
+
+        return ()
+    end
+
+    func recurse_create_new_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            idx : felt,
+            len : felt,
+            block_height : felt,
+            owner : felt,
+            device_type : felt,
+        ) -> ():
+
+        if idx == len:
+            return ()
+        end
+
+        create_new_nonfungible_device (block_height, owner, device_type)
+
+        #
+        # Tail recursion
+        #
+        recurse_create_new_undeployed_device (
+            idx + 1,
+            len,
+            block_height,
+            owner,
+            device_type
+        )
+
+        return ()
+    end
+
+    func create_new_nonfungible_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            block_height : felt,
+            owner : felt,
+            device_type : felt
+        ) -> ():
+        alloc_locals
+
+        #
+        # Create new_device_id
+        #
+        let (new_emap_index) = ns_micro_state_functions.device_emap_size_read ()
+        tempvar data_ptr : felt* = new (4, block_height, owner, device_type, new_emap_index)
+        let (new_device_id) = hash_chain {hash_ptr = pedersen_ptr} (data_ptr)
+
+        #
+        # Create a new entry in device_emap; add device_id to emap_index mapping
+        #
+        ns_micro_state_functions.device_emap_size_write (new_emap_index + 1)
+        ns_micro_state_functions.device_emap_write (new_emap_index, DeviceEmapEntry(
+            owner       = owner,
+            type        = device_type,
+            id          = new_device_id,
+            is_deployed = 0,
+            grid        = Vec2(0,0)
+        ))
+        ns_micro_state_functions.device_id_to_emap_index_write (new_device_id, new_emap_index)
+
+        #
+        # Emit event for Apibara
+        #
+        let (event_counter) = ns_universe_state_functions.event_counter_read ()
+        ns_universe_state_functions.event_counter_increment ()
+        create_new_nonfungible_device_occurred.emit (
+            event_counter,
+            owner,
+            device_type,
+            new_device_id
         )
 
         return ()
@@ -579,7 +693,7 @@ namespace ns_micro_devices:
         #
         # Check if opsf has sufficient resource balance of this type
         #
-        let (local curr_balance) = ns_micro_state_functions.opsf_deployed_id_to_resource_balances_read (
+        let (local curr_balance) = ns_micro_state_functions.opsf_id_to_resource_balances_read (
             opsf_device_id, idx
         )
         local quantity_should_consume = arr[idx] * device_count
@@ -592,7 +706,7 @@ namespace ns_micro_devices:
         #
         # Update opsf's resource balance of this type
         #
-        ns_micro_state_functions.opsf_deployed_id_to_resource_balances_write (
+        ns_micro_state_functions.opsf_id_to_resource_balances_write (
             opsf_device_id, idx,
             curr_balance - quantity_should_consume
         )
@@ -622,20 +736,21 @@ namespace ns_micro_devices:
         let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
 
         #
-        # Check if `caller` owns the device at `opsf_grid`
+        # Check if `caller` owns the device at the selected grid
         #
         let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
         with_attr error_message ("selected grid is not populated"):
             assert grid_stat.populated = 1
         end
+
         with_attr error_message ("selected grid has deployed device whose owner is not the caller"):
             assert grid_stat.deployed_device_owner = caller
         end
 
         #
-        # Check if an NDPE is deployed at `opsf_grid`
+        # Check if an NDPE is deployed at the selected grid
         #
-        with_attr error_message ("selected grid does not have NDPE deployed"):
+        with_attr error_message ("selected grid does not have an NDPE deployed"):
             assert grid_stat.deployed_device_type = ns_device_types.DEVICE_NDPE
         end
         let ndpe_device_id = grid_stat.deployed_device_id
@@ -645,9 +760,9 @@ namespace ns_micro_devices:
         # and compute aggregate impulse + deduct energy consumed
         # Note: we could have declared a dedicated storage mapping for NDPE devices;
         # given the relative infrequency of invoking this function,
-        # we chose temporarily to lump deployed devices of all type in one `device_deployed_emap`
+        # we chose temporarily to lump all non-fungible devices of all type in one `device_emap`
         #
-        let (emap_size) = ns_micro_state_functions.device_deployed_emap_size_read ()
+        let (emap_size) = ns_micro_state_functions.device_emap_size_read ()
         let (impulse_sum_in_micro_coord : Vec2) = recurse_operate_all_ndpes (
             len = emap_size,
             idx = 0,
@@ -691,11 +806,12 @@ namespace ns_micro_devices:
         end
 
         #
-        # Grab emap entry and check if it is an NDPE
+        # Grab emap entry and check if it is a deployed NDPE
         #
         local impulse : Vec2
-        let (emap_entry) = ns_micro_state_functions.device_deployed_emap_read (idx)
-        if emap_entry.type == ns_device_types.DEVICE_NDPE:
+        let (emap_entry) = ns_micro_state_functions.device_emap_read (idx)
+        let (bool_is_ndpe) = is_zero (emap_entry.type - ns_device_types.DEVICE_NDPE)
+        if bool_is_ndpe * emap_entry.is_deployed == 1:
             #
             # Get owner of this deployed NDPE for participation record purposes,
             # and update universe state accordingly
@@ -709,8 +825,8 @@ namespace ns_micro_devices:
             #
             # Get energy stored at this NDPE, and clear energy storage at this NDPE
             #
-            let (curr_energy) = ns_micro_state_functions.device_deployed_id_to_energy_balance_read (emap_entry.id)
-            ns_micro_state_functions.device_deployed_id_to_energy_balance_write (emap_entry.id, 0)
+            let (curr_energy) = ns_micro_state_functions.device_id_to_energy_balance_read (emap_entry.id)
+            ns_micro_state_functions.device_id_to_energy_balance_write (emap_entry.id, 0)
 
             #
             # Use all of the energy to generate impulse,

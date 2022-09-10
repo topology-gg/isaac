@@ -63,6 +63,11 @@ path = 'contracts/lobby/lobby.cairo'
 subfolder = 'isaac'
 _compile_contract (path, name, subfolder)
 
+name = 'proxy'
+path = 'contracts/proxy/proxy.cairo'
+subfolder = 'isaac'
+_compile_contract (path, name, subfolder)
+
 ###
 
 name = 'yagi_router_dao'

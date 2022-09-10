@@ -31,13 +31,15 @@ end
 ##############################
 
 @storage_var
-func device_undeployed_ledger (owner : felt, type : felt) -> (amount : felt):
+func fungible_device_undeployed_ledger (owner : felt, type : felt) -> (amount : felt):
 end
 
-struct DeviceDeployedEmapEntry:
-    member grid : Vec2
-    member type : felt
-    member id : felt
+struct DeviceEmapEntry:
+    member owner : felt
+    member type  : felt
+    member id    : felt
+    member is_deployed : felt
+    member grid  : Vec2
 end
 
 struct TransformerResourceBalances:
@@ -46,38 +48,38 @@ struct TransformerResourceBalances:
 end
 
 @storage_var
-func device_deployed_emap_size () -> (size : felt):
+func device_emap_size () -> (size : felt):
 end
 
 @storage_var
-func device_deployed_emap (emap_index : felt) -> (emap_entry : DeviceDeployedEmapEntry):
+func device_emap (emap_index : felt) -> (emap_entry : DeviceEmapEntry):
 end
 
-# for quick reverse lookup (device-id to emap-index), assuming device-id is valid
+# for quick reverse lookup (device-id to emap-index)
 @storage_var
-func device_deployed_id_to_emap_index (id : felt) -> (emap_index : felt):
+func device_id_to_emap_index (id : felt) -> (emap_index : felt):
 end
 
 #
 # Resource balances
 #
 @storage_var
-func harvesters_deployed_id_to_resource_balance (id : felt) -> (balance : felt):
+func harvesters_id_to_resource_balance (id : felt) -> (balance : felt):
 end
 
 @storage_var
-func transformers_deployed_id_to_resource_balances (id : felt) -> (balances : TransformerResourceBalances):
+func transformers_id_to_resource_balances (id : felt) -> (balances : TransformerResourceBalances):
 end
 
 @storage_var
-func opsf_deployed_id_to_resource_balances (id : felt, element_type : felt) -> (balance : felt):
+func opsf_id_to_resource_balances (id : felt, element_type : felt) -> (balance : felt):
 end
 
 #
 # Energy balances
 #
 @storage_var
-func device_deployed_id_to_energy_balance (id : felt) -> (energy : felt):
+func device_id_to_energy_balance (id : felt) -> (energy : felt):
 end
 
 
@@ -146,57 +148,57 @@ namespace ns_micro_state_functions:
     end
 
     @view
-    func device_undeployed_ledger_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func fungible_device_undeployed_ledger_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         owner : felt, type : felt) -> (amount : felt):
-        let (amount) = device_undeployed_ledger.read (owner, type)
+        let (amount) = fungible_device_undeployed_ledger.read (owner, type)
         return (amount)
     end
 
     @view
-    func device_deployed_emap_size_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> (size : felt):
-        let (size) = device_deployed_emap_size.read ()
+    func device_emap_size_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} () -> (size : felt):
+        let (size) = device_emap_size.read ()
         return (size)
     end
 
     @view
-    func device_deployed_emap_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        emap_index : felt) -> (emap_entry : DeviceDeployedEmapEntry):
-        let (emap_entry) = device_deployed_emap.read (emap_index)
+    func device_emap_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        emap_index : felt) -> (emap_entry : DeviceEmapEntry):
+        let (emap_entry) = device_emap.read (emap_index)
         return (emap_entry)
     end
 
     @view
-    func device_deployed_id_to_emap_index_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func device_id_to_emap_index_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         id : felt) -> (emap_index : felt):
-        let (emap_index) = device_deployed_id_to_emap_index.read (id)
+        let (emap_index) = device_id_to_emap_index.read (id)
         return (emap_index)
     end
 
     @view
-    func harvesters_deployed_id_to_resource_balance_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func harvesters_id_to_resource_balance_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         id : felt) -> (balance : felt):
-        let (balance) = harvesters_deployed_id_to_resource_balance.read (id)
+        let (balance) = harvesters_id_to_resource_balance.read (id)
         return (balance)
     end
 
     @view
-    func transformers_deployed_id_to_resource_balances_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func transformers_id_to_resource_balances_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         id : felt) -> (balances : TransformerResourceBalances):
-        let (balances) = transformers_deployed_id_to_resource_balances.read (id)
+        let (balances) = transformers_id_to_resource_balances.read (id)
         return (balances)
     end
 
     @view
-    func opsf_deployed_id_to_resource_balances_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func opsf_id_to_resource_balances_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         id : felt, element_type : felt) -> (balance : felt):
-        let (balance) = opsf_deployed_id_to_resource_balances.read (id, element_type)
+        let (balance) = opsf_id_to_resource_balances.read (id, element_type)
         return (balance)
     end
 
     @view
-    func device_deployed_id_to_energy_balance_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func device_id_to_energy_balance_read {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         id : felt) -> (energy : felt):
-        let (energy) = device_deployed_id_to_energy_balance.read (id)
+        let (energy) = device_id_to_energy_balance.read (id)
         return (energy)
     end
 
@@ -259,50 +261,50 @@ namespace ns_micro_state_functions:
         return ()
     end
 
-    func device_undeployed_ledger_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func fungible_device_undeployed_ledger_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         owner : felt, type : felt, amount : felt) -> ():
-        device_undeployed_ledger.write (owner, type, amount)
+        fungible_device_undeployed_ledger.write (owner, type, amount)
         return ()
     end
 
-    func device_deployed_emap_size_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (size : felt) -> ():
-        device_deployed_emap_size.write (size)
+    func device_emap_size_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (size : felt) -> ():
+        device_emap_size.write (size)
         return ()
     end
 
-    func device_deployed_emap_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        emap_index : felt, emap_entry : DeviceDeployedEmapEntry) -> ():
-        device_deployed_emap.write (emap_index, emap_entry)
+    func device_emap_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        emap_index : felt, emap_entry : DeviceEmapEntry) -> ():
+        device_emap.write (emap_index, emap_entry)
         return ()
     end
 
-    func device_deployed_id_to_emap_index_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func device_id_to_emap_index_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         id : felt, emap_index : felt) -> ():
-        device_deployed_id_to_emap_index.write (id, emap_index)
+        device_id_to_emap_index.write (id, emap_index)
         return ()
     end
 
-    func harvesters_deployed_id_to_resource_balance_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func harvesters_id_to_resource_balance_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         id : felt, balance : felt) -> ():
-        harvesters_deployed_id_to_resource_balance.write (id, balance)
+        harvesters_id_to_resource_balance.write (id, balance)
         return ()
     end
 
-    func transformers_deployed_id_to_resource_balances_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func transformers_id_to_resource_balances_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         id : felt, balances : TransformerResourceBalances) -> ():
-        transformers_deployed_id_to_resource_balances.write (id, balances)
+        transformers_id_to_resource_balances.write (id, balances)
         return ()
     end
 
-    func opsf_deployed_id_to_resource_balances_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func opsf_id_to_resource_balances_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         id : felt, element_type : felt, balance : felt) -> ():
-        opsf_deployed_id_to_resource_balances.write (id, element_type, balance)
+        opsf_id_to_resource_balances.write (id, element_type, balance)
         return ()
     end
 
-    func device_deployed_id_to_energy_balance_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func device_id_to_energy_balance_write {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
         id : felt, energy : felt) -> ():
-        device_deployed_id_to_energy_balance.write (id, energy)
+        device_id_to_energy_balance.write (id, energy)
         return ()
     end
 
