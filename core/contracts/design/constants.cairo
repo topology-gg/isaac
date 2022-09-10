@@ -17,7 +17,7 @@ const UNIVERSE_MAX_AGE_IN_TICKS = 2520 # ~7 days, given 2 blocks (4 minutes) per
 #
 # Capacity control - size of civilization per universe, and number of universes deployed
 #
-const CIV_SIZE = 5
+const CIV_SIZE = 3
 const UNIVERSE_COUNT = 1
 
 #
@@ -413,6 +413,24 @@ namespace ns_ndpe_impulse_function:
     const SLOPE_3 = 2 * (10**11)
 end
 
+func assert_device_type_is_nonfungible {} (device_type : felt) -> ():
+    alloc_locals
+
+    if device_type == ns_device_types.DEVICE_UTB:
+        with_attr error_message ("device_type is 12 (UTB), which is fungible"):
+            assert 0 = 1
+        end
+    end
+
+    if device_type == ns_device_types.DEVICE_UTL:
+        with_attr error_message ("device_type is 13 (UTL), which is fungible"):
+            assert 0 = 1
+        end
+    end
+
+    return ()
+end
+
 func assert_device_type_is_utx {} (device_type : felt) -> ():
     alloc_locals
 
@@ -425,10 +443,20 @@ func assert_device_type_is_utx {} (device_type : felt) -> ():
     end
 
     local x = device_type
-    with_attr error_message ("device_type ({x}) is neither UTB (12) or UTL (13)."):
+    with_attr error_message ("device_type ({x}) is neither 12 (UTB) or 13 (UTL)."):
         assert 0 = 1
     end
     return ()
+end
+
+func is_device_type_utx {} (device_type : felt) -> (bool : felt):
+    if device_type == ns_device_types.DEVICE_UTB:
+        return (1)
+    end
+    if device_type == ns_device_types.DEVICE_UTL:
+        return (1)
+    end
+    return (0)
 end
 
 #

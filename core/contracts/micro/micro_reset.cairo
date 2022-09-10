@@ -33,9 +33,9 @@ namespace ns_micro_reset:
         ## `grid_stats` takes civilization index as its first input argument, so grid status will not collide
         ## across civilizations
 
-        recurse_over_address_reset_device_undeployed_ledger (0) # for each player in civilization: for each type, set amount to 0
+        recurse_over_address_reset_fungible_device_undeployed_ledger (0) # for each player in civilization: for each fungible type, set amount to 0
 
-        ns_micro_state_functions.device_deployed_emap_size_write (0)
+        ns_micro_state_functions.device_emap_size_write (0)
 
         ns_micro_state_functions.utx_set_deployed_emap_size_write (ns_device_types.DEVICE_UTB, 0)
         ns_micro_state_functions.utx_set_deployed_emap_size_write (ns_device_types.DEVICE_UTL, 0)
@@ -46,7 +46,7 @@ namespace ns_micro_reset:
         return ()
     end
 
-    func recurse_over_address_reset_device_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func recurse_over_address_reset_fungible_device_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
             idx : felt
         ) -> ():
         alloc_locals
@@ -59,39 +59,39 @@ namespace ns_micro_reset:
         # Get player address and recurse over all device types for it
         #
         let (player_address) = ns_universe_state_functions.civilization_player_idx_to_address_read (idx)
-        recurse_over_device_type_given_address_reset_device_undeployed_ledger (
+        recurse_over_device_type_given_address_reset_fungible_device_undeployed_ledger (
             player_address,
-            0
+            ns_device_types.DEVICE_UTB
         )
 
         #
         # Tail recursion
         #
-        recurse_over_address_reset_device_undeployed_ledger (
+        recurse_over_address_reset_fungible_device_undeployed_ledger (
             idx + 1
         )
         return ()
     end
 
-    func recurse_over_device_type_given_address_reset_device_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+    func recurse_over_device_type_given_address_reset_fungible_device_undeployed_ledger {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
             player_address : felt,
             device_type : felt
         ) -> ():
         alloc_locals
 
-        if device_type == ns_device_types.DEVICE_TYPE_COUNT:
+        if device_type == ns_device_types.DEVICE_UTL + 1:
             return ()
         end
 
         #
         # Reset entry at ledger
         #
-        ns_micro_state_functions.device_undeployed_ledger_write (player_address, device_type, 0)
+        ns_micro_state_functions.fungible_device_undeployed_ledger_write (player_address, device_type, 0)
 
         #
         # Tail recursion
         #
-        recurse_over_device_type_given_address_reset_device_undeployed_ledger (
+        recurse_over_device_type_given_address_reset_fungible_device_undeployed_ledger (
             player_address,
             device_type + 1
         )
