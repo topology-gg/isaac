@@ -229,16 +229,16 @@ end
 # Init and reset functions
 ##########################
 
-@constructor
-func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
+# @constructor
+# func constructor {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} ():
 
-    # let (curr_block_height) = get_block_number ()
-    # ns_universe_state_functions.l2_block_at_genesis_write (curr_block_height)
+#     # let (curr_block_height) = get_block_number ()
+#     # ns_universe_state_functions.l2_block_at_genesis_write (curr_block_height)
 
-    reset_and_deactivate_universe ()
+#     reset_and_deactivate_universe ()
 
-    return()
-end
+#     return()
+# end
 
 @external
 func set_lobby_address_once {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
@@ -361,6 +361,8 @@ func activate_universe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
         arr_player_adr : felt*
     ) -> ():
     alloc_locals
+
+    reset_and_deactivate_universe ()
 
     #
     # Only lobby contract can invoke this function
