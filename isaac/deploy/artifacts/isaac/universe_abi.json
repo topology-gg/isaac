@@ -1086,12 +1086,6 @@
         "type": "function"
     },
     {
-        "inputs": [],
-        "name": "constructor",
-        "outputs": [],
-        "type": "constructor"
-    },
-    {
         "inputs": [
             {
                 "name": "address",
