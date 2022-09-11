@@ -3,6 +3,7 @@ import { ConnectWallet } from "../components/ConnectWallet.js"
 import { getInstalledInjectedConnectors, StarknetProvider } from '@starknet-react/core'
 
 import Config from "../components/Config"
+import View from "../components/View"
 
 function Home() {
 
@@ -18,6 +19,7 @@ function Home() {
 
                     <ConnectWallet set_is_gyoza={(bool) => setIsGyoza(bool)}/>
 
+                    {/* <View /> */}
                     {isGyoza ? <Config /> : <></>}
                 </div>
             </div>

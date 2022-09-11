@@ -5,7 +5,7 @@ function MyApp({ Component, pageProps }) {
   return (
     <>
         <NextHead>
-            <title>Isaac: Station</title>
+            <title>Isaac: Config</title>
         </NextHead>
         <Component {...pageProps} />
     </>
