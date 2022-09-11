@@ -56,7 +56,10 @@ function Home() {
             </div>
             <div className="mother-container">
                 <div className="top-child-container">
-                    <h1 style={{fontFamily:'Anoxic',fontSize:'4em',marginTop:'0.2em',marginBottom:'0.2em'}}>ISAAC</h1>
+                    <div style={{display:'flex'}}>
+                        <p style={{fontFamily:'Anoxic',fontSize:'4em',marginTop:'0.2em',marginBottom:'0.2em'}}>ISAAC</p><p style={{verticalAlign:"bottom"}}>Alpha2</p>
+                    </div>
+
 
                     <Button
                         onClick={handlePanel}

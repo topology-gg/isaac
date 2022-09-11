@@ -1,11 +1,12 @@
 
 import clientPromise from "../../lib/mongodb"
+import { DB_NAME } from "./db_name"
 
 export default async function handler(req, res) {
 
     const client = await clientPromise
 
-    const db = client.db('stardisc')
+    const db = client.db(DB_NAME)
     const stardisc_registry = await db
         .collection('registry')
         .find({'_chain.valid_to' : null})

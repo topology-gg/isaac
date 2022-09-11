@@ -9,7 +9,8 @@ import { toBN } from 'starknet/dist/utils/number'
 import styles from './ConnectWallet.module.css'
 
 import {
-    useStardiscRegistryByAccount
+    useStardiscRegistryByAccount,
+    useStardiscRegistryAll
 } from '../lib/api'
 
 export function ConnectWallet() {
@@ -21,6 +22,8 @@ export function ConnectWallet() {
 
     const account_str_decimal = toBN(account).toString(10)
     const { data: stardisc_query } = useStardiscRegistryByAccount (account_str_decimal) // must be a better way than fetching the entire registry
+    const { data: stardisc_registry } = useStardiscRegistryAll ()
+    console.log ("stardisc_registry:", stardisc_registry)
 
     // Connectors are not available server-side therefore we
     // set the state in a useEffect hook
