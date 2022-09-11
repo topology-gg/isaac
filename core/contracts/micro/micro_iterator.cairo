@@ -2,222 +2,205 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.hash_chain import hash_chain
-from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le)
-from starkware.cairo.common.math_cmp import (is_le, is_nn_le, is_not_zero)
+from starkware.cairo.common.math import (
+    assert_lt,
+    assert_le,
+    assert_nn,
+    assert_not_equal,
+    assert_nn_le,
+)
+from starkware.cairo.common.math_cmp import is_le, is_nn_le, is_not_zero
 from starkware.cairo.common.alloc import alloc
-from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
+from starkware.starknet.common.syscalls import get_block_number, get_caller_address
 
 from contracts.design.constants import (
-    ns_device_types, assert_device_type_is_utx,
+    ns_device_types,
+    assert_device_type_is_utx,
     harvester_device_type_to_element_type,
     transformer_device_type_to_element_types,
-    get_device_dimension_ptr
+    get_device_dimension_ptr,
 )
-from contracts.util.structs import (
-    Vec2
-)
-from contracts.util.distribution import (
-    ns_distribution
-)
+from contracts.util.structs import Vec2
+from contracts.util.distribution import ns_distribution
 from contracts.util.grid import (
-    is_valid_grid, are_contiguous_grids_given_valid_grids,
+    is_valid_grid,
+    are_contiguous_grids_given_valid_grids,
     locate_face_and_edge_given_valid_grid,
-    is_zero
+    is_zero,
 )
 from contracts.util.logistics import (
-    ns_logistics_harvester, ns_logistics_transformer,
-    ns_logistics_xpg, ns_logistics_utb, ns_logistics_utl
+    ns_logistics_harvester,
+    ns_logistics_transformer,
+    ns_logistics_xpg,
+    ns_logistics_utb,
+    ns_logistics_utl,
 )
 from contracts.micro.micro_state import (
     ns_micro_state_functions,
-    GridStat, DeviceEmapEntry, TransformerResourceBalances, UtxSetDeployedEmapEntry
+    GridStat,
+    DeviceEmapEntry,
+    TransformerResourceBalances,
+    UtxSetDeployedEmapEntry,
 )
 
-#####################################
-## Iterators for client view purposes
-#####################################
+//####################################
+// # Iterators for client view purposes
+//####################################
 
-namespace ns_micro_iterator:
+namespace ns_micro_iterator {
+    //
+    // Iterating over device emap
+    //
+    func iterate_device_emap{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}() -> (
+        emap_len: felt, emap: DeviceEmapEntry*
+    ) {
+        alloc_locals;
 
-    #
-    # Iterating over device emap
-    #
-    func iterate_device_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        ) -> (
-            emap_len : felt,
-            emap : DeviceEmapEntry*
-        ):
-        alloc_locals
+        let (emap_size) = ns_micro_state_functions.device_emap_size_read();
+        let (emap: DeviceEmapEntry*) = alloc();
 
-        let (emap_size) = ns_micro_state_functions.device_emap_size_read ()
-        let (emap : DeviceEmapEntry*) = alloc ()
+        recurse_traverse_device_emap(emap_size, emap, 0);
 
-        recurse_traverse_device_emap (emap_size, emap, 0)
+        return (emap_size, emap);
+    }
 
-        return (emap_size, emap)
-    end
+    func recurse_traverse_device_emap{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(len: felt, arr: DeviceEmapEntry*, idx: felt) -> () {
+        if (idx == len) {
+            return ();
+        }
 
-    func recurse_traverse_device_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-        len : felt,
-        arr : DeviceEmapEntry*,
-        idx : felt) -> ():
+        let (emap_entry) = ns_micro_state_functions.device_emap_read(idx);
+        assert arr[idx] = emap_entry;
 
-        if idx == len:
-            return ()
-        end
+        recurse_traverse_device_emap(len, arr, idx + 1);
 
-        let (emap_entry) = ns_micro_state_functions.device_emap_read (idx)
-        assert arr[idx] = emap_entry
+        return ();
+    }
 
-        recurse_traverse_device_emap (len, arr, idx+1)
+    //
+    // Iterating over utx emap
+    //
+    func iterate_utx_deployed_emap{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        utx_device_type: felt
+    ) -> (emap_len: felt, emap: UtxSetDeployedEmapEntry*) {
+        alloc_locals;
 
-        return ()
-    end
+        let (emap_size) = ns_micro_state_functions.utx_set_deployed_emap_size_read(utx_device_type);
+        let (emap: UtxSetDeployedEmapEntry*) = alloc();
 
-    #
-    # Iterating over utx emap
-    #
-    func iterate_utx_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-            utx_device_type : felt
-        ) -> (
-            emap_len : felt,
-            emap : UtxSetDeployedEmapEntry*
-        ):
-        alloc_locals
+        recurse_traverse_utx_deployed_emap(utx_device_type, emap_size, emap, 0);
 
-        let (emap_size) = ns_micro_state_functions.utx_set_deployed_emap_size_read (utx_device_type)
-        let (emap : UtxSetDeployedEmapEntry*) = alloc ()
+        return (emap_size, emap);
+    }
 
-        recurse_traverse_utx_deployed_emap (utx_device_type, emap_size, emap, 0)
+    func recurse_traverse_utx_deployed_emap{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(utx_device_type: felt, len: felt, arr: UtxSetDeployedEmapEntry*, idx: felt) -> () {
+        if (idx == len) {
+            return ();
+        }
 
-        return (emap_size, emap)
-    end
+        let (emap_entry) = ns_micro_state_functions.utx_set_deployed_emap_read(
+            utx_device_type, idx
+        );
+        assert arr[idx] = emap_entry;
 
-    func recurse_traverse_utx_deployed_emap {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-            utx_device_type : felt,
-            len : felt,
-            arr : UtxSetDeployedEmapEntry*,
-            idx : felt
-        ) -> ():
+        recurse_traverse_utx_deployed_emap(utx_device_type, len, arr, idx + 1);
 
-        if idx == len:
-            return ()
-        end
+        return ();
+    }
 
-        let (emap_entry) = ns_micro_state_functions.utx_set_deployed_emap_read (utx_device_type, idx)
-        assert arr[idx] = emap_entry
+    //
+    // Iterating over utx emap, return grids
+    //
+    func iterate_utx_deployed_emap_grab_all_utxs{
+        syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr
+    }(utx_device_type: felt) -> (grids_len: felt, grids: Vec2*) {
+        alloc_locals;
 
-        recurse_traverse_utx_deployed_emap (utx_device_type, len, arr, idx+1)
+        //
+        // Double recursion:
+        // recurse over utx-deployed emap,
+        // then for each entry, recurse from index start to index end to grab the grids
+        // return one big array of grids
+        //
 
-        return ()
-    end
+        let (grids: Vec2*) = alloc();
+        let (outer_loop_len) = ns_micro_state_functions.utx_set_deployed_emap_size_read(
+            utx_device_type
+        );
+        let (count_final) = recurse_outer_grab_utxs(
+            utx_device_type=utx_device_type, len=outer_loop_len, idx=0, arr=grids, count=0
+        );
 
-    #
-    # Iterating over utx emap, return grids
-    #
-    func iterate_utx_deployed_emap_grab_all_utxs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-            utx_device_type : felt
-        ) -> (
-            grids_len : felt,
-            grids : Vec2*
-        ):
-        alloc_locals
+        return (count_final, grids);
+    }
 
-        #
-        # Double recursion:
-        # recurse over utx-deployed emap,
-        # then for each entry, recurse from index start to index end to grab the grids
-        # return one big array of grids
-        #
+    func recurse_outer_grab_utxs{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        utx_device_type: felt, len: felt, idx: felt, arr: Vec2*, count: felt
+    ) -> (count_final: felt) {
+        alloc_locals;
 
-        let (grids : Vec2*) = alloc ()
-        let (outer_loop_len) = ns_micro_state_functions.utx_set_deployed_emap_size_read (utx_device_type)
-        let (count_final) = recurse_outer_grab_utxs (
-            utx_device_type = utx_device_type,
-            len = outer_loop_len,
-            idx = 0,
-            arr = grids,
-            count = 0
-        )
+        if (idx == len) {
+            return (count,);
+        }
 
-        return (count_final, grids)
-    end
+        //
+        // inner recursion
+        //
+        let (emap_entry) = ns_micro_state_functions.utx_set_deployed_emap_read(
+            utx_device_type, idx
+        );
+        let utx_idx_start = emap_entry.utx_deployed_index_start;
+        let utx_idx_end = emap_entry.utx_deployed_index_end;
 
-    func recurse_outer_grab_utxs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-            utx_device_type : felt,
-            len : felt,
-            idx : felt,
-            arr : Vec2*,
-            count : felt
-        ) -> (
-            count_final : felt
-        ):
-        alloc_locals
+        with_attr error_message(
+                "utx_idx_start should not equal to utx_idx_end for any utx emap entry.") {
+            assert_not_equal(utx_idx_start, utx_idx_end);
+        }
 
-        if idx == len:
-            return (count)
-        end
+        recurse_inner_grab_utxs(
+            utx_device_type=utx_device_type,
+            idx_start=utx_idx_start,
+            idx_end=utx_idx_end,
+            off=0,
+            arr=arr,
+        );
 
-        #
-        # inner recursion
-        #
-        let (emap_entry)  = ns_micro_state_functions.utx_set_deployed_emap_read (utx_device_type, idx)
-        let utx_idx_start = emap_entry.utx_deployed_index_start
-        let utx_idx_end   = emap_entry.utx_deployed_index_end
-
-        with_attr error_message ("utx_idx_start should not equal to utx_idx_end for any utx emap entry."):
-            assert_not_equal (utx_idx_start, utx_idx_end)
-        end
-
-        recurse_inner_grab_utxs (
-            utx_device_type = utx_device_type,
-            idx_start = utx_idx_start,
-            idx_end = utx_idx_end,
-            off = 0,
-            arr = arr
-        )
-
-        #
-        # tail recursion
-        #
-        let (count_final) = recurse_outer_grab_utxs (
+        //
+        // tail recursion
+        //
+        let (count_final) = recurse_outer_grab_utxs(
             utx_device_type,
             len,
             idx + 1,
-            &arr [utx_idx_end - utx_idx_start],
-            count + utx_idx_end - utx_idx_start
-        )
-        return (count_final)
-    end
+            &arr[utx_idx_end - utx_idx_start],
+            count + utx_idx_end - utx_idx_start,
+        );
+        return (count_final,);
+    }
 
-    func recurse_inner_grab_utxs {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
-            utx_device_type : felt,
-            idx_start : felt,
-            idx_end : felt,
-            off : felt,
-            arr : Vec2*
-        ) -> ():
-        alloc_locals
+    func recurse_inner_grab_utxs{syscall_ptr: felt*, pedersen_ptr: HashBuiltin*, range_check_ptr}(
+        utx_device_type: felt, idx_start: felt, idx_end: felt, off: felt, arr: Vec2*
+    ) -> () {
+        alloc_locals;
 
-        if idx_start + off == idx_end:
-            return ()
-        end
+        if (idx_start + off == idx_end) {
+            return ();
+        }
 
-        let (grid : Vec2) = ns_micro_state_functions.utx_deployed_index_to_grid_read (utx_device_type, idx_start + off)
+        let (grid: Vec2) = ns_micro_state_functions.utx_deployed_index_to_grid_read(
+            utx_device_type, idx_start + off
+        );
 
-        local offset = off
-        with_attr error_message ("`arr` at {offset} already occupied."):
-            assert arr[off] = grid
-        end
+        local offset = off;
+        with_attr error_message("`arr` at {offset} already occupied.") {
+            assert arr[off] = grid;
+        }
 
-        recurse_inner_grab_utxs (
-            utx_device_type,
-            idx_start,
-            idx_end,
-            off + 1,
-            arr
-        )
-        return ()
-    end
-
-end # end namespace
+        recurse_inner_grab_utxs(utx_device_type, idx_start, idx_end, off + 1, arr);
+        return ();
+    }
+}  // end namespace

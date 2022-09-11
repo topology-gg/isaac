@@ -1,41 +1,40 @@
+struct Vec2 {
+    x: felt,
+    y: felt,
+}
 
-struct Vec2:
-    member x : felt
-    member y : felt
-end
+// normally:
+//   q refers to position
+//   qd refers to velocity
+struct Dynamic {
+    q: Vec2,
+    qd: Vec2,
+}
 
-# normally:
-#   q refers to position
-#   qd refers to velocity
-struct Dynamic:
-    member q : Vec2
-    member qd : Vec2
-end
+struct Dynamics {
+    sun0: Dynamic,
+    sun1: Dynamic,
+    sun2: Dynamic,
+    plnt: Dynamic,
+}
 
-struct Dynamics:
-    member sun0 : Dynamic
-    member sun1 : Dynamic
-    member sun2 : Dynamic
-    member plnt : Dynamic
-end
+struct MacroEvent {
+    new_dynamics: Dynamics,
+}
 
-struct MacroEvent:
-    member new_dynamics : Dynamics
-end
+// TODO
+struct MicroEvent {
+    x: felt,
+    y: felt,
+}
 
-# TODO
-struct MicroEvent:
-    member x : felt
-    member y : felt
-end
+struct UtbSetInfo {
+    owner: felt,
+    start_index: felt,
+    end_index: felt,
+}
 
-struct UtbSetInfo:
-    member owner : felt
-    member start_index : felt
-    member end_index : felt
-end
-
-struct Play:
-    member player_address : felt
-    member grade : felt
-end
+struct Play {
+    player_address: felt,
+    grade: felt,
+}
