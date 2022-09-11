@@ -52,13 +52,13 @@ from isaac_api.contract import (
 UNIVERSE_COUNT = 1
 DEVICE_TYPE_COUNT = 16
 
-BIRTH_BLOCK = 315064
+BIRTH_BLOCK = 318228
 INDEXER_ID = os.getenv('ISAAC_INDEXER_ID', 'isaac')
 
 ISAAC_UNIVERSE_ADDRESSES = {
-    0 : '0x043e202647b86460eddebb52c133c3b7a49cd77250f5d6c3ed862f41592c6510'
+    0 : '0x0666e03798f67a4579e6a211a9eb1b11d58e159fd11adbe275d600a08506c1b8'
 }
-ISAAC_LOBBY_ADDRESS = '0x03663ff3d4031bafa50581c00dc04aacb0103b2a54e7ee36390c2d767f452e33'
+ISAAC_LOBBY_ADDRESS = '0x0115af969a87fe850819348ed5d1c88f7306b0c3faa1997ada23749e4b0b2b5c'
 
 PG_TYPES = [0,1]
 HARVESTER_TYPES = [2,3,4,5,6]
@@ -1081,9 +1081,7 @@ async def handle_block (info: Info, block: NewBlock):
     # Use the provided RPC client to fetch the current block data.
     # The client is already initialized with the correct network based
     # on the indexer's settings.
-    block = await info.rpc_client.get_block_by_hash(block.new_head.hash)
-    block_time = datetime.fromtimestamp(block['accepted_time'])
-    print(f'> new live block at {block_time}')
+    print(f'> new live block at {block.new_head}')
 
 
 #
