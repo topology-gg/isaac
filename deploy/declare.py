@@ -20,7 +20,7 @@ def _declare_contract_bounded (name, subfolder, iteration):
 		print (f"> something's wrong! terminating.")
 		raise
 
-	cmd = f'starknet declare --contract artifacts/{subfolder}/{name}_compiled.json --network alpha-goerli'
+	cmd = f'starknet declare --contract artifacts/{subfolder}/{name}_compiled.json --network alpha-goerli --no_wallet'
 	cmd = cmd.split(' ')
 
 	try:
