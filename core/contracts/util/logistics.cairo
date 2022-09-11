@@ -215,12 +215,14 @@ namespace ns_logistics_xpg {
     func npg_energy_supplied_to_energy_generated_per_tick{range_check_ptr}(
         energy_supplied: felt
     ) -> (energy_generated: felt) {
-        // energy generated = base energy * (divider + energy supplied) / divider
+        // old: energy generated = base energy * (divider + energy supplied) / divider
+        // let (energy_generated, _) = unsigned_div_rem(
+        //     ns_nuclear_power.BASE_ENERGY * (ns_nuclear_power.BOOST_DIVIDER + energy_supplied),
+        //     ns_nuclear_power.BOOST_DIVIDER,
+        // );
 
-        let (energy_generated, _) = unsigned_div_rem(
-            ns_nuclear_power.BASE_ENERGY * (ns_nuclear_power.BOOST_DIVIDER + energy_supplied),
-            ns_nuclear_power.BOOST_DIVIDER,
-        );
+        // new: constant energy generation
+        let energy_generated = ns_nuclear_power.ENERGY_PER_TICK;
 
         return (energy_generated,);
     }

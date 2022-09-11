@@ -17,7 +17,7 @@ const UNIVERSE_MAX_AGE_IN_TICKS = 2520;  // ~7 days, given 2 blocks (4 minutes) 
 //
 // Capacity control - size of civilization per universe, and number of universes deployed
 //
-const CIV_SIZE = 3;
+const CIV_SIZE = 15;
 const UNIVERSE_COUNT = 1;
 
 //
@@ -129,6 +129,7 @@ namespace ns_solar_power {
 namespace ns_nuclear_power {
     const BASE_ENERGY = 50;
     const BOOST_DIVIDER = 20;
+    const ENERGY_PER_TICK = 250;
 }
 
 //
@@ -405,13 +406,13 @@ func assert_device_type_is_nonfungible{}(device_type: felt) -> () {
     alloc_locals;
 
     if (device_type == ns_device_types.DEVICE_UTB) {
-        with_attr error_message("device_type is 12 (UTB), which is fungible") {
+        with_attr error_message("device_type is 12 (Belt), which is fungible") {
             assert 0 = 1;
         }
     }
 
     if (device_type == ns_device_types.DEVICE_UTL) {
-        with_attr error_message("device_type is 13 (UTL), which is fungible") {
+        with_attr error_message("device_type is 13 (Wire), which is fungible") {
             assert 0 = 1;
         }
     }
