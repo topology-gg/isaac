@@ -48,7 +48,7 @@ from isaac_api.contract import (
 
 # load_dotenv ()
 
-CIV_SIZE = 3
+# CIV_SIZE = 3
 UNIVERSE_COUNT = 1
 DEVICE_TYPE_COUNT = 16
 
@@ -958,7 +958,7 @@ async def handle_universe_activation_occurred (info, event):
     # Update collection `u{}_player_fungible_balances`
     # Record in player_balances ~ {account, 0, 1, 2, ..., 15}, where 0-15 is the enumeration of device types
     #
-    assert arr_player_adr_len == CIV_SIZE
+    # assert arr_player_adr_len == CIV_SIZE
     for player_index, account in enumerate (arr_player_adr):
 
         await info.storage.find_one_and_update (
@@ -993,7 +993,7 @@ async def handle_universe_deactivation_occurred (info, event):
     #
     # Clear collection 'u{}_player_fungible_balances'
     #
-    assert arr_player_adr_len == CIV_SIZE
+    # assert arr_player_adr_len == CIV_SIZE
     for account in arr_player_adr:
         result = await info.storage.delete_many (
             f'u{univ}_player_fungible_balances',
