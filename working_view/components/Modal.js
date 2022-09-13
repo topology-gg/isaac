@@ -1,4 +1,4 @@
-import React, { Component, useState } from "react";
+import React, { Component, useState, useEffect } from "react";
 import styles from "../styles/Modal.module.css";
 
 import { DEVICE_TYPE_FULL_NAME_MAP } from './ConstantDeviceTypes'
@@ -14,6 +14,10 @@ import { LaunchNdpeInterface } from './ActionLaunchNdpe'
 import { TransferDeviceInterface } from './ActionTransferDevice'
 import Image from "next/image";
 import closeSvg from "../public/close.svg"
+
+import {
+    useStardiscRegistryByAccount
+} from '../lib/api'
 
 // Refs:
 // https://stackoverflow.com/questions/54880669/react-domexception-failed-to-execute-removechild-on-node-the-node-to-be-re
@@ -35,9 +39,31 @@ export function Modal (props) {
     var bool_display_left_bottom = true
 
     const [hoverDevice, setHoverDevice] = useState ('-')
+    const [queryAccount, setQueryAccount] = useState ('0')
+    const [ownerShown, setOwnerShown] = useState ('loading')
 
     if (!props.show) return;
 
+    //
+    // Deal with stardisc handle query
+    //
+    if ((info.mode != 'transfer') && (info.mode != 'inventory') && (info['grids'].length == 1)) {
+        const grid = info['grids'][0]
+        const grid_str = `(${grid.x},${grid.y})`
+        const grid_info = props.gridMapping [grid_str]
+        const owner_bn = grid_info ['owner_bn']
+        setQueryAccount (owner_bn.toString(10))
+    }
+    const { data: db_stardisc_query } = useStardiscRegistryByAccount (queryAccount)
+
+    useEffect (() => {
+        if (!db_stardisc_query) return;
+    }, [db_stardisc_query])
+
+
+    //
+    // Construct content
+    //
     var thead = [
         <th key='resource' style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
         <th key='balance' style={{textAlign:'left',paddingLeft:'3em'}}>Balance</th>
@@ -86,7 +112,12 @@ export function Modal (props) {
             if (grid_str in grid_mapping) {
                 const grid_info = grid_mapping [grid_str]
 
-                const owner = grid_info ['owner']
+                // const owner_bn = grid_info ['owner_bn']
+                // const owner_hexstr = owner_bn.toString(16);
+                // const owner_hexstr_abbrev =
+                //     "0x" + owner_hexstr.slice(0, 3) + "..." + owner_hexstr.slice(-4);
+                const owner = ownerShown
+
                 const typ   = DEVICE_TYPE_FULL_NAME_MAP [grid_info ['type']]
                 const balances = grid_info ['balances']
 
