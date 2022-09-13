@@ -1,5 +1,5 @@
 // Universe parameters
-export const CIV_SIZE = 3
+export const CIV_SIZE = 10
 
 
 //
