@@ -718,6 +718,12 @@ async def handle_energy_update_at_device_occurred (info, event, univ):
         f'u{univ}_deployed_devices',
         {'id' : str(device_id)}
     )
+    ## SAFEGUARD: if for some reason the result is None, don't continue
+    ## (experienced once with Open Alpha Civ#2 with a tx attempted to update energy on a device id that was already picked up,
+    ##  yet the tx didn't revert and event was still emitted)
+    if not result:
+        print(f'>>> Exception: errorneous event encountered; this result should not have been None')
+        return
     device_type = int (result ['type'])
     # print (f'    -- energy update at device: device_type={device_type}, device_id={device_id}, new_quantity={new_quantity}')
 
