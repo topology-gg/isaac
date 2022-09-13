@@ -81,9 +81,10 @@ export default function gridMappingFromData(
         const typ = parseInt(entry.type);
         const id = entry.id;
 
-        const owner_hexstr = toBN(entry.owner).toString(16);
-        const owner_hexstr_abbrev =
-            "0x" + owner_hexstr.slice(0, 3) + "..." + owner_hexstr.slice(-4);
+        const owner_bn = toBN(entry.owner)
+        // const owner_hexstr = toBN(entry.owner).toString(16);
+        // const owner_hexstr_abbrev =
+        //     "0x" + owner_hexstr.slice(0, 3) + "..." + owner_hexstr.slice(-4);
 
         const device_dim = DEVICE_DIM_MAP.get(typ);
 
@@ -119,7 +120,7 @@ export default function gridMappingFromData(
         for (const i = 0; i < device_dim; i++) {
             for (const j = 0; j < device_dim; j++) {
                 gridMapping[`(${base_grid.x + i},${base_grid.y + j})`] = {
-                    owner: owner_hexstr_abbrev,
+                    owner_bn: owner_bn,
                     id: id,
                     type: typ,
                     balances: balances,

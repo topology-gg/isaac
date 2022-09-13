@@ -1,4 +1,5 @@
-import React, { Component, useState } from "react";
+import React, { Component, useState, useEffect } from "react";
+import { toBN } from 'starknet/dist/utils/number';
 import styles from "../styles/Modal.module.css";
 
 import { DEVICE_TYPE_FULL_NAME_MAP } from './ConstantDeviceTypes'
@@ -15,11 +16,38 @@ import { TransferDeviceInterface } from './ActionTransferDevice'
 import Image from "next/image";
 import closeSvg from "../public/close.svg"
 
+import {
+    useStardiscRegistryByAccount
+} from '../lib/api'
+
 // Refs:
 // https://stackoverflow.com/questions/54880669/react-domexception-failed-to-execute-removechild-on-node-the-node-to-be-re
 // https://stackoverflow.com/questions/54276832/react-how-to-display-a-modal-popup-only-for-that-specific-div
 // https://stackoverflow.com/questions/24502898/show-or-hide-element-in-react
 // https://medium.com/@ralph1786/using-css-modules-in-react-app-c2079eadbb87
+
+function feltLiteralToString (felt) {
+
+    const tester = felt.split('');
+
+    let currentChar = '';
+    let result = "";
+    const minVal = 25;
+    const maxval = 255;
+
+    for (let i = 0; i < tester.length; i++) {
+        currentChar += tester[i];
+        if (parseInt(currentChar) > minVal) {
+            result += String.fromCharCode(currentChar);
+            currentChar = "";
+        }
+        if (parseInt(currentChar) > maxval) {
+            currentChar = '';
+        }
+    }
+
+    return result
+}
 
 export function Modal (props) {
 
@@ -34,10 +62,46 @@ export function Modal (props) {
     var options = []
     var bool_display_left_bottom = true
 
+    //
+    // React states
+    //
     const [hoverDevice, setHoverDevice] = useState ('-')
 
-    if (!props.show) return;
+    //
+    // Deal with stardisc handle query
+    //
+    let queryAccount = '0'
+    let ownerShown = 'loading'
+    if ((props.show) && (info.mode != 'transfer') && (info.mode != 'inventory') && (info['grids'].length == 1)) {
+        const grid = info['grids'][0]
+        const grid_str = `(${grid.x},${grid.y})`
+        if (grid_str in props.gridMapping) {
+            const grid_info = props.gridMapping [grid_str]
+            const owner_bn = grid_info ['owner_bn']
+            queryAccount = owner_bn.toString(10)
 
+            //
+            // set ownerShown to abbreviated hexstring first; if query comes back found below, overwrite with stardisc handle
+            //
+            const owner_hexstr = owner_bn.toString(16);
+            const owner_hexstr_abbrev =
+                "0x" + owner_hexstr.slice(0, 3) + "..." + owner_hexstr.slice(-4);
+            ownerShown = owner_hexstr_abbrev
+        }
+    }
+    const { data: db_stardisc_query } = useStardiscRegistryByAccount (queryAccount)
+
+    if (db_stardisc_query && (db_stardisc_query.stardisc_query.length > 0)) {
+        // console.log ("db_stardisc_query.stardisc_query[0]: ", db_stardisc_query.stardisc_query[0])
+        const name = toBN(db_stardisc_query.stardisc_query[0].name).toString(10)
+        const name_string = feltLiteralToString (name)
+        ownerShown = name_string
+    }
+
+    //
+    // Construct content
+    //
+    if (!props.show) return;
     var thead = [
         <th key='resource' style={{textAlign:'left',paddingLeft:'0'}}>Resource</th>,
         <th key='balance' style={{textAlign:'left',paddingLeft:'3em'}}>Balance</th>
@@ -85,8 +149,8 @@ export function Modal (props) {
             var content2 = ''
             if (grid_str in grid_mapping) {
                 const grid_info = grid_mapping [grid_str]
+                const owner = ownerShown
 
-                const owner = grid_info ['owner']
                 const typ   = DEVICE_TYPE_FULL_NAME_MAP [grid_info ['type']]
                 const balances = grid_info ['balances']
 
