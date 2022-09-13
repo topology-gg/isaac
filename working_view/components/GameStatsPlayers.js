@@ -42,7 +42,7 @@ export default function GameStatsPlayers (props) {
         <div style={{visibility: props.universeActive?'visible':'hidden'}}>
             <h5>Player accounts in this universe</h5>
 
-            <table>
+            <table style={{marginBottom:'30px'}}>
                 <thead>
                     <tr>
                         <th>Index</th>
@@ -58,7 +58,6 @@ export default function GameStatsPlayers (props) {
                     )}
                 </tbody>
             </table>
-
         </div>
     );
 }
