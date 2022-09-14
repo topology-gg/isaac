@@ -15,9 +15,13 @@ export function BuildDeviceInterface (props) {
 
     const { account, connect } = useStarknet ()
     const { contract } = useUniverseContract ()
-    const { data, loading, error, reset, invoke } = useStarknetInvoke ({
+    const { data : data_player_upsf_build_fungible_device, invoke : invoke_player_upsf_build_fungible_device } = useStarknetInvoke ({
         contract,
-        method: 'player_opsf_build_device'
+        method: 'player_upsf_build_fungible_device'
+    })
+    const { data : data_player_upsf_build_nonfungible_device, invoke : invoke_player_upsf_build_nonfungible_device } = useStarknetInvoke ({
+        contract,
+        method: 'player_upsf_build_nonfungible_device'
     })
     const typ = props.typ
     const x = props.grid_x
@@ -46,11 +50,19 @@ export function BuildDeviceInterface (props) {
                 data['amountRequired']
             ]
             console.log('submit build device tx with args:', args)
-            invoke ({ args: args })
+
+            if ([12,13].includes(props.typ)) {
+                invoke_player_upsf_build_fungible_device ({ args: args })
+            }
+            else {
+                invoke_player_upsf_build_nonfungible_device ({ args: args })
+            }
+
         }
       }
 
-    const link_to_voyager = `https://goerli.voyager.online/tx/${data}`
+    const data_to_show = data_player_upsf_build_fungible_device ? data_player_upsf_build_fungible_device : data_player_upsf_build_nonfungible_device
+    const link_to_voyager = `https://goerli.voyager.online/tx/${data_to_show}`
 
     //
     // TODO: style button and enable/disable onclick callback depending on props.can_build
@@ -86,7 +98,7 @@ export function BuildDeviceInterface (props) {
 
             <div style={{paddingLeft:'10px',paddingTop:'0',paddingBottom:'0'}}>
                 {
-                    data && (
+                    (data_player_upsf_build_fungible_device || data_player_upsf_build_nonfungible_device) && (
                         <div>
                             <a style={TX_HASH_STYLE} href={link_to_voyager} target="_blank" rel="noopener noreferrer">view on voyager</a>
                         </div>
