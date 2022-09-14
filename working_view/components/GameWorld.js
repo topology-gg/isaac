@@ -706,7 +706,8 @@ export default function GameWorld(props) {
             backgroundColor: CANVAS_BG,
             selection: false,
             fireRightClick: true,
-            stopContextMenu: true
+            stopContextMenu: true,
+            imageSmoothingEnabled: false,
         })
 
         _canvasRef.current.on("mouse:move" ,function(opt){
@@ -1325,7 +1326,9 @@ export default function GameWorld(props) {
                 hoverCursor: 'pointer',
                 strokeWidth: 0,
                 stroke: device_color,
-                isaac_class: 'device'
+                isaac_class: 'device',
+                // Make devices sharp on zoom in
+                objectCaching: false,
             });
             if ('base_grid' in entry) {
                 _deviceRectsRef.current[entry.id] = rect
@@ -1342,7 +1345,10 @@ export default function GameWorld(props) {
             device_rects, {
                 visible: true,
                 selectable: false,
-                hoverCursor: 'default'
+                hoverCursor: 'default',
+                // Make devices sharp on zoom in
+                // Also needs to be turned off on group level
+                objectCaching: false,
             });
         canvi.add(device_rect_face0_group)
         _deviceDisplayRef.current = device_rect_face0_group
