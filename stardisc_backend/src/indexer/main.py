@@ -32,7 +32,7 @@ async def start(server_url, mongo_url, restart):
     # Use local apibara server url and mongodb url by default.
     # Start them by running docker-compose.
     if server_url is None:
-        server_url = "localhost:7171"
+        server_url = "goerli.starknet.stream.apibara.com"
     if mongo_url is None:
         mongo_url = os.getenv("MONGO_URL", "mongodb://apibara:apibara@localhost:27017")
     await run_indexer(
