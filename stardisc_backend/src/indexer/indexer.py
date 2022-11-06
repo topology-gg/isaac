@@ -1,13 +1,13 @@
-from apibara import Client, IndexerRunner, Info, NewBlock, NewEvents
-from apibara.indexer.runner import IndexerRunnerConfiguration
-from apibara.model import EventFilter
-from pymongo import MongoClient
+import os
+
+from apibara import EventFilter, IndexerRunner, Info, NewEvents, NewBlock
+from apibara.indexer import IndexerRunnerConfiguration
 
 from indexer.contract import (
     decode_sns_register_occurred
 )
 
-indexer_id = "my-indexer"
+indexer_id = os.getenv('INDEXER_ID', 'stardisc')
 STARDISC_ADDR = '0x0367846f4e87762424244c9891a5db6c242b270632ff2d82bfe1ed0907dfddf5'
 BIRTH_BLOCK = 307806 # deploy tx hash: 0x84f9a339eb3f94d30bd5e333e241721f22366ba999687a205ae9dd26a61936
 
@@ -74,29 +74,13 @@ async def handle_block(info: Info, block: NewBlock):
 
 async def run_indexer(server_url=None, mongo_url=None, restart=None):
     print("Starting Apibara indexer")
-    if mongo_url is None:
-        mongo_url = "mongodb://apibara:apibara@localhost:27017"
-
-    if restart:
-        async with Client.connect(server_url) as client:
-            existing = await client.indexer_client().get_indexer(indexer_id)
-            if existing:
-                await client.indexer_client().delete_indexer(indexer_id)
-
-            # Delete old database entries.
-            # Notice that apibara maps indexer ids to database names by
-            # doing `indexer_id.replace('-', '_')`.
-            # In the future all data will be handled by Apibara and this step
-            # will not be necessary.
-            mongo = MongoClient(mongo_url)
-            mongo.drop_database(indexer_id.replace("-", "_"))
 
     runner = IndexerRunner(
         config=IndexerRunnerConfiguration(
             apibara_url=server_url,
             storage_url=mongo_url,
         ),
-        network_name="starknet-goerli",
+        reset_state=restart,
         indexer_id=indexer_id,
         new_events_handler=handle_events,
     )
