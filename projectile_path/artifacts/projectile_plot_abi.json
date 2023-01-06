@@ -1,0 +1,56 @@
+[
+    {
+        "inputs": [
+            {
+                "name": "theta_fp",
+                "type": "felt"
+            }
+        ],
+        "name": "cosine_approx",
+        "outputs": [
+            {
+                "name": "cos_theta_fp",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "num_pts",
+                "type": "felt"
+            },
+            {
+                "name": "theta_0_deg",
+                "type": "felt"
+            },
+            {
+                "name": "v_0",
+                "type": "felt"
+            }
+        ],
+        "name": "projectile_path",
+        "outputs": [
+            {
+                "name": "x_fp_s_len",
+                "type": "felt"
+            },
+            {
+                "name": "x_fp_s",
+                "type": "felt*"
+            },
+            {
+                "name": "y_fp_s_len",
+                "type": "felt"
+            },
+            {
+                "name": "y_fp_s",
+                "type": "felt*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
