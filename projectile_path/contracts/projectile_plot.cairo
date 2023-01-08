@@ -6,7 +6,7 @@ from starkware.cairo.common.math import abs_value
 from starkware.cairo.common.math_cmp import is_le, is_nn
 
 from contracts.constants import SCALE_FP, PI_fp, g_fp, x_0_fp, y_0_fp, x_min_fp, x_max_fp, y_min_fp, y_max_fp
-from contracts.math import mul_fp, div_fp, div_fp_nfp, cosine_approx, sine_approx
+from contracts.math import mul_fp, div_fp, div_fp_nfp, cosine_6th_fp, cosine_8th_fp, cosine_approx, sine_approx
 from contracts.physics import time_in_plot_fp, x_value_fp, y_value_fp
 
 //
@@ -42,7 +42,7 @@ func projectile_path{range_check_ptr}(num_pts: felt, theta_0_deg: felt, v_0: fel
 
     // Check inputs
     with_attr error_message("Check that 2 <=num_pts <= 25") {
-        assert is_le(1, num_pts) = 1;
+        assert is_le(2, num_pts) = 1;
     }
     with_attr error_message("Check that 2 <=num_pts <= 25") {
         assert is_le(num_pts, 25) = 1; 
@@ -53,8 +53,8 @@ func projectile_path{range_check_ptr}(num_pts: felt, theta_0_deg: felt, v_0: fel
         assert is_le(abs_value_theta_0_deg, 180) = 1; 
     }
 
-    with_attr error_message("Check that v_0 >= 0") {
-        assert is_nn(v_0) = 1;
+    with_attr error_message("Check that v_0 >= 1") {
+        assert is_le(1, v_0) = 1;
     }
 
     // Scale up inputs to be fixed point values
@@ -62,12 +62,13 @@ func projectile_path{range_check_ptr}(num_pts: felt, theta_0_deg: felt, v_0: fel
     let v_0_fp = v_0 * SCALE_FP;
 
     // Convert angle to radians
-    let PI_in_deg_fp = 180 * SCALE_FP;
-    let pi_over_180_fp = div_fp(PI_fp, PI_in_deg_fp);
+    let pi_over_180_fp = div_fp_nfp(PI_fp, 180);
     let theta_0_fp = mul_fp(theta_0_deg_fp, pi_over_180_fp);
 
     // Trig function approximations
-    let (cos_theta_0_fp) = cosine_approx(theta_0_fp);
+    // Use below instead of this: let (cos_theta_0_fp) = cosine_8th_fp(theta_0_fp);
+    // for better approx of cosine
+    let (cos_theta_0_fp) = cosine_approx(theta_0_fp, theta_0_deg);
     let (sin_theta_0_fp) = sine_approx(theta_0_fp, cos_theta_0_fp);
 
     // Initial velocity vector components

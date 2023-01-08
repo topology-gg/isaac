@@ -30,7 +30,7 @@ func time_in_plot_fp{range_check_ptr}(theta_0_deg: felt, v_0x_fp: felt, v_0y_fp:
     // Then t_max is minimum of t_max_x and t_max_y
     //
     // Check if abs(theta_0_deg) <, =, or > 90 degrees 
-    // Use theta_0_deg because calculated theta_0 in radians is slightly rounded
+    //   (Use theta_0_deg for comparisons because calculated theta_0 in radians is slightly rounded)
     // Then find t_max_x, and then t_max
     let abs_value_theta_0_deg = abs_value(theta_0_deg);
     let bool1 = is_le(abs_value_theta_0_deg, 90);
@@ -60,7 +60,7 @@ func time_in_plot_fp{range_check_ptr}(theta_0_deg: felt, v_0x_fp: felt, v_0y_fp:
         // abs(theta_0_deg) > 90, so v_0x < 0, so projectile moves toward x_min
         let delta_x_max_fp = x_min_fp - x_0_fp;
         let t_max_x_fp = div_fp(delta_x_max_fp, v_0x_fp);
-        let bool2 = is_le(t_max_x_fp,t_max_y_fp);
+        let bool2 = is_le(t_max_x_fp, t_max_y_fp);
 
         if (bool2 == 1) {
             tempvar t_max_fp = t_max_x_fp;
