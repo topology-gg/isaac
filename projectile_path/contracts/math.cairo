@@ -76,7 +76,6 @@ func distance_two_points_fp{range_check_ptr}(x_1_fp: felt, y_1_fp: felt, x_2_fp:
 // Taylor series approximation of cosine(theta) for FP theta value
 // Uses 5 terms (to 8th order)
 // NO SHIFT: Assumes -pi <= theta <= +pi
-@view
 func cosine_8th_fp{range_check_ptr}(theta_fp: felt) -> (value_fp: felt) {
     //
     // cos(theta) ~= 1 - theta^2/2! + theta^4/4! - theta^6/6! + theta^8/8!
@@ -100,7 +99,6 @@ func cosine_8th_fp{range_check_ptr}(theta_fp: felt) -> (value_fp: felt) {
 // Taylor series approximation of cosine(theta) for FP theta value
 // Uses 4 terms (to 6th order)
 // NO SHIFT: Assumes -pi <= theta <= +pi, but is best used with -pi/2 <= theta <= pi/2
-@view
 func cosine_6th_fp{range_check_ptr}(theta_fp: felt) -> (value_fp: felt) {
     // cos(theta) ~= 1 - theta^2/2! + theta^4/4! - theta^6/6!
     let theta_2_fp = mul_fp(theta_fp, theta_fp);
@@ -124,7 +122,6 @@ func cosine_6th_fp{range_check_ptr}(theta_fp: felt) -> (value_fp: felt) {
 //     (2) force negative sign for cosine(theta_0)
 //   (Use theta_0_deg for comparisons because calculated theta_0 in radians is slightly rounded)
 //   Then call cosine_6th_fp or cosine_8th_fp
-@view
 func cosine_approx{range_check_ptr}(theta_0_fp: felt, theta_0_deg: felt) -> (cos_theta_0_fp: felt) {
     alloc_locals;
     local range_check_ptr = range_check_ptr;

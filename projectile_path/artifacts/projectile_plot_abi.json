@@ -2,23 +2,6 @@
     {
         "inputs": [
             {
-                "name": "theta_fp",
-                "type": "felt"
-            }
-        ],
-        "name": "cosine_approx",
-        "outputs": [
-            {
-                "name": "cos_theta_fp",
-                "type": "felt"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "name": "num_pts",
                 "type": "felt"
             },

@@ -13,7 +13,7 @@ import json
 num_pts = 20
 
 # Launch angle in degrees: -180 <= theta_0_deg <= +180
-theta_0_deg = 45
+theta_0_deg = -45
 
 # Launch velocity magnitude: v_0 >=1
 # note that v_0 = ~100 is enough to reach top of plot area on vertical shot if y_max = ~500
