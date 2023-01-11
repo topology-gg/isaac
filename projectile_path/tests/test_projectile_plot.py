@@ -12,8 +12,8 @@ import json
 # Number of points to plot
 num_pts = 20
 
-# Launch angle in degrees: -180 <= theta_0_deg <= +180
-theta_0_deg = -45
+# Launch angle in degrees: -179 <= theta_0_deg <= +180
+theta_0_deg = 105
 
 # Launch velocity magnitude: v_0 >=1
 # note that v_0 = ~100 is enough to reach top of plot area on vertical shot if y_max = ~500
@@ -249,8 +249,10 @@ async def test():
         f"> path for (num_pts={num_pts}, theta_0_deg={theta_0_deg}, v_0={v_0}) returns:"
     )
     print()
-    print(f"> array     coordinates")
-    print(f"> member    cairo x    python x*SCALE_FP    cairo y    python y*SCALE_FP")
+    print(f"> array      coordinates")
+    print(
+        f"> member     cairo x            python x*SCALE_FP            cairo y            python y*SCALE_FP"
+    )
 
     # Print array members one line at a time:
     for p in range(0, num_pts):

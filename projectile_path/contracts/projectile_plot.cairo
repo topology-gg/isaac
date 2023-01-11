@@ -41,19 +41,21 @@ func projectile_path{range_check_ptr}(num_pts: felt, theta_0_deg: felt, v_0: fel
     alloc_locals;
 
     // Check inputs
-    with_attr error_message("Check that 2 <=num_pts <= 25") {
+    with_attr error_message("Check that 2 <= num_pts <= 25; integer only") {
         assert is_le(2, num_pts) = 1;
     }
-    with_attr error_message("Check that 2 <=num_pts <= 25") {
+    with_attr error_message("Check that 2 <= num_pts <= 25; integer only") {
         assert is_le(num_pts, 25) = 1; 
     }
 
-    with_attr error_message("Check that -180 <= theta_0_deg <= +180") {
-        tempvar abs_value_theta_0_deg = abs_value(theta_0_deg);
-        assert is_le(abs_value_theta_0_deg, 180) = 1; 
+    with_attr error_message("Check that -179 <= theta_0_deg <= +180; integer only") {
+        assert is_le(-179, theta_0_deg) = 1; 
+    }
+    with_attr error_message("Check that -179 <= theta_0_deg <= +180; integer only") {
+        assert is_le(theta_0_deg, 180) = 1; 
     }
 
-    with_attr error_message("Check that v_0 >= 1") {
+    with_attr error_message("Check that v_0 >= 1; integer only") {
         assert is_le(1, v_0) = 1;
     }
 

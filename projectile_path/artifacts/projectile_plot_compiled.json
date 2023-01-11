@@ -42,7 +42,7 @@
         "CONSTRUCTOR": [],
         "EXTERNAL": [
             {
-                "offset": "0x2ef",
+                "offset": "0x2f6",
                 "selector": "0x145f8fb6964795aa4eb149cfb427fadbe70e058414b5ee81697e737096af268"
             }
         ],
@@ -66,7 +66,7 @@
                 },
                 "name": "error_message",
                 "start_pc": 611,
-                "value": "Check that 2 <=num_pts <= 25"
+                "value": "Check that 2 <= num_pts <= 25; integer only"
             },
             {
                 "accessible_scopes": [
@@ -84,7 +84,7 @@
                 },
                 "name": "error_message",
                 "start_pc": 620,
-                "value": "Check that 2 <=num_pts <= 25"
+                "value": "Check that 2 <= num_pts <= 25; integer only"
             },
             {
                 "accessible_scopes": [
@@ -92,7 +92,7 @@
                     "__main__",
                     "__main__.projectile_path"
                 ],
-                "end_pc": 640,
+                "end_pc": 638,
                 "flow_tracking_data": {
                     "ap_tracking": {
                         "group": 32,
@@ -102,7 +102,7 @@
                 },
                 "name": "error_message",
                 "start_pc": 629,
-                "value": "Check that -180 <= theta_0_deg <= +180"
+                "value": "Check that -179 <= theta_0_deg <= +180; integer only"
             },
             {
                 "accessible_scopes": [
@@ -110,17 +110,35 @@
                     "__main__",
                     "__main__.projectile_path"
                 ],
-                "end_pc": 649,
+                "end_pc": 647,
                 "flow_tracking_data": {
                     "ap_tracking": {
                         "group": 32,
-                        "offset": 109
+                        "offset": 104
                     },
                     "reference_ids": {}
                 },
                 "name": "error_message",
-                "start_pc": 640,
-                "value": "Check that v_0 >= 1"
+                "start_pc": 638,
+                "value": "Check that -179 <= theta_0_deg <= +180; integer only"
+            },
+            {
+                "accessible_scopes": [
+                    "__main__",
+                    "__main__",
+                    "__main__.projectile_path"
+                ],
+                "end_pc": 656,
+                "flow_tracking_data": {
+                    "ap_tracking": {
+                        "group": 32,
+                        "offset": 137
+                    },
+                    "reference_ids": {}
+                },
+                "name": "error_message",
+                "start_pc": 647,
+                "value": "Check that v_0 >= 1; integer only"
             }
         ],
         "builtins": [
@@ -758,13 +776,20 @@
             "0x1",
             "0x40127fff7fff7ffe",
             "0x48127ffd7fff8000",
+            "0x480680017fff8000",
+            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffff4e",
             "0x480a7ffc7fff8000",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffde6",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe40",
+            "0x480680017fff8000",
+            "0x1",
+            "0x40127fff7fff7ffe",
+            "0x48127ffd7fff8000",
+            "0x480a7ffc7fff8000",
             "0x480680017fff8000",
             "0xb4",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe3e",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe37",
             "0x480680017fff8000",
             "0x1",
             "0x40127fff7fff7ffe",
@@ -773,7 +798,7 @@
             "0x1",
             "0x480a7ffd7fff8000",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe35",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe2e",
             "0x480680017fff8000",
             "0x1",
             "0x40127fff7fff7ffe",
@@ -783,53 +808,53 @@
             "0x480680017fff8000",
             "0xb4",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe65",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe5e",
             "0x48127ffe7fff8000",
             "0x484680017ffc8000",
             "0x56bc75e2d63100000",
             "0x48127ffd7fff8000",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe32",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe2b",
             "0x40137fff7fff8000",
             "0x48127ffe7fff8000",
             "0x480a80007fff8000",
             "0x480a7ffc7fff8000",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffecd",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffec6",
             "0x48127ffe7fff8000",
             "0x480a80007fff8000",
             "0x48127ffd7fff8000",
             "0x1104800180018000",
-            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffff0e",
+            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffff07",
             "0x48127ffe7fff8000",
             "0x484680017ffd8000",
             "0x56bc75e2d63100000",
             "0x48127f727fff8000",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe21",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe1a",
             "0x40137fff7fff8001",
             "0x48127ffe7fff8000",
             "0x484680017ffd8000",
             "0x56bc75e2d63100000",
             "0x48127fd17fff8000",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe1a",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe13",
             "0x40137fff7fff8002",
             "0x48127ffe7fff8000",
             "0x480a7ffc7fff8000",
             "0x480a80017fff8000",
             "0x480a80027fff8000",
             "0x1104800180018000",
-            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffff19",
+            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffff12",
             "0x482680017ffb8000",
             "0x800000000000011000000000000000000000000000000000000000000000000",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe3c",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffe35",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd48",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd41",
             "0x40137fff7fff8003",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd45",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd3e",
             "0x40137fff7fff8004",
             "0x48127ff87fff8000",
             "0x480a7ffb7fff8000",
@@ -841,7 +866,7 @@
             "0x480a80037fff8000",
             "0x480a80047fff8000",
             "0x1104800180018000",
-            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffff7c",
+            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffff75",
             "0x480a7ffb7fff8000",
             "0x480a80037fff8000",
             "0x480a7ffb7fff8000",
@@ -861,7 +886,7 @@
             "0x480a7ffa7fff8000",
             "0x480a7ff97fff8000",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd28",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd21",
             "0x4003800080027ffb",
             "0x4003800080017ffb",
             "0x4027800180018003",
@@ -874,7 +899,7 @@
             "0x480a7ffc7fff8000",
             "0x480a7ffb7fff8000",
             "0x1104800180018000",
-            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd1b",
+            "0x800000000000010fffffffffffffffffffffffffffffffffffffffffffffd14",
             "0x480a80037fff8000",
             "0x4829800080008004",
             "0x480a80007fff8000",
@@ -889,7 +914,7 @@
             "0x480280017ffd8000",
             "0x480280027ffd8000",
             "0x1104800180018000",
-            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffff6a",
+            "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffff63",
             "0x48127ffb7fff8000",
             "0x1104800180018000",
             "0x800000000000010ffffffffffffffffffffffffffffffffffffffffffffffd5",
@@ -12608,25 +12633,25 @@
                                 },
                                 "parent_location": [
                                     {
-                                        "end_col": 31,
-                                        "end_line": 242,
+                                        "end_col": 27,
+                                        "end_line": 42,
                                         "input_file": {
-                                            "filename": "/home/whatthedev/cairo_venv/lib/python3.9/site-packages/starkware/cairo/common/math.cairo"
+                                            "filename": "/home/whatthedev/cairo_venv/lib/python3.9/site-packages/starkware/cairo/common/math_cmp.cairo"
                                         },
                                         "parent_location": [
                                             {
-                                                "end_col": 63,
+                                                "end_col": 40,
                                                 "end_line": 52,
                                                 "input_file": {
                                                     "filename": "contracts/projectile_plot.cairo"
                                                 },
-                                                "start_col": 41,
+                                                "start_col": 16,
                                                 "start_line": 52
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
-                                        "start_col": 16,
-                                        "start_line": 242
+                                        "start_col": 12,
+                                        "start_line": 42
                                     },
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
@@ -12648,28 +12673,16 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 71,
-                        "end_line": 38,
+                        "end_col": 26,
+                        "end_line": 52,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "parent_location": [
-                            {
-                                "end_col": 62,
-                                "end_line": 52,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "start_col": 51,
-                                "start_line": 52
-                            },
-                            "While expanding the reference 'theta_0_deg' in:"
-                        ],
-                        "start_col": 54,
-                        "start_line": 38
+                        "start_col": 22,
+                        "start_line": 52
                     }
                 },
-                "631": {
+                "632": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -12678,13 +12691,25 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 63,
-                        "end_line": 52,
+                        "end_col": 71,
+                        "end_line": 38,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "start_col": 41,
-                        "start_line": 52
+                        "parent_location": [
+                            {
+                                "end_col": 39,
+                                "end_line": 52,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "start_col": 28,
+                                "start_line": 52
+                            },
+                            "While expanding the reference 'theta_0_deg' in:"
+                        ],
+                        "start_col": 54,
+                        "start_line": 38
                     }
                 },
                 "633": {
@@ -12696,13 +12721,13 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 48,
-                        "end_line": 53,
+                        "end_col": 40,
+                        "end_line": 52,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "start_col": 45,
-                        "start_line": 53
+                        "start_col": 16,
+                        "start_line": 52
                     }
                 },
                 "635": {
@@ -12714,13 +12739,13 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 49,
-                        "end_line": 53,
+                        "end_col": 44,
+                        "end_line": 52,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "start_col": 16,
-                        "start_line": 53
+                        "start_col": 43,
+                        "start_line": 52
                     }
                 },
                 "637": {
@@ -12732,34 +12757,16 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 53,
-                        "end_line": 53,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "start_col": 52,
-                        "start_line": 53
-                    }
-                },
-                "639": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 54,
-                        "end_line": 53,
+                        "end_col": 45,
+                        "end_line": 52,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 9,
-                        "start_line": 53
+                        "start_line": 52
                     }
                 },
-                "640": {
+                "638": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -12775,8 +12782,164 @@
                         },
                         "parent_location": [
                             {
-                                "end_col": 49,
-                                "end_line": 53,
+                                "end_col": 40,
+                                "end_line": 52,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 27,
+                                        "end_line": 42,
+                                        "input_file": {
+                                            "filename": "/home/whatthedev/cairo_venv/lib/python3.9/site-packages/starkware/cairo/common/math_cmp.cairo"
+                                        },
+                                        "parent_location": [
+                                            {
+                                                "end_col": 39,
+                                                "end_line": 56,
+                                                "input_file": {
+                                                    "filename": "contracts/projectile_plot.cairo"
+                                                },
+                                                "start_col": 16,
+                                                "start_line": 56
+                                            },
+                                            "While trying to retrieve the implicit argument 'range_check_ptr' in:"
+                                        ],
+                                        "start_col": 12,
+                                        "start_line": 42
+                                    },
+                                    "While expanding the reference 'range_check_ptr' in:"
+                                ],
+                                "start_col": 16,
+                                "start_line": 52
+                            },
+                            "While trying to update the implicit return value 'range_check_ptr' in:"
+                        ],
+                        "start_col": 12,
+                        "start_line": 42
+                    }
+                },
+                "639": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 71,
+                        "end_line": 38,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 33,
+                                "end_line": 56,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "start_col": 22,
+                                "start_line": 56
+                            },
+                            "While expanding the reference 'theta_0_deg' in:"
+                        ],
+                        "start_col": 54,
+                        "start_line": 38
+                    }
+                },
+                "640": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 38,
+                        "end_line": 56,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "start_col": 35,
+                        "start_line": 56
+                    }
+                },
+                "642": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 39,
+                        "end_line": 56,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "start_col": 16,
+                        "start_line": 56
+                    }
+                },
+                "644": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 43,
+                        "end_line": 56,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "start_col": 42,
+                        "start_line": 56
+                    }
+                },
+                "646": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 44,
+                        "end_line": 56,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "start_col": 9,
+                        "start_line": 56
+                    }
+                },
+                "647": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 27,
+                        "end_line": 42,
+                        "input_file": {
+                            "filename": "/home/whatthedev/cairo_venv/lib/python3.9/site-packages/starkware/cairo/common/math_cmp.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 39,
+                                "end_line": 56,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
@@ -12790,12 +12953,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 29,
-                                                "end_line": 57,
+                                                "end_line": 60,
                                                 "input_file": {
                                                     "filename": "contracts/projectile_plot.cairo"
                                                 },
                                                 "start_col": 16,
-                                                "start_line": 57
+                                                "start_line": 60
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
@@ -12805,7 +12968,7 @@
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
                                 "start_col": 16,
-                                "start_line": 53
+                                "start_line": 56
                             },
                             "While trying to update the implicit return value 'range_check_ptr' in:"
                         ],
@@ -12813,7 +12976,7 @@
                         "start_line": 42
                     }
                 },
-                "641": {
+                "648": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -12823,15 +12986,15 @@
                     "hints": [],
                     "inst": {
                         "end_col": 23,
-                        "end_line": 57,
+                        "end_line": 60,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 22,
-                        "start_line": 57
+                        "start_line": 60
                     }
                 },
-                "643": {
+                "650": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -12848,12 +13011,12 @@
                         "parent_location": [
                             {
                                 "end_col": 28,
-                                "end_line": 57,
+                                "end_line": 60,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 25,
-                                "start_line": 57
+                                "start_line": 60
                             },
                             "While expanding the reference 'v_0' in:"
                         ],
@@ -12861,7 +13024,7 @@
                         "start_line": 38
                     }
                 },
-                "644": {
+                "651": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -12871,15 +13034,15 @@
                     "hints": [],
                     "inst": {
                         "end_col": 29,
-                        "end_line": 57,
+                        "end_line": 60,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 16,
-                        "start_line": 57
+                        "start_line": 60
                     }
                 },
-                "646": {
+                "653": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -12889,15 +13052,15 @@
                     "hints": [],
                     "inst": {
                         "end_col": 33,
-                        "end_line": 57,
+                        "end_line": 60,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 32,
-                        "start_line": 57
+                        "start_line": 60
                     }
                 },
-                "648": {
+                "655": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -12907,15 +13070,15 @@
                     "hints": [],
                     "inst": {
                         "end_col": 34,
-                        "end_line": 57,
+                        "end_line": 60,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 9,
-                        "start_line": 57
+                        "start_line": 60
                     }
                 },
-                "649": {
+                "656": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -12932,7 +13095,7 @@
                         "parent_location": [
                             {
                                 "end_col": 29,
-                                "end_line": 57,
+                                "end_line": 60,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
@@ -12946,12 +13109,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 48,
-                                                "end_line": 65,
+                                                "end_line": 68,
                                                 "input_file": {
                                                     "filename": "contracts/projectile_plot.cairo"
                                                 },
                                                 "start_col": 26,
-                                                "start_line": 65
+                                                "start_line": 68
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
@@ -12961,7 +13124,7 @@
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
                                 "start_col": 16,
-                                "start_line": 57
+                                "start_line": 60
                             },
                             "While trying to update the implicit return value 'range_check_ptr' in:"
                         ],
@@ -12969,7 +13132,7 @@
                         "start_line": 42
                     }
                 },
-                "650": {
+                "657": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -12979,15 +13142,15 @@
                     "hints": [],
                     "inst": {
                         "end_col": 42,
-                        "end_line": 65,
+                        "end_line": 68,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 37,
-                        "start_line": 65
+                        "start_line": 68
                     }
                 },
-                "652": {
+                "659": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -12997,15 +13160,15 @@
                     "hints": [],
                     "inst": {
                         "end_col": 47,
-                        "end_line": 65,
+                        "end_line": 68,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 44,
-                        "start_line": 65
+                        "start_line": 68
                     }
                 },
-                "654": {
+                "661": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13015,15 +13178,15 @@
                     "hints": [],
                     "inst": {
                         "end_col": 48,
-                        "end_line": 65,
+                        "end_line": 68,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 26,
-                        "start_line": 65
+                        "start_line": 68
                     }
                 },
-                "656": {
+                "663": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13040,7 +13203,7 @@
                         "parent_location": [
                             {
                                 "end_col": 48,
-                                "end_line": 65,
+                                "end_line": 68,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
@@ -13054,12 +13217,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 60,
-                                                "end_line": 66,
+                                                "end_line": 69,
                                                 "input_file": {
                                                     "filename": "contracts/projectile_plot.cairo"
                                                 },
                                                 "start_col": 22,
-                                                "start_line": 66
+                                                "start_line": 69
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
@@ -13069,7 +13232,7 @@
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
                                 "start_col": 26,
-                                "start_line": 65
+                                "start_line": 68
                             },
                             "While trying to update the implicit return value 'range_check_ptr' in:"
                         ],
@@ -13077,7 +13240,7 @@
                         "start_line": 47
                     }
                 },
-                "657": {
+                "664": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13087,27 +13250,27 @@
                     "hints": [],
                     "inst": {
                         "end_col": 48,
-                        "end_line": 61,
+                        "end_line": 64,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 43,
-                                "end_line": 66,
+                                "end_line": 69,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 29,
-                                "start_line": 66
+                                "start_line": 69
                             },
                             "While expanding the reference 'theta_0_deg_fp' in:"
                         ],
                         "start_col": 26,
-                        "start_line": 61
+                        "start_line": 64
                     }
                 },
-                "659": {
+                "666": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13117,27 +13280,27 @@
                     "hints": [],
                     "inst": {
                         "end_col": 23,
-                        "end_line": 65,
+                        "end_line": 68,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 59,
-                                "end_line": 66,
+                                "end_line": 69,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 45,
-                                "start_line": 66
+                                "start_line": 69
                             },
                             "While expanding the reference 'pi_over_180_fp' in:"
                         ],
                         "start_col": 9,
-                        "start_line": 65
+                        "start_line": 68
                     }
                 },
-                "660": {
+                "667": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13147,15 +13310,15 @@
                     "hints": [],
                     "inst": {
                         "end_col": 60,
-                        "end_line": 66,
+                        "end_line": 69,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 22,
-                        "start_line": 66
+                        "start_line": 69
                     }
                 },
-                "662": {
+                "669": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13165,27 +13328,27 @@
                     "hints": [],
                     "inst": {
                         "end_col": 19,
-                        "end_line": 66,
+                        "end_line": 69,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 19,
-                                "end_line": 66,
+                                "end_line": 69,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 9,
-                                "start_line": 66
+                                "start_line": 69
                             },
                             "While auto generating local variable for 'theta_0_fp'."
                         ],
                         "start_col": 9,
-                        "start_line": 66
+                        "start_line": 69
                     }
                 },
-                "663": {
+                "670": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13202,7 +13365,7 @@
                         "parent_location": [
                             {
                                 "end_col": 60,
-                                "end_line": 66,
+                                "end_line": 69,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
@@ -13216,12 +13379,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 66,
-                                                "end_line": 71,
+                                                "end_line": 74,
                                                 "input_file": {
                                                     "filename": "contracts/projectile_plot.cairo"
                                                 },
                                                 "start_col": 28,
-                                                "start_line": 71
+                                                "start_line": 74
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
@@ -13231,7 +13394,7 @@
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
                                 "start_col": 22,
-                                "start_line": 66
+                                "start_line": 69
                             },
                             "While trying to update the implicit return value 'range_check_ptr' in:"
                         ],
@@ -13239,7 +13402,7 @@
                         "start_line": 18
                     }
                 },
-                "664": {
+                "671": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13249,39 +13412,39 @@
                     "hints": [],
                     "inst": {
                         "end_col": 19,
-                        "end_line": 66,
+                        "end_line": 69,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 19,
-                                "end_line": 66,
+                                "end_line": 69,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 52,
-                                        "end_line": 71,
+                                        "end_line": 74,
                                         "input_file": {
                                             "filename": "contracts/projectile_plot.cairo"
                                         },
                                         "start_col": 42,
-                                        "start_line": 71
+                                        "start_line": 74
                                     },
                                     "While expanding the reference 'theta_0_fp' in:"
                                 ],
                                 "start_col": 9,
-                                "start_line": 66
+                                "start_line": 69
                             },
                             "While auto generating local variable for 'theta_0_fp'."
                         ],
                         "start_col": 9,
-                        "start_line": 66
+                        "start_line": 69
                     }
                 },
-                "665": {
+                "672": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13298,12 +13461,12 @@
                         "parent_location": [
                             {
                                 "end_col": 65,
-                                "end_line": 71,
+                                "end_line": 74,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 54,
-                                "start_line": 71
+                                "start_line": 74
                             },
                             "While expanding the reference 'theta_0_deg' in:"
                         ],
@@ -13311,7 +13474,7 @@
                         "start_line": 38
                     }
                 },
-                "666": {
+                "673": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13321,15 +13484,15 @@
                     "hints": [],
                     "inst": {
                         "end_col": 66,
-                        "end_line": 71,
+                        "end_line": 74,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 28,
-                        "start_line": 71
+                        "start_line": 74
                     }
                 },
-                "668": {
+                "675": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13346,7 +13509,7 @@
                         "parent_location": [
                             {
                                 "end_col": 66,
-                                "end_line": 71,
+                                "end_line": 74,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
@@ -13360,12 +13523,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 67,
-                                                "end_line": 72,
+                                                "end_line": 75,
                                                 "input_file": {
                                                     "filename": "contracts/projectile_plot.cairo"
                                                 },
                                                 "start_col": 28,
-                                                "start_line": 72
+                                                "start_line": 75
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
@@ -13375,7 +13538,7 @@
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
                                 "start_col": 28,
-                                "start_line": 71
+                                "start_line": 74
                             },
                             "While trying to update the implicit return value 'range_check_ptr' in:"
                         ],
@@ -13383,7 +13546,7 @@
                         "start_line": 125
                     }
                 },
-                "669": {
+                "676": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13393,39 +13556,39 @@
                     "hints": [],
                     "inst": {
                         "end_col": 19,
-                        "end_line": 66,
+                        "end_line": 69,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 19,
-                                "end_line": 66,
+                                "end_line": 69,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "parent_location": [
                                     {
                                         "end_col": 50,
-                                        "end_line": 72,
+                                        "end_line": 75,
                                         "input_file": {
                                             "filename": "contracts/projectile_plot.cairo"
                                         },
                                         "start_col": 40,
-                                        "start_line": 72
+                                        "start_line": 75
                                     },
                                     "While expanding the reference 'theta_0_fp' in:"
                                 ],
                                 "start_col": 9,
-                                "start_line": 66
+                                "start_line": 69
                             },
                             "While auto generating local variable for 'theta_0_fp'."
                         ],
                         "start_col": 9,
-                        "start_line": 66
+                        "start_line": 69
                     }
                 },
-                "670": {
+                "677": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13435,27 +13598,27 @@
                     "hints": [],
                     "inst": {
                         "end_col": 24,
-                        "end_line": 71,
+                        "end_line": 74,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 66,
-                                "end_line": 72,
+                                "end_line": 75,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 52,
-                                "start_line": 72
+                                "start_line": 75
                             },
                             "While expanding the reference 'cos_theta_0_fp' in:"
                         ],
                         "start_col": 10,
-                        "start_line": 71
+                        "start_line": 74
                     }
                 },
-                "671": {
+                "678": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13465,15 +13628,15 @@
                     "hints": [],
                     "inst": {
                         "end_col": 67,
-                        "end_line": 72,
+                        "end_line": 75,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 28,
-                        "start_line": 72
+                        "start_line": 75
                     }
                 },
-                "673": {
+                "680": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -13490,7 +13653,7 @@
                         "parent_location": [
                             {
                                 "end_col": 67,
-                                "end_line": 72,
+                                "end_line": 75,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
@@ -13504,12 +13667,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 49,
-                                                "end_line": 75,
+                                                "end_line": 78,
                                                 "input_file": {
                                                     "filename": "contracts/projectile_plot.cairo"
                                                 },
                                                 "start_col": 19,
-                                                "start_line": 75
+                                                "start_line": 78
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
@@ -13519,174 +13682,12 @@
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
                                 "start_col": 28,
-                                "start_line": 72
+                                "start_line": 75
                             },
                             "While trying to update the implicit return value 'range_check_ptr' in:"
                         ],
                         "start_col": 18,
                         "start_line": 177
-                    }
-                },
-                "674": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 32,
-                        "end_line": 62,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 32,
-                                "end_line": 75,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "start_col": 26,
-                                "start_line": 75
-                            },
-                            "While expanding the reference 'v_0_fp' in:"
-                        ],
-                        "start_col": 18,
-                        "start_line": 62
-                    }
-                },
-                "676": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 24,
-                        "end_line": 71,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 48,
-                                "end_line": 75,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "start_col": 34,
-                                "start_line": 75
-                            },
-                            "While expanding the reference 'cos_theta_0_fp' in:"
-                        ],
-                        "start_col": 10,
-                        "start_line": 71
-                    }
-                },
-                "677": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 49,
-                        "end_line": 75,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "start_col": 19,
-                        "start_line": 75
-                    }
-                },
-                "679": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 16,
-                        "end_line": 75,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 16,
-                                "end_line": 75,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "start_col": 9,
-                                "start_line": 75
-                            },
-                            "While auto generating local variable for 'v_0x_fp'."
-                        ],
-                        "start_col": 9,
-                        "start_line": 75
-                    }
-                },
-                "680": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 28,
-                        "end_line": 18,
-                        "input_file": {
-                            "filename": "/home/whatthedev/projectile-path/contracts/math.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 49,
-                                "end_line": 75,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "parent_location": [
-                                    {
-                                        "end_col": 28,
-                                        "end_line": 18,
-                                        "input_file": {
-                                            "filename": "/home/whatthedev/projectile-path/contracts/math.cairo"
-                                        },
-                                        "parent_location": [
-                                            {
-                                                "end_col": 49,
-                                                "end_line": 76,
-                                                "input_file": {
-                                                    "filename": "contracts/projectile_plot.cairo"
-                                                },
-                                                "start_col": 19,
-                                                "start_line": 76
-                                            },
-                                            "While trying to retrieve the implicit argument 'range_check_ptr' in:"
-                                        ],
-                                        "start_col": 13,
-                                        "start_line": 18
-                                    },
-                                    "While expanding the reference 'range_check_ptr' in:"
-                                ],
-                                "start_col": 19,
-                                "start_line": 75
-                            },
-                            "While trying to update the implicit return value 'range_check_ptr' in:"
-                        ],
-                        "start_col": 13,
-                        "start_line": 18
                     }
                 },
                 "681": {
@@ -13699,24 +13700,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 32,
-                        "end_line": 62,
+                        "end_line": 65,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 32,
-                                "end_line": 76,
+                                "end_line": 78,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 26,
-                                "start_line": 76
+                                "start_line": 78
                             },
                             "While expanding the reference 'v_0_fp' in:"
                         ],
                         "start_col": 18,
-                        "start_line": 62
+                        "start_line": 65
                     }
                 },
                 "683": {
@@ -13729,24 +13730,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 24,
-                        "end_line": 72,
+                        "end_line": 74,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 48,
-                                "end_line": 76,
+                                "end_line": 78,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 34,
-                                "start_line": 76
+                                "start_line": 78
                             },
-                            "While expanding the reference 'sin_theta_0_fp' in:"
+                            "While expanding the reference 'cos_theta_0_fp' in:"
                         ],
                         "start_col": 10,
-                        "start_line": 72
+                        "start_line": 74
                     }
                 },
                 "684": {
@@ -13759,12 +13760,12 @@
                     "hints": [],
                     "inst": {
                         "end_col": 49,
-                        "end_line": 76,
+                        "end_line": 78,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 19,
-                        "start_line": 76
+                        "start_line": 78
                     }
                 },
                 "686": {
@@ -13777,24 +13778,24 @@
                     "hints": [],
                     "inst": {
                         "end_col": 16,
-                        "end_line": 76,
+                        "end_line": 78,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 16,
-                                "end_line": 76,
+                                "end_line": 78,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 9,
-                                "start_line": 76
+                                "start_line": 78
                             },
-                            "While auto generating local variable for 'v_0y_fp'."
+                            "While auto generating local variable for 'v_0x_fp'."
                         ],
                         "start_col": 9,
-                        "start_line": 76
+                        "start_line": 78
                     }
                 },
                 "687": {
@@ -13814,36 +13815,36 @@
                         "parent_location": [
                             {
                                 "end_col": 49,
-                                "end_line": 76,
+                                "end_line": 78,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "parent_location": [
                                     {
-                                        "end_col": 37,
-                                        "end_line": 14,
+                                        "end_col": 28,
+                                        "end_line": 18,
                                         "input_file": {
-                                            "filename": "/home/whatthedev/projectile-path/contracts/physics.cairo"
+                                            "filename": "/home/whatthedev/projectile-path/contracts/math.cairo"
                                         },
                                         "parent_location": [
                                             {
-                                                "end_col": 66,
+                                                "end_col": 49,
                                                 "end_line": 79,
                                                 "input_file": {
                                                     "filename": "contracts/projectile_plot.cairo"
                                                 },
-                                                "start_col": 20,
+                                                "start_col": 19,
                                                 "start_line": 79
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
-                                        "start_col": 22,
-                                        "start_line": 14
+                                        "start_col": 13,
+                                        "start_line": 18
                                     },
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
                                 "start_col": 19,
-                                "start_line": 76
+                                "start_line": 78
                             },
                             "While trying to update the implicit return value 'range_check_ptr' in:"
                         ],
@@ -13860,67 +13861,25 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 71,
-                        "end_line": 38,
+                        "end_col": 32,
+                        "end_line": 65,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
-                                "end_col": 47,
+                                "end_col": 32,
                                 "end_line": 79,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
-                                "start_col": 36,
+                                "start_col": 26,
                                 "start_line": 79
                             },
-                            "While expanding the reference 'theta_0_deg' in:"
+                            "While expanding the reference 'v_0_fp' in:"
                         ],
-                        "start_col": 54,
-                        "start_line": 38
-                    }
-                },
-                "689": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 16,
-                        "end_line": 75,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 16,
-                                "end_line": 75,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "parent_location": [
-                                    {
-                                        "end_col": 56,
-                                        "end_line": 79,
-                                        "input_file": {
-                                            "filename": "contracts/projectile_plot.cairo"
-                                        },
-                                        "start_col": 49,
-                                        "start_line": 79
-                                    },
-                                    "While expanding the reference 'v_0x_fp' in:"
-                                ],
-                                "start_col": 9,
-                                "start_line": 75
-                            },
-                            "While auto generating local variable for 'v_0x_fp'."
-                        ],
-                        "start_col": 9,
-                        "start_line": 75
+                        "start_col": 18,
+                        "start_line": 65
                     }
                 },
                 "690": {
@@ -13932,37 +13891,25 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 16,
-                        "end_line": 76,
+                        "end_col": 24,
+                        "end_line": 75,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
-                                "end_col": 16,
-                                "end_line": 76,
+                                "end_col": 48,
+                                "end_line": 79,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
-                                "parent_location": [
-                                    {
-                                        "end_col": 65,
-                                        "end_line": 79,
-                                        "input_file": {
-                                            "filename": "contracts/projectile_plot.cairo"
-                                        },
-                                        "start_col": 58,
-                                        "start_line": 79
-                                    },
-                                    "While expanding the reference 'v_0y_fp' in:"
-                                ],
-                                "start_col": 9,
-                                "start_line": 76
+                                "start_col": 34,
+                                "start_line": 79
                             },
-                            "While auto generating local variable for 'v_0y_fp'."
+                            "While expanding the reference 'sin_theta_0_fp' in:"
                         ],
-                        "start_col": 9,
-                        "start_line": 76
+                        "start_col": 10,
+                        "start_line": 75
                     }
                 },
                 "691": {
@@ -13974,12 +13921,12 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 66,
+                        "end_col": 49,
                         "end_line": 79,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "start_col": 20,
+                        "start_col": 19,
                         "start_line": 79
                     }
                 },
@@ -13992,13 +13939,79 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 54,
-                        "end_line": 82,
+                        "end_col": 16,
+                        "end_line": 79,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "start_col": 43,
-                        "start_line": 82
+                        "parent_location": [
+                            {
+                                "end_col": 16,
+                                "end_line": 79,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "start_col": 9,
+                                "start_line": 79
+                            },
+                            "While auto generating local variable for 'v_0y_fp'."
+                        ],
+                        "start_col": 9,
+                        "start_line": 79
+                    }
+                },
+                "694": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 28,
+                        "end_line": 18,
+                        "input_file": {
+                            "filename": "/home/whatthedev/projectile-path/contracts/math.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 49,
+                                "end_line": 79,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 37,
+                                        "end_line": 14,
+                                        "input_file": {
+                                            "filename": "/home/whatthedev/projectile-path/contracts/physics.cairo"
+                                        },
+                                        "parent_location": [
+                                            {
+                                                "end_col": 66,
+                                                "end_line": 82,
+                                                "input_file": {
+                                                    "filename": "contracts/projectile_plot.cairo"
+                                                },
+                                                "start_col": 20,
+                                                "start_line": 82
+                                            },
+                                            "While trying to retrieve the implicit argument 'range_check_ptr' in:"
+                                        ],
+                                        "start_col": 22,
+                                        "start_line": 14
+                                    },
+                                    "While expanding the reference 'range_check_ptr' in:"
+                                ],
+                                "start_col": 19,
+                                "start_line": 79
+                            },
+                            "While trying to update the implicit return value 'range_check_ptr' in:"
+                        ],
+                        "start_col": 13,
+                        "start_line": 18
                     }
                 },
                 "695": {
@@ -14010,13 +14023,67 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 55,
-                        "end_line": 82,
+                        "end_col": 71,
+                        "end_line": 38,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "start_col": 22,
-                        "start_line": 82
+                        "parent_location": [
+                            {
+                                "end_col": 47,
+                                "end_line": 82,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "start_col": 36,
+                                "start_line": 82
+                            },
+                            "While expanding the reference 'theta_0_deg' in:"
+                        ],
+                        "start_col": 54,
+                        "start_line": 38
+                    }
+                },
+                "696": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 16,
+                        "end_line": 78,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 16,
+                                "end_line": 78,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 56,
+                                        "end_line": 82,
+                                        "input_file": {
+                                            "filename": "contracts/projectile_plot.cairo"
+                                        },
+                                        "start_col": 49,
+                                        "start_line": 82
+                                    },
+                                    "While expanding the reference 'v_0x_fp' in:"
+                                ],
+                                "start_col": 9,
+                                "start_line": 78
+                            },
+                            "While auto generating local variable for 'v_0x_fp'."
+                        ],
+                        "start_col": 9,
+                        "start_line": 78
                     }
                 },
                 "697": {
@@ -14028,16 +14095,40 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 34,
-                        "end_line": 89,
+                        "end_col": 16,
+                        "end_line": 79,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "start_col": 27,
-                        "start_line": 89
+                        "parent_location": [
+                            {
+                                "end_col": 16,
+                                "end_line": 79,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 65,
+                                        "end_line": 82,
+                                        "input_file": {
+                                            "filename": "contracts/projectile_plot.cairo"
+                                        },
+                                        "start_col": 58,
+                                        "start_line": 82
+                                    },
+                                    "While expanding the reference 'v_0y_fp' in:"
+                                ],
+                                "start_col": 9,
+                                "start_line": 79
+                            },
+                            "While auto generating local variable for 'v_0y_fp'."
+                        ],
+                        "start_col": 9,
+                        "start_line": 79
                     }
                 },
-                "699": {
+                "698": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14046,25 +14137,13 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 23,
-                        "end_line": 89,
+                        "end_col": 66,
+                        "end_line": 82,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "parent_location": [
-                            {
-                                "end_col": 23,
-                                "end_line": 89,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "start_col": 10,
-                                "start_line": 89
-                            },
-                            "While auto generating local variable for 'x_fp_s'."
-                        ],
-                        "start_col": 10,
-                        "start_line": 89
+                        "start_col": 20,
+                        "start_line": 82
                     }
                 },
                 "700": {
@@ -14076,13 +14155,13 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 34,
-                        "end_line": 90,
+                        "end_col": 54,
+                        "end_line": 85,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "start_col": 27,
-                        "start_line": 90
+                        "start_col": 43,
+                        "start_line": 85
                     }
                 },
                 "702": {
@@ -14094,28 +14173,112 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
+                        "end_col": 55,
+                        "end_line": 85,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "start_col": 22,
+                        "start_line": 85
+                    }
+                },
+                "704": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 34,
+                        "end_line": 92,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "start_col": 27,
+                        "start_line": 92
+                    }
+                },
+                "706": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
                         "end_col": 23,
-                        "end_line": 90,
+                        "end_line": 92,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 23,
-                                "end_line": 90,
+                                "end_line": 92,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 10,
-                                "start_line": 90
+                                "start_line": 92
+                            },
+                            "While auto generating local variable for 'x_fp_s'."
+                        ],
+                        "start_col": 10,
+                        "start_line": 92
+                    }
+                },
+                "707": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 34,
+                        "end_line": 93,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "start_col": 27,
+                        "start_line": 93
+                    }
+                },
+                "709": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 23,
+                        "end_line": 93,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 23,
+                                "end_line": 93,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "start_col": 10,
+                                "start_line": 93
                             },
                             "While auto generating local variable for 'y_fp_s'."
                         ],
                         "start_col": 10,
-                        "start_line": 90
+                        "start_line": 93
                     }
                 },
-                "703": {
+                "710": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14132,7 +14295,7 @@
                         "parent_location": [
                             {
                                 "end_col": 55,
-                                "end_line": 82,
+                                "end_line": 85,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
@@ -14146,12 +14309,12 @@
                                         "parent_location": [
                                             {
                                                 "end_col": 88,
-                                                "end_line": 93,
+                                                "end_line": 96,
                                                 "input_file": {
                                                     "filename": "contracts/projectile_plot.cairo"
                                                 },
                                                 "start_col": 5,
-                                                "start_line": 93
+                                                "start_line": 96
                                             },
                                             "While trying to retrieve the implicit argument 'range_check_ptr' in:"
                                         ],
@@ -14161,7 +14324,7 @@
                                     "While expanding the reference 'range_check_ptr' in:"
                                 ],
                                 "start_col": 22,
-                                "start_line": 82
+                                "start_line": 85
                             },
                             "While trying to update the implicit return value 'range_check_ptr' in:"
                         ],
@@ -14169,7 +14332,7 @@
                         "start_line": 47
                     }
                 },
-                "704": {
+                "711": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14186,245 +14349,17 @@
                         "parent_location": [
                             {
                                 "end_col": 33,
-                                "end_line": 93,
+                                "end_line": 96,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "start_col": 26,
-                                "start_line": 93
+                                "start_line": 96
                             },
                             "While expanding the reference 'num_pts' in:"
                         ],
                         "start_col": 39,
                         "start_line": 38
-                    }
-                },
-                "705": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 16,
-                        "end_line": 75,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 16,
-                                "end_line": 75,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "parent_location": [
-                                    {
-                                        "end_col": 42,
-                                        "end_line": 93,
-                                        "input_file": {
-                                            "filename": "contracts/projectile_plot.cairo"
-                                        },
-                                        "start_col": 35,
-                                        "start_line": 93
-                                    },
-                                    "While expanding the reference 'v_0x_fp' in:"
-                                ],
-                                "start_col": 9,
-                                "start_line": 75
-                            },
-                            "While auto generating local variable for 'v_0x_fp'."
-                        ],
-                        "start_col": 9,
-                        "start_line": 75
-                    }
-                },
-                "706": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 16,
-                        "end_line": 76,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 16,
-                                "end_line": 76,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "parent_location": [
-                                    {
-                                        "end_col": 51,
-                                        "end_line": 93,
-                                        "input_file": {
-                                            "filename": "contracts/projectile_plot.cairo"
-                                        },
-                                        "start_col": 44,
-                                        "start_line": 93
-                                    },
-                                    "While expanding the reference 'v_0y_fp' in:"
-                                ],
-                                "start_col": 9,
-                                "start_line": 76
-                            },
-                            "While auto generating local variable for 'v_0y_fp'."
-                        ],
-                        "start_col": 9,
-                        "start_line": 76
-                    }
-                },
-                "707": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 19,
-                        "end_line": 82,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 63,
-                                "end_line": 93,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "start_col": 53,
-                                "start_line": 93
-                            },
-                            "While expanding the reference 'delta_t_fp' in:"
-                        ],
-                        "start_col": 9,
-                        "start_line": 82
-                    }
-                },
-                "708": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 30,
-                        "end_line": 85,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 71,
-                                "end_line": 93,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "start_col": 65,
-                                "start_line": 93
-                            },
-                            "While expanding the reference 't_0_fp' in:"
-                        ],
-                        "start_col": 18,
-                        "start_line": 85
-                    }
-                },
-                "710": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 23,
-                        "end_line": 89,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 23,
-                                "end_line": 89,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "parent_location": [
-                                    {
-                                        "end_col": 79,
-                                        "end_line": 93,
-                                        "input_file": {
-                                            "filename": "contracts/projectile_plot.cairo"
-                                        },
-                                        "start_col": 73,
-                                        "start_line": 93
-                                    },
-                                    "While expanding the reference 'x_fp_s' in:"
-                                ],
-                                "start_col": 10,
-                                "start_line": 89
-                            },
-                            "While auto generating local variable for 'x_fp_s'."
-                        ],
-                        "start_col": 10,
-                        "start_line": 89
-                    }
-                },
-                "711": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 23,
-                        "end_line": 90,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 23,
-                                "end_line": 90,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "parent_location": [
-                                    {
-                                        "end_col": 87,
-                                        "end_line": 93,
-                                        "input_file": {
-                                            "filename": "contracts/projectile_plot.cairo"
-                                        },
-                                        "start_col": 81,
-                                        "start_line": 93
-                                    },
-                                    "While expanding the reference 'y_fp_s' in:"
-                                ],
-                                "start_col": 10,
-                                "start_line": 90
-                            },
-                            "While auto generating local variable for 'y_fp_s'."
-                        ],
-                        "start_col": 10,
-                        "start_line": 90
                     }
                 },
                 "712": {
@@ -14436,13 +14371,79 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 88,
-                        "end_line": 93,
+                        "end_col": 16,
+                        "end_line": 78,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
-                        "start_col": 5,
-                        "start_line": 93
+                        "parent_location": [
+                            {
+                                "end_col": 16,
+                                "end_line": 78,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 42,
+                                        "end_line": 96,
+                                        "input_file": {
+                                            "filename": "contracts/projectile_plot.cairo"
+                                        },
+                                        "start_col": 35,
+                                        "start_line": 96
+                                    },
+                                    "While expanding the reference 'v_0x_fp' in:"
+                                ],
+                                "start_col": 9,
+                                "start_line": 78
+                            },
+                            "While auto generating local variable for 'v_0x_fp'."
+                        ],
+                        "start_col": 9,
+                        "start_line": 78
+                    }
+                },
+                "713": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 16,
+                        "end_line": 79,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 16,
+                                "end_line": 79,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 51,
+                                        "end_line": 96,
+                                        "input_file": {
+                                            "filename": "contracts/projectile_plot.cairo"
+                                        },
+                                        "start_col": 44,
+                                        "start_line": 96
+                                    },
+                                    "While expanding the reference 'v_0y_fp' in:"
+                                ],
+                                "start_col": 9,
+                                "start_line": 79
+                            },
+                            "While auto generating local variable for 'v_0y_fp'."
+                        ],
+                        "start_col": 9,
+                        "start_line": 79
                     }
                 },
                 "714": {
@@ -14454,37 +14455,25 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 52,
-                        "end_line": 38,
+                        "end_col": 19,
+                        "end_line": 85,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
-                                "end_col": 29,
+                                "end_col": 63,
                                 "end_line": 96,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
-                                "parent_location": [
-                                    {
-                                        "end_col": 34,
-                                        "end_line": 99,
-                                        "input_file": {
-                                            "filename": "contracts/projectile_plot.cairo"
-                                        },
-                                        "start_col": 24,
-                                        "start_line": 99
-                                    },
-                                    "While expanding the reference 'x_fp_s_len' in:"
-                                ],
-                                "start_col": 22,
+                                "start_col": 53,
                                 "start_line": 96
                             },
-                            "While expanding the reference 'num_pts' in:"
+                            "While expanding the reference 'delta_t_fp' in:"
                         ],
-                        "start_col": 39,
-                        "start_line": 38
+                        "start_col": 9,
+                        "start_line": 85
                     }
                 },
                 "715": {
@@ -14496,79 +14485,25 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 23,
-                        "end_line": 89,
+                        "end_col": 30,
+                        "end_line": 88,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
-                                "end_col": 23,
-                                "end_line": 89,
+                                "end_col": 71,
+                                "end_line": 96,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
-                                "parent_location": [
-                                    {
-                                        "end_col": 50,
-                                        "end_line": 99,
-                                        "input_file": {
-                                            "filename": "contracts/projectile_plot.cairo"
-                                        },
-                                        "start_col": 44,
-                                        "start_line": 99
-                                    },
-                                    "While expanding the reference 'x_fp_s' in:"
-                                ],
-                                "start_col": 10,
-                                "start_line": 89
+                                "start_col": 65,
+                                "start_line": 96
                             },
-                            "While auto generating local variable for 'x_fp_s'."
+                            "While expanding the reference 't_0_fp' in:"
                         ],
-                        "start_col": 10,
-                        "start_line": 89
-                    }
-                },
-                "716": {
-                    "accessible_scopes": [
-                        "__main__",
-                        "__main__",
-                        "__main__.projectile_path"
-                    ],
-                    "flow_tracking_data": null,
-                    "hints": [],
-                    "inst": {
-                        "end_col": 52,
-                        "end_line": 38,
-                        "input_file": {
-                            "filename": "contracts/projectile_plot.cairo"
-                        },
-                        "parent_location": [
-                            {
-                                "end_col": 29,
-                                "end_line": 97,
-                                "input_file": {
-                                    "filename": "contracts/projectile_plot.cairo"
-                                },
-                                "parent_location": [
-                                    {
-                                        "end_col": 73,
-                                        "end_line": 99,
-                                        "input_file": {
-                                            "filename": "contracts/projectile_plot.cairo"
-                                        },
-                                        "start_col": 63,
-                                        "start_line": 99
-                                    },
-                                    "While expanding the reference 'y_fp_s_len' in:"
-                                ],
-                                "start_col": 22,
-                                "start_line": 97
-                            },
-                            "While expanding the reference 'num_pts' in:"
-                        ],
-                        "start_col": 39,
-                        "start_line": 38
+                        "start_col": 18,
+                        "start_line": 88
                     }
                 },
                 "717": {
@@ -14581,36 +14516,36 @@
                     "hints": [],
                     "inst": {
                         "end_col": 23,
-                        "end_line": 90,
+                        "end_line": 92,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "parent_location": [
                             {
                                 "end_col": 23,
-                                "end_line": 90,
+                                "end_line": 92,
                                 "input_file": {
                                     "filename": "contracts/projectile_plot.cairo"
                                 },
                                 "parent_location": [
                                     {
-                                        "end_col": 88,
-                                        "end_line": 99,
+                                        "end_col": 79,
+                                        "end_line": 96,
                                         "input_file": {
                                             "filename": "contracts/projectile_plot.cairo"
                                         },
-                                        "start_col": 82,
-                                        "start_line": 99
+                                        "start_col": 73,
+                                        "start_line": 96
                                     },
-                                    "While expanding the reference 'y_fp_s' in:"
+                                    "While expanding the reference 'x_fp_s' in:"
                                 ],
                                 "start_col": 10,
-                                "start_line": 90
+                                "start_line": 92
                             },
-                            "While auto generating local variable for 'y_fp_s'."
+                            "While auto generating local variable for 'x_fp_s'."
                         ],
                         "start_col": 10,
-                        "start_line": 90
+                        "start_line": 92
                     }
                 },
                 "718": {
@@ -14622,16 +14557,244 @@
                     "flow_tracking_data": null,
                     "hints": [],
                     "inst": {
-                        "end_col": 90,
-                        "end_line": 99,
+                        "end_col": 23,
+                        "end_line": 93,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 23,
+                                "end_line": 93,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 87,
+                                        "end_line": 96,
+                                        "input_file": {
+                                            "filename": "contracts/projectile_plot.cairo"
+                                        },
+                                        "start_col": 81,
+                                        "start_line": 96
+                                    },
+                                    "While expanding the reference 'y_fp_s' in:"
+                                ],
+                                "start_col": 10,
+                                "start_line": 93
+                            },
+                            "While auto generating local variable for 'y_fp_s'."
+                        ],
+                        "start_col": 10,
+                        "start_line": 93
+                    }
+                },
+                "719": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 88,
+                        "end_line": 96,
                         "input_file": {
                             "filename": "contracts/projectile_plot.cairo"
                         },
                         "start_col": 5,
-                        "start_line": 99
+                        "start_line": 96
                     }
                 },
-                "719": {
+                "721": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 52,
+                        "end_line": 38,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 29,
+                                "end_line": 99,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 34,
+                                        "end_line": 102,
+                                        "input_file": {
+                                            "filename": "contracts/projectile_plot.cairo"
+                                        },
+                                        "start_col": 24,
+                                        "start_line": 102
+                                    },
+                                    "While expanding the reference 'x_fp_s_len' in:"
+                                ],
+                                "start_col": 22,
+                                "start_line": 99
+                            },
+                            "While expanding the reference 'num_pts' in:"
+                        ],
+                        "start_col": 39,
+                        "start_line": 38
+                    }
+                },
+                "722": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 23,
+                        "end_line": 92,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 23,
+                                "end_line": 92,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 50,
+                                        "end_line": 102,
+                                        "input_file": {
+                                            "filename": "contracts/projectile_plot.cairo"
+                                        },
+                                        "start_col": 44,
+                                        "start_line": 102
+                                    },
+                                    "While expanding the reference 'x_fp_s' in:"
+                                ],
+                                "start_col": 10,
+                                "start_line": 92
+                            },
+                            "While auto generating local variable for 'x_fp_s'."
+                        ],
+                        "start_col": 10,
+                        "start_line": 92
+                    }
+                },
+                "723": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 52,
+                        "end_line": 38,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 29,
+                                "end_line": 100,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 73,
+                                        "end_line": 102,
+                                        "input_file": {
+                                            "filename": "contracts/projectile_plot.cairo"
+                                        },
+                                        "start_col": 63,
+                                        "start_line": 102
+                                    },
+                                    "While expanding the reference 'y_fp_s_len' in:"
+                                ],
+                                "start_col": 22,
+                                "start_line": 100
+                            },
+                            "While expanding the reference 'num_pts' in:"
+                        ],
+                        "start_col": 39,
+                        "start_line": 38
+                    }
+                },
+                "724": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 23,
+                        "end_line": 93,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "parent_location": [
+                            {
+                                "end_col": 23,
+                                "end_line": 93,
+                                "input_file": {
+                                    "filename": "contracts/projectile_plot.cairo"
+                                },
+                                "parent_location": [
+                                    {
+                                        "end_col": 88,
+                                        "end_line": 102,
+                                        "input_file": {
+                                            "filename": "contracts/projectile_plot.cairo"
+                                        },
+                                        "start_col": 82,
+                                        "start_line": 102
+                                    },
+                                    "While expanding the reference 'y_fp_s' in:"
+                                ],
+                                "start_col": 10,
+                                "start_line": 93
+                            },
+                            "While auto generating local variable for 'y_fp_s'."
+                        ],
+                        "start_col": 10,
+                        "start_line": 93
+                    }
+                },
+                "725": {
+                    "accessible_scopes": [
+                        "__main__",
+                        "__main__",
+                        "__main__.projectile_path"
+                    ],
+                    "flow_tracking_data": null,
+                    "hints": [],
+                    "inst": {
+                        "end_col": 90,
+                        "end_line": 102,
+                        "input_file": {
+                            "filename": "contracts/projectile_plot.cairo"
+                        },
+                        "start_col": 5,
+                        "start_line": 102
+                    }
+                },
+                "726": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14687,7 +14850,7 @@
                         "start_line": 4
                     }
                 },
-                "721": {
+                "728": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14718,7 +14881,7 @@
                         "start_line": 1
                     }
                 },
-                "722": {
+                "729": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14749,7 +14912,7 @@
                         "start_line": 2
                     }
                 },
-                "723": {
+                "730": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14780,7 +14943,7 @@
                         "start_line": 5
                     }
                 },
-                "725": {
+                "732": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14835,7 +14998,7 @@
                         "start_line": 2
                     }
                 },
-                "727": {
+                "734": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14866,7 +15029,7 @@
                         "start_line": 10
                     }
                 },
-                "728": {
+                "735": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14945,7 +15108,7 @@
                         "start_line": 2
                     }
                 },
-                "730": {
+                "737": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -14976,7 +15139,7 @@
                         "start_line": 13
                     }
                 },
-                "731": {
+                "738": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15007,7 +15170,7 @@
                         "start_line": 14
                     }
                 },
-                "732": {
+                "739": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15038,7 +15201,7 @@
                         "start_line": 11
                     }
                 },
-                "734": {
+                "741": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15069,7 +15232,7 @@
                         "start_line": 1
                     }
                 },
-                "735": {
+                "742": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15100,7 +15263,7 @@
                         "start_line": 2
                     }
                 },
-                "736": {
+                "743": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15131,7 +15294,7 @@
                         "start_line": 5
                     }
                 },
-                "738": {
+                "745": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15186,7 +15349,7 @@
                         "start_line": 2
                     }
                 },
-                "740": {
+                "747": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15217,7 +15380,7 @@
                         "start_line": 10
                     }
                 },
-                "741": {
+                "748": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15296,7 +15459,7 @@
                         "start_line": 2
                     }
                 },
-                "743": {
+                "750": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15327,7 +15490,7 @@
                         "start_line": 13
                     }
                 },
-                "744": {
+                "751": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15358,7 +15521,7 @@
                         "start_line": 14
                     }
                 },
-                "745": {
+                "752": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15389,7 +15552,7 @@
                         "start_line": 11
                     }
                 },
-                "747": {
+                "754": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15444,7 +15607,7 @@
                         "start_line": 5
                     }
                 },
-                "748": {
+                "755": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15475,7 +15638,7 @@
                         "start_line": 11
                     }
                 },
-                "749": {
+                "756": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15530,7 +15693,7 @@
                         "start_line": 5
                     }
                 },
-                "750": {
+                "757": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15561,7 +15724,7 @@
                         "start_line": 9
                     }
                 },
-                "751": {
+                "758": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15592,7 +15755,7 @@
                         "start_line": 2
                     }
                 },
-                "753": {
+                "760": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15671,7 +15834,7 @@
                         "start_line": 2
                     }
                 },
-                "755": {
+                "762": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15702,7 +15865,7 @@
                         "start_line": 1
                     }
                 },
-                "756": {
+                "763": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15757,7 +15920,7 @@
                         "start_line": 1
                     }
                 },
-                "757": {
+                "764": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15812,7 +15975,7 @@
                         "start_line": 1
                     }
                 },
-                "758": {
+                "765": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15867,7 +16030,7 @@
                         "start_line": 1
                     }
                 },
-                "759": {
+                "766": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15922,7 +16085,7 @@
                         "start_line": 1
                     }
                 },
-                "760": {
+                "767": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15941,7 +16104,7 @@
                         "start_line": 38
                     }
                 },
-                "762": {
+                "769": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -15996,7 +16159,7 @@
                         "start_line": 1
                     }
                 },
-                "763": {
+                "770": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -16027,7 +16190,7 @@
                         "start_line": 2
                     }
                 },
-                "765": {
+                "772": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -16082,7 +16245,7 @@
                         "start_line": 1
                     }
                 },
-                "766": {
+                "773": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -16137,7 +16300,7 @@
                         "start_line": 2
                     }
                 },
-                "767": {
+                "774": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -16192,7 +16355,7 @@
                         "start_line": 2
                     }
                 },
-                "768": {
+                "775": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -16247,7 +16410,7 @@
                         "start_line": 2
                     }
                 },
-                "769": {
+                "776": {
                     "accessible_scopes": [
                         "__main__",
                         "__main__",
@@ -16531,7 +16694,7 @@
                     }
                 }
             ],
-            "719": [
+            "726": [
                 {
                     "accessible_scopes": [
                         "__main__",
@@ -16755,7 +16918,7 @@
                 "decorators": [
                     "view"
                 ],
-                "pc": 751,
+                "pc": 758,
                 "type": "function"
             },
             "__wrappers__.projectile_path.Args": {
@@ -16784,7 +16947,7 @@
             },
             "__wrappers__.projectile_path_encode_return": {
                 "decorators": [],
-                "pc": 719,
+                "pc": 726,
                 "type": "function"
             },
             "__wrappers__.projectile_path_encode_return.Args": {
