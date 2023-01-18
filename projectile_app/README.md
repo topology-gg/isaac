@@ -1,2 +1,5 @@
-# react-native-practice
-Just practicing with React Native :)
+# Projectile app
+
+A react-native app for https://github.com/whatthedev-eth/projectile-path
+
+work in progress :)

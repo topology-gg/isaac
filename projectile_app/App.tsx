@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { Modal, StyleSheet, Text, View} from 'react-native';
+
 import Animated, {
     useAnimatedGestureHandler,
     useAnimatedStyle,
@@ -81,12 +82,8 @@ function App() {
     const rStyle = useAnimatedStyle(() => {
         return {
             transform: [
-                {
-                translateX: currentX.value,
-                },
-                {
-                translateY: currentY.value,
-                },
+                {translateX: currentX.value,},
+                {translateY: currentY.value,},
             ],
         };
     });
