@@ -1,176 +1,242 @@
-//import ScreenOrientation from 'expo-screen-orientation';
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, Dimensions } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
-import { Canvas, Circle, Path } from "@shopify/react-native-skia";
-//import { max } from 'react-native-reanimated';
-//import { Circle } from "react-native-svg";
+import { Canvas, Circle, Line, Path, vec, Vertices} from "@shopify/react-native-skia";
 
-// Define path and circle objects
-interface IPath {
+// Define line and ball objects
+interface ILine {
   startX: number;
   startY: number;
   endX: number;
   endY: number;
-  color: string;
+  lineColor: string;
 }
-interface ICircle {
-  circleX: number;
-  circleY: number;
-  radius: number;
-  color: string;
+interface IBall {
+  ballX: number;
+  ballY: number;
+  ballRadius: number;
+  ballColor: string;
   style: string;
 }
+
+const distTwoPoints = (x1: number, y1: number, x2: number, y2: number ) => {
+  return Math.sqrt((x1 - x2)**2 + (y1 - y2)**2);
+};
+
+const launchVelCalc = (
+  distToLaunch: number, 
+  maxDistToLaunch: number, 
+  maxVelocity: number
+) => {
+  // Launch velocity ~ (distance to launch)/(max allowed distance to launch)
+  const distRatio = distToLaunch / maxDistToLaunch;
+  const maxVelocityFloat = maxVelocity * distRatio;
+  // Convert to integer for sending to Cairo contract
+  return Math.round(maxVelocityFloat);
+};
+
+const launchAngleDegCalc = (
+  finalX: number, 
+  finalY: number, 
+  launchX: number, 
+  launchY: number, 
+  distToLaunch: number
+) => {
+  // Argument for arccos
+  const argument = (finalX - launchX)/distToLaunch;
+  // Need to define this outside if block below
+  let launchAngleDegFloat;
+
+  // Angle is found using device coordinate system (= left-handed system 
+  // with origin at upper left of screen, with +x right, +y down).
+  // To switch coordinate system (to right-handed with +x right, +y up)
+  // and to make launch angle opposite direction ball was pulled, 
+  // use extra negative sign, and/or add/subtract 180.
+  //
+  // First test if in 1st/2nd quadrant, or 3rd/4th quadrant
+  if (finalY >= launchY) {
+    // If in 1st/2nd quadrant
+    launchAngleDegFloat = -Math.acos(argument)*180/Math.PI + 180;
+  } else {
+    // If in 3rd/4th quadrant
+    launchAngleDegFloat = Math.acos(argument)*180/Math.PI - 180;
+  }
+  // Convert to integer for sending to Cairo contract
+  return Math.round(launchAngleDegFloat);
+};
+
 
 export default function App() {    
   // Get dimensions of device screen
   const { width, height } = Dimensions.get("window");
+  // Note: orientation is set to landscape in app.json
 
-  // Set initial position of the circle and the starting point of the path to be drawn
-  // This is also the position of the circle/ball when launched
-  const launchX = 0.3 * width;
-  const launchY = 0.7 * height;
+  // Set initial position of the ball and the starting point of the line to be drawn
+  // This is also the position of the ball when launched
+  const launchX = 0.2 * width;
+  const launchY = 0.6 * height;
   // Set max distance allowed from initial position, in order to begin gesture
-  const maxDistToBeginGesture = 25;
-  // Set max distance circle/path can be pulled from launch position
-  const maxDistToLaunchPosition = 0.33 * Math.min(width, height);
+  const maxDistBeginGesture = 40;
+  // Set max distance ball/line can be pulled from launch position
+  const maxDistToLaunch = 0.5 * Math.min(width, height);
   // Set max launch velocity magnitude, corresponding to max pull from launch position
   const maxVelocity = 100;
+  // For ball
+  const ballRadius = 10;
+  const ballColor = "green";
+  // For line
+  const strokeWidth = 3;
+  const lineColor = "black";
 
-  const radius = 10; // for circle
-  const strokeWidth = 5; // for path
-  const color = "green"; // for both circle and path
-
-  // Use state to initialize and store path and circle data
-  const [path, setPath] = useState<IPath | null>(null);
-  const [circle, setCircle] = useState<ICircle>({
-    circleX: launchX,
-    circleY: launchY,
-    radius: radius,
-    color: color,
+  // Use state to initialize and store line and ball data
+  const [line, setLine] = useState<ILine | null>(null);
+  const [ball, setBall] = useState<IBall>({
+    ballX: launchX,
+    ballY: launchY,
+    ballRadius: ballRadius,
+    ballColor: ballColor,
     style: "fill"
   });
-  // Use state to initialize and store final x and y positions of circle before launch
+  // Use state to initialize and store final x and y positions of ball before launch
   const [finalX, setFinalX] = useState<number>(launchX);
   const [finalY, setFinalY] = useState<number>(launchY);
 
   const pan = Gesture.Pan()
-    // Run the gesture on JS thread, instead of native thread
-    // Maybe this is so we can pass values to skia canvas(???)
+    // This modifier allows callbacks inside Gesture to run on JS thread, not UI thread 
     .runOnJS(true)
 
     .onStart((current) => {
-      const distToLaunchPosition = Math.sqrt((current.x - launchX)**2 + (current.y - launchY)**2);
-      // If current distance is within the maximum distance allowed 
-      // to begin gesture, and there is no path yet...
-      if (distToLaunchPosition <= maxDistToBeginGesture && !path) {
-        setPath({
+      const distToLaunch = distTwoPoints(
+        current.x, current.y, launchX, launchY
+      );
+      // If current distance is within the maximum distance allowed to begin gesture,
+      // and there is no line yet...
+      if (distToLaunch <= maxDistBeginGesture && !line) {
+        setLine({
           startX: current.x,
           startY: current.y,
           endX: launchX,
           endY: launchY,
-          color: color,
+          lineColor: lineColor,
         });
-        setCircle({
-          ...circle,
-          circleX: current.x,
-          circleY: current.y,
+        setBall({
+          ...ball,
+          ballX: current.x,
+          ballY: current.y,
         });
         setFinalX(current.x);
         setFinalY(current.y);
         console.log('current.x =',current.x);
         console.log('current.y =',current.y);
+
+        // Because distToLaunch <= maxDistBeginGesture, 
+        // can assume distToLaunch < maxDistToLaunch, so no need to test here
+
+        // Candidate launch velocity and angle, used to draw partial projectile line
+        const candLaunchVel = launchVelCalc(
+          distToLaunch, maxDistToLaunch, maxVelocity
+        );
+        const candLaunchAngleDeg = launchAngleDegCalc(
+          finalX, finalY, launchX, launchY, distToLaunch
+        );
+        console.log('candLaunchVel =', candLaunchVel);
+        console.log('candLaunchAngleDeg =',candLaunchAngleDeg);
       }
     })
 
     .onUpdate((current) => {
-      if (path) {
-        const distToLaunchPosition = Math.sqrt((current.x - launchX)**2 + (current.y - launchY)**2);
-      // If current distance is within the maximum distance allowed 
-      // away from launch position...
-        if (distToLaunchPosition <= maxDistToLaunchPosition) {
-          setPath({
-            ...path,
+      if (line) {
+        const distToLaunch = distTwoPoints(
+          current.x, current.y, launchX, launchY
+        );
+        // If current distance is within the maximum distance allowed 
+        // away from launch position...
+        if (distToLaunch <= maxDistToLaunch) {
+          setLine({
+            ...line,
             startX: current.x,
             startY: current.y,
           });
-          setCircle({
-            ...circle,
-            circleX: current.x,
-            circleY: current.y,
+          setBall({
+            ...ball,
+            ballX: current.x,
+            ballY: current.y,
           });
           setFinalX(current.x);
           setFinalY(current.y);
           console.log('current.x = ',current.x);
           console.log('current.y = ',current.y);
         } else {
-          // Otherwise reduce x and y values so that circle is within 
+          // Otherwise adjust x and y values so that ball is within 
           // max allowed distance. 
-          // Path stops here, but points to current position of gesture
-          const ratio = maxDistToLaunchPosition / distToLaunchPosition;
-          const reducedCurrentX = launchX + ratio * (current.x - launchX);
-          const reducedCurrentY = launchY + ratio * (current.y - launchY);
-          setPath({
-            ...path,
-            startX: reducedCurrentX,
-            startY: reducedCurrentY,
+          // Line stops here, but points to current position of gesture
+          const ratio = maxDistToLaunch / distToLaunch;
+          const adjustedCurrentX = launchX + ratio * (current.x - launchX);
+          const adjustedCurrentY = launchY + ratio * (current.y - launchY);
+          setLine({
+            ...line,
+            startX: adjustedCurrentX,
+            startY: adjustedCurrentY,
           });
-          setCircle({
-            ...circle,
-            circleX: reducedCurrentX,
-            circleY: reducedCurrentY,
+          setBall({
+            ...ball,
+            ballX: adjustedCurrentX,
+            ballY: adjustedCurrentY,
           });
-          setFinalX(reducedCurrentX);
-          setFinalY(reducedCurrentY);
+          setFinalX(adjustedCurrentX);
+          setFinalY(adjustedCurrentY);
           console.log('current.x =', current.x);
           console.log('current.y =', current.y);
-          console.log('reducedCurrentX =', reducedCurrentX);
-          console.log('reducedCurrentY =', reducedCurrentY);
+          console.log('adjustedCurrentX =', adjustedCurrentX);
+          console.log('adjustedCurrentY =', adjustedCurrentY);
         }
+          // Candidate distance to launch position
+          const candDistToLaunch = distTwoPoints(
+            finalX, finalY, launchX, launchY
+          );
+          // Candidate launch velocity and angle, 
+          // used to draw partial projectile path
+          const candLaunchVel = launchVelCalc(
+            candDistToLaunch, maxDistToLaunch, maxVelocity
+          );
+          const candLaunchAngleDeg = launchAngleDegCalc(
+            finalX, finalY, launchX, launchY, candDistToLaunch
+          );
+          console.log('candLaunchVel =', candLaunchVel);
+          console.log('candLaunchAngleDeg =',candLaunchAngleDeg);
       }
     })
 
     .onEnd(() => {
       console.log('finalX =', finalX);
       console.log('finalY =', finalY);
-      const finalDistToLaunchPosition = Math.sqrt((finalX - launchX)**2 + (finalY - launchY)**2);
-
-      // Launch velocity is proportional to final distance / max allowed distance
-      const launchVelocityFloat = maxVelocity * finalDistToLaunchPosition / maxDistToLaunchPosition;
-      // convert to integer
-      const launchVelocity = launchVelocityFloat.toFixed(0);
+      
+      const finalDistToLaunch = distTwoPoints(
+        finalX, finalY, launchX, launchY
+      );
+      
+      const launchVelocity = launchVelCalc(
+        finalDistToLaunch, maxDistToLaunch, maxVelocity
+      );
       console.log('launchVelocity =', launchVelocity);
 
-      // Angle is found using device coordinate system (= left-handed system 
-      // with origin at upper left of screen, with +x right, +y down).
-      // To switch coordinate system (to right-handed with +x right, +y up)
-      // and to make launch angle opposite direction circle was pulled, 
-      // use extra negative sign, and/or add/subtract 180.
-      if (finalY >= launchY) {
-        // If in 1st or 2nd quadrant
-        const launchAngleDegFloat = -Math.acos((finalX - launchX)/finalDistToLaunchPosition) * 180 / Math.PI + 180;
-        // convert to integer
-        const launchAngleDeg = launchAngleDegFloat.toFixed(0);
-        console.log('launchAngleDeg =', launchAngleDeg);
-      } else {
-        // If in 3rd or 4th quadrant
-        const launchAngleDegFloat = Math.acos((finalX - launchX)/finalDistToLaunchPosition) * 180 / Math.PI - 180;
-        // convert to integer
-        const launchAngleDeg = launchAngleDegFloat.toFixed(0);
-        console.log('launchAngleDeg =', launchAngleDeg);
-      }
+      const launchAngleDeg = launchAngleDegCalc(
+        finalX, finalY, launchX, launchY, finalDistToLaunch
+      );
+      console.log('launchAngleDeg =', launchAngleDeg);
 
-      // Reset path, circle, and final values
-      setPath(null);
-      setCircle({
-        ...circle,
-        circleX: launchX,
-        circleY: launchY,
+      // Reset line, ball, and final values
+      setLine(null);
+      setBall({
+        ...ball,
+        ballX: launchX,
+        ballY: launchY,
       });
       setFinalX(launchX);
       setFinalY(launchY);
     })
 
+    // Set min pan distance needed before gesture is recognized
     .minDistance(1);
 
   return (
@@ -178,19 +244,52 @@ export default function App() {
       <GestureDetector gesture={pan}>
         <View style={{ flex: 1, backgroundColor: "white" }}>
           <Canvas style={{ flex: 8 }}>
-            {path && (
-              <Path
-                path={`M ${path.startX} ${path.startY} L ${path.endX} ${path.endY}`}
-                strokeWidth={strokeWidth}
-                style="stroke"
-                color={path.color}
-              />
+            {line && (
+              <>
+                {/* <Path
+                  path={`M ${line.startX} ${line.startY} L ${line.endX} ${line.endY}`}
+                  strokeWidth={strokeWidth}
+                  style="stroke"
+                  color={line.lineColor} 
+                /> */}
+
+                {/* Line and Vertices together make vector arrow */}
+                <Line
+                  p1={vec(line.startX, line.startY)}
+                  // shorten line a bit so arrow tip is visible
+                  p2={vec(
+                    line.endX + 0.2*(line.startX - line.endX), 
+                    line.endY + 0.2*(line.startY - line.endY)                    
+                  )}
+                  // p2={vec(line.endX, line.endY)}
+                  color={line.lineColor}
+                  style="stroke"
+                  strokeWidth={strokeWidth} 
+                />
+                <Vertices
+                  // These make the arrowhead of the vector
+                  vertices={
+                    [
+                      vec(line.endX, line.endY), 
+                      vec(
+                        line.endX + 0.2*(line.startX - line.endX) - 0.07*(line.startY - line.endY),
+                        line.endY + 0.2*(line.startY - line.endY) + 0.07*(line.startX - line.endX)
+                      ),
+                      vec(
+                        line.endX + 0.2*(line.startX - line.endX) + 0.07*(line.startY - line.endY),
+                        line.endY + 0.2*(line.startY - line.endY) - 0.07*(line.startX - line.endX)
+                      )
+                    ]
+                  }
+                  color={line.lineColor}
+                />
+              </>
             )}
             <Circle 
-              cx={circle.circleX}
-              cy={circle.circleY}
-              r={circle.radius}
-              color={circle.color}
+              cx={ball.ballX}
+              cy={ball.ballY}
+              r={ball.ballRadius}
+              color={ball.ballColor}
               style="fill"
             />
           </Canvas>
