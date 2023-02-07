@@ -23,7 +23,7 @@ const distTwoPoints = (x1: number, y1: number, x2: number, y2: number ) => {
   return Math.sqrt((x1 - x2)**2 + (y1 - y2)**2);
 };
 
-const launchVelCalc = (
+const launchVelocityCalc = (
   distToLaunch: number, 
   maxDistToLaunch: number, 
   maxVelocity: number
@@ -44,6 +44,7 @@ const launchAngleDegCalc = (
 ) => {
   // Argument for arccos
   const argument = (finalX - launchX)/distToLaunch;
+  
   // Need to define this outside if block below
   let launchAngleDegFloat;
 
@@ -73,7 +74,7 @@ export default function App() {
 
   // Set initial position of the ball and the starting point of the line to be drawn
   // This is also the position of the ball when launched
-  const launchX = 0.2 * width;
+  const launchX = 0.3 * width;
   const launchY = 0.6 * height;
   // Set max distance allowed from initial position, in order to begin gesture
   const maxDistBeginGesture = 40;
@@ -133,7 +134,7 @@ export default function App() {
         // can assume distToLaunch < maxDistToLaunch, so no need to test here
 
         // Candidate launch velocity and angle, used to draw partial projectile line
-        const candLaunchVel = launchVelCalc(
+        const candLaunchVel = launchVelocityCalc(
           distToLaunch, maxDistToLaunch, maxVelocity
         );
         const candLaunchAngleDeg = launchAngleDegCalc(
@@ -196,7 +197,7 @@ export default function App() {
           );
           // Candidate launch velocity and angle, 
           // used to draw partial projectile path
-          const candLaunchVel = launchVelCalc(
+          const candLaunchVel = launchVelocityCalc(
             candDistToLaunch, maxDistToLaunch, maxVelocity
           );
           const candLaunchAngleDeg = launchAngleDegCalc(
@@ -215,7 +216,7 @@ export default function App() {
         finalX, finalY, launchX, launchY
       );
       
-      const launchVelocity = launchVelCalc(
+      const launchVelocity = launchVelocityCalc(
         finalDistToLaunch, maxDistToLaunch, maxVelocity
       );
       console.log('launchVelocity =', launchVelocity);

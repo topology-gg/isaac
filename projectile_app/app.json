@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "react-native-practice",
-    "slug": "react-native-practice",
+    "name": "projectile-app",
+    "slug": "projectile-app",
     "version": "1.0.0",
     "orientation": "landscape",
     "icon": "./assets/icon.png",
