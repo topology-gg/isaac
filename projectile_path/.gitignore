@@ -131,3 +131,7 @@ dmypy.json
 # Other folders not for github
 _not_gh_tests
 _not_gh_contracts
+
+# Added by cargo
+
+/target
