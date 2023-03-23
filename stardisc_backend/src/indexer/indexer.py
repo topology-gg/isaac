@@ -40,7 +40,7 @@ class StardiscIndexer(StarkNetIndexer):
                 EventFilter().with_from_address(STARDISC_ADDR).with_keys([REGISTER_KEY])
             ),
             starting_cursor=starknet_cursor(BIRTH_BLOCK),
-            finality=DataFinality.DATA_STATUS_FINALIZED,
+            finality=DataFinality.DATA_STATUS_ACCEPTED,
         )
 
     async def handle_data(self, info: Info, data: Block):
