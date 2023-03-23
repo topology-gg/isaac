@@ -1,10 +1,12 @@
 [package]
-name = "cairo_template"
+name = "projectile"
 version = "0.1.0"
-description = "A minimal template for developing with Cairo 1.0"
-homepage = "https://github.com/auditless/cairo-template"
 
-# Uncomment if you want to use dependencies
-# Note: currently testing doesn't work with dependencies
-# [dependencies]
-# quaireaux = { git = "https://github.com/keep-starknet-strange/quaireaux.git" }
+[dependencies]
+quaireaux = { git = "https://github.com/keep-starknet-strange/quaireaux.git" }
+
+[[target.starknet-contract]]
+
+[lib]
+sierra = true  # Enable Sierra codegen.
+casm = true   # Enable CASM codegen.

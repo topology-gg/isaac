@@ -1,2 +1,2 @@
 [crate_roots]
-cairo_template = "src"
+projectile = "src"

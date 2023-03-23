@@ -3,3 +3,8 @@ Scarb
 #######
 
 target
+
+
+# Added by cargo
+
+/target
