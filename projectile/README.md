@@ -80,7 +80,7 @@ After input, `theta_0_deg` and `v_0` are scaled up to be FP (fixed point) values
 
 This repository is licensed under the MIT license.
 
-## Working with the project
+## Working with your project
 
 The Cairo template currently supports building and testing contracts.
 
@@ -89,7 +89,7 @@ The Cairo template currently supports building and testing contracts.
 Build the contracts.
 
 ```bash
-$ make build
+$ scarb build
 ```
 
 ### Test
@@ -97,7 +97,7 @@ $ make build
 Run the tests in `src/test`:
 
 ```bash
-$ make test
+$ scarb run test
 ```
 
 ### Format
@@ -105,7 +105,7 @@ $ make test
 Format the Cairo source code (using Scarb):
 
 ```bash
-$ make fmt
+$ scarb fmt
 ```
 
 ### Sierra (advanced)
@@ -113,5 +113,5 @@ $ make fmt
 View the compiled Sierra output of your Cairo code:
 
 ```bash
-$ make sierra
+$ scarb run sierra
 ```

@@ -2,11 +2,12 @@
 name = "projectile"
 version = "0.1.0"
 
-[dependencies]
-quaireaux = { git = "https://github.com/keep-starknet-strange/quaireaux.git" }
+[scripts]
+sierra = "cairo-compile . -r"
+test = "cairo-test ."
+# Add your own custom commands and run them with scarb run <command>
 
-[[target.starknet-contract]]
-
-[lib]
-sierra = true  # Enable Sierra codegen.
-casm = true   # Enable CASM codegen.
+# Uncomment if you want to use dependencies
+# Note: currently testing doesn't work with dependencies
+# [dependencies]
+# quaireaux = { git = "https://github.com/keep-starknet-strange/quaireaux.git" }

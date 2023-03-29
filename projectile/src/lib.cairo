@@ -1,8 +1,9 @@
 // All modules must be present here
 
-mod projectile_plot;
 mod constants;
-mod structs;
+mod fixed_point;
 mod math;
 mod physics;
+mod projectile_plot;
+mod structs;
 mod test;
