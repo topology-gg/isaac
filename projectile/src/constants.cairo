@@ -38,3 +38,7 @@ const PI: felt252 = 31415926536;
 const PI_u128: u128 = 31415926536_u128;
 const HALF_PI: felt252 = 15707963268;
 const HALF_PI_u128: u128 = 15707963268_u128;
+// const TWO_PI: felt252 = 62831853072;
+// const TWO_PI_u128: u128 = 62831853072_u128;
+
+

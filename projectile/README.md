@@ -36,10 +36,10 @@ After input, `theta_0_deg` and `v_0` are scaled up to be FP (fixed point) values
 - Square root, multiplication, division
 - Distance between two points
 - `cosine_6th_fp` or `cosine_8th_fp` - Taylor series approximation of cosine (to 6th order, or to 8th order), requires -pi <= angle <= pi
-- `cosine_approx`
+- `cos_approx_fp`
   - Increases accuracy of Taylor series approximation of cosine (above) for angles in 2nd (`theta_0_deg` > 90) or 3rd (`theta_0_deg` < -90) quadrant, by (1) moving the angle to 1st or 4th quadrant (i.e. finding the mirror image of the angle, flipped across the y-axis), then (2) calling `cosine_6th_fp` or `cosine_8th_fp`, and then (3) forcing the cosine value to be negative (as it would be back in the 2nd or 3rd quadrant).
   - If `theta_0_deg` = 90 or -90, then it assigns the exact value, 0, to the cosine (rather than approximating).
-- `sine_approx` - Finds the sine of an angle, using a trig identity and the cosine of the angle.
+- `sin_approx_fp` - Finds the sine of an angle, using a trig identity and the cosine of the angle.
 
 **constants.cairo** contains:
 

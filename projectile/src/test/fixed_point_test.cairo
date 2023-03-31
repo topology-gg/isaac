@@ -1,23 +1,17 @@
-// use option::OptionTrait;
 use traits::Into;
-use array::ArrayTrait;
 
-use gas::withdraw_gas;
-use gas::withdraw_gas_all;
+// use gas::withdraw_gas;
+// use gas::withdraw_gas_all;
 
 use projectile::constants::SCALE_FP;
 use projectile::constants::SCALE_FP_u128;
-// use projectile::constants::SCALE_FP_SQRT;
-// use projectile::constants::SCALE_FP_SQRT_u128;
-use projectile::constants::HALF_PRIME;
 use projectile::fixed_point::FixedPt;
 use projectile::fixed_point::FixedPtType;
-use projectile::fixed_point::FixedPtInto; // needed to call c_fp.into()
-// use projectile::math;
+use projectile::fixed_point::FixedPtInto;
 
 #[test]
-// #[available_gas(9999999)]
-fn test_fixed_pt_sqrt() {
+#[available_gas(20000000)]
+fn test_fp_sqrt() {
     // match gas::withdraw_gas() {
     //     Option::Some(_) => {},
     //     Option::None(_) => {
@@ -27,25 +21,46 @@ fn test_fixed_pt_sqrt() {
     //     },
     // }
 
-    //Tests `fn sqrt` of `impl FixedPtImpl of FixedPt`
+    //Tests `fn from_felt` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::from_felt(900 * SCALE_FP);
-    let c_fp = FixedPt::sqrt(a_fp);
-    assert(c_fp.mag == 30_u128 * SCALE_FP_u128, 'result 1ai invalid');
-    assert(c_fp.sign == false, 'result 1aii invalid');
+    //Tests `fn fp_sqrt` of `impl FixedPtImpl of FixedPt`
+    let c_fp = FixedPt::fp_sqrt(a_fp);
+    assert(c_fp.mag == 30_u128 * SCALE_FP_u128, 'result 1a invalid');
+    assert(c_fp.sign == false, 'result 1b invalid');
     // Tests `impl FixedPtInto of Into::<FixedPtType, felt252>`
-    assert(c_fp.into() == 30 * SCALE_FP, 'result 1aiii invalid');
-    //
+    assert(c_fp.into() == 30 * SCALE_FP, 'result 1c invalid');
+
     let a_fp = FixedPt::from_felt(16000000); // 0.0016
-    let c_fp = FixedPt::sqrt(a_fp);
-    assert(c_fp.mag == 400000000_u128, 'result 2ai invalid'); // 0.04
-    assert(c_fp.sign == false, 'result 2aii invalid');
+    let c_fp = FixedPt::fp_sqrt(a_fp);
+    assert(c_fp.mag == 400000000_u128, 'result 2a invalid'); // 0.04
+    assert(c_fp.sign == false, 'result 2b invalid');
     // Tests `impl FixedPtInto of Into::<FixedPtType, felt252>`
-    assert(c_fp.into() == 400000000, 'result 2aiii invalid');
+    assert(c_fp.into() == 400000000, 'result 2c invalid');
 }
 
+#[test]
+#[available_gas(20000000)]
+fn test_fp_to_radians() {
+    //Tests `fn fp_to_radians` of `impl FixedPtImpl of FixedPt`
+
+    // 0 deg
+    let theta_deg_fp = FixedPt::from_felt(0 * SCALE_FP);
+    let theta_fp = FixedPt::fp_to_radians(theta_deg_fp);
+    assert(theta_fp.into() == 0, 'result 1 invalid');
+
+    // 90 deg
+    let theta_deg_fp = FixedPt::from_felt(90 * SCALE_FP);
+    let theta_fp = FixedPt::fp_to_radians(theta_deg_fp);
+    assert(theta_fp.into() == 15707963268, 'result 2 invalid');
+
+    // -90 deg
+    let theta_deg_fp = FixedPt::from_felt(-90 * SCALE_FP);
+    let theta_fp = FixedPt::fp_to_radians(theta_deg_fp);
+    assert(theta_fp.into() == -15707963268, 'result 3 invalid');
+}
 
 #[test]
-// #[available_gas(9999999)]
+#[available_gas(20000000)]
 fn test_fixed_pt_add() {
     // match gas::withdraw_gas() {
     //     Option::Some(_) => {},
@@ -57,113 +72,109 @@ fn test_fixed_pt_add() {
     // }
 
     // (+)(+)
-    //Tests `fn from_felt` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::from_felt(5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
     // Tests `impl FixedPtAdd of Add::<FixedPtType>`
     let c_fp = a_fp + b_fp;
-    assert(c_fp.mag == 7_u128 * SCALE_FP_u128, 'result 1ai invalid');
-    assert(c_fp.sign == false, 'result 1aii invalid');
-    // Tests `impl FixedPtInto of Into::<FixedPtType, felt252>`
-    assert(c_fp.into() == 7 * SCALE_FP, 'result 1aiii invalid');
+    assert(c_fp.mag == 7_u128 * SCALE_FP_u128, 'result 1a invalid');
+    assert(c_fp.sign == false, 'result 1b invalid');
+    assert(c_fp.into() == 7 * SCALE_FP, 'result 1c invalid');
     //
-    //Tests `fn new` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::new(5_u128 * SCALE_FP_u128, false);
     let b_fp = FixedPt::new(2_u128 * SCALE_FP_u128, false);
     let c_fp = a_fp + b_fp;
-    assert(c_fp.mag == 7_u128 * SCALE_FP_u128, 'result 1bi invalid');
-    assert(c_fp.sign == false, 'result 1bii invalid');
-    assert(c_fp.into() == 7 * SCALE_FP, 'result 1biii invalid');
-    // //
-    // let a_fp = FixedPt::from_felt(5000 * SCALE_FP);
-    // let b_fp = FixedPt::from_felt(2000 * SCALE_FP);
-    // let c_fp = a_fp + b_fp;
-    // assert(c_fp.into() == 7000 * SCALE_FP, 'result 2 invalid');
-    // //
-    // let a_fp = FixedPt::from_felt(50000000000000); // 5000
-    // let b_fp = FixedPt::from_felt(20000000000000); // 2000
-    // let c_fp = a_fp + b_fp;
-    // assert(c_fp.into() == 70000000000000, 'result 3 invalid'); // 7000
-    // //
-    // let a_fp = FixedPt::from_felt(4000000000); // 0.4
-    // let b_fp = FixedPt::from_felt(2000000000); // 0.2
-    // let c_fp = a_fp + b_fp;
-    // assert(c_fp.into() == 6000000000, 'result 4 invalid'); // 0.6
-    // //
-    // // max values before overflow
-    // let a_fp = FixedPt::from_felt(18446744073709551615); // 2^64 - 1, 1844674407.3709551615
-    // let b_fp = FixedPt::from_felt(18446744073709551615); // 2^64 - 1, 1844674407.3709551615
-    // let c_fp = a_fp + b_fp;
-    // assert(c_fp.into() == 36893488147419103230, 'result 5 invalid'); // 3689348814.7419103230
+    assert(c_fp.mag == 7_u128 * SCALE_FP_u128, 'result 2a invalid');
+    assert(c_fp.sign == false, 'result 2b invalid');
+    assert(c_fp.into() == 7 * SCALE_FP, 'result 2c invalid');
+    //
+    let a_fp = FixedPt::from_felt(5000 * SCALE_FP);
+    let b_fp = FixedPt::from_felt(2000 * SCALE_FP);
+    let c_fp = a_fp + b_fp;
+    assert(c_fp.into() == 7000 * SCALE_FP, 'result 3 invalid');
+    //
+    let a_fp = FixedPt::from_felt(50000000000000); // 5000
+    let b_fp = FixedPt::from_felt(20000000000000); // 2000
+    let c_fp = a_fp + b_fp;
+    assert(c_fp.into() == 70000000000000, 'result 4 invalid'); // 7000
+    //
+    let a_fp = FixedPt::from_felt(4000000000); // 0.4
+    let b_fp = FixedPt::from_felt(2000000000); // 0.2
+    let c_fp = a_fp + b_fp;
+    assert(c_fp.into() == 6000000000, 'result 5 invalid'); // 0.6
+    //
+    // 2^64 - 1, or 1844674407.3709551615
+    let a_fp = FixedPt::from_felt(18446744073709551615);
+    let b_fp = FixedPt::from_felt(18446744073709551615);
+    let c_fp = a_fp + b_fp;
+    // 3689348814.7419103230
+    assert(c_fp.into() == 36893488147419103230, 'result 6 invalid');
 
     // (0)(+)
-    //Tests `fn from_felt` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::from_felt(0);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
     let c_fp = a_fp + b_fp;
-    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 6ai invalid');
-    assert(c_fp.sign == false, 'result 6aii invalid');
-    assert(c_fp.into() == 2 * SCALE_FP, 'result 6aiii invalid');
+    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 7a invalid');
+    assert(c_fp.sign == false, 'result 7b invalid');
+    assert(c_fp.into() == 2 * SCALE_FP, 'result 7c invalid');
 
-    // // (+)(0)
-    // let a_fp = FixedPt::from_felt(2 * SCALE_FP);
-    // let b_fp = FixedPt::from_felt(0);
-    // let c_fp = a_fp + b_fp;
-    // assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 7i invalid');
-    // assert(c_fp.sign == false, 'result 7ii invalid');
-    // assert(c_fp.into() == 2 * SCALE_FP, 'result 7iii invalid');
+    // (+)(0)
+    let a_fp = FixedPt::from_felt(2 * SCALE_FP);
+    let b_fp = FixedPt::from_felt(0);
+    let c_fp = a_fp + b_fp;
+    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 8a invalid');
+    assert(c_fp.sign == false, 'result 8b invalid');
+    assert(c_fp.into() == 2 * SCALE_FP, 'result 8c invalid');
 
     // (+)(-)
-    //Tests `fn from_felt` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::from_felt(5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp + b_fp;
-    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 8ai invalid');
-    assert(c_fp.sign == false, 'result 8aii invalid');
-    assert(c_fp.into() == 3 * SCALE_FP, 'result 8aiii invalid');
+    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 9a invalid');
+    assert(c_fp.sign == false, 'result 9b invalid');
+    assert(c_fp.into() == 3 * SCALE_FP, 'result 9c invalid');
     //
-    //Tests `fn new` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::new(5_u128 * SCALE_FP_u128, false); // 5
     let b_fp = FixedPt::new(2_u128 * SCALE_FP_u128, true); // -2
     let c_fp = a_fp + b_fp;
-    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 8bi invalid');
-    assert(c_fp.sign == false, 'result 8bii invalid');
-    assert(c_fp.into() == 3 * SCALE_FP, 'result 8biii invalid');
+    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 10a invalid');
+    assert(c_fp.sign == false, 'result 10b invalid');
+    assert(c_fp.into() == 3 * SCALE_FP, 'result 10c invalid');
 
-    // // (-)(+)
-    // let a_fp = FixedPt::from_felt(-5 * SCALE_FP);
-    // let b_fp = FixedPt::from_felt(2 * SCALE_FP);
-    // let c_fp = a_fp + b_fp;
-    // assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 9i invalid');
-    // assert(c_fp.sign == true, 'result 9ii invalid');
-    // assert(c_fp.into() == -3 * SCALE_FP, 'result 9iii invalid');
+    // (-)(+)
+    let a_fp = FixedPt::from_felt(-5 * SCALE_FP);
+    let b_fp = FixedPt::from_felt(2 * SCALE_FP);
+    let c_fp = a_fp + b_fp;
+    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 11a invalid');
+    assert(c_fp.sign == true, 'result 11b invalid');
+    assert(c_fp.into() == -3 * SCALE_FP, 'result 11c invalid');
 
     // (-)(-)
     let a_fp = FixedPt::from_felt(-5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp + b_fp;
-    assert(c_fp.mag == 7_u128 * SCALE_FP_u128, 'result 10i invalid');
-    assert(c_fp.sign == true, 'result 10ii invalid');
-    assert(c_fp.into() == -7 * SCALE_FP, 'result 10iii invalid');
+    assert(c_fp.mag == 7_u128 * SCALE_FP_u128, 'result 12a invalid');
+    assert(c_fp.sign == true, 'result 12b invalid');
+    assert(c_fp.into() == -7 * SCALE_FP, 'result 12c invalid');
 
     // (0)(-)
     let a_fp = FixedPt::from_felt(0);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp + b_fp;
-    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 11i invalid');
-    assert(c_fp.sign == true, 'result 11ii invalid');
-    assert(c_fp.into() == -2 * SCALE_FP, 'result 11iii invalid');
-// // (-)(0)
-// let a_fp = FixedPt::from_felt(-2 * SCALE_FP);
-// let b_fp = FixedPt::from_felt(0);
-// let c_fp = a_fp + b_fp;
-// assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 12i invalid');
-// assert(c_fp.sign == true, 'result 12ii invalid');
-// assert(c_fp.into() == -2 * SCALE_FP, 'result 12iii invalid');
+    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 13a invalid');
+    assert(c_fp.sign == true, 'result 13b invalid');
+    assert(c_fp.into() == -2 * SCALE_FP, 'result 13c invalid');
+
+    // (-)(0)
+    let a_fp = FixedPt::from_felt(-2 * SCALE_FP);
+    let b_fp = FixedPt::from_felt(0);
+    let c_fp = a_fp + b_fp;
+    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 14a invalid');
+    assert(c_fp.sign == true, 'result 14b invalid');
+    assert(c_fp.into() == -2 * SCALE_FP, 'result 14c invalid');
 }
 
 #[test]
-// #[available_gas(9999999)]
+#[available_gas(20000000)]
 fn test_fixed_pt_sub() {
     // match gas::withdraw_gas() {
     //     Option::Some(_) => {},
@@ -175,100 +186,98 @@ fn test_fixed_pt_sub() {
     // }
 
     // (+)(+)
-    //Tests `fn from_felt` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::from_felt(5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
-    // Tests `impl FixedPtSub of Sub::<FixedPtType>>`
+    // Tests `impl FixedPtSub of Sub::<FixedPtType>`
     let c_fp = a_fp - b_fp;
-    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 1ai invalid');
-    assert(c_fp.sign == false, 'result 1aii invalid');
-    // Tests `impl FixedPtInto of Into::<FixedPtType, felt252>`
-    assert(c_fp.into() == 3 * SCALE_FP, 'result 1aiii invalid');
+    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 1a invalid');
+    assert(c_fp.sign == false, 'result 1b invalid');
+    assert(c_fp.into() == 3 * SCALE_FP, 'result 1c invalid');
     //
-    //Tests `fn new` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::new(5_u128 * SCALE_FP_u128, false);
     let b_fp = FixedPt::new(2_u128 * SCALE_FP_u128, false);
     let c_fp = a_fp - b_fp;
-    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 1bi invalid');
-    assert(c_fp.sign == false, 'result 1bii invalid');
-    assert(c_fp.into() == 3 * SCALE_FP, 'result 1biii invalid');
+    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 2a invalid');
+    assert(c_fp.sign == false, 'result 2b invalid');
+    assert(c_fp.into() == 3 * SCALE_FP, 'result 2c invalid');
+
+    let a_fp = FixedPt::from_felt(5000 * SCALE_FP);
+    let b_fp = FixedPt::from_felt(2000 * SCALE_FP);
+    let c_fp = a_fp - b_fp;
+    assert(c_fp.into() == 3000 * SCALE_FP, 'result 3 invalid');
     //
-    // let a_fp = FixedPt::from_felt(5000 * SCALE_FP);
-    // let b_fp = FixedPt::from_felt(2000 * SCALE_FP);
-    // let c_fp = a_fp - b_fp;
-    // assert(c_fp.into() == 3000 * SCALE_FP, 'result 2 invalid');
-    // //
-    // let a_fp = FixedPt::from_felt(4000000000); // 0.4
-    // let b_fp = FixedPt::from_felt(2000000000); // 0.2
-    // let c_fp = a_fp - b_fp;
-    // assert(c_fp.into() == 2000000000, 'result 4 invalid'); // 0.2
-    // //
-    // // max values before overflow
-    // let a_fp = FixedPt::from_felt(18446744073709551615); // 2^64 - 1, 1844674407.3709551615
-    // let b_fp = FixedPt::from_felt(18446744073709551615); // 2^64 - 1, 1844674407.3709551615
-    // let c_fp = a_fp - b_fp;
-    // assert(c_fp.mag == 0_u128, 'result 5i invalid'); // 0
-    // assert(c_fp.sign == false, 'result 5ii invalid');
-    // assert(c_fp.into() == 0, 'result 5iii invalid');
+    let a_fp = FixedPt::from_felt(4000000000); // 0.4
+    let b_fp = FixedPt::from_felt(2000000000); // 0.2
+    let c_fp = a_fp - b_fp;
+    assert(c_fp.into() == 2000000000, 'result 4 invalid'); // 0.2
+    //
+    // // 2^64 - 1, 1844674407.3709551615
+    let a_fp = FixedPt::from_felt(18446744073709551615);
+    let b_fp = FixedPt::from_felt(18446744073709551615);
+    let c_fp = a_fp - b_fp;
+    assert(c_fp.mag == 0_u128, 'result 5a invalid'); // 0
+    assert(c_fp.sign == false, 'result 5b invalid');
+    assert(c_fp.into() == 0, 'result 5c invalid');
 
     // (0)(+)
     let a_fp = FixedPt::from_felt(0);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
     let c_fp = a_fp - b_fp;
-    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 6i invalid');
-    assert(c_fp.sign == true, 'result 6ii invalid');
-    assert(c_fp.into() == -2 * SCALE_FP, 'result 6iii invalid');
+    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 6a invalid');
+    assert(c_fp.sign == true, 'result 6b invalid');
+    assert(c_fp.into() == -2 * SCALE_FP, 'result 6c invalid');
 
-    // // (+)(0)
-    // let a_fp = FixedPt::from_felt(2 * SCALE_FP);
-    // let b_fp = FixedPt::from_felt(0);
-    // let c_fp = a_fp - b_fp;
-    // assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 7i invalid');
-    // assert(c_fp.sign == false, 'result 7ii invalid');
-    // assert(c_fp.into() == 2 * SCALE_FP, 'result 7iii invalid');
+    // (+)(0)
+    let a_fp = FixedPt::from_felt(2 * SCALE_FP);
+    let b_fp = FixedPt::from_felt(0);
+    let c_fp = a_fp - b_fp;
+    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 7a invalid');
+    assert(c_fp.sign == false, 'result 7b invalid');
+    assert(c_fp.into() == 2 * SCALE_FP, 'result 7c invalid');
 
     // (+)(-)
     let a_fp = FixedPt::from_felt(5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp - b_fp;
-    assert(c_fp.mag == 7_u128 * SCALE_FP_u128, 'result 8i invalid');
-    assert(c_fp.sign == false, 'result 8ii invalid');
-    assert(c_fp.into() == 7 * SCALE_FP, 'result 8iii invalid');
+    assert(c_fp.mag == 7_u128 * SCALE_FP_u128, 'result 8a invalid');
+    assert(c_fp.sign == false, 'result 8b invalid');
+    assert(c_fp.into() == 7 * SCALE_FP, 'result 8c invalid');
 
     // (-)(+)
     let a_fp = FixedPt::from_felt(-5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
     let c_fp = a_fp - b_fp;
-    assert(c_fp.mag == 7_u128 * SCALE_FP_u128, 'result 9i invalid');
-    assert(c_fp.sign == true, 'result 9ii invalid');
-    assert(c_fp.into() == -7 * SCALE_FP, 'result 9iii invalid');
+    assert(c_fp.mag == 7_u128 * SCALE_FP_u128, 'result 9a invalid');
+    assert(c_fp.sign == true, 'result 9b invalid');
+    assert(c_fp.into() == -7 * SCALE_FP, 'result 9c invalid');
 
     // (-)(-)
     let a_fp = FixedPt::from_felt(-5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp - b_fp;
-    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 10ai invalid');
-    assert(c_fp.sign == true, 'result 10aii invalid');
-    assert(c_fp.into() == -3 * SCALE_FP, 'result 10aiii invalid');
+    assert(c_fp.mag == 3_u128 * SCALE_FP_u128, 'result 10a invalid');
+    assert(c_fp.sign == true, 'result 10b invalid');
+    assert(c_fp.into() == -3 * SCALE_FP, 'result 10c invalid');
 
     // (0)(-)
     let a_fp = FixedPt::from_felt(0);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp - b_fp;
-    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 11i invalid');
-    assert(c_fp.sign == false, 'result 11ii invalid');
-    assert(c_fp.into() == 2 * SCALE_FP, 'result 11iii invalid');
-// // (-)(0)
-// let a_fp = FixedPt::from_felt(-2 * SCALE_FP);
-// let b_fp = FixedPt::from_felt(0);
-// let c_fp = a_fp - b_fp;
-// assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 12i invalid');
-// assert(c_fp.sign == true, 'result 12ii invalid');
-// assert(c_fp.into() == -2 * SCALE_FP, 'result 12iii invalid');
+    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 11a invalid');
+    assert(c_fp.sign == false, 'result 11b invalid');
+    assert(c_fp.into() == 2 * SCALE_FP, 'result 11c invalid');
+
+    // (-)(0)
+    let a_fp = FixedPt::from_felt(-2 * SCALE_FP);
+    let b_fp = FixedPt::from_felt(0);
+    let c_fp = a_fp - b_fp;
+    assert(c_fp.mag == 2_u128 * SCALE_FP_u128, 'result 12a invalid');
+    assert(c_fp.sign == true, 'result 12b invalid');
+    assert(c_fp.into() == -2 * SCALE_FP, 'result 12c invalid');
 }
 
 #[test]
-// #[available_gas(9999999)]
+#[available_gas(20000000)]
 fn test_fixed_pt_mult() {
     // match gas::withdraw_gas() {
     //     Option::Some(_) => {},
@@ -280,15 +289,13 @@ fn test_fixed_pt_mult() {
     // }
 
     // (+)(+)
-    //Tests `fn from_felt` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::from_felt(5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
     // Tests `impl FixedPtMul of Mul::<FixedPtType>`
     let c_fp = a_fp * b_fp;
-    assert(c_fp.mag == 10_u128 * SCALE_FP_u128, 'result 1i invalid');
-    assert(c_fp.sign == false, 'result 1ii invalid');
-    // Tests `impl FixedPtInto of Into::<FixedPtType, felt252>`
-    assert(c_fp.into() == 10 * SCALE_FP, 'result 1iii invalid');
+    assert(c_fp.mag == 10_u128 * SCALE_FP_u128, 'result 1a invalid');
+    assert(c_fp.sign == false, 'result 1b invalid');
+    assert(c_fp.into() == 10 * SCALE_FP, 'result 1c invalid');
     //
     let a_fp = FixedPt::from_felt(5000 * SCALE_FP);
     let b_fp = FixedPt::from_felt(2000 * SCALE_FP);
@@ -298,73 +305,74 @@ fn test_fixed_pt_mult() {
     let a_fp = FixedPt::from_felt(4000000000); // 0.4
     let b_fp = FixedPt::from_felt(2000000000); // 0.2
     let c_fp = a_fp * b_fp;
-    assert(c_fp.into() == 800000000, 'result 4 invalid'); // 0.08
+    assert(c_fp.into() == 800000000, 'result 3 invalid'); // 0.08
     //
-    // max values before overflow
-    let a_fp = FixedPt::from_felt(18446744073709551615); // 2^64 - 1, 1844674407.3709551615
-    let b_fp = FixedPt::from_felt(18446744073709551615); // 2^64 - 1, 1844674407.3709551615
+    // max values before 'u128_mul Overflow', 2^64 - 1, or 1844674407.3709551615
+    let a_fp = FixedPt::from_felt(18446744073709551615);
+    let b_fp = FixedPt::from_felt(18446744073709551615);
     let c_fp = a_fp * b_fp;
-    assert(c_fp.into() == 34028236692093846342648111928, 'result 5 invalid');
     // 3402823669209384634.2648111928
+    assert(c_fp.into() == 34028236692093846342648111928, 'result 4 invalid');
 
     // (0)(+)
     let a_fp = FixedPt::from_felt(0);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
     let c_fp = a_fp * b_fp;
-    assert(c_fp.mag == 0_u128, 'result 6i invalid');
-    assert(c_fp.sign == false, 'result 6ii invalid');
-    assert(c_fp.into() == 0, 'result 6iii invalid');
+    assert(c_fp.mag == 0_u128, 'result 5a invalid');
+    assert(c_fp.sign == false, 'result 5b invalid');
+    assert(c_fp.into() == 0, 'result 5c invalid');
 
-    // // (+)(0)
-    // let a_fp = FixedPt::from_felt(2 * SCALE_FP);
-    // let b_fp = FixedPt::from_felt(0);
-    // let c_fp = a_fp * b_fp;
-    // assert(c_fp.mag == 0_u128, 'result 7i invalid');
-    // assert(c_fp.sign == false, 'result 7ii invalid');
-    // assert(c_fp.into() == 0, 'result 7iii invalid');
+    // (+)(0)
+    let a_fp = FixedPt::from_felt(2 * SCALE_FP);
+    let b_fp = FixedPt::from_felt(0);
+    let c_fp = a_fp * b_fp;
+    assert(c_fp.mag == 0_u128, 'result 6a invalid');
+    assert(c_fp.sign == false, 'result 6b invalid');
+    assert(c_fp.into() == 0, 'result 6c invalid');
 
     // (+)(-)
     let a_fp = FixedPt::from_felt(5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp * b_fp;
-    assert(c_fp.mag == 10_u128 * SCALE_FP_u128, 'result 8i invalid');
-    assert(c_fp.sign == true, 'result 8ii invalid');
-    assert(c_fp.into() == -10 * SCALE_FP, 'result 8iii invalid');
+    assert(c_fp.mag == 10_u128 * SCALE_FP_u128, 'result 7a invalid');
+    assert(c_fp.sign == true, 'result 7b invalid');
+    assert(c_fp.into() == -10 * SCALE_FP, 'result 7c invalid');
 
     // (-)(+)
     let a_fp = FixedPt::from_felt(-5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
     let c_fp = a_fp * b_fp;
-    assert(c_fp.mag == 10_u128 * SCALE_FP_u128, 'result 9i invalid');
-    assert(c_fp.sign == true, 'result 9ii invalid');
-    assert(c_fp.into() == -10 * SCALE_FP, 'result 9iii invalid');
+    assert(c_fp.mag == 10_u128 * SCALE_FP_u128, 'result 8a invalid');
+    assert(c_fp.sign == true, 'result 8b invalid');
+    assert(c_fp.into() == -10 * SCALE_FP, 'result 8c invalid');
 
     // (-)(-)
     let a_fp = FixedPt::from_felt(-5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp * b_fp;
-    assert(c_fp.mag == 10_u128 * SCALE_FP_u128, 'result 10i invalid');
-    assert(c_fp.sign == false, 'result 10ii invalid');
-    assert(c_fp.into() == 10 * SCALE_FP, 'result 10iii invalid');
+    assert(c_fp.mag == 10_u128 * SCALE_FP_u128, 'result 9a invalid');
+    assert(c_fp.sign == false, 'result 9b invalid');
+    assert(c_fp.into() == 10 * SCALE_FP, 'result 9c invalid');
 
     // (0)(-)
     let a_fp = FixedPt::from_felt(0);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp * b_fp;
-    assert(c_fp.mag == 0_u128, 'result 11i invalid');
-    assert(c_fp.sign == false, 'result 11ii invalid');
-    assert(c_fp.into() == 0, 'result 11iii invalid');
-// // (-)(0)
-// let a_fp = FixedPt::from_felt(-2 * SCALE_FP);
-// let b_fp = FixedPt::from_felt(0);
-// let c_fp = a_fp * b_fp;
-// assert(c_fp.mag == 0_u128, 'result 12i invalid');
-// assert(c_fp.sign == false, 'result 12ii invalid');
-// assert(c_fp.into() == 0, 'result 12iii invalid');
+    assert(c_fp.mag == 0_u128, 'result 10a invalid');
+    assert(c_fp.sign == false, 'result 10b invalid');
+    assert(c_fp.into() == 0, 'result 10c invalid');
+
+    // (-)(0)
+    let a_fp = FixedPt::from_felt(-2 * SCALE_FP);
+    let b_fp = FixedPt::from_felt(0);
+    let c_fp = a_fp * b_fp;
+    assert(c_fp.mag == 0_u128, 'result 11a invalid');
+    assert(c_fp.sign == false, 'result 11b invalid');
+    assert(c_fp.into() == 0, 'result 11c invalid');
 }
 
 #[test]
-// #[available_gas(9999999)]
+#[available_gas(20000000)]
 fn test_fixed_pt_div() {
     // match gas::withdraw_gas() {
     //     Option::Some(_) => {},
@@ -376,37 +384,34 @@ fn test_fixed_pt_div() {
     // }
 
     // (+)(+)
-    //Tests `fn from_felt` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::from_felt(5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
     // Tests `impl FixedPtDiv of Div::<FixedPtType>`
     let c_fp = a_fp / b_fp;
-    assert(c_fp.mag == 25000000000_u128, 'result 1ai invalid'); // 2.5
-    assert(c_fp.sign == false, 'result 1aii invalid');
-    // Tests `impl FixedPtInto of Into::<FixedPtType, felt252>`
-    assert(c_fp.into() == 25000000000, 'result 1aiii invalid'); // 2.5
+    assert(c_fp.mag == 25000000000_u128, 'result 1a invalid'); // 2.5
+    assert(c_fp.sign == false, 'result 1b invalid');
+    assert(c_fp.into() == 25000000000, 'result 1c invalid'); // 2.5
     //
-    //Tests `fn new` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::new(5_u128 * SCALE_FP_u128, false);
     let b_fp = FixedPt::new(2_u128 * SCALE_FP_u128, false);
     let c_fp = a_fp / b_fp;
-    assert(c_fp.mag == 25000000000_u128, 'result 1ai invalid'); // 2.5
-    assert(c_fp.sign == false, 'result 1aii invalid');
-    assert(c_fp.into() == 25000000000, 'result 1aiii invalid'); // 2.5
+    assert(c_fp.mag == 25000000000_u128, 'result 2a invalid'); // 2.5
+    assert(c_fp.sign == false, 'result 2b invalid');
+    assert(c_fp.into() == 25000000000, 'result 2c invalid'); // 2.5
     //
     let a_fp = FixedPt::from_felt(2000 * SCALE_FP);
     let b_fp = FixedPt::from_felt(5000 * SCALE_FP);
     let c_fp = a_fp / b_fp;
-    assert(c_fp.into() == 4000000000, 'result 2 invalid'); // 0.4
+    assert(c_fp.into() == 4000000000, 'result 3 invalid'); // 0.4
     //
     let a_fp = FixedPt::from_felt(4000000000); // 0.4
     let b_fp = FixedPt::from_felt(2000000000); // 0.2
     let c_fp = a_fp / b_fp;
     assert(c_fp.into() == 20000000000, 'result 4 invalid'); // 2
     //
-    // max values before overflow
-    let a_fp = FixedPt::from_felt(18446744073709551615); // 2^64 - 1, 1844674407.3709551615
-    let b_fp = FixedPt::from_felt(18446744073709551615); // 2^64 - 1, 1844674407.3709551615
+    // 2^64 - 1, 1844674407.3709551615
+    let a_fp = FixedPt::from_felt(18446744073709551615);
+    let b_fp = FixedPt::from_felt(18446744073709551615);
     let c_fp = a_fp / b_fp;
     assert(c_fp.into() == 10000000000, 'result 5 invalid'); // 1.0
 
@@ -414,49 +419,46 @@ fn test_fixed_pt_div() {
     let a_fp = FixedPt::from_felt(0);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
     let c_fp = a_fp / b_fp;
-    assert(c_fp.mag == 0_u128, 'result 6i invalid');
-    assert(c_fp.sign == false, 'result 6ii invalid');
-    assert(c_fp.into() == 0, 'result 6iii invalid');
+    assert(c_fp.mag == 0_u128, 'result 6a invalid');
+    assert(c_fp.sign == false, 'result 6b invalid');
+    assert(c_fp.into() == 0, 'result 6c invalid');
 
     // (+)(-)
-    //Tests `fn from_felt` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::from_felt(5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp / b_fp;
-    assert(c_fp.mag == 25000000000_u128, 'result 8ai invalid'); // 2.5
-    assert(c_fp.sign == true, 'result 8aii invalid');
-    assert(c_fp.into() == -25000000000, 'result 8aiii invalid'); // -2.5
+    assert(c_fp.mag == 25000000000_u128, 'result 7a invalid'); // 2.5
+    assert(c_fp.sign == true, 'result 7b invalid');
+    assert(c_fp.into() == -25000000000, 'result 7c invalid'); // -2.5
     //
-    //Tests `fn new` of `impl FixedPtImpl of FixedPt`
     let a_fp = FixedPt::new(5_u128 * SCALE_FP_u128, false); // 5
     let b_fp = FixedPt::new(2_u128 * SCALE_FP_u128, true); // -2
     let c_fp = a_fp / b_fp;
-    assert(c_fp.mag == 25000000000_u128, 'result 8bi invalid'); // 2.5
-    assert(c_fp.sign == true, 'result 8bii invalid');
-    assert(c_fp.into() == -25000000000, 'result 8biii invalid'); // -2.5
+    assert(c_fp.mag == 25000000000_u128, 'result 8a invalid'); // 2.5
+    assert(c_fp.sign == true, 'result 8b invalid');
+    assert(c_fp.into() == -25000000000, 'result 8c invalid'); // -2.5
 
     // (-)(+)
     let a_fp = FixedPt::from_felt(-5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(2 * SCALE_FP);
     let c_fp = a_fp / b_fp;
-    assert(c_fp.mag == 25000000000_u128, 'result 9i invalid'); // 2.5
-    assert(c_fp.sign == true, 'result 9ii invalid');
-    assert(c_fp.into() == -25000000000, 'result 9iii invalid'); // -2.5
+    assert(c_fp.mag == 25000000000_u128, 'result 9a invalid'); // 2.5
+    assert(c_fp.sign == true, 'result 9b invalid');
+    assert(c_fp.into() == -25000000000, 'result 9c invalid'); // -2.5
 
     // (-)(-)
     let a_fp = FixedPt::from_felt(-5 * SCALE_FP);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp / b_fp;
-    assert(c_fp.mag == 25000000000_u128, 'result 10i invalid'); // 2.5
-    assert(c_fp.sign == false, 'result 10ii invalid');
-    assert(c_fp.into() == 25000000000, 'result 10iii invalid'); // 2.5
+    assert(c_fp.mag == 25000000000_u128, 'result 10a invalid'); // 2.5
+    assert(c_fp.sign == false, 'result 10b invalid');
+    assert(c_fp.into() == 25000000000, 'result 10c invalid'); // 2.5
 
     // (0)(-)
     let a_fp = FixedPt::from_felt(0);
     let b_fp = FixedPt::from_felt(-2 * SCALE_FP);
     let c_fp = a_fp / b_fp;
-    assert(c_fp.mag == 0_u128, 'result 11i invalid');
-    assert(c_fp.sign == false, 'result 11ii invalid');
-    assert(c_fp.into() == 0, 'result 11iii invalid');
+    assert(c_fp.mag == 0_u128, 'result 11a invalid');
+    assert(c_fp.sign == false, 'result 11b invalid');
+    assert(c_fp.into() == 0, 'result 11c invalid');
 }
-
