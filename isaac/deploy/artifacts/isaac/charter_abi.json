@@ -1,0 +1,48 @@
+[
+    {
+        "inputs": [],
+        "name": "lookup_proposal_period",
+        "outputs": [
+            {
+                "name": "period",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "play_grade",
+                "type": "felt"
+            }
+        ],
+        "name": "lookup_voices_given_play_grade",
+        "outputs": [
+            {
+                "name": "votes",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "intended_votes",
+                "type": "felt"
+            }
+        ],
+        "name": "lookup_voices_required_given_intended_votes",
+        "outputs": [
+            {
+                "name": "voices_required",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]

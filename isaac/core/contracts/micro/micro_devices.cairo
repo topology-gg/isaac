@@ -1,0 +1,1043 @@
+%lang starknet
+
+from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.hash_chain import hash_chain
+from starkware.cairo.common.math import (assert_lt, assert_le, assert_nn, assert_not_equal, assert_nn_le)
+from starkware.cairo.common.math_cmp import (is_le, is_nn_le, is_not_zero)
+from starkware.cairo.common.alloc import alloc
+from starkware.starknet.common.syscalls import (get_block_number, get_caller_address)
+
+from contracts.design.constants import (
+    ns_device_types, assert_device_type_is_utx, assert_device_type_is_nonfungible,
+    harvester_device_type_to_element_type,
+    transformer_device_type_to_element_types,
+    get_device_dimension_ptr
+)
+from contracts.util.structs import (Vec2)
+from contracts.util.distribution import (ns_distribution)
+from contracts.util.grid import (
+    is_valid_grid, are_contiguous_grids_given_valid_grids,
+    locate_face_and_edge_given_valid_grid,
+    is_zero
+)
+from contracts.util.logistics import (
+    ns_logistics_harvester, ns_logistics_transformer,
+    ns_logistics_xpg, ns_logistics_utb, ns_logistics_utl
+)
+from contracts.design.manufacturing import (ns_manufacturing)
+from contracts.micro.micro_state import (
+    ns_micro_state_functions,
+    GridStat, DeviceEmapEntry, TransformerResourceBalances, UtxSetDeployedEmapEntry
+)
+from contracts.micro.micro_ndpe import (compute_impulse_in_micro_coord)
+from contracts.util.vector_ops import (compute_vector_rotate)
+from contracts.universe.universe_state import (
+    ns_universe_state_functions
+)
+from contracts.macro.macro_state import (
+    ns_macro_state_functions
+)
+
+#
+# Event emission for Apibara
+#
+@event
+func create_new_nonfungible_device_occurred (
+        event_counter : felt,
+        owner : felt,
+        type : felt,
+        id : felt
+    ):
+end
+
+
+##############################
+## Devices (including opsf)
+##############################
+
+namespace ns_micro_devices:
+
+    func assert_device_footprint_populable {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            type : felt, grid : Vec2, civ_idx : felt
+        ):
+        alloc_locals
+
+        #
+        # for given device type, confirm the underlying grid(s) lie on the same face and are unpopulated
+        # TODO: consider refactor this into constants.cairo, but need to encapsulate information of shape
+        #       because constants.cairo does not have access to the storage_var `grid_stats` here
+        #
+
+        let (dim_ptr) = get_device_dimension_ptr ()
+        let device_dim = dim_ptr [type]
+        let (face, _, _, _) = locate_face_and_edge_given_valid_grid (grid)
+
+        #
+        # Check 1x1
+        #
+        assert_valid_unpopulated_and_same_face (grid, face, civ_idx)
+
+        if device_dim == 1:
+            return ()
+        end
+
+        #
+        # Check 2x2
+        #
+        let grid_ = Vec2 (grid.x + 1, grid.y)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 1, grid.y + 1)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x, grid.y + 1)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        if device_dim == 2:
+            return ()
+        end
+
+        #
+        # Check 3x3
+        #
+        let grid_ = Vec2 (grid.x + 2, grid.y)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 2, grid.y + 1)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 2, grid.y + 2)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 1, grid.y + 2)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x, grid.y + 2)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        if device_dim == 3:
+            return ()
+        end
+
+        #
+        # Check 5x5
+        #
+        let grid_ = Vec2 (grid.x + 3, grid.y)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 3, grid.y + 1)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 3, grid.y + 2)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 3, grid.y + 3)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 2, grid.y + 3)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 1, grid.y + 3)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x, grid.y + 3)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 4, grid.y)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 4, grid.y + 1)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 4, grid.y + 2)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 4, grid.y + 3)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 4, grid.y + 4)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 3, grid.y + 4)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 2, grid.y + 4)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x + 1, grid.y + 4)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        let grid_ = Vec2 (grid.x, grid.y + 4)
+        assert_valid_unpopulated_and_same_face (grid_, face, civ_idx)
+
+        return ()
+    end
+
+    func assert_valid_unpopulated_and_same_face {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            grid : Vec2, face_tgt : felt, civ_idx : felt
+        ) -> ():
+        alloc_locals
+
+        is_valid_grid (grid)
+
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
+
+        local gx = grid.x
+        local gy = grid.y
+        with_attr error_message ("grid ({gx},{gy}) already populated"):
+            assert grid_stat.populated = 0
+        end
+
+        let (local face, _, _, _) = locate_face_and_edge_given_valid_grid (grid)
+        local ftgt = face_tgt
+        with_attr error_message ("device straddling across face {ftgt} and face {face} which is illegal"):
+            assert face = face_tgt
+        end
+
+        return ()
+    end
+
+    func update_grid_with_new_grid_stat {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            type : felt, grid : Vec2, grid_stat : GridStat, civ_idx : felt
+        ) -> ():
+        alloc_locals
+
+        let (dim_ptr) = get_device_dimension_ptr ()
+        let device_dim = dim_ptr [type]
+
+        #
+        # 1x1
+        #
+        ns_micro_state_functions.grid_stats_write (civ_idx, grid, grid_stat)
+
+        if device_dim == 1:
+            return ()
+        end
+
+        #
+        # 2x2
+        #
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 1, grid.y), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 1, grid.y + 1), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x, grid.y + 1), grid_stat)
+
+        if device_dim == 2:
+            return ()
+        end
+
+        #
+        # 3x3
+        #
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 2, grid.y), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 2, grid.y + 1), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 2, grid.y + 2), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 1, grid.y + 2), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x, grid.y + 2), grid_stat)
+
+        if device_dim == 3:
+            return ()
+        end
+
+        #
+        # 5x5
+        #
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 3, grid.y), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 3, grid.y + 1), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 3, grid.y + 2), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 3, grid.y + 3), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 2, grid.y + 3), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 1, grid.y + 3), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x, grid.y + 3), grid_stat)
+
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 4, grid.y), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 4, grid.y + 1), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 4, grid.y + 2), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 4, grid.y + 3), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 4, grid.y + 4), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 3, grid.y + 4), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 2, grid.y + 4), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x + 1, grid.y + 4), grid_stat)
+        ns_micro_state_functions.grid_stats_write (civ_idx, Vec2 (grid.x, grid.y + 4), grid_stat)
+
+        return ()
+    end
+
+    func device_deploy {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            caller : felt,
+            device_id : felt,
+            grid : Vec2
+        ) -> ():
+        alloc_locals
+
+        #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
+
+        #
+        # Get emap-entry from device_id
+        #
+        let (emap_index) = ns_micro_state_functions.device_id_to_emap_index_read (device_id)
+        let (emap_entry : DeviceEmapEntry) = ns_micro_state_functions.device_emap_read (emap_index)
+
+        #
+        # Confirm device_id is correct & caller owns this device & this device is not deployed, and get its type
+        #
+        with_attr error_message ("this device_id does not exist"):
+            assert emap_entry.id = device_id
+        end
+        with_attr error_message ("caller does not own this device"):
+            assert emap_entry.owner = caller
+        end
+        with_attr error_message ("this device is already deployed"):
+            assert emap_entry.is_deployed = 0
+        end
+        let device_type = emap_entry.type
+
+        #
+        # Check if this device can be deployed with the origin of its footprint at `grid`
+        #
+        assert_device_footprint_populable (device_type, grid, civ_idx)
+
+        #
+        # Update `grid_stats` at grid(s)
+        #
+        let new_grid_stat = GridStat (
+            populated = 1,
+            deployed_device_type  = device_type,
+            deployed_device_id    = device_id,
+            deployed_device_owner = caller
+        )
+        update_grid_with_new_grid_stat (device_type, grid, new_grid_stat, civ_idx)
+
+        #
+        # Update `device_emap`
+        #
+        ns_micro_state_functions.device_emap_write (emap_index, DeviceEmapEntry(
+            owner       = emap_entry.owner,
+            type        = emap_entry.type,
+            id          = emap_entry.id,
+            is_deployed = 1,
+            grid        = grid,
+        ))
+
+        return ()
+    end
+
+    func recurse_untether_utx_for_deployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            utx_device_type : felt,
+            id : felt,
+            len : felt,
+            idx : felt
+        ) -> ():
+        alloc_locals
+
+        if idx == len:
+            return ()
+        end
+
+        #
+        # Get utx-set label at current idx
+        #
+        let (utx_set_label) = ns_micro_state_functions.utx_tether_labels_of_deployed_device_read (utx_device_type, id, idx)
+
+        #
+        # With the utx-set label, get its emap-index, then get its emap-entry
+        #
+        let (utx_set_emap_index) = ns_micro_state_functions.utx_set_deployed_label_to_emap_index_read (utx_device_type, utx_set_label)
+        let (utx_set_emap_entry) = ns_micro_state_functions.utx_set_deployed_emap_read (utx_device_type, utx_set_emap_index)
+
+        #
+        # Construct new src & dst device id based on whether the device is this utx-set's src or dst device
+        #
+        let (is_src_device) = is_zero (utx_set_emap_entry.src_device_id - id)
+        let (is_dst_device) = is_zero (utx_set_emap_entry.dst_device_id - id)
+        let new_src_device_id = (1-is_src_device) * utx_set_emap_entry.src_device_id
+        let new_dst_device_id = (1-is_dst_device) * utx_set_emap_entry.dst_device_id
+
+        #
+        # Update utx emap
+        #
+        ns_micro_state_functions.utx_set_deployed_emap_write (
+            utx_device_type, utx_set_emap_index,
+            UtxSetDeployedEmapEntry(
+                utx_set_deployed_label   = utx_set_emap_entry.utx_set_deployed_label,
+                utx_deployed_index_start = utx_set_emap_entry.utx_deployed_index_start,
+                utx_deployed_index_end   = utx_set_emap_entry.utx_deployed_index_end,
+                src_device_id = new_src_device_id,
+                dst_device_id = new_dst_device_id
+            )
+        )
+
+        recurse_untether_utx_for_deployed_device (utx_device_type, id, len, idx + 1)
+
+        return ()
+    end
+
+    func device_pickup_by_grid {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            caller : felt,
+            grid : Vec2
+        ) -> (
+            device_id : felt
+        ):
+        alloc_locals
+
+        #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
+
+        #
+        # Check if caller owns the device on `grid`
+        #
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
+
+        with_attr error_message ("this grid is not populated; pickup is invalid"):
+            assert grid_stat.populated = 1
+        end
+
+        with_attr error_message ("the deployed device at this grid is not owned by the caller"):
+            assert grid_stat.deployed_device_owner = caller
+        end
+
+        #
+        # Update `device_emap`
+        #
+        let (emap_index)      = ns_micro_state_functions.device_id_to_emap_index_read (grid_stat.deployed_device_id)
+        let (emap_entry)      = ns_micro_state_functions.device_emap_read (emap_index)
+        ns_micro_state_functions.device_emap_write (
+            emap_index,
+            DeviceEmapEntry(
+                owner       = emap_entry.owner,
+                type        = emap_entry.type,
+                id          = emap_entry.id,
+                is_deployed = 0,
+                grid        = Vec2(0,0)
+            )
+        )
+
+        #
+        # Untether all utx-sets tethered to this device
+        #
+        let (utb_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTB, grid_stat.deployed_device_id)
+        recurse_untether_utx_for_deployed_device (
+            utx_device_type = ns_device_types.DEVICE_UTB,
+            id = grid_stat.deployed_device_id,
+            len = utb_tether_count,
+            idx = 0
+        )
+
+        let (utl_tether_count) = ns_micro_state_functions.utx_tether_count_of_deployed_device_read (ns_device_types.DEVICE_UTL, grid_stat.deployed_device_id)
+        recurse_untether_utx_for_deployed_device (
+            utx_device_type = ns_device_types.DEVICE_UTL,
+            id = grid_stat.deployed_device_id,
+            len = utl_tether_count,
+            idx = 0
+        )
+
+        update_grid_stat:
+        update_grid_with_new_grid_stat (emap_entry.type, emap_entry.grid, GridStat(
+            populated = 0,
+            deployed_device_type = 0,
+            deployed_device_id = 0,
+            deployed_device_owner = 0
+            ),
+            civ_idx
+        )
+
+        return (emap_entry.id)
+    end
+
+    func upsf_build_fungible_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            caller : felt,
+            grid : Vec2,
+            device_type : felt,
+            device_count : felt
+        ) -> ():
+        alloc_locals
+
+        #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
+
+        #
+        # Check if `caller` owns the device at `upsf_grid`
+        #
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
+        assert grid_stat.populated = 1
+        assert grid_stat.deployed_device_owner = caller
+
+        #
+        # Check if an UPSF is deployed at `upsf_grid`
+        #
+        assert grid_stat.deployed_device_type = ns_device_types.DEVICE_UPSF
+        let opsf_device_id = grid_stat.deployed_device_id
+
+        #
+        # Check if device_type is of fungible type
+        #
+        assert_device_type_is_utx (device_type)
+
+        #
+        # Get resource & energy requirement for manufacturing one device of type `device_type`
+        #
+        let (
+            energy : felt,
+            resource_arr_len : felt,
+            resource_arr : felt*
+        ) = ns_manufacturing.get_resource_energy_requirement_given_device_type (
+            device_type
+        )
+        local energy_should_consume = energy * device_count
+
+        #
+        # Consume upsf energy; revert if insufficient
+        #
+        let (local curr_energy) = ns_micro_state_functions.device_id_to_energy_balance_read (opsf_device_id)
+        with_attr error_message ("insufficient energy; {energy_should_consume} required, {curr_energy} available at UPSF."):
+            assert_le (energy_should_consume, curr_energy)
+        end
+        ns_micro_state_functions.device_id_to_energy_balance_write (
+            opsf_device_id,
+            curr_energy - energy_should_consume
+        )
+
+        #
+        # Recurse update resource balance at this UPSF; revert if any balance is insufficient
+        #
+        recurse_consume_device_balance_at_opsf (
+            opsf_device_id = opsf_device_id,
+            device_count = device_count,
+            len = resource_arr_len,
+            arr = resource_arr,
+            idx = 0
+        )
+
+        #
+        # If both resource & energy update above are successful, give devices to caller
+        #
+        let (curr_amount) = ns_micro_state_functions.fungible_device_undeployed_ledger_read (caller, device_type)
+        ns_micro_state_functions.fungible_device_undeployed_ledger_write (
+            caller, device_type,
+            curr_amount + device_count
+        )
+
+        return ()
+    end
+
+    func upsf_build_nonfungible_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            caller : felt,
+            grid : Vec2,
+            device_type : felt,
+            device_count : felt
+        ) -> ():
+        alloc_locals
+
+        #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
+
+        #
+        # Check if `caller` owns the device at `upsf_grid`
+        #
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
+        assert grid_stat.populated = 1
+        assert grid_stat.deployed_device_owner = caller
+
+        #
+        # Check if an UPSF is deployed at `upsf_grid`
+        #
+        assert grid_stat.deployed_device_type = ns_device_types.DEVICE_UPSF
+        let opsf_device_id = grid_stat.deployed_device_id
+
+        #
+        # Check if device_type is of non-fungible type
+        #
+        assert_device_type_is_nonfungible (device_type)
+
+        #
+        # Get resource & energy requirement for manufacturing one device of type `device_type`
+        #
+        let (
+            energy : felt,
+            resource_arr_len : felt,
+            resource_arr : felt*
+        ) = ns_manufacturing.get_resource_energy_requirement_given_device_type (
+            device_type
+        )
+        local energy_should_consume = energy * device_count
+
+        #
+        # Consume upsf energy; revert if insufficient
+        #
+        let (local curr_energy) = ns_micro_state_functions.device_id_to_energy_balance_read (opsf_device_id)
+        with_attr error_message ("insufficient energy; {energy_should_consume} required, {curr_energy} available at UPSF."):
+            assert_le (energy_should_consume, curr_energy)
+        end
+        ns_micro_state_functions.device_id_to_energy_balance_write (
+            opsf_device_id,
+            curr_energy - energy_should_consume
+        )
+
+        #
+        # Recurse update resource balance at this UPSF; revert if any balance is insufficient
+        #
+        recurse_consume_device_balance_at_opsf (
+            opsf_device_id = opsf_device_id,
+            device_count = device_count,
+            len = resource_arr_len,
+            arr = resource_arr,
+            idx = 0
+        )
+
+        #
+        # If all resource & energy updates above are successful, create new devices
+        #
+        let (block_height) = get_block_number ()
+        recurse_create_new_undeployed_device (
+            idx = 0,
+            len = device_count,
+            block_height = block_height,
+            owner = caller,
+            device_type = device_type
+        )
+
+        return ()
+    end
+
+    func recurse_create_new_undeployed_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            idx : felt,
+            len : felt,
+            block_height : felt,
+            owner : felt,
+            device_type : felt,
+        ) -> ():
+
+        if idx == len:
+            return ()
+        end
+
+        create_new_nonfungible_device (block_height, owner, device_type)
+
+        #
+        # Tail recursion
+        #
+        recurse_create_new_undeployed_device (
+            idx + 1,
+            len,
+            block_height,
+            owner,
+            device_type
+        )
+
+        return ()
+    end
+
+    func create_new_nonfungible_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            block_height : felt,
+            owner : felt,
+            device_type : felt
+        ) -> ():
+        alloc_locals
+
+        #
+        # Create new_device_id
+        #
+        let (new_emap_index) = ns_micro_state_functions.device_emap_size_read ()
+        tempvar data_ptr : felt* = new (4, block_height, owner, device_type, new_emap_index)
+        let (new_device_id) = hash_chain {hash_ptr = pedersen_ptr} (data_ptr)
+
+        #
+        # Create a new entry in device_emap; add device_id to emap_index mapping
+        #
+        ns_micro_state_functions.device_emap_size_write (new_emap_index + 1)
+        ns_micro_state_functions.device_emap_write (new_emap_index, DeviceEmapEntry(
+            owner       = owner,
+            type        = device_type,
+            id          = new_device_id,
+            is_deployed = 0,
+            grid        = Vec2(0,0)
+        ))
+        ns_micro_state_functions.device_id_to_emap_index_write (new_device_id, new_emap_index)
+
+        #
+        # Emit event for Apibara
+        #
+        let (event_counter) = ns_universe_state_functions.event_counter_read ()
+        ns_universe_state_functions.event_counter_increment ()
+        create_new_nonfungible_device_occurred.emit (
+            event_counter,
+            owner,
+            device_type,
+            new_device_id
+        )
+
+        return ()
+    end
+
+    func recurse_consume_device_balance_at_opsf {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            opsf_device_id : felt,
+            device_count : felt,
+            len : felt,
+            arr : felt*,
+            idx : felt
+        ) -> ():
+        alloc_locals
+
+        if idx == len:
+            return ()
+        end
+
+        #
+        # Check if opsf has sufficient resource balance of this type
+        #
+        let (local curr_balance) = ns_micro_state_functions.opsf_id_to_resource_balances_read (
+            opsf_device_id, idx
+        )
+        local quantity_should_consume = arr[idx] * device_count
+
+        local element_type = idx
+        with_attr error_message ("insufficient quantity of type {element_type}; {quantity_should_consume} required, {curr_balance} available at UPSF."):
+            assert_le (quantity_should_consume, curr_balance)
+        end
+
+        #
+        # Update opsf's resource balance of this type
+        #
+        ns_micro_state_functions.opsf_id_to_resource_balances_write (
+            opsf_device_id, idx,
+            curr_balance - quantity_should_consume
+        )
+
+        #
+        # Tail recursion
+        #
+        recurse_consume_device_balance_at_opsf (
+            opsf_device_id,
+            device_count,
+            len,
+            arr,
+            idx + 1
+        )
+        return ()
+    end
+
+    func launch_all_deployed_ndpe {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            caller : felt,
+            grid : Vec2
+        ) -> ():
+        alloc_locals
+
+        #
+        # Get civilization index
+        #
+        let (civ_idx) = ns_universe_state_functions.civilization_index_read ()
+
+        #
+        # Check if `caller` owns the device at the selected grid
+        #
+        let (grid_stat) = ns_micro_state_functions.grid_stats_read (civ_idx, grid)
+        with_attr error_message ("selected grid is not populated"):
+            assert grid_stat.populated = 1
+        end
+
+        with_attr error_message ("selected grid has deployed device whose owner is not the caller"):
+            assert grid_stat.deployed_device_owner = caller
+        end
+
+        #
+        # Check if an NDPE is deployed at the selected grid
+        #
+        with_attr error_message ("selected grid does not have an NDPE deployed"):
+            assert grid_stat.deployed_device_type = ns_device_types.DEVICE_NDPE
+        end
+        let ndpe_device_id = grid_stat.deployed_device_id
+
+        #
+        # Recurse over all deployed devices to launch NDPEs
+        # and compute aggregate impulse + deduct energy consumed
+        # Note: we could have declared a dedicated storage mapping for NDPE devices;
+        # given the relative infrequency of invoking this function,
+        # we chose temporarily to lump all non-fungible devices of all type in one `device_emap`
+        #
+        let (emap_size) = ns_micro_state_functions.device_emap_size_read ()
+        let (impulse_sum_in_micro_coord : Vec2) = recurse_operate_all_ndpes (
+            len = emap_size,
+            idx = 0,
+            impulse_sum = Vec2 (0,0),
+            civ_idx = civ_idx
+        )
+
+        #
+        # Coordinate transform from micro to macro
+        #
+        # 1. get phi
+        # 2. rotate `impulse_sum_in_micro_coord` by phi using function implemented in `micro_solar.cairo`
+        let (curr_phi) = ns_macro_state_functions.phi_curr_read ()
+        let (impulse_sum_in_macro_coord : Vec2) = compute_vector_rotate (
+            vec = impulse_sum_in_micro_coord,
+            phi = curr_phi
+        )
+
+        #
+        # Add impulse_sum to macro's impulse cache (storage_var)
+        #
+        let (curr_impulse_cached : Vec2) = ns_macro_state_functions.impulse_cache_read ()
+        ns_macro_state_functions.impulse_cache_write (Vec2(
+            curr_impulse_cached.x + impulse_sum_in_macro_coord.x,
+            curr_impulse_cached.y + impulse_sum_in_macro_coord.y
+        ))
+
+        return ()
+    end
+
+    func recurse_operate_all_ndpes {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+            len : felt,
+            idx : felt,
+            impulse_sum : Vec2,
+            civ_idx : felt
+        ) -> (impulse_sum_final : Vec2):
+        alloc_locals
+
+        if idx == len:
+            return (impulse_sum_final = impulse_sum)
+        end
+
+        #
+        # Grab emap entry and check if it is a deployed NDPE
+        #
+        local impulse : Vec2
+        let (emap_entry) = ns_micro_state_functions.device_emap_read (idx)
+        let (bool_is_ndpe) = is_zero (emap_entry.type - ns_device_types.DEVICE_NDPE)
+        if bool_is_ndpe * emap_entry.is_deployed == 1:
+            #
+            # Get owner of this deployed NDPE for participation record purposes,
+            # and update universe state accordingly
+            #
+            let (grid_stat : GridStat) = ns_micro_state_functions.grid_stats_read (civ_idx, emap_entry.grid)
+            ns_universe_state_functions.civilization_player_address_to_has_launched_ndpe_write (
+                grid_stat.deployed_device_owner,
+                1
+            )
+
+            #
+            # Get energy stored at this NDPE, and clear energy storage at this NDPE
+            #
+            let (curr_energy) = ns_micro_state_functions.device_id_to_energy_balance_read (emap_entry.id)
+            ns_micro_state_functions.device_id_to_energy_balance_write (emap_entry.id, 0)
+
+            #
+            # Use all of the energy to generate impulse,
+            # which is a function of energy (magnitude) and face (directionality)
+            #
+            let (face, _, _, _) = locate_face_and_edge_given_valid_grid (emap_entry.grid)
+            let (impulse_ : Vec2) = compute_impulse_in_micro_coord (curr_energy, face)
+            assert impulse = impulse_
+
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
+        else:
+            #
+            # Not an NDPE => no impulse generated by this device
+            #
+            assert impulse = Vec2 (0,0)
+
+            tempvar syscall_ptr = syscall_ptr
+            tempvar pedersen_ptr = pedersen_ptr
+            tempvar range_check_ptr = range_check_ptr
+        end
+
+        #
+        # Tail recursion
+        #
+        let (impulse_sum_final : Vec2) = recurse_operate_all_ndpes (
+            len,
+            idx + 1,
+            Vec2 (impulse_sum.x + impulse.x, impulse_sum.y + impulse.y),
+            civ_idx
+        )
+        return (impulse_sum_final)
+    end
+
+    func transfer_device {syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr} (
+        ) -> ():
+
+    end
+
+    func are_producer_consumer_relationship {range_check_ptr} (
+        utx_device_type, device_type0, device_type1) -> ():
+
+        # TODO: refactor this code to improve extensibility
+
+        alloc_locals
+        # upgrade input to local for error-message accessibility
+        local x = device_type0
+        local y = device_type1
+        local z = utx_device_type
+
+
+        if utx_device_type == ns_device_types.DEVICE_UTB:
+            #
+            # From harvester to corresponding refinery / enrichment facility
+            # Note: supporting chaining: Harv => Harv => Harv => Refn => UPSF
+            #
+            # iron harvester => iron refinery
+            if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_FE_REFN + 1) == 1:
+                return ()
+            end
+
+            #  iron harvester => iron harvester
+            if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_FE_HARV + 1) == 1:
+                return ()
+            end
+
+            # aluminum harvester => aluminum refinery
+            if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_AL_REFN + 1) == 1:
+                return ()
+            end
+
+            #  aluminum harvester => aluminum harvester
+            if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_AL_HARV + 1) == 1:
+                return ()
+            end
+
+            # copper harvester => copper refinery
+            if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_CU_REFN + 1) == 1:
+                return ()
+            end
+
+            # copper harvester => copper harvester
+            if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_CU_HARV + 1) == 1:
+                return ()
+            end
+
+            # silicon harvester => silicon refinery
+            if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_SI_REFN + 1) == 1:
+                return ()
+            end
+
+            # silicon harvester => silicon harvester
+            if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_SI_HARV + 1) == 1:
+                return ()
+            end
+
+            # plutonium harvester => plutonium enrichment facility
+            if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_PEF + 1) == 1:
+                return ()
+            end
+
+            # plutonium harvester => plutonium harvester
+            if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_PU_HARV + 1) == 1:
+                return ()
+            end
+
+            #
+            # From harvester straight to UPSF
+            #
+            # iron harvester => UPSF
+            if (device_type0 - ns_device_types.DEVICE_FE_HARV + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
+                return ()
+            end
+
+            # aluminum harvester => UPSF
+            if (device_type0 - ns_device_types.DEVICE_AL_HARV + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
+                return ()
+            end
+
+            # copper harvester => UPSF
+            if (device_type0 - ns_device_types.DEVICE_CU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
+                return ()
+            end
+
+            # silicon harvester => UPSF
+            if (device_type0 - ns_device_types.DEVICE_SI_HARV + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
+                return ()
+            end
+
+            # plutonium harvester => UPSF
+            if (device_type0 - ns_device_types.DEVICE_PU_HARV + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
+                return ()
+            end
+
+            #
+            # From refinery/enrichment facility to UPSF
+            #
+            # iron refinery => UPSF
+            if (device_type0 - ns_device_types.DEVICE_FE_REFN + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
+                return ()
+            end
+
+            # aluminum refinery => UPSF
+            if (device_type0 - ns_device_types.DEVICE_AL_REFN + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
+                return ()
+            end
+
+            # copper refinery => UPSF
+            if (device_type0 - ns_device_types.DEVICE_CU_REFN + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
+                return ()
+            end
+
+            # silicon refinery => UPSF
+            if (device_type0 - ns_device_types.DEVICE_SI_REFN + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
+                return ()
+            end
+
+            # plutonium enrichment facility => UPSF
+            if (device_type0 - ns_device_types.DEVICE_PEF + 1) * (device_type1 - ns_device_types.DEVICE_UPSF + 1) == 1:
+                return ()
+            end
+
+            tempvar range_check_ptr = range_check_ptr
+        else:
+            ## UTL
+
+            #
+            # SPG / NPG => any of the devices;
+            # meaning device_type0 needs to be power generator (pg) :: {0, 1}
+            # note: device_type1 used to be restricted to power consumer (pc) :: {2, 3 ... 15}
+            #
+
+            let (is_device_type0_pg) = is_nn_le (device_type0, 1)
+            # let (is_device_type1_pc) = is_nn_le (device_type1 - 2, 13)
+            # if is_device_type0_pg * is_device_type1_pc == 1:
+            if is_device_type0_pg == 1:
+                return ()
+            end
+
+            tempvar range_check_ptr = range_check_ptr
+        end
+
+        with_attr error_message("resource producer-consumer relationship check failed, with utx_device_type = {z}, device_type0 = {x} and device_type1 = {y}"):
+            assert 1 = 0
+        end
+        return ()
+    end
+
+    func is_device_harvester {range_check_ptr} (type : felt) -> (bool : felt):
+        let (bool) = is_nn_le (
+            type - ns_device_types.DEVICE_HARVESTER_MIN,
+            ns_device_types.DEVICE_HARVESTER_MAX - ns_device_types.DEVICE_HARVESTER_MIN
+        )
+        return (bool)
+    end
+
+    func is_device_transformer {range_check_ptr} (type : felt) -> (bool : felt):
+        let (bool) = is_nn_le (
+            type - ns_device_types.DEVICE_TRANSFORMER_MIN,
+            ns_device_types.DEVICE_TRANSFORMER_MAX - ns_device_types.DEVICE_TRANSFORMER_MIN
+        )
+        return (bool)
+    end
+
+    func is_device_opsf {range_check_ptr} (type : felt) -> (bool : felt):
+        if type == ns_device_types.DEVICE_UPSF:
+            return (1)
+        else:
+            return (0)
+        end
+    end
+
+end # end namespace

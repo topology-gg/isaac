@@ -1,0 +1,366 @@
+[
+    {
+        "members": [
+            {
+                "name": "subject",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "charter",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "angel",
+                "offset": 2,
+                "type": "felt"
+            }
+        ],
+        "name": "Components",
+        "size": 3,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "address",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "period",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "start_l2_block_height",
+                "offset": 2,
+                "type": "felt"
+            }
+        ],
+        "name": "Proposal",
+        "size": 3,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "player_address",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "grade",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Play",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "player_voices_available_read",
+        "outputs": [
+            {
+                "name": "voices",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "current_epoch_read",
+        "outputs": [
+            {
+                "name": "epoch",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "votable_addresses_read",
+        "outputs": [
+            {
+                "name": "addresses",
+                "type": "Components"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "fsm_addresses_read",
+        "outputs": [
+            {
+                "name": "addresses",
+                "type": "Components"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "name_read",
+        "outputs": [
+            {
+                "name": "literal",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "state_read",
+        "outputs": [
+            {
+                "name": "s",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "current_proposal_read",
+        "outputs": [
+            {
+                "name": "proposal",
+                "type": "Proposal"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner_dao_address_read",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "votes_for_current_proposal_read",
+        "outputs": [
+            {
+                "name": "votes",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "votes_against_current_proposal_read",
+        "outputs": [
+            {
+                "name": "votes",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "probe_can_end_vote",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "anyone_execute_end_vote",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address_subject",
+                "type": "felt"
+            },
+            {
+                "name": "address_charter",
+                "type": "felt"
+            },
+            {
+                "name": "address_angel",
+                "type": "felt"
+            },
+            {
+                "name": "fsm_address_subject",
+                "type": "felt"
+            },
+            {
+                "name": "fsm_address_charter",
+                "type": "felt"
+            },
+            {
+                "name": "fsm_address_angel",
+                "type": "felt"
+            }
+        ],
+        "name": "set_votable_and_fsm_addresses_once",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "proposed_address",
+                "type": "felt"
+            }
+        ],
+        "name": "angel_propose_new_subject",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "proposed_address",
+                "type": "felt"
+            }
+        ],
+        "name": "angel_propose_new_charter",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "proposed_address",
+                "type": "felt"
+            }
+        ],
+        "name": "angel_propose_new_angel",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "votes",
+                "type": "felt"
+            },
+            {
+                "name": "for",
+                "type": "felt"
+            }
+        ],
+        "name": "player_vote_new_subject",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "votes",
+                "type": "felt"
+            },
+            {
+                "name": "for",
+                "type": "felt"
+            }
+        ],
+        "name": "player_vote_new_charter",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "votes",
+                "type": "felt"
+            },
+            {
+                "name": "for",
+                "type": "felt"
+            }
+        ],
+        "name": "player_vote_new_angel",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "pass",
+                "type": "felt"
+            },
+            {
+                "name": "proposed_address",
+                "type": "felt"
+            }
+        ],
+        "name": "fsm_report_voting_result",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "arr_play_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_play",
+                "type": "Play*"
+            }
+        ],
+        "name": "subject_report_play",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "player_address",
+                "type": "felt"
+            },
+            {
+                "name": "voices",
+                "type": "felt"
+            }
+        ],
+        "name": "admin_write_player_voices_available",
+        "outputs": [],
+        "type": "function"
+    }
+]
