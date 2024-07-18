@@ -1,0 +1,180 @@
+[
+    {
+        "members": [
+            {
+                "name": "address",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "period",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "start_l2_block_height",
+                "offset": 2,
+                "type": "felt"
+            }
+        ],
+        "name": "Proposal",
+        "size": 3,
+        "type": "struct"
+    },
+    {
+        "inputs": [],
+        "name": "name_read",
+        "outputs": [
+            {
+                "name": "literal",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "state_read",
+        "outputs": [
+            {
+                "name": "s",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "current_proposal_read",
+        "outputs": [
+            {
+                "name": "proposal",
+                "type": "Proposal"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner_dao_address_read",
+        "outputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "votes_for_current_proposal_read",
+        "outputs": [
+            {
+                "name": "votes",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "votes_against_current_proposal_read",
+        "outputs": [
+            {
+                "name": "votes",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "constructor",
+        "outputs": [],
+        "type": "constructor"
+    },
+    {
+        "inputs": [
+            {
+                "name": "fsm_name",
+                "type": "felt"
+            }
+        ],
+        "name": "set_name_once",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "address",
+                "type": "felt"
+            }
+        ],
+        "name": "init_owner_dao_address_once",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "proposal",
+                "type": "Proposal"
+            }
+        ],
+        "name": "voting_start",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "voting_end",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "can_invoke_voting_end",
+        "outputs": [
+            {
+                "name": "bool",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "return_current_block_number",
+        "outputs": [
+            {
+                "name": "number",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "votes",
+                "type": "felt"
+            },
+            {
+                "name": "for",
+                "type": "felt"
+            }
+        ],
+        "name": "cast_vote",
+        "outputs": [],
+        "type": "function"
+    }
+]
