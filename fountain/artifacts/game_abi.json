@@ -1,0 +1,216 @@
+[
+    {
+        "members": [
+            {
+                "name": "pos",
+                "offset": 0,
+                "type": "Vec2"
+            },
+            {
+                "name": "vel",
+                "offset": 2,
+                "type": "Vec2"
+            },
+            {
+                "name": "acc",
+                "offset": 4,
+                "type": "Vec2"
+            }
+        ],
+        "name": "ObjectState",
+        "size": 6,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "x",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "y",
+                "offset": 1,
+                "type": "felt"
+            }
+        ],
+        "name": "Vec2",
+        "size": 2,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "score0_ball",
+                "offset": 0,
+                "type": "Vec2"
+            },
+            {
+                "name": "score1_ball",
+                "offset": 2,
+                "type": "Vec2"
+            },
+            {
+                "name": "forbid_ball",
+                "offset": 4,
+                "type": "Vec2"
+            },
+            {
+                "name": "player_ball",
+                "offset": 6,
+                "type": "Vec2"
+            }
+        ],
+        "name": "LevelState",
+        "size": 8,
+        "type": "struct"
+    },
+    {
+        "members": [
+            {
+                "name": "discovered_by",
+                "offset": 0,
+                "type": "felt"
+            },
+            {
+                "name": "level",
+                "offset": 1,
+                "type": "felt"
+            },
+            {
+                "name": "solution_family",
+                "offset": 2,
+                "type": "felt"
+            },
+            {
+                "name": "score",
+                "offset": 3,
+                "type": "felt"
+            }
+        ],
+        "name": "SolutionRecord",
+        "size": 4,
+        "type": "struct"
+    },
+    {
+        "data": [
+            {
+                "name": "iter",
+                "type": "felt"
+            },
+            {
+                "name": "arr_obj_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr_obj",
+                "type": "ObjectState*"
+            }
+        ],
+        "keys": [],
+        "name": "position",
+        "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "pull_level",
+        "outputs": [
+            {
+                "name": "level_state",
+                "type": "LevelState"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "view_solution_found_count",
+        "outputs": [
+            {
+                "name": "count",
+                "type": "felt"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "id",
+                "type": "felt"
+            }
+        ],
+        "name": "view_solution_record_by_id",
+        "outputs": [
+            {
+                "name": "solution_record",
+                "type": "SolutionRecord"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "view_solution_records_as_html",
+        "outputs": [
+            {
+                "name": "arr_len",
+                "type": "felt"
+            },
+            {
+                "name": "arr",
+                "type": "felt*"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "level",
+                "type": "felt"
+            },
+            {
+                "name": "move_x",
+                "type": "felt"
+            },
+            {
+                "name": "move_y",
+                "type": "felt"
+            }
+        ],
+        "name": "submit_move_for_level",
+        "outputs": [
+            {
+                "name": "is_solution",
+                "type": "felt"
+            },
+            {
+                "name": "is_solution_family_new",
+                "type": "felt"
+            },
+            {
+                "name": "solution_id",
+                "type": "felt"
+            },
+            {
+                "name": "solution_family",
+                "type": "felt"
+            },
+            {
+                "name": "score",
+                "type": "felt"
+            }
+        ],
+        "type": "function"
+    }
+]
