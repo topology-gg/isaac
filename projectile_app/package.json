@@ -1,0 +1,37 @@
+{
+  "name": "projectile-app",
+  "version": "1.0.0",
+  "main": "node_modules/expo/AppEntry.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@expo/webpack-config": "^0.17.2",
+    "@shopify/react-native-skia": "0.1.157",
+    "expo": "~47.0.12",
+    "expo-linear-gradient": "~12.0.1",
+    "expo-screen-orientation": "~5.0.1",
+    "expo-status-bar": "~1.4.2",
+    "react": "18.1.0",
+    "react-dom": "18.1.0",
+    "react-native": "0.70.5",
+    "react-native-gesture-handler": "~2.8.0",
+    "react-native-react-bridge": "^0.10.1",
+    "react-native-reanimated": "~2.12.0",
+    "react-native-redash": "^18.1.0",
+    "react-native-web": "~0.18.7",
+    "react-native-webview": "11.23.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.19.3",
+    "@types/jest": "^29.2.5",
+    "@types/react": "~18.0.24",
+    "@types/react-native": "~0.70.6",
+    "@types/react-test-renderer": "^18.0.0",
+    "typescript": "^4.6.3"
+  },
+  "private": true
+}
