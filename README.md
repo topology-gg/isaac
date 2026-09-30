@@ -1,11 +1,9 @@
 Epilogue
 ======================================
 
-This page has been translated to [Chinese](https://github.com/monklof/Back-End-Developer-Interview-Questions) by [monklof](https://github.com/monklof).
-
 I started writing down this list as my personal notes of topics I discussed with colleagues and friends, and that I wanted to deepen...
 
-I'm not a big fan of asking technical questions in job interviews: I rather prefer to sit together with candidates in front of some real code, hands on the keyboard, facing a real problem, and to have a full day of pair programming, hopefully rotating with all the other team members. It is one of the best opportunities to know each others' style and to let candidates know some details about their future job.
+I rather prefer to sit together with candidates in front of some real code, hands on the keyboard, facing a real problem, and to have a full day of pair programming, hopefully rotating with all the other team members. It is one of the best opportunities to know each others' style and to let candidates know some details about their future.
 
 Yet, I feel some categories of technical questions could be a good starting point to begin an engaging conversation. 
 
