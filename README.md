@@ -9,14 +9,10 @@ Yet, I feel some categories of technical questions could be a good starting poin
 
 This repo collects a number of back-end related questions that can be used when vetting potential candidates. It is by no means recommended to use every single question on the same candidate: that would take hours, and would have no sense at all, as they cover a too broad set of topics for a single developer's to possibly know. Browse the section you find more relevant for your context, and pick the questions that give you more ideas on the conversation to have.
 
-This project is admittedly inspired by [Front-end Job Interview Questions](https://github.com/darcyclarke/Front-end-Developer-Interview-Questions) by [@darcyclarke](https://github.com/darcyclarke)
 
 ## Where are the answers?
 I didn't include any.<br/>
 Most of the questions are open-ended, and some of them just don't have a *right* or a *wrong* answer. On the contrary, they are intended to be used as the starting point for a conversation that hopefully tells you more about the person's capabilities than a straight answer would. Personally, I would even choose the questions whose answers are not yet clear to me.
-
-Feel free to open a [Discussion](https://github.com/arialdomartini/Back-End-Developer-Interview-Questions/discussions).
-
 
 
 
